@@ -7,6 +7,31 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
+def preserve_custom_snapshot(payload: dict, destination: Path) -> dict:
+    """Do not erase custom careers when the built-in monitor republishes data."""
+    if not destination.exists():
+        return payload
+    try:
+        previous = json.loads(destination.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return payload
+    if not isinstance(previous, dict):
+        return payload
+    prev_jobs = previous.get("jobs")
+    if isinstance(prev_jobs, list):
+        keys = {str(j.get("id")) for j in payload["jobs"] if isinstance(j, dict)}
+        for job in prev_jobs:
+            if not isinstance(job, dict) or job.get("source") != "Custom Careers":
+                continue
+            key = str(job.get("id"))
+            if key not in keys:
+                payload["jobs"].append(job)
+                keys.add(key)
+    if isinstance(previous.get("custom_sources"), list):
+        payload["custom_sources"] = previous["custom_sources"]
+    return payload
+
+
 def main() -> None:
     database = Path(os.getenv("DB_PATH", "data/jobs.db")).resolve()
     if not database.is_file():
@@ -81,6 +106,7 @@ def main() -> None:
     }
 
     output = Path("dist/data.json")
+    payload = preserve_custom_snapshot(payload, output)
     output.parent.mkdir(parents=True, exist_ok=True)
     temporary = output.with_suffix(".tmp")
     temporary.write_text(

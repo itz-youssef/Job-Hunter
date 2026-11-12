@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: job-hunter-monitor
+  group: job-hunter-published-state
   cancel-in-progress: false
 
 jobs:

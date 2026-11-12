@@ -1,0 +1,71 @@
+name: Career Adapter Tests
+
+on:
+  pull_request:
+    paths:
+      - "app/custom_sources.py"
+      - "app/oracle_adapter.py"
+      - "tests/test_custom_discovery.py"
+      - "scripts/diagnose_careers.py"
+      - "app/export_site.py"
+      - "app/public_feeds.py"
+      - "tests/test_public_feeds.py"
+      - "app/custom_monitor.py"
+      - "app/filters.py"
+      - "tests/test_custom_monitor_integration.py"
+      - "scripts/probe_itworx.py"
+      - "tests/test_export_custom.py"
+      - ".github/workflows/test-career-adapters.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test dependencies
+        run: python -m pip install pytest
+      - name: Compile scanner modules
+        run: python -m compileall -q app
+      - name: Run offline adapter regression tests
+        run: python -m pytest -q tests/test_custom_discovery.py tests/test_export_custom.py tests/test_public_feeds.py tests/test_custom_monitor_integration.py
+      - name: Smoke-test public careers APIs without writing state
+        continue-on-error: true
+        timeout-minutes: 3
+        run: |
+          python - <<'PY'
+          from app.custom_sources import scan_company
+          sources = [
+              ("Nokia", "https://fa-evmr-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs"),
+              ("Chatbase", "https://jobs.ashbyhq.com/chatbase"),
+              ("Sumerge", "https://www.sumerge.com/careers/job-openings"),
+              ("Link Development", "https://linkdevelopment.com/careers/opportunities/"),
+              ("ITWorx", "https://careers.itworx.com/"),
+          ]
+          for name, url in sources:
+              jobs, status, reason = scan_company({"name": name, "url": url})
+              print(f"SMOKE {name}: status={status}, jobs={len(jobs)}, reason={reason}")
+              if jobs:
+                  sample = jobs[0]
+                  print(f"SAMPLE {name}: {sample['title']} ({sample['location']})")
+          PY
+      - name: Inspect ITWorx public API fields
+        continue-on-error: true
+        run: python scripts/probe_itworx.py
+      - name: Install browser diagnostics
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Inspect dynamic careers pages (read-only, diagnostic)
+        if: github.event_name == 'workflow_dispatch'
+        continue-on-error: true
+        timeout-minutes: 4
+        run: python scripts/diagnose_careers.py
