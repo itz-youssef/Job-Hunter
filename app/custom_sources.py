@@ -562,7 +562,7 @@ def _board_jobs(name: str, url: str) -> list[dict]:
             )
 
     # GREENHOUSE
-    if kind == "greenhouse":
+    elif kind == "greenhouse":
         slug = urllib.parse.quote(meta, safe="")
 
         data = _json(
