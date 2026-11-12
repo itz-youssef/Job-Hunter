@@ -74,6 +74,8 @@ def test_siemens_software_public_api_pagination():
         return {"jobs": [],"pagination":{"has_more_pages":False}}
     jobs=siemens_software("Siemens",api,cs._job)
     assert len(calls)==2
+    assert "businessStructures=electronic-design-automation-eda" in calls[0]
+    assert "num_items=10" in calls[0]
     assert len(jobs)==1
     assert jobs[0]["url"]=="https://jobs.sw.siemens.com/new-cairo-egy/junior-software-development-engineer/60D405D19D6448C084990544511BC189/job/"
     from app.filters import relevance
