@@ -22,3 +22,16 @@ def main():
    print("FAWRY",url,"length",len(doc),"jobs",len(listings),"first",listings[:4],"pages",pg[:8],"xml",doc[:30],flush=True)
   except Exception as e:print("FAWRY_ERROR",url,type(e).__name__,str(e)[:140],flush=True)
 if __name__=="__main__":main()
+
+def verify_adapters():
+ from app.custom_sources import scan_company
+ for name,url in [
+  ("VOIS","https://jobs.vodafone.com/careers?location=Egypt&filter_brand=vois"),
+  ("Ericsson","https://jobs.ericsson.com/careers?location=egypt"),
+  ("Fawry","https://www.fawry.com/jobs/"),
+ ]:
+  jobs,status,message=scan_company({"name":name,"url":url})
+  print("VERIFIED",name,status,"count",len(jobs),message,flush=True)
+  for job in jobs[:3]:
+   print("JOB",name,job.get("title"),job.get("location"),job.get("url"),flush=True)
+if __name__=="__main__":verify_adapters()
