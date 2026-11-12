@@ -128,7 +128,12 @@ def siemens_software(name, get_json, make_job):
             if country.strip().casefold() not in ("egypt", "egy", "eg"):
                 continue
             title = str(row.get("title_exact") or "").strip()
-            city = str(row.get("city_slab_exact") or "").strip()
+            city_value = str(row.get("city_exact") or "").strip()
+            city = (
+                re.sub(r"[^a-z0-9]+", "-", city_value.lower()).strip("-")
+                if city_value
+                else str(row.get("city_slab_exact") or "").split("/", 1)[0].strip().lower()
+            )
             slug = str(row.get("title_slug") or "").strip()
             guid = str(row.get("guid") or "").strip()
             ccode = str(row.get("country_short_exact") or "EGY").lower()
