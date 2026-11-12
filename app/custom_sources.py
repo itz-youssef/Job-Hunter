@@ -170,6 +170,12 @@ def _ats(url: str):
     host = (p.hostname or "").lower()
     seg = [s for s in p.path.split("/") if s]
 
+    if host.endswith(".bamboohr.com") and host.count(".") == 2:
+        return "bamboohr", host
+
+    if host.endswith(".breezy.hr") and host.count(".") == 2:
+        return "breezy", host
+
     if host.endswith(".recruitee.com") and host.count(".") == 2:
         return "recruitee", host
 
@@ -458,6 +464,67 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     if kind == "oracle":
         from app.oracle_adapter import scan as scan_oracle
         return _dedupe(scan_oracle(name, url, _json, _job))
+
+    # BAMBOOHR: publicly displayed careers listings and selected job details.
+    elif kind == "bamboohr":
+        feed = _json(f"https://{meta}/careers/list")
+        rows = feed.get("result") or []
+        if not isinstance(rows, list):
+            raise ValueError("Unexpected BambooHR careers list schema")
+        details_done = 0
+        for item in rows:
+            if not isinstance(item, dict):
+                continue
+            job_id = str(item.get("id") or "")
+            title = str(item.get("jobOpeningName") or "")
+            if not job_id or not title:
+                continue
+            location = _location(item.get("atsLocation")) or _location(item.get("location"))
+            if not location and item.get("country"):
+                location = _location(item.get("country"))
+            detail = {}
+            if details_done < MAX_DETAILS and re.search(
+                r"egypt|cairo|giza|alexandria", location, re.I
+            ):
+                details_done += 1
+                try:
+                    detail = _json(f"https://{meta}/careers/{urllib.parse.quote(job_id, safe='')}/detail")
+                except (OSError, ValueError, TypeError):
+                    pass
+            description = str(
+                detail.get("description")
+                or detail.get("jobOpeningDescription")
+                or detail.get("descriptionHtml")
+                or ""
+            )
+            jobs.append(_job(
+                name, title, location, f"https://{meta}/careers/{urllib.parse.quote(job_id, safe='')}",
+                description, detail.get("datePosted") or "", item.get("employmentStatusLabel")
+            ))
+
+    # BREEZY: company-scoped public listing feed; some boards omit descriptions.
+    elif kind == "breezy":
+        rows = _json(f"https://{meta}/json")
+        if not isinstance(rows, list):
+            raise ValueError("Unexpected Breezy career portal schema")
+        for item in rows:
+            if not isinstance(item, dict):
+                continue
+            location = _location(item.get("location"))
+            if not location:
+                location = _location(item.get("locations"))
+            link = item.get("url") or ""
+            if not link:
+                slug = str(item.get("friendly_id") or "")
+                if not slug:
+                    continue
+                link = f"https://{meta}/p/{urllib.parse.quote(slug, safe='')}"
+            kind_data = item.get("type")
+            employment = kind_data.get("name", "") if isinstance(kind_data, dict) else kind_data or ""
+            jobs.append(_job(
+                name, item.get("name"), location, link, "",
+                item.get("published_date"), employment
+            ))
 
     # RECRUITEE: official company-scoped published offers feed.
     elif kind == "recruitee":
