@@ -300,6 +300,14 @@ def run(
         )
     }
 
+    # A company rename must not create a new identity for the same URL.
+    # Historic snapshots contain IDs derived from the old display name.
+    previous_by_url = {
+        str(j.get("url") or ""): j
+        for j in previous_custom.values()
+        if j.get("url")
+    }
+
     regular_jobs = [
         j
         for j in snapshot["jobs"]
@@ -338,20 +346,26 @@ def run(
             company["url"]
         ).strip()
 
-        matches = [
-            j
-            for raw in jobs
-            if (
-                j := _enrich(raw)
-            ) is not None
-        ]
+        matches = []
+        exclusions = {}
+        for raw in jobs:
+            enriched = _enrich(raw)
+            if enriched is not None:
+                matches.append(enriched)
+            else:
+                _, reasons = relevance(raw, {})
+                reason = reasons[0] if reasons else "Other eligibility criteria"
+                exclusions[reason] = exclusions.get(reason, 0) + 1
 
         statuses.append({
             "name": name,
             "url": url,
             "status": status,
             "message": message,
+            "parsed_jobs": len(jobs),
             "matched_jobs": len(matches),
+            "excluded_jobs": len(jobs) - len(matches),
+            "exclusion_reasons": exclusions,
             "checked_at": _now(),
         })
 
@@ -392,16 +406,17 @@ def run(
 
         for job in matches:
 
-            key = _id(job)
+            # Preserve job identity when only the company display name changes.
+            old = previous_by_url.get(str(job.get("url") or ""))
+            if old:
+                job["id"] = old.get("id") or job.get("id")
 
+            key = _id(job)
             job["careers_url"] = url
 
-            if key in previous_custom:
+            if old:
                 job["discovered_at"] = (
-                    previous_custom[key].get(
-                        "discovered_at"
-                    )
-                    or job["discovered_at"]
+                    old.get("discovered_at") or job["discovered_at"]
                 )
 
             custom_jobs[key] = job
