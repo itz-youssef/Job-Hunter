@@ -170,6 +170,10 @@ def _ats(url: str):
     host = (p.hostname or "").lower()
     seg = [s for s in p.path.split("/") if s]
 
+    from app.oracle_adapter import supports as oracle_supports
+    if oracle_supports(url):
+        return "oracle", None
+
     if host in (
         "boards.greenhouse.io",
         "job-boards.greenhouse.io",
@@ -420,6 +424,11 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     kind, meta = _ats(url)
     p = urllib.parse.urlsplit(url)
     jobs = []
+
+    # Public Oracle Candidate Experience recruiting pages
+    if kind == "oracle":
+        from app.oracle_adapter import scan as scan_oracle
+        return _dedupe(scan_oracle(name, url, _json, _job))
 
     # GREENHOUSE
     if kind == "greenhouse":
@@ -843,28 +852,17 @@ def _discover(name: str, url: str):
                 ):
                     queue.append(target)
 
-    if found_jobs:
-        jobs = _dedupe(found_jobs)
-
-        return (
-            jobs,
-            "monitoring",
-            f"{len(jobs)} structured job postings found",
-        )
+    # A single JobPosting on a careers landing page is often just a
+    # featured vacancy, not the complete board. Collect linked ATS feeds
+    # before deciding what the source can monitor.
+    board_jobs = []
+    successful_boards = 0
 
     for board in board_links[:4]:
-
         try:
-            jobs = _board_jobs(
-                name, board
-            )
-
-            return (
-                jobs,
-                "monitoring",
-                f"{len(jobs)} postings from linked job board",
-            )
-
+            rows = _board_jobs(name, board)
+            successful_boards += 1
+            board_jobs.extend(rows)
         except (
             OSError,
             ValueError,
@@ -874,9 +872,24 @@ def _discover(name: str, url: str):
         ):
             continue
 
+    jobs = _dedupe(found_jobs + board_jobs)
+
+    if successful_boards:
+        return (
+            jobs, "monitoring",
+            f"{len(jobs)} postings found (linked boards: {successful_boards})",
+        )
+
+    if found_jobs:
+        # Parsing a single listing does not establish that the careers
+        # page has a complete feed. Report limited coverage explicitly.
+        return (
+            jobs, "partial",
+            f"{len(jobs)} structured posting(s); no complete job feed verified",
+        )
+
     return (
-        [],
-        "needs_adapter",
+        [], "needs_adapter",
         "No readable public JobPosting feed; "
         "a company-specific adapter may be needed",
     )
