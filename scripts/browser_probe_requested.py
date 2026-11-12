@@ -36,7 +36,10 @@ def main():
                                   str(response.request.post_data)[:300],
                                   "data",info,flush=True)
                         except Exception as exc:
-                            print("API_SCHEMA_ERROR",name,type(exc).__name__,flush=True)
+                            print("API_SCHEMA_ERROR",name,type(exc).__name__,
+                                  "url",response.url[:550],
+                                  "content_type",response.headers.get("content-type"),
+                                  "sample",response.text()[:350].replace(chr(10)," "),flush=True)
                 page.on("response",handle)
                 try:
                     res=page.goto(url,wait_until="domcontentloaded",timeout=20000)
