@@ -198,6 +198,15 @@ def _ats(url: str):
     if host.endswith(".recruitee.com") and host.count(".") == 2:
         return "recruitee", host
 
+    if host in ("careers.se.com","www.careers.se.com") and p.path.startswith(("/jobs","/Defaultlandingpage")):
+        return "schneider_egypt", None
+
+    if host == "etisalatmisr.taleo.net" or (host in ("www.eand.com","eand.com") and "/careers" in p.path):
+        return "etisalat_egypt", None
+
+    if host == "careers.indrive.com" and p.path.startswith("/vacancies"):
+        return "indrive_egypt", None
+
     if host == "orange.jobs" and (
         p.path.startswith("/gb/en/egypt-results")
         or p.path.startswith("/gb/en/africa-middle-east/egypt")
@@ -509,6 +518,18 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     kind, meta = _ats(url)
     p = urllib.parse.urlsplit(url)
     jobs = []
+
+    if kind == "schneider_egypt":
+        from app.telco_schneider_feeds import schneider_egypt
+        return _dedupe(schneider_egypt(name, _json, _job))
+
+    if kind == "etisalat_egypt":
+        from app.telco_schneider_feeds import etisalat_taleo_partial
+        return _dedupe(etisalat_taleo_partial(name, _bytes, _job))
+
+    if kind == "indrive_egypt":
+        from app.telco_schneider_feeds import indrive_egypt_partial
+        return _dedupe(indrive_egypt_partial(name, _bytes, _job))
 
     if kind == "orange_egypt":
         from app.employer_feeds import orange_egypt
@@ -1201,6 +1222,12 @@ def scan_company(company: dict):
         jobs = _board_jobs(
             name, url
         )
+
+        if kind in ("etisalat_egypt", "indrive_egypt"):
+            return (
+                jobs, "partial",
+                f"{len(jobs)} verified public listings; complete pagination not yet confirmed",
+            )
 
         if kind == "fawry_partial":
             return (
