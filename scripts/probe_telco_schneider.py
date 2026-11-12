@@ -34,3 +34,21 @@ def main():
    print("FEED",name,status,len(jobs),msg,[(x.get("title"),x.get("location")) for x in jobs[:5]],flush=True)
   except Exception as exc:print("FEED_ERROR",name,type(exc).__name__,str(exc)[:160],flush=True)
 if __name__=="__main__":main()
+
+def inspect_internal():
+ from app.custom_sources import _bytes
+ import re
+ urls={
+  "Schneider jobs":"https://careers.se.com/jobs?location=Egypt",
+  "Schneider Cairo":"https://careers.se.com/jobs?location=Cairo",
+  "Etisalat Taleo":"https://etisalatmisr.taleo.net/careersection/ex/joblist.ftl",
+ }
+ for name,url in urls.items():
+  try:
+   doc=_bytes(url).decode('utf-8','replace')
+   print("STRUCT",name,"length",len(doc),flush=True)
+   for marker in ("/api/","/api/v1","api.se.com","positions","jobList","jobResults","jobsearch","data-job","\"jobs\"","jobItems","JobPosting","jobId","totalCount","totalResults","eg","Egypt","/jobdetail.ftl","joblist.ajax"):
+    for m in list(re.finditer(re.escape(marker),doc,re.I))[:2]:
+     print("FIELD",name,marker,repr(doc[max(0,m.start()-140):m.start()+450]),flush=True)
+  except Exception as exc: print("STRUCT_ERROR",name,type(exc).__name__,str(exc)[:120],flush=True)
+if __name__=="__main__":inspect_internal()
