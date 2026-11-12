@@ -2,7 +2,9 @@
   "companies": {
     "https://jobs.vodafone.com/careers?domain=vodafone.com&start=0&location=Egypt&pid=563018698305416&sort_by=match&filter_include_remote=1&filter_include_relocation=0&filter_seniority=1%2C0": {
       "initialized": true,
-      "seen_ids": []
+      "seen_ids": [
+        "custom-vois-563018698334191"
+      ]
     },
     "https://jobs.lever.co/Bosta/?utm_source=chatgpt.com": {
       "initialized": true,
@@ -107,7 +109,7 @@
       "seen_ids": []
     },
     "https://www.fawry.com/jobs/?utm_source=chatgpt.com": {
-      "initialized": false,
+      "initialized": true,
       "seen_ids": []
     },
     "https://jobs.sw.siemens.com/business-structure/electronic-design-automation-eda/jobs/?location=Cairo&utm_source=chatgpt.com": {
