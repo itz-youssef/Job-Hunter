@@ -585,8 +585,8 @@ def _board_jobs(name: str, url: str) -> list[dict]:
 
     # Link Development's public Egypt careers list
     if kind == "linkdevelopment":
-        from app.public_feeds import link_development
-        return _dedupe(link_development(name, url, _bytes, _job))
+        from app.expanded_employers import link_development_ajax
+        return _dedupe(link_development_ajax(name, _bytes, _job))
 
     # Public Oracle Candidate Experience recruiting pages
     if kind == "oracle":
