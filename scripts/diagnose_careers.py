@@ -23,11 +23,28 @@ def run():
                 print(f"DIAG_START {name}", flush=True)
                 page = browser.new_page(viewport={"width": 1280, "height": 860})
                 events = []
-                page.on("response", lambda res: events.append(
-                    (res.status, res.url.split("?")[0])
-                ) if any(x in res.url.lower() for x in (
-                    "/api/", ".json", "/jobs", "/vacancies", "/career", "/requisition"
-                )) and len(events) < 80 else None)
+                def track(res):
+                    if any(x in res.url.lower() for x in (
+                        "/api/", ".json", "/jobs", "/vacancies", "/career", "/requisition"
+                    )) and len(events) < 80:
+                        events.append((res.status, res.url.split("?")[0]))
+                    if any(x in res.url.lower() for x in (
+                        "workable.com/api/v1/widget", "freshteams/v1/jobs",
+                        "/serverapp/api/requisition/"
+                    )) and res.ok:
+                        try:
+                            body = res.json()
+                            print("DIAG_API_SCHEMA", name, res.url.split("?")[0],
+                                  "top", list(body)[:15] if isinstance(body, dict) else "list",
+                                  "items", len(body) if isinstance(body, list) else "",
+                                  "first", str(
+                                      (body[0] if body else {}) if isinstance(body, list)
+                                      else {k: str(v)[:180] for k,v in body.items() if k in
+                                            ("jobs","results","data","count","total","items")}
+                                  )[:1400], flush=True)
+                        except Exception as exc:
+                            print("DIAG_API_ERROR", name, type(exc).__name__, flush=True)
+                page.on("response", track)
                 try:
                     response = page.goto(url, wait_until="domcontentloaded", timeout=22000)
                     page.wait_for_timeout(1500)
