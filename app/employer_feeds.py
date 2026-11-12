@@ -84,6 +84,7 @@ def paymob_recruitera(name, get_json, make_job):
     cursor = None
     used_cursors = set()
     expected = None
+    processed = 0
 
     for page in range(12):
         url = endpoint + (("?cursor=" + quote(cursor, safe="")) if cursor else "")
@@ -94,6 +95,7 @@ def paymob_recruitera(name, get_json, make_job):
         if not isinstance(meta, dict):
             raise ValueError("Paymob pagination metadata missing")
         rows = payload["data"]
+        processed += len(rows)
         try:
             count = int(meta["found"])
         except (KeyError, ValueError, TypeError) as exc:
@@ -129,7 +131,7 @@ def paymob_recruitera(name, get_json, make_job):
 
         next_cursor = meta.get("next_cursor")
         if not next_cursor:
-            if expected is not None and len(seen) < expected:
+            if expected is not None and processed < expected:
                 raise ValueError("Paymob stopped before all listed opportunities were read")
             return list(seen.values())
         if not isinstance(next_cursor, str) or next_cursor in used_cursors:
