@@ -192,6 +192,11 @@ def _ats(url: str):
     if host.endswith(".recruitee.com") and host.count(".") == 2:
         return "recruitee", host
 
+    if (host in ("origin.paymob.com", "paymobsolutions.com", "www.paymobsolutions.com")
+        and "/careers" in p.path) or (
+        host == "app.recruitera.ai" and "/careers/paymob" in p.path):
+        return "paymob_recruitera", None
+
     if host in ("www.ibm.com", "ibm.com") and "/careers/search" in p.path:
         return "ibm_egypt", None
 
@@ -467,6 +472,10 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     kind, meta = _ats(url)
     p = urllib.parse.urlsplit(url)
     jobs = []
+
+    if kind == "paymob_recruitera":
+        from app.employer_feeds import paymob_recruitera
+        return _dedupe(paymob_recruitera(name, _json, _job))
 
     if kind == "ibm_egypt":
         from app.employer_feeds import ibm_egypt
