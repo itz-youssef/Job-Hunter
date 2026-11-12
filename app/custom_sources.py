@@ -209,6 +209,19 @@ def _ats(url: str):
         host == "app.recruitera.ai" and "/careers/paymob" in p.path):
         return "paymob_recruitera", None
 
+    if (host in ("www.capgemini.com", "capgemini.com")
+        and p.path.startswith("/eg-en/careers")) or (
+        host == "careers.capgemini.com"
+        and p.path.startswith(("/search", "/job/"))
+    ):
+        return "capgemini_egypt", None
+
+    if host == "middleeastjobs.deloitte.com" and p.path.startswith("/careersME/SearchJobs"):
+        return "deloitte_partial", None
+
+    if host == "careers.dxc.com" and p.path in ("", "/", "/job-search-results/"):
+        return "dxc_egypt", None
+
     if host in ("www.ibm.com", "ibm.com") and "/careers/search" in p.path:
         return "ibm_egypt", None
 
@@ -492,6 +505,26 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     if kind == "paymob_recruitera":
         from app.employer_feeds import paymob_recruitera
         return _dedupe(paymob_recruitera(name, _json, _job))
+
+    if kind == "dxc_egypt":
+        from app.requested_employers import dxc_egypt
+        return _dedupe(dxc_egypt(name, _bytes, _job))
+
+    if kind == "deloitte_partial":
+        from app.requested_employers import deloitte_middle_east_partial
+
+        def parse_links(document):
+            parser = _PageParser()
+            parser.feed(document)
+            return [(href, label) for href, label in parser.links]
+
+        return _dedupe(deloitte_middle_east_partial(
+            name, url, _bytes, parse_links, _job
+        ))
+
+    if kind == "capgemini_egypt":
+        from app.requested_employers import capgemini_egypt_api
+        return _dedupe(capgemini_egypt_api(name, _json, _job))
 
     if kind == "ibm_egypt":
         from app.employer_feeds import ibm_egypt
@@ -1141,8 +1174,10 @@ def scan_company(company: dict):
 
         return (
             jobs,
-            "monitoring",
-            f"{len(jobs)} jobs parsed from {kind}",
+            "partial" if kind == "deloitte_partial" else "monitoring",
+            (f"{len(jobs)} Egypt postings on current Deloitte search page; "
+             "full pagination not yet verified") if kind == "deloitte_partial"
+            else f"{len(jobs)} jobs parsed from {kind}",
         )
 
     except urllib.error.HTTPError as exc:
