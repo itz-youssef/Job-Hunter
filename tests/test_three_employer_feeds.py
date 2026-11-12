@@ -67,3 +67,14 @@ def test_fawry_index_is_partial_and_preserves_dates():
     assert jobs[0]["published_at"]=="2025-11-03"
     assert jobs[0]["location"]=="Anywhere"
     assert jobs[0]["url"].startswith("https://www.fawry.com/")
+
+def test_vois_work_experience_programme_is_eligible():
+    from app.filters import relevance
+    job = cs._job(
+        "VOIS",
+        "VOIS EG Work Experience Programme 2027 - Technology",
+        "Egypt",
+        "https://jobs.vodafone.com/careers/job/563018698334191",
+    )
+    score, reasons = relevance(job, {})
+    assert score > 0, reasons
