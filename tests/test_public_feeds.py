@@ -1,5 +1,5 @@
 from app import custom_sources as cs
-from app.public_feeds import workable, link_development
+from app.public_feeds import workable, link_development, itworx
 
 
 def test_sumerge_detected_as_workable():
@@ -32,3 +32,23 @@ def test_link_development_only_explicit_egypt_roles():
     assert len(jobs)==1
     assert jobs[0]["location"]=="Egypt"
     assert jobs[0]["title"]=="Junior Software Engineer - Egypt"
+
+
+def test_itworx_egypt_only_with_requirements():
+    def post_json(endpoint, body):
+        assert endpoint.endswith("/GetAllRequisitions")
+        assert body["IsTokenPresent"] is False
+        return {"success": True, "TotalCount": 3, "AllRequisitions": [
+            {"ReqId": 123, "Position": "Junior Software Engineer", "Location": "Egypt",
+             "CareerLevel": "Entry Level", "Description": "Python and FastAPI",
+             "Requirements": "0-2 years experience", "EmploymentType": "Full Time"},
+            {"ReqId": 124, "Position": "Junior Software Engineer", "Location": "UAE",
+             "Description": "Python", "Requirements": "0-2 years"},
+            {"ReqId": 125, "Position": "Marketing Intern", "Location": "Egypt",
+             "Description": "marketing"},
+        ]}
+    assert cs._ats("https://careers.itworx.com/")[0] == "itworx"
+    jobs = itworx("ITWorx",post_json,cs._job)
+    assert len(jobs)==1
+    assert jobs[0]["url"]=="https://careers.itworx.com/job-details/123"
+    assert "0-2 years" in jobs[0]["description"]
