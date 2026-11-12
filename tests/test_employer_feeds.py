@@ -150,3 +150,34 @@ def test_orange_incomplete_page_fails_closed():
             lambda *args: {"refineSearch": {"totalHits": 6, "data": {"jobs": []}}},
             cs._job
         )
+
+
+
+def test_orange_ignores_untrusted_application_redirect():
+    from app.employer_feeds import orange_egypt
+    def api(_url, _body):
+        return {"refineSearch": {"totalHits": 1, "data": {"jobs": [{
+            "title": "Junior Software Engineer",
+            "jobId": "MNT-123456",
+            "country": "EGYPT", "city": "Cairo",
+            "description": "Python 0-2 years",
+            "applyUrl": "https://malicious.example/redirect",
+        }]}}}
+    jobs = orange_egypt("Orange Egypt", api, cs._job)
+    assert len(jobs) == 1
+    assert jobs[0]["url"].startswith("https://orange.jobs/gb/en/job/MNT-123456/")
+
+
+def test_paymob_invalid_record_does_not_fake_incomplete_pagination():
+    from app.employer_feeds import paymob_recruitera
+    data = {
+        "data": [
+            {"id": "123", "title": "Junior AI Engineer", "slug": "ai-123",
+             "location": "Cairo, Egypt"},
+            {"id": "124", "title": "Sales", "slug": ""}
+        ],
+        "meta": {"found": 2, "next_cursor": None},
+    }
+    jobs = paymob_recruitera("Paymob", lambda _: data, cs._job)
+    assert len(jobs) == 1
+    assert jobs[0]["id"] == "custom-paymob-123"
