@@ -52,3 +52,26 @@ def inspect_internal():
      print("FIELD",name,marker,repr(doc[max(0,m.start()-140):m.start()+450]),flush=True)
   except Exception as exc: print("STRUCT_ERROR",name,type(exc).__name__,str(exc)[:120],flush=True)
 if __name__=="__main__":inspect_internal()
+
+def probe_endpoints():
+ from app.custom_sources import _bytes,_json
+ import re
+ for page in (1,2):
+  for mode,url in (
+   ("Jibe",f"https://careers.se.com/api/jobs?location=Egypt&limit=50&page={page}"),
+   ("Jibe exact",f"https://careers.se.com/api/jobs?country=Egypt&limit=30&page={page}"),
+  ):
+   try:
+    data=_json(url)
+    print("JIBE",mode,page,"type",type(data).__name__,"keys",list(data)[:18] if isinstance(data,dict) else "list",
+          "sample",str(data)[:1900],flush=True)
+   except Exception as exc:print("JIBE_ERROR",mode,type(exc).__name__,str(exc)[:150],flush=True)
+ try:
+  h=_bytes("https://etisalatmisr.taleo.net/careersection/ex/joblist.ftl").decode("utf-8","replace")
+  for term in ("rlPager.currentPage","rlPager","requisitionList","requisitionno","jobDetail","requisition-title","reqList","requisitionDescription","Integration Senior"):
+   m=re.search(re.escape(term),h,re.I)
+   if m:print("TALEO_HTML",term,repr(h[max(0,m.start()-220):m.start()+950]),flush=True)
+  for p in re.findall(r'<tr[^>]*>.*?</tr>',h,re.I|re.S):
+   if "requisition" in p.lower() or "Job Posting" in p:print("TALEO_ROW",re.sub(r"\\s+"," ",p)[:1600],flush=True);break
+ except Exception as exc:print("TALEO_ERROR",type(exc).__name__,str(exc)[:130],flush=True)
+if __name__=="__main__":probe_endpoints()
