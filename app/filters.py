@@ -125,6 +125,8 @@ def relevance(job: dict, config: dict) -> tuple[int, list[str]]:
 
     early = bool(
         EARLY_TITLE.search(title)
+        or EARLY_TITLE.search(seniority)
+        or EARLY_TITLE.search(employment)
         or re.search(r"\b(?:internship|traineeship|apprenticeship)\b", employment, re.I)
         or EARLY_DESCRIPTION.search(description)
     )
