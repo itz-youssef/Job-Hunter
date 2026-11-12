@@ -109,22 +109,26 @@ def deloitte_middle_east_partial(name, url, get_bytes, parse_links, make_job):
     explicitly return *partial*, not a false complete-feed status.
     """
     from urllib.parse import urljoin, urlsplit
-    document = get_bytes(url).decode("utf-8", "replace")
     found = {}
-    for href, text in parse_links(document):
-        target = urljoin(url, href).split("#", 1)[0]
-        p = urlsplit(target)
-        if p.hostname != "middleeastjobs.deloitte.com":
-            continue
-        if not re.match(r"^/careersME/PipelineDetail/[^/]+/[0-9]+/?$", p.path, re.I):
-            continue
-        label = " ".join(str(text).split())
-        # Multi-country listings involving Egypt are eligible; other
-        # Middle East locations are rejected unless the job itself says Egypt.
-        if not re.search(r"\\b(?:egypt|cairo|giza|alexandria)\\b",
-                         label + " " + p.path.replace("-", " "), re.I):
-            continue
-        if not label:
-            continue
-        found[target] = make_job(name, label, "Egypt", target, "", "", "")
+    base = "https://middleeastjobs.deloitte.com/careersME/SearchJobs/"
+    for page in dict.fromkeys((url, base)):
+        try:
+            document = get_bytes(page).decode("utf-8", "replace")
+        except OSError:
+            if found:
+                continue
+            raise
+        for href, text in parse_links(document):
+            target = urljoin(page, href).split("#", 1)[0]
+            p = urlsplit(target)
+            if p.hostname != "middleeastjobs.deloitte.com":
+                continue
+            if not re.match(r"^/careersME/PipelineDetail/[^/]+/[0-9]+/?$", p.path, re.I):
+                continue
+            label = " ".join(str(text).split())
+            if not re.search(r"\\b(?:egypt|cairo|giza|alexandria)\\b",
+                             label + " " + p.path.replace("-", " "), re.I):
+                continue
+            if label:
+                found[target] = make_job(name, label, "Egypt", target, "", "", "")
     return list(found.values())
