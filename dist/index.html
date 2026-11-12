@@ -1,428 +1,188 @@
-
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-
-  <title>Job Hunter · Your next move starts here</title>
-    
-  <meta name="description"
-        content="Your personal command center for engineering careers in Egypt.">
-
-  <link rel="stylesheet" href="assets/style.css">
-  <script src="assets/unified.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f8fc">
+  <title>Job Hunter — Youssef's Workspace</title>
+  <meta name="description" content="Youssef's private workspace for Egypt's early-career software and AI opportunities.">
   <style>
-    .manage-link {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 14px;
-      margin: 4px 0;
-      border-radius: 9px;
-      color: inherit;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-    }
+:root{--bg:#f7f8fc;--panel:#fff;--border:#e7e9f1;--ink:#20243d;--muted:#858ba1;--purple:#6757eb;--soft:#f0edff;--green:#1d9968;--shadow:0 12px 34px rgba(39,40,83,.035)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);font:14px/1.5 Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink)}button,input,select{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}.layout{display:grid;grid-template-columns:244px minmax(0,1fr);min-height:100vh}.sidebar{position:sticky;top:0;height:100vh;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;padding:28px 18px 18px}.brand{font-size:22px;letter-spacing:-1px;font-weight:850;display:flex;align-items:center;gap:9px;padding:0 8px}.brand-icon{display:grid;place-items:center;width:30px;height:30px;background:var(--purple);color:white;border-radius:9px;font-size:21px;letter-spacing:0}.brand-dot{color:var(--purple)}.profile{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:12px;padding:11px;margin:30px 0 23px}.profile-avatar,.top-avatar{display:grid;place-items:center;background:#ede8ff;color:var(--purple);font-weight:850;border-radius:10px}.profile-avatar{height:36px;width:36px}.profile b{font-size:12px;display:block}.profile small{font-size:10px;color:var(--muted);display:block}.profile-live{margin-left:auto;color:var(--purple)}.nav-title{font-size:10px;letter-spacing:1.8px;color:#a1a6b7;font-weight:800;margin:12px 12px}.nav-title-second{margin-top:27px}nav,.secondary-links{display:flex;flex-direction:column;gap:5px}nav button,.secondary-links a{width:100%;border:0;background:transparent;text-align:left;padding:11px 13px;color:#697087;border-radius:9px;display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600;transition:background .15s,color .15s}nav button>span:first-child{font-size:20px;width:22px;line-height:1;text-align:center}nav button:hover,.secondary-links a:hover{background:#f8f7ff;color:var(--purple)}nav button.active{background:var(--soft);color:var(--purple);font-weight:800}.nav-count{margin-left:auto;color:var(--muted);font-size:11px}.secondary-links a{font-weight:500}.secondary-links a span{flex:1}.sidebar-bottom{margin-top:auto}.sidebar-tip{padding:17px;border-radius:14px;background:linear-gradient(140deg,#f0ebff,#faf9ff);overflow:hidden;position:relative}.sidebar-tip:after{content:"";width:100px;height:100px;border:20px solid rgba(103,87,235,.07);border-radius:50%;position:absolute;right:-45px;bottom:-55px}.sidebar-tip>span{font-size:9px;color:var(--purple);font-weight:850;letter-spacing:1.3px}.sidebar-tip strong{display:block;margin:12px 0;font-size:14px;line-height:1.4}.sidebar-tip p{font-size:11px;line-height:1.6;color:#8b89a4;margin:0;max-width:155px}.sidebar-foot{padding:20px 5px 3px;font-size:11px;color:#a5a9b5;display:flex;justify-content:space-between}.sidebar-foot span{color:var(--purple)}.workspace-shell{min-width:0;display:flex;flex-direction:column}.topbar{background:#fff;height:72px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 clamp(20px,4.4vw,72px);gap:16px}.breadcrumb{font-size:11px;font-weight:800;letter-spacing:1.2px;color:#afb3c2}.breadcrumb span{padding:0 9px;color:#d4d6df}.breadcrumb b{color:var(--ink);letter-spacing:0;font-size:12px}.top-actions{display:flex;align-items:center;gap:17px}.region-tag{background:#eff8f3;color:#238657;font-size:11px;padding:7px 11px;border-radius:20px;font-weight:800}.icon-button{border:1px solid var(--border);background:#fff;color:#6f7292;border-radius:10px;width:34px;height:34px;font-size:22px;line-height:1}.top-avatar{width:32px;height:32px}.main-content{width:min(1160px,100%);margin:0 auto;padding:36px clamp(20px,4vw,58px) 40px;flex:1}.footer{padding:22px clamp(20px,4vw,58px);font-size:10px;font-weight:900;letter-spacing:1.5px;color:#b8b9c5;border-top:1px solid var(--border);display:flex;justify-content:space-between}.footer span{font-weight:500;letter-spacing:0}.section-top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:25px}.eyebrow{display:block;text-transform:uppercase;color:var(--purple);font-size:10px;font-weight:850;letter-spacing:1.8px;margin-bottom:11px}.section-top h1{margin:0;font-size:clamp(26px,3vw,37px);line-height:1.15;letter-spacing:-1.5px;font-weight:850}.subtitle{margin:10px 0 0;color:var(--muted);font-size:13px}.btn{border:1px solid var(--border);border-radius:9px;padding:11px 16px;font-size:12px;font-weight:800;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:8px}.btn.primary{background:var(--purple);color:#fff;border-color:var(--purple);box-shadow:0 5px 12px #6757eb22}.btn.primary:hover{background:#5446d4}.btn.secondary{background:#fff;color:#52576f}.btn.danger{background:#fff0f2;color:#b73d4e;border-color:#ffe3e8}.btn:disabled{opacity:.5;cursor:not-allowed}.hero{display:grid;grid-template-columns:1fr minmax(170px,37%);align-items:center;min-height:215px;border-radius:19px;background:linear-gradient(117deg,#eeeafd,#f5f2ff);padding:32px;overflow:hidden;position:relative;margin-bottom:22px}.hero h2{font-size:clamp(24px,3vw,35px);line-height:1.1;letter-spacing:-1.1px;margin:0 0 12px}.hero p{color:#8b88a8;font-size:12px;max-width:370px;margin:0 0 20px}.hero-graphic{height:185px;width:185px;border:1px solid #d7d0fa;border-radius:50%;position:relative;margin:auto;display:grid;place-items:center}.hero-graphic:before,.hero-graphic:after{content:"";position:absolute;border:1px solid #d8d1fa;border-radius:50%;inset:18px}.hero-graphic:after{inset:38px}.hero-arrow{z-index:1;font-size:36px;width:77px;height:77px;display:grid;place-items:center;background:white;color:var(--purple);border-radius:20px;box-shadow:0 15px 33px #7365c02e}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:23px}.stat,.panel,.job-card,.company-card{background:var(--panel);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:13px}.stat{padding:19px}.stat>span{font-size:11px;color:#8d93a5}.stat strong{display:block;font-weight:800;font-size:29px;margin:5px 0 1px;letter-spacing:-1px}.stat small{font-size:10px;color:#a2a7b5}.panel{padding:22px;margin-bottom:19px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:17px}.panel-head h2{font-size:16px;margin:0;letter-spacing:-.3px}.link-button{border:0;background:transparent;font-size:12px;color:var(--purple);font-weight:800}.grid-two{display:grid;grid-template-columns:1.5fr 1fr;gap:16px}.mini-job{padding:15px 0;border-top:1px solid #eff0f5;display:flex;align-items:center;gap:12px}.mini-job:first-of-type{border-top:0}.job-logo{flex:0 0 auto;width:39px;height:39px;border-radius:11px;background:#f0ecff;color:var(--purple);display:grid;place-items:center;font-weight:850}.mini-job-content{min-width:0;flex:1}.mini-job-content strong{font-size:12px;display:block;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}.mini-job-content small{font-size:10px;color:#9ca1b0}.badge{display:inline-flex;align-items:center;gap:5px;background:#f1efff;color:#7468c5;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:800}.badge.green{background:#e8f8f0;color:#248960}.badge.orange{background:#fff4df;color:#ac771f}.badge.red{background:#fff0f0;color:#b65a5a}.badge.grey{background:#f2f3f6;color:#8a8e9a}.score{background:#f1eefe;color:var(--purple);font-size:11px;font-weight:850;border-radius:8px;padding:6px 9px}.filters{display:flex;gap:10px;margin:0 0 20px;flex-wrap:wrap}.search-box,.filter-select{border:1px solid var(--border);border-radius:10px;padding:12px 13px;background:white;color:#4a4f69}.search-box{flex:1;min-width:240px}.filter-select{min-width:150px}.cards{display:grid;gap:13px}.job-card{padding:19px}.job-card-top{display:flex;gap:13px;align-items:flex-start}.job-details{flex:1;min-width:0}.job-details h3{font-size:15px;line-height:1.35;margin:0 0 6px}.job-details p{margin:0;color:#999eaf;font-size:11px}.job-info{display:flex;gap:7px;flex-wrap:wrap;margin:15px 0}.job-desc{font-size:12px;color:#6a7084;margin:0 0 16px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.job-actions{border-top:1px solid #f0f1f5;padding-top:14px;display:flex;align-items:center;gap:9px;justify-content:space-between}.job-actions .right{display:flex;align-items:center;gap:8px}.plain-button{border:0;background:transparent;color:#5d6077;font-size:12px;font-weight:800}.plain-button.saved{color:var(--purple)}.company-card{padding:19px;display:flex;align-items:center;gap:13px}.company-name{flex:1;min-width:0}.company-name strong{display:block;margin-bottom:3px;font-size:13px}.company-name small{display:block;overflow-wrap:anywhere;color:#a0a4b2;font-size:10px}.company-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.empty{text-align:center;padding:46px 20px;color:#8c91a3}.empty strong{display:block;color:#2e3450;font-size:15px;margin-bottom:8px}.empty p{margin:0 auto 17px;max-width:420px;font-size:12px}.alert-card{display:flex;gap:14px;align-items:flex-start;padding:20px;border:1px solid var(--border);background:#fff;border-radius:13px;margin-bottom:13px}.alert-icon{border-radius:12px;background:#f0edff;color:var(--purple);width:45px;height:45px;display:grid;place-items:center;font-size:23px}.alert-content{flex:1}.alert-content strong{font-size:13px}.alert-content p{margin:6px 0;color:var(--muted);font-size:12px}.alert-content code{font-size:14px;font-weight:800;color:var(--ink)}.muted{color:var(--muted)}.loading{color:var(--muted);padding:30px}.tiny{font-size:11px;color:#a0a4b4}.inline-error{margin:9px 0;color:#b75261;font-size:11px}.table-list{display:grid;gap:10px}.source-line{display:flex;gap:12px;align-items:center;border-top:1px solid #eff0f5;padding:12px 0}.source-line:first-child{border-top:0}.source-line .source-name{flex:1;font-size:12px;font-weight:800}.source-line small{display:block;color:#999fac;font-size:10px;font-weight:500}.modal{border:1px solid var(--border);border-radius:18px;box-shadow:0 24px 80px #1b1a3d3d;padding:27px;width:min(470px,calc(100% - 28px));color:var(--ink)}.modal::backdrop{background:rgba(23,24,52,.45)}.modal-title{display:flex;align-items:flex-start;justify-content:space-between}.modal h2{margin:0;font-size:23px}.modal-close{font-size:23px;border:0;background:transparent;color:#8b8ea2}.modal p{font-size:12px}.modal label{display:block;font-size:12px;font-weight:800;margin:18px 0}.modal input{width:100%;margin-top:8px;border:1px solid #d9dce7;border-radius:9px;padding:12px;outline-color:var(--purple);font-weight:500}.form-note{color:#9096a8;font-size:11px}.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:23px}.toast{position:fixed;bottom:25px;right:25px;background:#212641;color:#fff;box-shadow:0 15px 40px #2224;padding:13px 17px;border-radius:10px;z-index:50;max-width:min(390px,calc(100vw - 30px));font-size:12px}.toast.error{background:#ae3e52}.toast[hidden]{display:none}@media(max-width:1050px){.stats{grid-template-columns:repeat(2,1fr)}.grid-two{grid-template-columns:1fr}}@media(max-width:750px){.layout{grid-template-columns:1fr}.sidebar{height:auto;position:static;padding:14px;border-right:0;border-bottom:1px solid var(--border)}.brand{font-size:18px}.profile,.nav-title,.secondary-links,.sidebar-bottom{display:none}nav{flex-direction:row;overflow-x:auto;margin-top:15px;gap:5px}nav button{min-width:max-content;padding:9px;font-size:11px}nav button>span:first-child{font-size:15px;width:auto}.topbar{height:52px;padding:0 18px}.breadcrumb{font-size:9px}.main-content{padding:23px 16px}.hero{grid-template-columns:1fr;min-height:0;padding:27px}.hero-graphic{display:none}.section-top h1{font-size:27px}.section-top{align-items:center}.stats{gap:9px}.stat{padding:14px}.stat strong{font-size:24px}.grid-two{grid-template-columns:1fr}.company-card{flex-wrap:wrap}.company-actions{width:100%;justify-content:flex-start}.footer{padding:15px}}
 
-    .manage-link:hover {
-      background: rgba(120,120,140,0.10);
-    }
-
-    .manage-link span:first-child {
-      font-size: 17px;
-    }
-
-    #source-feedback {
-      margin-top: 14px;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    #source-feedback.error {
-      color: #cf334d;
-    }
-
-    #source-feedback.success {
-      color: #21804e;
-    }
-
-    #source-feedback a {
-      color: inherit;
-      font-weight: 600;
-      text-decoration: underline;
-    }
   </style>
 </head>
-
 <body>
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-
-    <a class="brand" href="#overview">
-      <span class="brandmark">→</span>
-      jobhunter<span class="branddot">.</span>
-    </a>
-
-    <div class="workspace">
-      <span class="avatar">Y</span>
-
-      <div>
-        My workspace
-        <small>Personal job search</small>
+  <div class="layout">
+    <aside class="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#home" aria-label="Job Hunter home"><span class="brand-icon">↗</span><span>jobhunter<span class="brand-dot">.</span></span></a>
+      <div class="profile"><span class="profile-avatar">Y</span><span><b>Youssef's space</b><small>Personal career assistant</small></span><span class="profile-live" title="Your workspace">✦</span></div>
+      <p class="nav-title">WORKSPACE</p>
+      <nav id="navigation">
+        <button type="button" data-page="home"><span>⌂</span> Home</button>
+        <button type="button" data-page="jobs"><span>▤</span> Job Feed <b class="nav-count" id="nav-job-count">0</b></button>
+        <button type="button" data-page="saved"><span>♡</span> Saved Jobs</button>
+        <button type="button" data-page="companies"><span>▦</span> My Companies</button>
+        <button type="button" data-page="alerts"><span>♧</span> Email Alerts</button>
+      </nav>
+      <p class="nav-title nav-title-second">TOOLS</p>
+      <div class="secondary-links">
+        <a href="https://github.com/itz-youssef/Job-Hunter/actions" target="_blank" rel="noopener noreferrer">◷ <span>Monitoring Runs</span> ↗</a>
+        <a href="https://github.com/itz-youssef/Job-Hunter" target="_blank" rel="noopener noreferrer">⌘ <span>Source Code</span> ↗</a>
       </div>
-
-      <span class="chevron">⌄</span>
+      <div class="sidebar-bottom"><div class="sidebar-tip"><span>✦ CAREER COMPANION</span><strong>Better opportunities.<br>Less searching.</strong><p>Focused on your next career move in Egypt.</p></div><div class="sidebar-foot">Built for Youssef <span>✳</span></div></div>
+    </aside>
+    <div class="workspace-shell">
+      <header class="topbar"><div class="breadcrumb">YOUR WORKSPACE <span>/</span> <b id="page-label">Home</b></div><div class="top-actions"><span class="region-tag">◉ Egypt only</span><button class="icon-button" id="refresh-button" type="button" title="Refresh data" aria-label="Refresh data">↻</button><span class="top-avatar">Y</span></div></header>
+      <main id="main-content" class="main-content" tabindex="-1"><p class="loading">Loading your workspace…</p></main>
+      <footer class="footer">JOB HUNTER <span>Your next move starts here.</span></footer>
     </div>
-
-    <p class="navlabel">WORKSPACE</p>
-
-    <nav>
-      <button data-view="overview" class="active">
-        <span>◫</span> Overview
-      </button>
-
-      <button data-view="jobs">
-        <span>▤</span>
-        Job feed
-        <b id="feed-count">0</b>
-      </button>
-
-      <button data-view="saved">
-        <span>♡</span> Saved jobs
-      </button>
-
-      <button data-view="companies">
-        <span>▦</span> Companies
-      </button>
-
-      <!-- NEW: CONNECTED COMPANY MANAGEMENT -->
-      <a class="manage-link"
-         href="/manage-companies.html">
-        <span>⚙</span>
-        <span>Manage Companies</span>
-      </a>
-
-      <button data-view="alerts">
-        <span>♧</span> Email & preferences
-      </button>
-    </nav>
-
-    <div class="sidebar-bottom">
-
-      <div class="focus-card">
-        <span class="spark">✦</span>
-
-        <strong>
-          Your next chapter,<br>
-          one opportunity away.
-        </strong>
-
-        <p>
-          Less refreshing.<br>
-          More possibilities.
-        </p>
-      </div>
-
-      <button data-view="deploy" class="deploy-nav">
-        → Deployment guide
-      </button>
-
-      <small>Built for your next move.</small>
-
-    </div>
-  </aside>
-
-  <!-- MAIN APPLICATION -->
-  <div class="shell">
-
-    <header>
-      <div class="crumb">
-        Workspace
-        <span>/</span>
-        <b id="breadcrumb">Overview</b>
-      </div>
-
-      <div class="header-right">
-        <span class="region">◉ Egypt</span>
-        <span class="avatar small">Y</span>
-      </div>
-    </header>
-
-    <main>
-
-      <div id="preview-banner"
-           class="notice"
-           hidden>
-
-        <span>
-          <strong>Website preview</strong>
-          · Explore the dashboard.
-          Changes stay in this browser;
-          no background checks or emails run here.
-        </span>
-
-        <button data-view="deploy">
-          Deploy the full app →
-        </button>
-      </div>
-
-      <div id="main-content"></div>
-
-    </main>
-
-    <footer>
-      JOB HUNTER
-      <span>
-        Official sources. Clear signals.
-        Your next opportunity.
-      </span>
-    </footer>
-
   </div>
-
-  <div id="toast"
-       role="status"
-       aria-live="polite">
-  </div>
-
-  <!-- ADD COMPANY DIALOG -->
-  <dialog id="source-dialog">
-
-    <form id="source-form">
-
-      <div class="modal-head">
-
-        <div>
-          <p class="eyebrow">GROW YOUR WATCHLIST</p>
-          <h2>Add a company</h2>
-        </div>
-
-        <button type="button"
-                id="close-dialog"
-                aria-label="Close">
-          ×
-        </button>
-
-      </div>
-
-      <p>
-        Paste the official careers page.
-        We'll register it for automatic monitoring.
-      </p>
-
-      <label>
-        Company name
-
-        <input name="name"
-               required
-               maxlength="100"
-               placeholder="e.g. Siemens">
-      </label>
-
-      <label>
-        Careers website
-
-        <input name="url"
-               type="url"
-               required
-               placeholder="https://company.com/careers">
-      </label>
-
-      <!-- NEW: ADMIN AUTHENTICATION -->
-      <label>
-        Admin token
-
-        <input name="admin_token"
-               type="password"
-               required
-               autocomplete="off"
-               placeholder="Your private admin password">
-      </label>
-
-      <div class="hint">
-        Supported sources include Greenhouse,
-        Lever, Ashby and pages containing
-        JobPosting structured data.
-
-        Other careers websites may require
-        a custom adapter.
-      </div>
-
-      <button class="primary wide"
-              type="submit"
-              id="add-company-submit">
-
-        Add to watchlist
-        <span>→</span>
-
-      </button>
-
-      <div id="source-feedback"
-           role="status"
-           aria-live="polite">
-      </div>
-
-    </form>
-
-  </dialog>
-
-  <!-- ORIGINAL APPLICATION -->
-  <script src="assets/app.js" defer></script>
-
-  <!-- NEW: CONNECT ORIGINAL FORM TO API -->
+  <dialog id="company-dialog" class="modal"><form id="company-form"><div class="modal-title"><div><span class="eyebrow">YOUR WATCHLIST</span><h2>Add a company</h2></div><button type="button" class="modal-close" data-close-dialog aria-label="Close">×</button></div><p class="muted">Add an official careers page. Supported sites are monitored automatically after the next scan; others may need an adapter.</p><label>Company name<input name="name" required maxlength="100" placeholder="e.g. VOIS" autocomplete="organization"></label><label>Official careers URL<input name="url" required type="url" placeholder="https://company.com/careers"></label><label>Admin token<input name="admin_token" type="password" required autocomplete="off" placeholder="Your private admin password"></label><div class="form-note">Your admin token is only sent to the protected API. It is not stored in the browser.</div><div class="modal-footer"><button type="button" class="btn secondary" data-close-dialog>Cancel</button><button type="submit" class="btn primary" id="company-submit">Add to monitoring ↗</button></div></form></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   <script>
-    (function () {
-      const form = document.getElementById(
-        'source-form'
-      );
+(() => {
+  'use strict';
+  const REPO = 'https://github.com/itz-youssef/Job-Hunter';
+  const el = (selector) => document.querySelector(selector);
+  const esc = (x) => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const state = { snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyApiError:'', statusError:'', refreshedAt:null };
+  const names = {home:'Home', jobs:'Job Feed', saved:'Saved Jobs', companies:'My Companies', alerts:'Email Alerts'};
+  const where = (value) => String(value || '').toLowerCase().trim();
+  const getDate = (s) => {const d=new Date(s); return Number.isNaN(+d)?null:d;};
+  const prettyDate = (s) => {const d=getDate(s);return d?d.toLocaleString('en-EG',{dateStyle:'medium',timeStyle:'short'}):'Not yet available';};
+  const link = (raw) => { try {const u = new URL(String(raw));return u.protocol==='https:' ? u.href : '#';} catch{return '#';} };
+  const icon = (name) => esc((name || '?').trim().slice(0,1).toUpperCase());
+  const badge = (text, type='') => `<span class="badge ${type}">${esc(text)}</span>`;
+  const scoreOf = j => Number(j.match_score ?? j.relevance_score ?? j.score ?? j.relevance ?? 0) || 0;
+  const jobURL = j => link(j.apply_url || j.url || j.link || '');
+  const titleOf = j => j.title || j.position || j.job_title || 'Untitled position';
+  const companyOf = j => j.company || j.company_name || j.employer || 'Unknown company';
+  const locationOf = j => j.location || j.job_location || 'Location not provided';
+  const jobKey = j => String(j.id || j.job_id || j.url || `${companyOf(j)}-${titleOf(j)}-${locationOf(j)}`).toLowerCase();
+  const textOf = x => typeof x === 'string' ? x : (Array.isArray(x) ? x.join(' • ') : '');
+  const snippet = j => String(textOf(j.description || j.summary || j.details)).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').slice(0,230);
+  function readSaved(){try{state.saved=new Set(JSON.parse(localStorage.getItem('jh-saved-v2')||'[]'));}catch{state.saved=new Set();}}
+  function persistSaved(){try{localStorage.setItem('jh-saved-v2',JSON.stringify([...state.saved]));}catch{/* Storage can be disabled by privacy settings. */}}
+  function jobs(){const list=state.snapshot.jobs || state.snapshot.job_feed || [];return Array.isArray(list)?list.filter(j=>j && typeof j==='object'):[];}
+  function validJobs(){const seen=new Set();return jobs().filter(j=>{const id=jobKey(j);if(seen.has(id))return false;seen.add(id);return true;});}
+  function sourceItems(){const raw = state.snapshot.sources || state.snapshot.companies || [];return Array.isArray(raw)?raw:(raw && typeof raw==='object'?Object.values(raw):[]);}
+  function monitoredSources(){
+    const map=new Map();
+    for(const raw of sourceItems()){
+      const s=typeof raw==='string'?{name:raw}:raw;
+      if(!s || typeof s!=='object')continue;
+      const name=String(s.name || s.company || s.company_name || '').trim();
+      if(!name)continue;
+      const status=where(s.status || s.state || '');
+      const active=Boolean(s.enabled===true || ['ok','healthy','monitoring','active','success','working'].includes(status));
+      map.set(where(name),{name,active,status:status||'configured',last:s.last_checked || s.checked_at || s.last_scan || ''});
+    }
+    for(const c of state.companies){
+      const name=c.name || 'Custom company';
+      const scan=state.scans.find(x=>x.url===c.url);
+      map.set(where(name),{name,active:scan?.status==='monitoring',status:scan?.status||'pending',last:scan?.checked_at||'',url:c.url,message:scan?.message||'',matched_jobs:scan?.matched_jobs??0,managed:true});
+    }
+    return [...map.values()];
+  }
+  function matchesRole(j,role){const t=where(titleOf(j));if(role==='all')return true;const patterns={software:/software|back.?end|front.?end|full.?stack|developer|swe|sde/,ai:/\bai\b|artificial intelligence|genai|llm|nlp|machine learning|\bml\b|deep learning/,cv:/computer vision|image processing|perception|video analytics/,mlops:/mlops|ml platform|machine learning platform|ml infrastructure/};return patterns[role]?.test(t)||false;}
+  async function json(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);return r.json();}
+  async function companyApi(method='GET',payload,admin){
+    const r=await fetch('/api/companies',{method,cache:'no-store',headers:{'Content-Type':'application/json','x-admin-token':admin||''},body:method==='GET'?undefined:JSON.stringify(payload)});
+    const data=await r.json().catch(()=>({}));if(!r.ok)throw Error(data.error||`API error (${r.status})`);return data;
+  }
+  function toast(message, bad=false){const t=el('#toast');t.textContent=message;t.classList.toggle('error',bad);t.hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.hidden=true,5000);}
+  async function refresh(silent=false){
+    const res=await Promise.allSettled([json('/data.json'),companyApi(),json('/custom-status.json'),json('/notification-status.json')]);
+    if(res[0].status==='fulfilled')state.snapshot=res[0].value;
+    if(res[1].status==='fulfilled'){state.companies=res[1].value.companies||[];state.companyApiError='';}
+    else state.companyApiError='Company API unavailable — check Vercel deployment.';
+    if(res[2].status==='fulfilled'){state.scans=res[2].value.companies||[];state.statusError='';}
+    else state.statusError='No custom scanner report published yet.';
+    if(res[3].status==='fulfilled')state.alerts=res[3].value;
+    state.refreshedAt=new Date();
+    el('#nav-job-count').textContent=validJobs().length;
+    render();
+    if(!silent)toast(res[0].status==='fulfilled'?'Workspace updated':'Could not load job snapshot',res[0].status!=='fulfilled');
+  }
+  function go(page){state.page=names[page]?page:'home';location.hash=state.page;el('#page-label').textContent=names[state.page];document.querySelectorAll('nav button[data-page]').forEach(b=>{b.classList.toggle('active',b.dataset.page===state.page);b.setAttribute('aria-current',b.dataset.page===state.page?'page':'false');});render();}
+  function top(eyebrow,title,desc,action=''){return `<div class="section-top"><div><span class="eyebrow">${esc(eyebrow)}</span><h1>${esc(title)}</h1><p class="subtitle">${esc(desc)}</p></div>${action}</div>`;}
+  const stat=(label,note,value)=>`<article class="stat"><span>${esc(label)}</span><strong>${esc(value)}</strong><small>${esc(note)}</small></article>`;
+  const empty=(title,desc)=>`<div class="empty"><strong>${esc(title)}</strong><p>${esc(desc)}</p></div>`;
+  function jobMini(j){return `<div class="mini-job"><span class="job-logo">${icon(companyOf(j))}</span><div class="mini-job-content"><strong>${esc(titleOf(j))}</strong><small>${esc(companyOf(j))} · ${esc(locationOf(j))}</small></div><span class="score">${scoreOf(j)} pts</span></div>`;}
+  function home(){
+    const list=validJobs(), sources=monitoredSources(), active=sources.filter(s=>s.active).length, matching=list.filter(j=>scoreOf(j)>0).length;
+    const recent = list.slice().sort((a,b)=>(getDate(b.discovered_at||b.detected_at||b.published_at)||0)-(getDate(a.discovered_at||a.detected_at||a.published_at)||0)).slice(0,4);
+    const statuses=sources.slice(0,5);
+    return top('YOUR PERSONAL CAREER ASSISTANT','Hello, Youssef 👋','Here’s what your job radar is finding for you.',`<button class="btn primary" data-action="open-company">+ Add company</button>`)+
+    `<section class="hero"><div><span class="eyebrow">✦ YOUR JOB RADAR</span><h2>Your next move<br>starts here.</h2><p>Junior, entry-level and internship opportunities in software engineering, AI and computer vision — with Egypt in focus.</p><button class="btn secondary" data-navigate="jobs">Explore opportunities ↗</button></div><div class="hero-graphic" aria-hidden="true"><span class="hero-arrow">↗</span></div></section>`+
+    `<section class="stats">${stat('Matching opportunities','Matched in current snapshot',matching)}${stat('Monitored companies','Successful source checks',active)}${stat('Discovered jobs','Current published snapshot',list.length)}${stat('Saved jobs','Stored on this device',state.saved.size)}</section>`+
+    `<div class="grid-two"><section class="panel"><div class="panel-head"><h2>✦ Your latest opportunities</h2><button class="link-button" data-navigate="jobs">View all ↗</button></div>${recent.length?recent.map(jobMini).join(''):empty('No jobs yet','Run the monitoring workflow to populate your feed.')}</section><section class="panel"><div class="panel-head"><h2>Monitoring status</h2><button class="link-button" data-navigate="companies">Manage ↗</button></div><div class="table-list">${statuses.length?statuses.map(s=>`<div class="source-line"><span class="job-logo">${icon(s.name)}</span><div class="source-name">${esc(s.name)}<small>${esc(s.message||s.status)}</small></div>${badge(s.active?'Active':s.status==='pending'?'Pending':s.status,s.active?'green':s.status==='pending'?'orange':'grey')}</div>`).join(''):empty('No companies yet','Add a career page to start building your watchlist.')}</div></section></div>`+
+    `<section class="panel"><div class="panel-head"><h2>Alerts destination</h2><button class="link-button" data-navigate="alerts">Email settings ↗</button></div><p class="muted" style="margin:0">${state.alerts?.recipient_masked?`New job alerts target <strong>${esc(state.alerts.recipient_masked)}</strong>.`:'The alert email is not yet published to your dashboard.'} <span class="tiny">${esc(state.alerts?.configured?'SMTP configuration detected. Delivery not independently verified.':'See Email Alerts for setup and test links.')}</span></p></section>`;
+  }
+  function jobCard(j){
+    const id=jobKey(j), saved=state.saved.has(id), url=jobURL(j), score=scoreOf(j);
+    const reasons = textOf(j.match_reasons || j.reasons || []);
+    return `<article class="job-card"><div class="job-card-top"><span class="job-logo">${icon(companyOf(j))}</span><div class="job-details"><h3>${esc(titleOf(j))}</h3><p>${esc(companyOf(j))} · ${esc(locationOf(j))}</p></div><span class="score">${score} pts</span></div><div class="job-info">${badge(j.employment||j.job_type||'Role')}${badge('Egypt focus','green')}${j.published_at?badge('Published: '+prettyDate(j.published_at)) : ''}</div>${snippet(j)?`<p class="job-desc">${esc(snippet(j))}</p>`:''}${reasons?`<p class="tiny" style="margin-bottom:14px">${esc(reasons)}</p>`:''}<div class="job-actions"><button class="plain-button ${saved?'saved':''}" data-save="${esc(id)}">${saved?'♥ Saved':'♡ Save job'}</button><div class="right">${url==='#'?badge('No application link','grey'):`<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View job ↗</a>`}</div></div></article>`;
+  }
+  function jobsPage(saved=false){
+    const whole=validJobs();let list=saved?whole.filter(j=>state.saved.has(jobKey(j))):whole;
+    if(state.query){const q=where(state.query);list=list.filter(j=>where([titleOf(j),companyOf(j),locationOf(j),snippet(j)].join(' ')).includes(q));}
+    list=list.filter(j=>matchesRole(j,state.role)).sort((a,b)=>scoreOf(b)-scoreOf(a));
+    const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':'Your job feed',saved?'Jobs you’ve bookmarked on this device.':'Jobs published by your monitoring workflows, with fit scores.');
+    return h+`<div class="filters"><input class="search-box" id="job-search" type="search" placeholder="Search job title, company, skills…" value="${esc(state.query)}" aria-label="Search jobs"><select class="filter-select" id="role-filter" aria-label="Filter job family"><option value="all">All role families</option><option value="software" ${state.role==='software'?'selected':''}>Software</option><option value="ai" ${state.role==='ai'?'selected':''}>AI / ML</option><option value="cv" ${state.role==='cv'?'selected':''}>Computer Vision</option><option value="mlops" ${state.role==='mlops'?'selected':''}>MLOps</option></select></div><div class="cards" id="jobs-list">${list.length?list.map(jobCard).join(''):empty('No matching jobs','Try another search or refresh your monitoring results.')}</div><p class="tiny">${list.length} job(s) shown. Scores come from the backend filter — they are not acceptance probabilities.</p>`;
+  }
+  function companyCard(c){
+    const status=c.status||'pending', mapping={monitoring:['Monitoring','green'],needs_adapter:['Needs adapter','orange'],access_blocked:['Access blocked','red'],error:['Scan error','red'],pending:['Waiting for scan','orange'],configured:['Configured','grey']};
+    const [label,color]=mapping[status]||[status,status==='ok'?'green':'grey'];
+    const url=link(c.url||'');
+    return `<div class="company-card"><span class="job-logo">${icon(c.name)}</span><div class="company-name"><strong>${esc(c.name)}</strong><small>${esc(c.message || (c.managed?'Added to your watchlist':'Built-in monitored source'))}</small>${c.last?`<small>Last check: ${esc(prettyDate(c.last))}</small>`:''}</div><div class="company-actions">${badge(label,color)}${url!=='#'?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="btn secondary">Careers ↗</a>`:''}${c.managed?`<button class="btn danger" data-remove="${esc(c.url)}">Remove</button>`:''}</div></div>`;
+  }
+  function companiesPage(){
+    const all=monitoredSources(), active=all.filter(c=>c.active).length, pending=all.filter(c=>c.status==='pending').length;
+    return top('YOUR WATCHLIST','My companies','Every company and its actual monitoring status, together.',`<button class="btn primary" data-action="open-company">+ Add company</button>`)+
+      `<section class="stats">${stat('Tracked companies','Built-in + manually added',all.length)}${stat('Monitoring','Last scan succeeded',active)}${stat('Waiting for scan','Not checked yet',pending)}${stat('Custom career pages','Managed from this site',state.companies.length)}</section>`+
+      `${state.companyApiError?`<p class="inline-error">${esc(state.companyApiError)}</p>`:''}${state.statusError?`<p class="tiny">${esc(state.statusError)}</p>`:''}`+
+      `<div class="cards">${all.length?all.map(companyCard).join(''):empty('Build your company watchlist','Add a careers page to start checking for eligible roles.')}</div>`+
+      `<div class="panel" style="margin-top:19px"><div class="panel-head"><h2>How monitoring works</h2></div><p class="muted">Adding a company saves it in GitHub. GitHub Actions then scans the source. <strong>Monitoring</strong> only means the last extraction succeeded — not that matching jobs were found. Workday and protected sites may need an adapter.</p><a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/actions/workflows/custom-companies.yml">Check scanner runs ↗</a></div>`;
+  }
+  function alertsPage(){
+    const a=state.alerts, good=Boolean(a?.configured), email=a?.recipient_masked||'Not published yet', updated=a?.checked_at;
+    return top('NOTIFICATIONS','Email alerts','See where job alerts are configured to go, and test delivery.')+
+      `<div class="alert-card"><span class="alert-icon">✉</span><div class="alert-content"><strong>Notifications are addressed to</strong><p><code>${esc(email)}</code></p><p>${a?'Masked from your GitHub Actions ALERT_EMAIL secret.':'Publish the notification status from GitHub Actions to display the masked destination.'}</p></div>${badge(good?'Configured':'Not confirmed',good?'green':'orange')}</div>`+
+      `<div class="alert-card"><span class="alert-icon">◈</span><div class="alert-content"><strong>SMTP configuration</strong><p>${good?'All four SMTP secrets were present when this status was generated.':'SMTP setup has not been confirmed in the published status.'}</p><p class="tiny">${updated?'Last checked: '+esc(prettyDate(updated)):'No published check yet.'} This does not prove that email was delivered.</p></div></div>`+
+      `<section class="panel"><div class="panel-head"><h2>Test your email delivery</h2></div><p class="muted">The only reliable test is to send a real email through your Test Email GitHub Actions workflow, then check the inbox.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn primary" target="_blank" rel="noopener noreferrer" href="${REPO}/actions/workflows/test-email.yml">Run Test Email ↗</a><a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/settings/secrets/actions">GitHub Actions secrets ↗</a></div></section>`+
+      `<section class="panel"><div class="panel-head"><h2>Matching preferences</h2></div><div class="job-info">${badge('Egypt only','green')}${badge('Junior / Entry')}${badge('Internships')}${badge('Software Engineering')}${badge('AI / ML')}${badge('Computer Vision')}${badge('MLOps')}</div><p class="tiny">These are the target rules in your Python filtering file, not editable settings on this static dashboard.</p></section>`;
+  }
+  function render(){
+    const root=el('#main-content');if(!root)return;
+    root.innerHTML=state.page==='home'?home():state.page==='jobs'?jobsPage():state.page==='saved'?jobsPage(true):state.page==='companies'?companiesPage():alertsPage();
+  }
+  async function removeCompany(url){const token=window.prompt('Enter your admin token to remove this company:');if(!token)return;if(!confirm('Remove this company from monitoring?'))return;try{await companyApi('DELETE',{url},token);toast('Company removed from monitoring');await refresh(true);}catch(e){toast(e.message,true);}}
+  function setup(){
+    readSaved();
+    document.querySelectorAll('nav button[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
+    window.addEventListener('hashchange',()=>go(location.hash.replace('#','')));
+    el('#refresh-button').addEventListener('click',()=>refresh());
+    document.addEventListener('click',event=>{
+      const navigation=event.target.closest('[data-navigate]');if(navigation){go(navigation.dataset.navigate);return;}
+      if(event.target.closest('[data-action="open-company"]')){el('#company-dialog').showModal();return;}
+      const close=event.target.closest('[data-close-dialog]');if(close){el('#company-dialog').close();return;}
+      const saved=event.target.closest('[data-save]');if(saved){const key=saved.dataset.save;state.saved.has(key)?state.saved.delete(key):state.saved.add(key);persistSaved();render();return;}
+      const remove=event.target.closest('[data-remove]');if(remove){removeCompany(remove.dataset.remove);return;}
+    });
+    document.addEventListener('input',event=>{if(event.target.id==='job-search'){state.query=event.target.value;const at=event.target.selectionStart;render();const field=el('#job-search');field?.focus();try{field?.setSelectionRange(at,at);}catch{}}});
+    document.addEventListener('change',event=>{if(event.target.id==='role-filter'){state.role=event.target.value;render();}});
+    el('#company-form').addEventListener('submit',async event=>{
+      event.preventDefault();const form=event.currentTarget;const f=new FormData(form);const button=el('#company-submit');button.disabled=true;
+      try{await companyApi('POST',{name:String(f.get('name')||'').trim(),url:String(f.get('url')||'').trim()},String(f.get('admin_token')||''));form.reset();el('#company-dialog').close();toast('Company saved! It will be scanned by GitHub Actions.');await refresh(true);go('companies');}
+      catch(e){toast(e.message,true);}finally{button.disabled=false;}
+    });
+    go(location.hash.replace('#','')||'home');refresh(true);setInterval(()=>refresh(true),60000);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
+})();
 
-      const dialog = document.getElementById(
-        'source-dialog'
-      );
-
-      const feedback = document.getElementById(
-        'source-feedback'
-      );
-
-      const submitButton = document.getElementById(
-        'add-company-submit'
-      );
-
-      document.getElementById(
-        'close-dialog'
-      ).addEventListener('click', function () {
-        dialog.close();
-      });
-
-      function showFeedback(message, isError) {
-        feedback.textContent = message;
-        feedback.className = isError
-          ? 'error'
-          : 'success';
-      }
-
-      // Capture the submit event before the
-      // original app.js local-only form handler.
-      document.addEventListener(
-        'submit',
-        async function (event) {
-
-          if (event.target !== form) {
-            return;
-          }
-
-          event.preventDefault();
-          event.stopImmediatePropagation();
-
-          if (submitButton.disabled) {
-            return;
-          }
-
-          const data = new FormData(form);
-
-          const name = String(
-            data.get('name') || ''
-          ).trim();
-
-          const url = String(
-            data.get('url') || ''
-          ).trim();
-
-          const token = String(
-            data.get('admin_token') || ''
-          );
-
-          if (!name || !url || !token) {
-            showFeedback(
-              'Please complete all fields.',
-              true
-            );
-            return;
-          }
-
-          submitButton.disabled = true;
-          showFeedback('Saving company...', false);
-
-          try {
-            const response = await fetch(
-              '/api/companies',
-              {
-                method: 'POST',
-
-                headers: {
-                  'Content-Type': 'application/json',
-                  'x-admin-token': token
-                },
-
-                body: JSON.stringify({
-                  name: name,
-                  url: url
-                })
-              }
-            );
-
-            const result = await response.json();
-
-            if (!response.ok) {
-              throw new Error(
-                result.error ||
-                'Unable to save company'
-              );
-            }
-
-            showFeedback(
-              'Company saved successfully! ' +
-              'It will be checked by the custom ' +
-              'careers monitoring workflow.',
-              false
-            );
-
-            // Clear company fields after saving.
-            form.elements.name.value = '';
-            form.elements.url.value = '';
-
-            // Do not store the admin token.
-            form.elements.admin_token.value = '';
-
-            // Provide a link to the monitoring page.
-            const statusLink = document.createElement(
-              'a'
-            );
-
-            statusLink.href =
-              '/manage-companies.html';
-
-            statusLink.textContent =
-              ' View monitoring status';
-
-            feedback.appendChild(
-              document.createTextNode(' ')
-            );
-
-            feedback.appendChild(statusLink);
-
-          } catch (error) {
-
-            showFeedback(
-              'Error: ' + error.message,
-              true
-            );
-
-          } finally {
-
-            submitButton.disabled = false;
-
-          }
-
-        },
-        true
-      );
-
-    })();
   </script>
-
 </body>
 </html>
