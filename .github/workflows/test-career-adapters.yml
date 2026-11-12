@@ -42,6 +42,8 @@ jobs:
           sources = [
               ("Nokia", "https://fa-evmr-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs"),
               ("Chatbase", "https://jobs.ashbyhq.com/chatbase"),
+              ("Sumerge", "https://www.sumerge.com/careers/job-openings"),
+              ("Link Development", "https://linkdevelopment.com/careers/opportunities/"),
           ]
           for name, url in sources:
               jobs, status, reason = scan_company({"name": name, "url": url})
