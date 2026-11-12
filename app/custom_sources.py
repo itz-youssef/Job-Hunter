@@ -936,6 +936,22 @@ def _discover(name: str, url: str):
         parser = _PageParser()
         parser.feed(content)
 
+        # Some careers pages embed an ATS URL in a script rather than an
+        # ordinary anchor. Only recognize known, public ATS host patterns.
+        normalized_html = html.unescape(content).replace("\\/", "/")
+        for candidate in re.findall(
+            r'https://(?:jobs\.ashbyhq\.com|jobs\.lever\.co|boards\.greenhouse\.io|'
+            r'job-boards\.greenhouse\.io|apply\.workable\.com|'
+            r'[A-Za-z0-9-]+\.recruitee\.com|'
+            r'[A-Za-z0-9-]+\.bamboohr\.com|'
+            r'[A-Za-z0-9-]+\.breezy\.hr)/[^\s"\x27<>\\]+',
+            normalized_html,
+            re.I,
+        ):
+            candidate = candidate.rstrip(".,);")
+            if _ats(candidate)[0] != "html" and candidate not in board_links:
+                board_links.append(candidate)
+
         for href, label in parser.links:
 
             target = urllib.parse.urljoin(
