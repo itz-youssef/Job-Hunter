@@ -19,6 +19,24 @@ def main():
                     u=response.url
                     if any(t in u.lower() for t in ("/api/",".json","searchjobs","joblist","jobsearch","/jobs","/search")) and len(api)<25:
                         api.append((response.status,response.request.method,u.split("?")[0]))
+                    if response.ok and any(host in u for host in (
+                        "wp-json/freshteams/v1/jobs",
+                        "cg-jobstream-api.azurewebsites.net/api/job-search",
+                        "jobsapi-internal.m-cloud.io/api/job",
+                        "joblist.ajax"
+                    )):
+                        try:
+                            body = response.json()
+                            info = ({"type":"list","count":len(body),"first":str(body[0])[:1100]}
+                                    if isinstance(body,list) else
+                                    {"type":"dict","keys":list(body)[:18],
+                                     "first":str(body)[:1600]})
+                            print("API_SCHEMA",name,response.request.method,
+                                  response.url[:400], "request",
+                                  str(response.request.post_data)[:300],
+                                  "data",info,flush=True)
+                        except Exception as exc:
+                            print("API_SCHEMA_ERROR",name,type(exc).__name__,flush=True)
                 page.on("response",handle)
                 try:
                     res=page.goto(url,wait_until="domcontentloaded",timeout=20000)
