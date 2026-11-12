@@ -47,6 +47,7 @@ jobs:
               ("Chatbase", "https://jobs.ashbyhq.com/chatbase"),
               ("Sumerge", "https://www.sumerge.com/careers/job-openings"),
               ("Link Development", "https://linkdevelopment.com/careers/opportunities/"),
+              ("ITWorx", "https://careers.itworx.com/"),
           ]
           for name, url in sources:
               jobs, status, reason = scan_company({"name": name, "url": url})
