@@ -10,6 +10,7 @@ async def main():
         browser=await pw.chromium.launch()
         page=await browser.new_page()
         requests=[]
+        tasks=[]
         def handle(request):
             p=urlsplit(request.url)
             if p.hostname=="prod-search-api.jobsyn.org" and p.path=="/api/v1/solr/search":
@@ -21,11 +22,14 @@ async def main():
                     safe_names=("origin","referer","host","sec-fetch-site","sec-fetch-mode","sec-fetch-dest","accept")
                     print("SIEMENS_CHROME_WIRE_HEADERS",json.dumps({k:v for k,v in all_headers.items() if k in safe_names}),flush=True)
                     print("SIEMENS_HEADER_NAMES",sorted(all_headers.keys()),flush=True)
-                asyncio.create_task(inspect_real_headers(request))
+                tasks.append(asyncio.create_task(inspect_real_headers(request)))
                 print("SIEMENS_PUBLIC_REQUEST_HEADERS",json.dumps({k:v for k,v in request.headers.items() if k.lower() in ("accept","origin","referer","user-agent")}),flush=True)
         page.on("request",handle)
         await page.goto(url,wait_until="domcontentloaded",timeout=25000)
         await page.wait_for_timeout(4800)
+        if tasks:
+            results=await asyncio.gather(*tasks,return_exceptions=True)
+            print("SIEMENS_TASK_ERRORS",[str(x) for x in results if isinstance(x,Exception)],flush=True)
         print("SIEMENS_PUBLIC_SEARCH_QUERIES",json.dumps(requests,ensure_ascii=False),flush=True)
         from urllib.request import Request, urlopen
         from urllib.error import HTTPError
@@ -35,7 +39,7 @@ async def main():
         for variant in ("plain","referer-only","browser-ua-referer","referer","browser-ua"):
             headers={"User-Agent":"JobHunterCareersMonitor/2.0"}
             if variant in ("referer-only","browser-ua-referer","referer","browser-ua"):
-                headers["Referer"]=url
+                headers["Referer"]="https://jobs.sw.siemens.com/"
                 if variant in ("referer","browser-ua"):
                     headers["Origin"]="https://jobs.sw.siemens.com"
                 headers["Accept"]="application/json,text/plain,*/*"
