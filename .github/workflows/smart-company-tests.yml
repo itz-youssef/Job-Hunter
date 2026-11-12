@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "app/custom_sources.py"
+      - "app/sources.py"
       - "app/requested_employers.py"
       - "app/expanded_employers.py"
       - "app/telco_schneider_feeds.py"
@@ -16,10 +17,12 @@ on:
       - "tests/test_smart_careers.py"
       - "tests/test_requested_employers.py"
       - "tests/test_expanded_employers.py"
-      - "tests/test_telco_schneider_feeds.py"
+      - "tests/test_telco_schneider_feeds.py tests/test_workday_posted_date.py"
       - "tests/test_three_employer_feeds.py"
       - "tests/test_early_career_matching.py"
       - "tests/test_management_api.cjs"
+      - "tests/test_feed_ui.cjs"
+      - "tests/test_workday_posted_date.py"
       - ".github/workflows/smart-company-tests.yml"
   workflow_dispatch:
 
@@ -51,4 +54,4 @@ jobs:
         with:
           node-version: '20'
       - name: Test management API and browser scripts
-        run: node --test tests/test_management_api.cjs
+        run: node --test tests/test_management_api.cjs tests/test_feed_ui.cjs
