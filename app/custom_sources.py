@@ -170,6 +170,15 @@ def _ats(url: str):
     host = (p.hostname or "").lower()
     seg = [s for s in p.path.split("/") if s]
 
+    if host in ("sumerge.com", "www.sumerge.com") and p.path.startswith("/careers"):
+        return "workable", "sumerge-1"
+
+    if host == "apply.workable.com" and seg:
+        return "workable", seg[0]
+
+    if host in ("linkdevelopment.com", "www.linkdevelopment.com") and p.path.startswith("/careers/opportunities"):
+        return "linkdevelopment", None
+
     from app.oracle_adapter import supports as oracle_supports
     if oracle_supports(url):
         return "oracle", None
@@ -424,6 +433,16 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     kind, meta = _ats(url)
     p = urllib.parse.urlsplit(url)
     jobs = []
+
+    # Public Workable careers widget (also powers Sumerge)
+    if kind == "workable":
+        from app.public_feeds import workable
+        return _dedupe(workable(name, meta, _json, _bytes, _structured_jobs, _job))
+
+    # Link Development's public Egypt careers list
+    if kind == "linkdevelopment":
+        from app.public_feeds import link_development
+        return _dedupe(link_development(name, url, _bytes, _job))
 
     # Public Oracle Candidate Experience recruiting pages
     if kind == "oracle":
