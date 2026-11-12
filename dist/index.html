@@ -44,6 +44,9 @@
 (() => {
   'use strict';
   const REPO = 'https://github.com/itz-youssef/Job-Hunter';
+  const IS_CLOUDFLARE = location.hostname.endsWith('.workers.dev');
+  const RAW = 'https://raw.githubusercontent.com/itz-youssef/Job-Hunter/main/';
+  const liveFile = name => RAW + name + '?v=' + Date.now();
   const el = (selector) => document.querySelector(selector);
   const esc = (x) => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const state = { snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'' };
@@ -88,15 +91,21 @@
   function matchesRole(j,role){const t=where(titleOf(j));if(role==='all')return true;const patterns={software:/software|back.?end|front.?end|full.?stack|developer|swe|sde/,ai:/\bai\b|artificial intelligence|genai|llm|nlp|machine learning|\bml\b|deep learning/,cv:/computer vision|image processing|perception|video analytics/,mlops:/mlops|ml platform|machine learning platform|ml infrastructure/};return patterns[role]?.test(t)||false;}
   async function json(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);return r.json();}
   async function companyApi(method='GET',payload,admin){
+    if(IS_CLOUDFLARE)throw Error('Cloudflare preview is read-only. Manage companies on Vercel or GitHub.');
     const r=await fetch('/api/companies',{method,cache:'no-store',headers:{'Content-Type':'application/json','x-admin-token':admin||''},body:method==='GET'?undefined:JSON.stringify(payload)});
     const data=await r.json().catch(()=>({}));if(!r.ok)throw Error(data.error||`API error (${r.status})`);return data;
   }
   function toast(message, bad=false){const t=el('#toast');t.textContent=message;t.classList.toggle('error',bad);t.hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.hidden=true,5000);}
   async function refresh(silent=false){
-    const res=await Promise.allSettled([json('/data.json'),companyApi(),json('/custom-status.json'),json('/notification-status.json')]);
+    const res=await Promise.allSettled(IS_CLOUDFLARE
+      ? [json(liveFile('dist/data.json')),
+         json(liveFile('companies.json')).then(companies=>({companies})),
+         json(liveFile('dist/custom-status.json')),
+         json(liveFile('dist/notification-status.json'))]
+      : [json('/data.json'),companyApi(),json('/custom-status.json'),json('/notification-status.json')]);
     if(res[0].status==='fulfilled')state.snapshot=res[0].value;
     if(res[1].status==='fulfilled'){state.companies=res[1].value.companies||[];state.companyApiError='';}
-    else state.companyApiError='Company API unavailable — check Vercel deployment.';
+    else state.companyApiError=IS_CLOUDFLARE?'GitHub watchlist could not be loaded.':'Company API unavailable — check Vercel deployment.';
     if(res[2].status==='fulfilled'){state.scans=res[2].value.companies||[];state.statusError='';}
     else state.statusError='No custom scanner report published yet.';
     if(res[3].status==='fulfilled')state.alerts=res[3].value;
@@ -137,7 +146,7 @@
     const [label,color]=mapping[status]||[status,status==='ok'?'green':'grey'];
     const url=link(c.url||'');
     const pin=c.pinned===true;
-    const actions=c.managed?(
+    const actions=c.managed&&!IS_CLOUDFLARE?(
       `<button class="btn secondary" title="${pin?'Unpin':'Pin'} company" data-pin="${esc(c.url)}" data-pinned="${pin?'true':'false'}">${pin?'📌 Pinned':'📍 Pin'}</button>`+
       `<button class="btn secondary" data-edit-name="${esc(c.url)}">✎ Edit name</button>`+
       `<button class="btn danger" data-remove="${esc(c.url)}">Remove</button>`
@@ -146,8 +155,9 @@
   }
   function companiesPage(){
     const all=monitoredSources(), active=all.filter(c=>c.active).length, pending=all.filter(c=>c.status==='pending').length;
-    return top('YOUR WATCHLIST','My companies','Every company and its actual monitoring status, together.',`<button class="btn primary" data-action="open-company">+ Add company</button>`)+
+    return top('YOUR WATCHLIST','My companies','Every company and its actual monitoring status, together.',IS_CLOUDFLARE?'':`<button class="btn primary" data-action="open-company">+ Add company</button>`)+
       `<section class="stats">${stat('Tracked companies','Built-in + manually added',all.length)}${stat('Monitoring','Last scan succeeded',active)}${stat('Waiting for scan','Not checked yet',pending)}${stat('Custom career pages','Managed from this site',state.companies.length)}</section>`+
+      `${IS_CLOUDFLARE?'<p class="tiny">Cloudflare preview reads the latest public GitHub data. Editing is disabled here.</p>':''}`+
       `${state.companyApiError?`<p class="inline-error">${esc(state.companyApiError)}</p>`:''}${state.statusError?`<p class="tiny">${esc(state.statusError)}</p>`:''}`+
       `<div class="cards">${all.length?all.map(companyCard).join(''):empty('Build your company watchlist','Add a careers page to start checking for eligible roles.')}</div>`+
       `<div class="panel" style="margin-top:19px"><div class="panel-head"><h2>How monitoring works</h2></div><p class="muted">Adding a company saves it in GitHub. GitHub Actions then scans the source. <strong>Monitoring</strong> only means the last extraction succeeded — not that matching jobs were found. Workday and protected sites may need an adapter.</p><a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/actions/workflows/custom-companies.yml">Check scanner runs ↗</a></div>`;
