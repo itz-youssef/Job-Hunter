@@ -247,7 +247,7 @@ def run(
 
     companies = [
         c
-        for c in registry[:100]
+        for c in registry
         if (
             isinstance(c, dict)
             and c.get("name")
