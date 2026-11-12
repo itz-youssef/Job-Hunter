@@ -6,6 +6,7 @@ on:
       - "app/custom_sources.py"
       - "app/oracle_adapter.py"
       - "tests/test_custom_discovery.py"
+      - "scripts/diagnose_careers.py"
       - ".github/workflows/test-career-adapters.yml"
   workflow_dispatch:
 
@@ -44,3 +45,11 @@ jobs:
                   sample = jobs[0]
                   print(f"SAMPLE {name}: {sample['title']} ({sample['location']})")
           PY
+      - name: Install browser diagnostics
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Inspect dynamic careers pages (read-only, diagnostic)
+        continue-on-error: true
+        timeout-minutes: 4
+        run: python scripts/diagnose_careers.py
