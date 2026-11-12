@@ -1,6 +1,6 @@
 {
   "mode": "snapshot",
-  "generated_at": "2026-11-12T15:16:15.870325+00:00",
+  "generated_at": "2026-11-12T15:40:58.606455+00:00",
   "sources": [
     {
       "id": 1,
@@ -156,7 +156,223 @@
       "status": "monitoring",
       "message": "1 jobs parsed",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T15:16:15.853871+00:00"
+      "checked_at": "2026-11-12T15:40:40.475921+00:00"
+    },
+    {
+      "name": "Bosta",
+      "url": "https://jobs.lever.co/Bosta/?utm_source=chatgpt.com",
+      "status": "monitoring",
+      "message": "94 jobs parsed",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:42.089478+00:00"
+    },
+    {
+      "name": "Thndr",
+      "url": "https://jobs.ashbyhq.com/thndr?",
+      "status": "monitoring",
+      "message": "17 jobs parsed",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:42.186320+00:00"
+    },
+    {
+      "name": "Klivvr",
+      "url": "https://jobs.lever.co/klivvr?utm_source=chatgpt.com",
+      "status": "monitoring",
+      "message": "7 jobs parsed",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:42.934909+00:00"
+    },
+    {
+      "name": "Emergence",
+      "url": "https://jobs.ashbyhq.com/emergence?utm_source=chatgpt.com",
+      "status": "monitoring",
+      "message": "5 jobs parsed",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:42.967767+00:00"
+    },
+    {
+      "name": "Lean Technologies",
+      "url": "https://jobs.ashbyhq.com/LeanTech?utm_source=chatgpt.com",
+      "status": "monitoring",
+      "message": "8 jobs parsed",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:43.008925+00:00"
+    },
+    {
+      "name": "Chatbase",
+      "url": "https://jobs.ashbyhq.com/chatbase?utm_source=chatgpt.com",
+      "status": "monitoring",
+      "message": "13 jobs parsed",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:43.051282+00:00"
+    },
+    {
+      "name": "Lua Global",
+      "url": "https://jobs.ashbyhq.com/lua?utm_source=chatgpt.com",
+      "status": "monitoring",
+      "message": "0 jobs parsed",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:43.087142+00:00"
+    },
+    {
+      "name": "IBM",
+      "url": "https://www.ibm.com/careers/search?",
+      "status": "needs_adapter",
+      "message": "No JobPosting data found. Custom adapter required.",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:43.330980+00:00"
+    },
+    {
+      "name": "Schneider Electric",
+      "url": "https://careers.se.com/Defaultlandingpage/jobs/categories?lang=en-US&utm_source=chatgpt.com",
+      "status": "needs_adapter",
+      "message": "No JobPosting data found. Custom adapter required.",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:43.689270+00:00"
+    },
+    {
+      "name": "Ericsson",
+      "url": "https://jobs.ericsson.com/careers?utm_source=chatgpt.com&query=Software+Engineer&start=0&location=egypt&pid=563121777515649&sort_by=relevance&filter_include_remote=1&filter_include_relocation=0",
+      "status": "monitoring",
+      "message": "1 jobs parsed",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:44.306761+00:00"
+    },
+    {
+      "name": "Capgemini Egypt",
+      "url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com",
+      "status": "needs_adapter",
+      "message": "No JobPosting data found. Custom adapter required.",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:45.299964+00:00"
+    },
+    {
+      "name": "DXC Technology",
+      "url": "https://careers.dxc.com/?utm_source=chatgpt.com",
+      "status": "needs_adapter",
+      "message": "No JobPosting data found. Custom adapter required.",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:45.570359+00:00"
+    },
+    {
+      "name": "Luxoft Egypt",
+      "url": "https://career.luxoft.com/locations/egypt?utm_source=chatgpt.com",
+      "status": "needs_adapter",
+      "message": "No JobPosting data found. Custom adapter required.",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:46.541924+00:00"
+    },
+    {
+      "name": "Nokia",
+      "url": "https://www.nokia.com/careers/?utm_source=chatgpt.com",
+      "status": "needs_adapter",
+      "message": "No JobPosting data found. Custom adapter required.",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:47.472594+00:00"
+    },
+    {
+      "name": "SAP",
+      "url": "https://jobs.sap.com/en/jobs/?location=Cairo&utm_source=chatgpt.com",
+      "status": "needs_adapter",
+      "message": "No JobPosting data found. Custom adapter required.",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:47.917360+00:00"
+    },
+    {
+      "name": "Orange Egypt",
+      "url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com",
+      "status": "needs_adapter",
+      "message": "No JobPosting data found. Custom adapter required.",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:49.037528+00:00"
+    },
+    {
+      "name": "e& / Etisalat",
+      "url": "https://www.eand.com/ar/careers/careers.html?utm_source=chatgpt.com",
+      "status": "needs_adapter",
+      "message": "No JobPosting data found. Custom adapter required.",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:50.009284+00:00"
+    },
+    {
+      "name": "Telecom Egypt (WE)",
+      "url": "https://te.eg/en/web/guest/about-te/careers-and-training?utm_source=chatgpt.com",
+      "status": "needs_adapter",
+      "message": "No JobPosting data found. Custom adapter required.",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:52.211946+00:00"
+    },
+    {
+      "name": "Paymob",
+      "url": "https://origin.paymob.com/en/careers?utm_source=chatgpt.com",
+      "status": "needs_adapter",
+      "message": "No JobPosting data found. Custom adapter required.",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:52.462074+00:00"
+    },
+    {
+      "name": "Breadfast",
+      "url": "https://www.breadfast.com/careers/?utm_source=chatgpt.com",
+      "status": "needs_adapter",
+      "message": "No JobPosting data found. Custom adapter required.",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:52.910245+00:00"
+    },
+    {
+      "name": "ITWorx",
+      "url": "https://careers.itworx.com/?utm_source=chatgpt.com",
+      "status": "needs_adapter",
+      "message": "No JobPosting data found. Custom adapter required.",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:53.253418+00:00"
+    },
+    {
+      "name": "Sumerge",
+      "url": "https://www.sumerge.com/careers/job-openings?utm_source=chatgpt.com",
+      "status": "needs_adapter",
+      "message": "No JobPosting data found. Custom adapter required.",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:53.831336+00:00"
+    },
+    {
+      "name": "Luciq (formerly Instabug)",
+      "url": "https://www.luciq.ai/careers?utm_source=chatgpt.com",
+      "status": "needs_adapter",
+      "message": "No JobPosting data found. Custom adapter required.",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:54.293499+00:00"
+    },
+    {
+      "name": "Breadfast Technology",
+      "url": "https://www.breadfast.com/ar/careers_categories/technology/?utm_source=chatgpt.com",
+      "status": "needs_adapter",
+      "message": "No JobPosting data found. Custom adapter required.",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:54.750251+00:00"
+    },
+    {
+      "name": "Link Development",
+      "url": "https://linkdevelopment.com/careers/opportunities/?utm_source=chatgpt.com",
+      "status": "needs_adapter",
+      "message": "No JobPosting data found. Custom adapter required.",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:55.949250+00:00"
+    },
+    {
+      "name": "Fawry",
+      "url": "https://www.fawry.com/jobs/?utm_source=chatgpt.com",
+      "status": "needs_adapter",
+      "message": "No JobPosting data found. Custom adapter required.",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:58.391614+00:00"
+    },
+    {
+      "name": "Siemens",
+      "url": "https://jobs.sw.siemens.com/business-structure/electronic-design-automation-eda/jobs/?location=Cairo&utm_source=chatgpt.com",
+      "status": "needs_adapter",
+      "message": "No JobPosting data found. Custom adapter required.",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T15:40:58.591281+00:00"
     }
   ]
 }
