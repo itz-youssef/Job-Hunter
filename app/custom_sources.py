@@ -362,13 +362,10 @@ def scan_company(company):
                 and j.get("jobUrl")
                 and j.get("isListed", True)
             ]
-
+           
         else:
-            page = fetch_bytes(url).decode(
-                "utf-8", errors="replace"
-            )
-
-            jobs = parse_jsonld(page, name, url)
+            from app.extra_adapters import discover_jobs
+            return discover_jobs(name, link)
 
             if not jobs:
                 return (
