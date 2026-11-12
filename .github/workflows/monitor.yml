@@ -6,7 +6,7 @@ on:
     - cron: "*/15 * * * *"
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: job-hunter-monitor
@@ -16,6 +16,10 @@ jobs:
   monitor:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+
+    permissions:
+      contents: write
+      pages: read
 
     env:
       DB_PATH: data/jobs.db
@@ -102,3 +106,41 @@ jobs:
           SMTP_FROM: ${{ secrets.SMTP_FROM }}
           ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
         run: python -m app.notify_once
+
+      - name: Export website data
+        run: python -m app.export_site
+
+      - name: Prepare public website
+        run: |
+          mkdir -p public-site
+          cp dist/index.html public-site/index.html
+          cp -R dist/assets public-site/assets
+          cp dist/data.json public-site/data.json
+          touch public-site/.nojekyll
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload website
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: public-site
+          retention-days: 1
+
+  deploy:
+    needs: monitor
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Publish website
+        id: deployment
+        uses: actions/deploy-pages@v4
