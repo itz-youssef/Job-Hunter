@@ -88,3 +88,36 @@ def link_development(name, url, get_bytes, make_job):
         if not TARGET.search(label): continue
         found[link]=make_job(name,label,"Egypt",link,"","","")
     return list(found.values())
+
+
+def itworx(name, post_json, make_job):
+    """ITWorx's official, publicly accessible recruitment listings endpoint."""
+    endpoint = "https://careers.itworx.com/ServerApp/api/Requisition/GetAllRequisitions"
+    found = {}
+    page_size = 50
+    for page in range(3):
+        data = post_json(endpoint, {
+            "StartIndex": page * page_size + 1,
+            "PageSize": page_size,
+            "SortBy": 1,
+            "IsTokenPresent": False,
+        })
+        if not data.get("success"):
+            raise ValueError("ITWorx recruitment API returned unsuccessful status")
+        rows = data.get("AllRequisitions") or []
+        for row in rows:
+            title = str(row.get("Position") or "").strip()
+            location = str(row.get("Location") or "").strip()
+            job_id = str(row.get("ReqId") or "").strip()
+            if not job_id.isdigit() or not EGYPT.search(location) or not TARGET.search(title):
+                continue
+            description = " ".join(str(row.get(k) or "") for k in ("Description", "Requirements"))
+            found[job_id] = make_job(
+                name, title, location,
+                f"https://careers.itworx.com/job-details/{job_id}",
+                description, "", " ".join(str(row.get(k) or "") for k in ("CareerLevel", "EmploymentType")),
+            )
+        total = int(data.get("TotalCount") or len(rows))
+        if not rows or (page + 1) * page_size >= total:
+            break
+    return list(found.values())
