@@ -8,7 +8,7 @@ from __future__ import annotations
 import re
 from urllib.parse import quote, urlencode, urlsplit
 
-MAX_PAGES = 5
+MAX_PAGES = 10
 PAGE_SIZE = 100
 MAX_DETAILS = 20
 EGYPT = re.compile(r"\b(?:egypt|cairo|giza|alexandria|maadi|6th of october|nasr city|smart village)\b", re.I)
