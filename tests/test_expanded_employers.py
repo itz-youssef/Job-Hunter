@@ -52,3 +52,9 @@ def test_link_ajax_detects_incomplete_pages():
     with pytest.raises(ValueError):
         link_development_ajax("Link Development",lambda _:first,_job,
                               lambda endpoint,data:b'<script>ajax_careers.latest_page = 2</script>')
+
+def test_plural_lamdax_internships_are_eligible():
+    from app.filters import relevance
+    job=_job("Lamdax","Software development/AI/QC/Product /UX/UI Internships",
+             "Cairo, Egypt","https://apply.workable.com/lamdax/j/8DEA5E4A89/")
+    assert relevance(job,{})[0]>0
