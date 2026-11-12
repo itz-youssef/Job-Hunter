@@ -86,6 +86,14 @@ def _bytes(url: str, body: dict | None = None) -> bytes:
         "Accept": "application/json,text/html,application/xml,*/*",
     }
 
+    # The public Siemens Software API validates its official careers
+    # page Referer. Match the regular site's navigation request.
+    if urllib.parse.urlsplit(url).hostname == "prod-search-api.jobsyn.org":
+        headers["Referer"] = "https://jobs.sw.siemens.com/"
+        headers["Origin"] = "https://jobs.sw.siemens.com"
+        headers["X-Origin"] = "jobs.sw.siemens.com"
+        headers["Accept"] = "application/json"
+
     data = None
 
     if body is not None:
@@ -178,6 +186,12 @@ def _ats(url: str):
 
     if host.endswith(".recruitee.com") and host.count(".") == 2:
         return "recruitee", host
+
+    if host == "jobs.sw.siemens.com" and "/jobs" in p.path:
+        return "siemens_software", None
+
+    if host == "te.eg" and "/about-te/careers-and-training" in p.path:
+        return "telecom_egypt", None
 
     if host == "careers.itworx.com":
         return "itworx", None
@@ -445,6 +459,14 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     kind, meta = _ats(url)
     p = urllib.parse.urlsplit(url)
     jobs = []
+
+    if kind == "siemens_software":
+        from app.egypt_public_feeds import siemens_software
+        return _dedupe(siemens_software(name, _json, _job))
+
+    if kind == "telecom_egypt":
+        from app.egypt_public_feeds import telecom_egypt
+        return _dedupe(telecom_egypt(name, _json, _job))
 
     if kind == "itworx":
         from app.public_feeds import itworx
