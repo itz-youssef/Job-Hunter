@@ -43,3 +43,10 @@ def probe_egypt():
     print("DXC_EGYPT_TOTAL",d.get("totalHits"),flush=True)
     print("DXC_EGYPT_FIRST",[{"title":x.get("title"),"country":x.get("primary_country"),"city":x.get("primary_city")} for x in d.get("queryResult",[])[:3]],flush=True)
 if __name__=="__main__":probe_egypt()
+
+from app.custom_sources import scan_company
+if __name__=="__main__":
+    rows,status,detail=scan_company({"name":"DXC Technology","url":"https://careers.dxc.com/"})
+    print("DXC_ADAPTER",status,detail,"count",len(rows),flush=True)
+    from app.filters import relevance
+    print("DXC_ELIGIBLE",sum(relevance(job,{})[0]>0 for job in rows),flush=True)
