@@ -14,7 +14,7 @@ on:
       - "app/filters.py"
       - "tests/test_custom_monitor_integration.py"
       - "scripts/probe_itworx.py"
-      - "tests/test_export_custom.py tests/test_public_feeds.py tests/test_custom_monitor_integration.py"
+      - "tests/test_export_custom.py"
       - ".github/workflows/test-career-adapters.yml"
   workflow_dispatch:
 
@@ -35,7 +35,7 @@ jobs:
       - name: Compile scanner modules
         run: python -m compileall -q app
       - name: Run offline adapter regression tests
-        run: python -m pytest -q tests/test_custom_discovery.py tests/test_export_custom.py
+        run: python -m pytest -q tests/test_custom_discovery.py tests/test_export_custom.py tests/test_public_feeds.py tests/test_custom_monitor_integration.py
       - name: Smoke-test public careers APIs without writing state
         continue-on-error: true
         timeout-minutes: 3
