@@ -139,7 +139,7 @@ def link_development_ajax(name, get_bytes, make_job, post_form=None):
         }
         response=send(data)
         doc=response.decode("utf-8","replace") if isinstance(response,bytes) else str(response)
-        pager=re.search(r"ajax_careers\\.latest_page\\s*=\\s*(\\d+)",doc)
+        pager=re.search(r"ajax_careers\.latest_page\s*=\s*(\d+)",doc)
         if not pager:
             raise ValueError("Link Development did not report pagination total")
         reported=int(pager.group(1))
