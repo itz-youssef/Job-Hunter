@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-11-12T17:49:26.297395+00:00",
+  "checked_at": "2026-11-12T18:33:41.807901+00:00",
   "companies": [
     {
       "name": "VOIS",
@@ -12,7 +12,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 1
       },
-      "checked_at": "2026-11-12T17:49:26.270342+00:00"
+      "checked_at": "2026-11-12T18:33:41.784885+00:00"
     },
     {
       "name": "Bosta",
@@ -26,7 +26,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 82,
         "Excluded: job location is not explicitly in Egypt": 12
       },
-      "checked_at": "2026-11-12T17:49:26.277913+00:00"
+      "checked_at": "2026-11-12T18:33:41.789832+00:00"
     },
     {
       "name": "Thndr",
@@ -41,7 +41,7 @@
         "Excluded: job location is not explicitly in Egypt": 7,
         "Excluded: senior, mid-level or management title": 3
       },
-      "checked_at": "2026-11-12T17:49:26.279009+00:00"
+      "checked_at": "2026-11-12T18:33:41.790549+00:00"
     },
     {
       "name": "Klivvr",
@@ -54,7 +54,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 7
       },
-      "checked_at": "2026-11-12T17:49:26.279262+00:00"
+      "checked_at": "2026-11-12T18:33:41.790729+00:00"
     },
     {
       "name": "Emergence",
@@ -68,7 +68,7 @@
         "Excluded: job location is not explicitly in Egypt": 6,
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 1
       },
-      "checked_at": "2026-11-12T17:49:26.279920+00:00"
+      "checked_at": "2026-11-12T18:33:41.791166+00:00"
     },
     {
       "name": "Lean Technologies",
@@ -81,7 +81,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 8
       },
-      "checked_at": "2026-11-12T17:49:26.280838+00:00"
+      "checked_at": "2026-11-12T18:33:41.791825+00:00"
     },
     {
       "name": "Chatbase",
@@ -95,7 +95,7 @@
         "Excluded: job location is not explicitly in Egypt": 12,
         "Excluded: junior, graduate, internship or 0–2 years not confirmed": 1
       },
-      "checked_at": "2026-11-12T17:49:26.283294+00:00"
+      "checked_at": "2026-11-12T18:33:41.793567+00:00"
     },
     {
       "name": "Lua Global",
@@ -106,7 +106,7 @@
       "matched_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-12T17:49:26.283303+00:00"
+      "checked_at": "2026-11-12T18:33:41.793573+00:00"
     },
     {
       "name": "IBM",
@@ -117,7 +117,7 @@
       "matched_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-12T17:49:26.283308+00:00"
+      "checked_at": "2026-11-12T18:33:41.793578+00:00"
     },
     {
       "name": "Schneider Electric",
@@ -128,7 +128,7 @@
       "matched_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-12T17:49:26.283311+00:00"
+      "checked_at": "2026-11-12T18:33:41.793582+00:00"
     },
     {
       "name": "Ericsson",
@@ -141,7 +141,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 1
       },
-      "checked_at": "2026-11-12T17:49:26.283358+00:00"
+      "checked_at": "2026-11-12T18:33:41.793632+00:00"
     },
     {
       "name": "Capgemini Egypt",
@@ -152,18 +152,18 @@
       "matched_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-12T17:49:26.283361+00:00"
+      "checked_at": "2026-11-12T18:33:41.793635+00:00"
     },
     {
       "name": "DXC Technology",
       "url": "https://careers.dxc.com/?utm_source=chatgpt.com",
-      "status": "access_blocked",
-      "message": "Careers website returned HTTP 403",
+      "status": "needs_adapter",
+      "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
       "parsed_jobs": 0,
       "matched_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-12T17:49:26.283364+00:00"
+      "checked_at": "2026-11-12T18:33:41.793638+00:00"
     },
     {
       "name": "Luxoft Egypt",
@@ -174,7 +174,7 @@
       "matched_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-12T17:49:26.283367+00:00"
+      "checked_at": "2026-11-12T18:33:41.793640+00:00"
     },
     {
       "name": "Nokia",
@@ -185,7 +185,7 @@
       "matched_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-12T17:49:26.283370+00:00"
+      "checked_at": "2026-11-12T18:33:41.793643+00:00"
     },
     {
       "name": "SAP",
@@ -196,7 +196,7 @@
       "matched_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-12T17:49:26.283375+00:00"
+      "checked_at": "2026-11-12T18:33:41.793647+00:00"
     },
     {
       "name": "Orange Egypt",
@@ -207,7 +207,7 @@
       "matched_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-12T17:49:26.283377+00:00"
+      "checked_at": "2026-11-12T18:33:41.793650+00:00"
     },
     {
       "name": "e& / Etisalat",
@@ -218,18 +218,18 @@
       "matched_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-12T17:49:26.283380+00:00"
+      "checked_at": "2026-11-12T18:33:41.793652+00:00"
     },
     {
       "name": "Telecom Egypt (WE)",
       "url": "https://te.eg/en/web/guest/about-te/careers-and-training?utm_source=chatgpt.com",
-      "status": "needs_adapter",
-      "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "status": "monitoring",
+      "message": "0 jobs parsed from telecom_egypt",
       "parsed_jobs": 0,
       "matched_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-12T17:49:26.283383+00:00"
+      "checked_at": "2026-11-12T18:33:41.793655+00:00"
     },
     {
       "name": "Paymob",
@@ -240,7 +240,7 @@
       "matched_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-12T17:49:26.283386+00:00"
+      "checked_at": "2026-11-12T18:33:41.793659+00:00"
     },
     {
       "name": "Breadfast",
@@ -251,7 +251,7 @@
       "matched_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-12T17:49:26.283389+00:00"
+      "checked_at": "2026-11-12T18:33:41.793661+00:00"
     },
     {
       "name": "ITWorx",
@@ -265,7 +265,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 2,
         "Excluded: senior, mid-level or management title": 1
       },
-      "checked_at": "2026-11-12T17:49:26.283487+00:00"
+      "checked_at": "2026-11-12T18:33:41.793723+00:00"
     },
     {
       "name": "Sumerge",
@@ -280,7 +280,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 5,
         "Excluded: senior, mid-level or management title": 2
       },
-      "checked_at": "2026-11-12T17:49:26.283746+00:00"
+      "checked_at": "2026-11-12T18:33:41.793895+00:00"
     },
     {
       "name": "Luciq (formerly Instabug)",
@@ -293,7 +293,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 2
       },
-      "checked_at": "2026-11-12T17:49:26.283855+00:00"
+      "checked_at": "2026-11-12T18:33:41.793967+00:00"
     },
     {
       "name": "Breadfast Technology",
@@ -304,7 +304,7 @@
       "matched_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-12T17:49:26.283860+00:00"
+      "checked_at": "2026-11-12T18:33:41.793970+00:00"
     },
     {
       "name": "Link Development",
@@ -315,7 +315,7 @@
       "matched_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-12T17:49:26.283863+00:00"
+      "checked_at": "2026-11-12T18:33:41.793972+00:00"
     },
     {
       "name": "Fawry",
@@ -326,18 +326,22 @@
       "matched_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-12T17:49:26.283866+00:00"
+      "checked_at": "2026-11-12T18:33:41.793975+00:00"
     },
     {
       "name": "Siemens",
       "url": "https://jobs.sw.siemens.com/business-structure/electronic-design-automation-eda/jobs/?location=Cairo&utm_source=chatgpt.com",
-      "status": "needs_adapter",
-      "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
-      "parsed_jobs": 0,
+      "status": "monitoring",
+      "message": "22 jobs parsed from siemens_software",
+      "parsed_jobs": 22,
       "matched_jobs": 0,
-      "excluded_jobs": 0,
-      "exclusion_reasons": {},
-      "checked_at": "2026-11-12T17:49:26.283869+00:00"
+      "excluded_jobs": 22,
+      "exclusion_reasons": {
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 15,
+        "Excluded: junior, graduate, internship or 0–2 years not confirmed": 6,
+        "Excluded: role requires more than 2 years of experience": 1
+      },
+      "checked_at": "2026-11-12T18:33:41.798594+00:00"
     },
     {
       "name": "Deloitte",
@@ -348,7 +352,7 @@
       "matched_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-12T17:49:26.283871+00:00"
+      "checked_at": "2026-11-12T18:33:41.798597+00:00"
     }
   ]
 }
