@@ -142,3 +142,120 @@ def paymob_recruitera(name, get_json, make_job):
             raise ValueError("Paymob pagination did not advance")
 
     raise ValueError("Paymob opportunities exceed safe pagination limits")
+
+
+
+def orange_egypt(name, post_json, make_job):
+    """Orange Egypt's own public Phenom recruitment results feed.
+
+    Search is explicitly scoped to EGYPT and Orange Egypt. Read complete
+    pages and fail if the remote server changes result count mid-scan.
+    """
+    from urllib.parse import quote
+    api = "https://orange.jobs/widgets"
+    page_size = 100
+    offset = 0
+    expected = None
+    records = {}
+    visited_offsets = set()
+
+    for page in range(30):
+        if offset in visited_offsets:
+            raise ValueError("Orange search pagination repeated")
+        visited_offsets.add(offset)
+        body = {
+            "ddoKey": "refineSearch",
+            "jobs": True,
+            "counts": True,
+            "from": offset,
+            "size": page_size,
+            "pageName": "Egypt results",
+            "pageType": "landingPage",
+            "rk": "l-egypt-results",
+            "sortBy": "",
+            "subsearch": "",
+            "all_fields": [
+                "phLocSlider", "category", "contractType", "country",
+                "city", "companyName", "workModel", "hiringType"
+            ],
+            "selected_fields": {
+                "country": ["EGYPT"],
+                "companyName": ["Orange Egypt"]
+            },
+            "lang": "en_gb",
+            "deviceType": "desktop",
+            "country": "gb",
+            "pageId": "page549-prod",
+            "siteType": "external",
+            "refNum": "OYVOCZGB"
+        }
+        result = post_json(api, body)
+        search = result.get("refineSearch") if isinstance(result, dict) else None
+        if not isinstance(search, dict) or not isinstance(search.get("data"), dict):
+            raise ValueError("Orange Egypt public search schema changed")
+        data = search["data"]
+        rows = data.get("jobs")
+        if not isinstance(rows, list):
+            raise ValueError("Orange Egypt jobs list missing")
+        try:
+            total = int(search["totalHits"])
+        except (KeyError, ValueError, TypeError) as exc:
+            raise ValueError("Orange Egypt public search totalHits missing") from exc
+        if expected is None:
+            expected = total
+        elif total != expected:
+            raise ValueError("Orange Egypt jobs changed during pagination")
+
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            country = str(row.get("country") or "").strip().lower()
+            if country not in ("egypt", "eg", "egy"):
+                continue
+            title = str(row.get("title") or "").strip()
+            job_id = str(row.get("jobId") or "").strip()
+            if not title or not re.fullmatch(r"[A-Za-z0-9_-]{6,64}", job_id):
+                continue
+
+            city = str(row.get("city") or "").strip()
+            location = (city + ", Egypt") if city else "Egypt"
+            apply = str(row.get("applyUrl") or "").strip()
+            public_url = str(row.get("jobUrl") or "").strip()
+            def approved_url(value):
+                parsed = urlsplit(value)
+                return parsed.scheme == "https" and parsed.hostname in (
+                    "orange.jobs", "www.careers-page.com", "careers-page.com"
+                )
+
+            if approved_url(apply):
+                url = apply
+            elif approved_url(public_url):
+                url = public_url
+            else:
+                slug = re.sub(r"[^a-zA-Z0-9]+", "-", title).strip("-")
+                url = (
+                    "https://orange.jobs/gb/en/job/"
+                    + quote(job_id, safe="-") + "/" + quote(slug, safe="-")
+                )
+            description = str(
+                row.get("jobDescription")
+                or row.get("description")
+                or row.get("shortDescription")
+                or ""
+            )
+            job = make_job(
+                name, title, location, url, description,
+                row.get("datePosted") or row.get("postedDate") or "",
+                row.get("contractType") or ""
+            )
+            job["id"] = "custom-orange-" + job_id
+            job["seniority"] = str(row.get("hiringType") or "")
+            records[job_id] = job
+
+        offset += len(rows)
+        if offset >= total:
+            return list(records.values())
+        if not rows:
+            raise ValueError("Orange Egypt returned an incomplete page")
+
+    raise ValueError("Orange Egypt search exceeded safe pagination limit")
