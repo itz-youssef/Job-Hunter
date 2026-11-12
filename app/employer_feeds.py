@@ -73,3 +73,70 @@ def ibm_egypt(name, post_json, make_job):
         if not rows:
             raise ValueError("IBM results stopped before all pages were read")
     raise ValueError("IBM jobs exceed the configured public paging limit")
+
+
+
+def paymob_recruitera(name, get_json, make_job):
+    """Paymob's publicly listed Recruitera employer board with cursor paging."""
+    from urllib.parse import quote
+    endpoint = "https://app.recruitera.ai/api/public/v1/paymob/opportunities"
+    seen = {}
+    cursor = None
+    used_cursors = set()
+    expected = None
+
+    for page in range(12):
+        url = endpoint + (("?cursor=" + quote(cursor, safe="")) if cursor else "")
+        payload = get_json(url)
+        if not isinstance(payload, dict) or not isinstance(payload.get("data"), list):
+            raise ValueError("Paymob public opportunities schema changed")
+        meta = payload.get("meta")
+        if not isinstance(meta, dict):
+            raise ValueError("Paymob pagination metadata missing")
+        rows = payload["data"]
+        try:
+            count = int(meta["found"])
+        except (KeyError, ValueError, TypeError) as exc:
+            raise ValueError("Paymob total opportunity count unavailable") from exc
+        if expected is None:
+            expected = count
+        elif expected != count:
+            raise ValueError("Paymob listings changed during pagination")
+
+        before = len(seen)
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            job_id = str(row.get("id") or "").strip()
+            title = str(row.get("title") or "").strip()
+            slug = str(row.get("slug") or "").strip()
+            if not (job_id and title and slug):
+                continue
+            # Constrain navigational links to the current employer's board.
+            if not re.fullmatch(r"[\w%-]+", slug, re.UNICODE):
+                continue
+            url = "https://app.recruitera.ai/careers/paymob/" + quote(slug, safe="%-")
+            location = str(row.get("location") or "").strip()
+            description = str(row.get("excerpt") or "")
+            job = make_job(
+                name, title, location, url, description, "",
+                str(row.get("employment_type") or "")
+            )
+            job["id"] = "custom-paymob-" + job_id
+            job["work_model"] = str(row.get("work_model") or "")
+            job["department"] = str(row.get("department") or "")
+            seen[job_id] = job
+
+        next_cursor = meta.get("next_cursor")
+        if not next_cursor:
+            if expected is not None and len(seen) < expected:
+                raise ValueError("Paymob stopped before all listed opportunities were read")
+            return list(seen.values())
+        if not isinstance(next_cursor, str) or next_cursor in used_cursors:
+            raise ValueError("Paymob pagination cursor repeated")
+        used_cursors.add(next_cursor)
+        cursor = next_cursor
+        if len(seen) <= before:
+            raise ValueError("Paymob pagination did not advance")
+
+    raise ValueError("Paymob opportunities exceed safe pagination limits")
