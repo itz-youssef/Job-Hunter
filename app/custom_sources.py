@@ -516,16 +516,8 @@ def _board_jobs(name: str, url: str) -> list[dict]:
         ))
 
     if kind == "capgemini_egypt":
-        from app.requested_employers import capgemini_egypt
-
-        def parse_links(document):
-            parser = _PageParser()
-            parser.feed(document)
-            return [(href, label) for href, label in parser.links]
-
-        return _dedupe(capgemini_egypt(
-            name, _bytes, parse_links, _structured_jobs, _job
-        ))
+        from app.requested_employers import capgemini_egypt_api
+        return _dedupe(capgemini_egypt_api(name, _json, _job))
 
     if kind == "ibm_egypt":
         from app.employer_feeds import ibm_egypt
