@@ -112,6 +112,12 @@ def relevance(job: dict, config: dict) -> tuple[int, list[str]]:
     if SENIOR_TITLE.search(title):
         return 0, ["Excluded: senior, mid-level or management title"]
 
+    # Some ATS feeds have a separate career-level field. Respect it
+    # even when the title itself does not mention seniority.
+    seniority = str(job.get("seniority") or job.get("career_level") or "")
+    if re.search(r"\b(?:mid(?:\s*-\s*senior)?|senior|experienced|managerial|lead|principal|staff|director|expert)\b", seniority, re.I):
+        return 0, ["Excluded: ATS career level is not entry-level"]
+
     # Experience requirements can be long. Check the full description, but only in
     # explicit years-of-experience contexts, not arbitrary plain numbers.
     if any(p.search(description) for p in EXCESSIVE_EXPERIENCE):
