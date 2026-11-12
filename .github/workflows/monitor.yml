@@ -1,95 +1,47 @@
-name: Job Hunter Monitor
-
-on:
-  workflow_dispatch:
-
-permissions:
-  contents: write
-
-concurrency:
-  group: job-hunter-monitor
-  cancel-in-progress: false
-
-jobs:
-  monitor:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    env:
-      DB_PATH: data/jobs.db
-      MONITOR_COMPANIES: Valeo,Microsoft
-
-    steps:
-      - name: Download project
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Restore job history
+      - name: Test Gmail delivery
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
+          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
         run: |
-          mkdir -p data state
-
-          if [ -f state/initialized ] && [ ! -f state/history.sqlite ]; then
-            echo "::error::Saved history is missing. Stopping to protect duplicate detection."
-            exit 1
-          fi
-
-          if [ -f state/history.sqlite ]; then
-            cp state/history.sqlite data/jobs.db
-            python - <<'PY'
-          import sqlite3
-
-          with sqlite3.connect("data/jobs.db") as connection:
-              result = connection.execute("PRAGMA integrity_check").fetchone()[0]
-              if result != "ok":
-                  raise RuntimeError("Saved database failed integrity check")
-          PY
-          fi
-
-      - name: Check careers websites
-        id: scan
-        run: python -m app.run_once
-
-      - name: Save job history
-        if: always() && steps.scan.outcome != 'skipped'
-        run: |
-          if [ ! -f data/jobs.db ]; then
-            echo "::error::No database was created."
-            exit 1
-          fi
-
           python - <<'PY'
-          import sqlite3
-          from pathlib import Path
+          import os
+          import smtplib
+          import ssl
+          from email.message import EmailMessage
 
-          source = sqlite3.connect("data/jobs.db")
-          destination = sqlite3.connect("state/history.sqlite")
+          required = [
+              "SMTP_USER", "SMTP_PASSWORD",
+              "SMTP_FROM", "ALERT_EMAIL",
+          ]
+          missing = [key for key in required if not os.getenv(key)]
+          if missing:
+              raise SystemExit("Missing secrets: " + ", ".join(missing))
+
+          message = EmailMessage()
+          message["Subject"] = "Job Hunter - Email test"
+          message["From"] = os.environ["SMTP_FROM"]
+          message["To"] = os.environ["ALERT_EMAIL"]
+          message.set_content(
+              "Your Job Hunter email connection works.\n"
+              "This is a test message, not a job alert."
+          )
+
           try:
-              source.backup(destination)
-              result = destination.execute("PRAGMA integrity_check").fetchone()[0]
-              if result != "ok":
-                  raise RuntimeError("Database backup failed integrity check")
-          finally:
-              destination.close()
-              source.close()
+              with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as server:
+                  server.ehlo()
+                  server.starttls(context=ssl.create_default_context())
+                  server.ehlo()
+                  server.login(
+                      os.environ["SMTP_USER"],
+                      os.environ["SMTP_PASSWORD"],
+                  )
+                  server.send_message(message)
+          except smtplib.SMTPAuthenticationError:
+              raise SystemExit("Gmail login failed. Check SMTP_USER and SMTP_PASSWORD.") from None
+          except (OSError, smtplib.SMTPException):
+              raise SystemExit("Email delivery failed. Check Gmail settings and retry.") from None
 
-          Path("state/initialized").write_text("Job history initialized\n")
+          print("Test email accepted by Gmail.")
           PY
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add state/history.sqlite state/initialized
-
-          if ! git diff --cached --quiet; then
-            git commit -m "Update job monitoring history"
-            git push origin HEAD:main
-          fi
