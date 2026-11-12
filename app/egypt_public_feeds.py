@@ -103,12 +103,13 @@ def siemens_software(name, get_json, make_job):
     endpoint = "https://prod-search-api.jobsyn.org/api/v1/solr/search"
     results = {}
     pages = 0
-    while pages < 12:
+    while pages < 40:
         pages += 1
         query = urlencode({
             "location": "Cairo",
             "page": pages,
-            "num_items": 100,
+            "businessStructures": "electronic-design-automation-eda",
+            "num_items": 10,
         })
         data = get_json(endpoint + "?" + query)
         if not isinstance(data, dict) or not isinstance(data.get("jobs"), list):
