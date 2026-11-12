@@ -86,6 +86,12 @@ def _bytes(url: str, body: dict | None = None) -> bytes:
         "Accept": "application/json,text/html,application/xml,*/*",
     }
 
+    # The public Siemens Software API validates its official careers
+    # page Referer. Match the regular site's navigation request.
+    if urllib.parse.urlsplit(url).hostname == "prod-search-api.jobsyn.org":
+        headers["Referer"] = "https://jobs.sw.siemens.com/"
+        headers["Accept"] = "application/json"
+
     data = None
 
     if body is not None:
