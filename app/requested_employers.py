@@ -132,3 +132,63 @@ def deloitte_middle_east_partial(name, url, get_bytes, parse_links, make_job):
             if label:
                 found[target] = make_job(name, label, "Egypt", target, "", "", "")
     return list(found.values())
+
+
+def capgemini_egypt_api(name, get_json, make_job):
+    """Complete Egypt job feed from Capgemini's public corporate Jobstream API.
+
+    Uses source country facet and exact returned total; no fabricated jobs.
+    """
+    from html import unescape
+    from urllib.parse import urlsplit
+    endpoint = "https://cg-jobstream-api.azurewebsites.net/api/job-search"
+    page_size = 100
+    found = {}
+    total = None
+    processed = 0
+    for page in range(1, 21):
+        data = get_json(
+            f"{endpoint}?page={page}&size={page_size}&country_code=eg-en"
+        )
+        if not isinstance(data, dict) or not isinstance(data.get("data"), list):
+            raise ValueError("Capgemini API search schema changed")
+        try:
+            expected = int(data["total"])
+        except (KeyError, ValueError, TypeError) as exc:
+            raise ValueError("Capgemini API total missing") from exc
+        if total is None:
+            total = expected
+        elif expected != total:
+            raise ValueError("Capgemini results changed during pagination")
+        rows = data["data"]
+        processed += len(rows)
+        for item in rows:
+            if not isinstance(item, dict):
+                continue
+            country = str(item.get("country_code") or "").lower()
+            if country not in ("en-eg", "eg-en", "eg"):
+                continue
+            title = str(item.get("title") or "").strip()
+            location = str(item.get("location") or "").strip()
+            raw_link = str(item.get("apply_job_url") or "").strip()
+            link = raw_link.split("?", 1)[0]
+            p = urlsplit(link)
+            if not title or p.scheme != "https" or p.hostname != "careers.capgemini.com":
+                continue
+            if not location:
+                location = "Egypt"
+            elif not re.search(r"\\b(?:egypt|EG)\\b", location, re.I):
+                location += ", Egypt"
+            description = item.get("description_stripped") or item.get("description") or ""
+            description = " ".join(unescape(re.sub(r"<[^>]+>", " ", str(description))).split())[:20000]
+            job = make_job(name, title, location, link, description, "",
+                           str(item.get("contract_type") or ""))
+            job["seniority"] = str(item.get("experience_level") or "")
+            job["department"] = str(item.get("department") or "")
+            found[link] = job
+
+        if processed >= total:
+            return list(found.values())
+        if not rows:
+            raise ValueError("Capgemini API returned an incomplete page")
+    raise ValueError("Capgemini listings exceed pagination safety bound")
