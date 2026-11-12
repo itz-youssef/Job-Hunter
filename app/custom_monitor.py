@@ -338,20 +338,37 @@ def run(
             company["url"]
         ).strip()
 
-        matches = [
-            j
-            for raw in jobs
-            if (
-                j := _enrich(raw)
-            ) is not None
-        ]
+        # Count exactly why the role filter rejected a readable posting.
+        # A successful source scan is not the same as a suitable opening.
+        matches = []
+        rejection_reasons = {}
+
+        for raw in jobs:
+            enriched = _enrich(raw)
+
+            if enriched is not None:
+                matches.append(enriched)
+                continue
+
+            _, reasons = relevance(raw, {})
+            reason = (
+                reasons[0]
+                if reasons
+                else "Excluded: unspecified eligibility"
+            )
+            rejection_reasons[reason] = (
+                rejection_reasons.get(reason, 0) + 1
+            )
 
         statuses.append({
             "name": name,
             "url": url,
             "status": status,
             "message": message,
+            "parsed_jobs": len(jobs),
             "matched_jobs": len(matches),
+            "excluded_jobs": len(jobs) - len(matches),
+            "exclusion_reasons": rejection_reasons,
             "checked_at": _now(),
         })
 
