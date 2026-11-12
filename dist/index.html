@@ -82,6 +82,56 @@ button.feature-card:hover{border-color:var(--purple);transform:translateY(-2px)}
 .logo-edit-button{padding:7px 10px;font-size:11px;font-weight:650}
 #logo-form input[type="file"]{font-size:12px}
 #logo-form .form-note{line-height:1.7}
+
+/* Monochrome design system: pure black/white and neutral greys only. */
+:root{
+ color-scheme:light;--bg:#fff;--panel:#fff;--border:#e6e6e6;
+ --ink:#0a0a0a;--muted:#666;--purple:#111;--soft:#f5f5f5;
+ --green:#404040;--shadow:none
+}
+html[data-theme="dark"]{
+ color-scheme:dark;--bg:#000;--panel:#080808;--border:#292929;
+ --ink:#fff;--muted:#b3b3b3;--purple:#fff;--soft:#151515;
+ --green:#d4d4d4;--shadow:none
+}
+body,.workspace-shell{background:var(--bg);color:var(--ink)}
+.sidebar,.topbar,.modal{background:var(--panel);border-color:var(--border);color:var(--ink)}
+.hero,.sidebar-tip{background:var(--soft)!important;border:1px solid var(--border);box-shadow:none}
+.hero-graphic{opacity:.07;filter:grayscale(1)}
+.brand-icon{background:#111;color:#fff}
+html[data-theme="dark"] .brand-icon{background:#fff;color:#000}
+.brand-dot,.profile-live,.score,.sidebar-tip strong{color:var(--ink)}
+.profile-avatar,.top-avatar,.job-logo,.region-tag,.score,.badge,.feature-mark,.company-brand .brand-monogram{
+ background:var(--soft);color:var(--ink);border-color:var(--border)
+}
+.btn.primary,.btn.primary:hover{background:#111;color:#fff;border:1px solid #111;box-shadow:none}
+html[data-theme="dark"] .btn.primary,html[data-theme="dark"] .btn.primary:hover{
+ background:#fff;color:#000;border-color:#fff
+}
+.btn.secondary,.icon-button,.search-box,.filter-select,.modal input,
+.company-card,.job-card,.panel,.stat,.feature-card,.upcoming-panel{
+ background:var(--panel);color:var(--ink);border-color:var(--border);box-shadow:none
+}
+.feature-upcoming{background:var(--soft)}
+.feature-card:hover{border-color:var(--ink)}
+.feature-card .feature-foot,.feature-card .feature-meta,
+.feature-mark,.feature-foot,.nav-count{color:var(--ink)}
+.feature-upcoming .feature-meta,.feature-upcoming .feature-foot{color:var(--muted)}
+nav button,.secondary-links a{color:var(--muted)}
+nav button.active,nav button:hover,.secondary-links a:hover{background:var(--soft);color:var(--ink)}
+.badge,.badge.green,.badge.orange,.badge.red,.badge.grey{
+ background:var(--soft);color:var(--ink);border:1px solid var(--border)
+}
+html[data-theme="dark"] .badge.green,html[data-theme="dark"] .badge.orange,
+html[data-theme="dark"] .badge.red,html[data-theme="dark"] .badge.grey{
+ background:var(--soft);color:var(--ink)
+}
+html[data-theme="dark"] .hero,html[data-theme="dark"] .sidebar-tip{background:var(--soft)!important}
+.company-brand img.brand-loaded{background:var(--panel)}
+.alert-card,.alert-icon,.empty,.toast{border-color:var(--border)}
+a:hover{color:var(--ink)}
+:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+
   </style>
 </head>
 <body>
@@ -409,7 +459,7 @@ button.feature-card:hover{border-color:var(--purple);transform:translateY(-2px)}
     try { initialTheme = localStorage.getItem('jh-theme'); } catch {}
     const setTheme = dark => {
       document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark?'#10171c':'#f7f8fa');
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark?'#000000':'#ffffff');
       el('#theme-label').textContent=dark?'Light':'Dark';
       el('#theme-icon').textContent=dark?'☼':'◐';
       el('#theme-toggle').setAttribute('aria-pressed',String(dark));
