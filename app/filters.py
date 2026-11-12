@@ -12,6 +12,8 @@ import re
 # Technical keywords alone (e.g. Python) must never qualify a sales or HR role.
 ROLE_PATTERNS = {
     "Software Engineering": (
+        r"\b(?:software|application|web|backend|frontend|full[ -]?stack)\s+(?:engineering|development)\s+(?:intern|internship|trainee|graduate)\b",
+        r"\b(?:associate|graduate|junior)\s+(?:software\s+)?(?:engineer|developer|programmer)\b",
         r"\bsoftware\s+(?:development\s+)?(?:engineer|developer|intern|trainee)\b",
         r"\b(?:backend|back[ -]end|frontend|front[ -]end|full[ -]?stack|web|mobile|android|ios)\s+(?:software\s+)?(?:engineer|developer|intern|trainee)\b",
         r"\b(?:python|java|javascript|typescript|\.net|c\+\+|c#|react|node(?:\.js)?)\s+(?:software\s+)?(?:engineer|developer)\b",
@@ -19,12 +21,15 @@ ROLE_PATTERNS = {
         r"\b(?:sde|swe)\b",
     ),
     "AI / Machine Learning": (
+        r"\b(?:ai|ml|machine learning|deep learning|data science|generative ai|artificial intelligence)\s+(?:research\s+)?(?:internship|intern|trainee|graduate)\b",
+        r"\b(?:ai|ml|machine learning|data science)\s+research\s+(?:intern|assistant)\b",
         r"\b(?:ai|artificial intelligence|machine learning|ml|deep learning|generative ai|genai|llm|nlp)\s+(?:engineer|developer|intern|trainee|specialist)\b",
         r"\b(?:engineer|developer|intern|trainee)\s*[-–:]?\s*(?:ai|machine learning|ml|genai|llm|nlp)\b",
         r"\bapplied\s+(?:ai|ml|machine learning)\s+(?:engineer|scientist)\b",
         r"\b(?:junior|entry[ -]level|graduate|intern|internship)\s+data scientist\b",
     ),
     "Computer Vision": (
+        r"\b(?:computer vision|perception|image processing)\s+(?:research\s+)?internship\b",
         r"\b(?:computer vision|cv|image processing|video analytics|perception)\s+(?:engineer|developer|intern|trainee|research engineer)\b",
         r"\b(?:engineer|developer|intern|trainee)\s*[-–:]?\s*(?:computer vision|image processing|perception)\b",
     ),
@@ -96,7 +101,7 @@ def relevance(job: dict, config: dict) -> tuple[int, list[str]]:
     location_lower = location.lower()
 
     # Unknown location and worldwide-remote jobs are not evidence of Egypt eligibility.
-    if not location or not any(_has_term(location_lower, city) for city in EGYPT_LOCATIONS):
+    if not location or not (any(_has_term(location_lower, city) for city in EGYPT_LOCATIONS) or location_lower in ("eg", "egypt (eg)")):
         return 0, ["Excluded: job location is not explicitly in Egypt"]
     if FOREIGN_ONLY.search(location_lower) and not _has_term(location_lower, "egypt"):
         return 0, ["Excluded: location references a foreign country"]
@@ -106,6 +111,20 @@ def relevance(job: dict, config: dict) -> tuple[int, list[str]]:
          if any(re.search(pattern, title_lower, re.I) for pattern in patterns)),
         None,
     )
+    # Include *all* Egypt-based internships, even when titles do not
+    # contain "Software Engineer". Ordinary jobs remain title-restricted.
+    internship = bool(re.search(
+        r"\b(?:intern|internship|summer\s+intern|industrial\s+training|"
+        r"trainee|traineeship|apprentice|apprenticeship)\b",
+        title + " " + employment, re.I
+    ))
+    if not role and internship:
+        role = "Internship"
+    if not role and EARLY_TITLE.search(title) and re.search(
+        r"\b(?:engineer|developer|programmer|software|technology|data|ai|ml)\b",
+        title, re.I
+    ) and any(_has_term(description, term) for term in SKILLS):
+        role = "Early-career technical programme"
     if not role:
         return 0, ["Excluded: title is outside Software/AI/ML/CV/MLOps roles"]
 
@@ -124,7 +143,8 @@ def relevance(job: dict, config: dict) -> tuple[int, list[str]]:
         return 0, ["Excluded: role requires more than 2 years of experience"]
 
     early = bool(
-        EARLY_TITLE.search(title)
+        internship
+        or         EARLY_TITLE.search(title)
         or EARLY_TITLE.search(seniority)
         or EARLY_TITLE.search(employment)
         or re.search(r"\b(?:internship|traineeship|apprenticeship)\b", employment, re.I)
