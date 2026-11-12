@@ -62,7 +62,8 @@ def test_siemens_software_public_api_pagination():
         if "page=1" in url:
             return {"jobs":[
                 {"title_exact":"Junior Software Development Engineer",
-                 "city_slab_exact":"new-cairo",
+                 "city_slab_exact":"new-cairo/none/egy/jobs::New Cairo, EGY",
+                 "city_exact":"New Cairo",
                  "country_short_exact":"EGY", "country_exact":"Egypt",
                  "location_exact":"New Cairo, EGY",
                  "title_slug":"junior-software-development-engineer",
