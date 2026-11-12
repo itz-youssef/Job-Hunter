@@ -86,6 +86,18 @@ class Client:
         if urlparse(r.url).netloc!=p.netloc:raise SourceError('Cross-host redirect requires separate policy review')
         return r
 
+def _workday_posting_date(text):
+    """Only explicit employer 'Job Posting Date' is used; never infer it from startDate."""
+    from datetime import date
+    match=re.search(r"\\bJob\\s+Posting\\s+Date\\s*:\\s*(\\d{4}-\\d{2}-\\d{2})\\b",str(text or ""),re.I)
+    if not match:return None
+    try:
+        value=date.fromisoformat(match.group(1))
+        if value>date.today():return None
+        return value.isoformat()
+    except ValueError:return None
+
+
 def workday(source,client):
     p=urlparse(source['url']);tenant=p.hostname.split('.')[0]
     parts=[x for x in p.path.split('/') if x];site=parts[1] if parts and re.fullmatch(r'[a-z]{2}-[A-Z]{2}',parts[0]) else parts[0]
@@ -103,11 +115,11 @@ def workday(source,client):
             seen.add(path)
             reqid=next((str(x) for x in item.get('bulletFields',[]) if str(x) in cached),None)
             if reqid:
-                job=cached[reqid].copy();job['title']=item['title'];job['location']=item.get('locationsText',job['location']);jobs.append(job);continue
+                job=cached[reqid].copy();job['title']=item['title'];job['location']=item.get('locationsText',job['location']);job['published']=job.get('published') or _workday_posting_date(job.get('description'));jobs.append(job);continue
             detail=client.get(root+path).json().get('jobPostingInfo',{})
             if not detail.get('jobReqId') or not detail.get('title') or not detail.get('jobDescription'):raise SourceError('Workday detail missing required fields')
             # Workday startDate is retained as raw evidence only until publication semantics are confirmed.
-            jobs.append({'external_id':detail['jobReqId'],'title':detail['title'],'location':detail.get('location',item.get('locationsText','Unknown')),'description':BeautifulSoup(detail['jobDescription'],'html.parser').get_text(' ',strip=True),'published':None,'employment':detail.get('timeType','Not provided'),'url':detail.get('externalUrl',f'https://{p.netloc}/{site}'+path)})
+            jobs.append({'external_id':detail['jobReqId'],'title':detail['title'],'location':detail.get('location',item.get('locationsText','Unknown')),'description':BeautifulSoup(detail['jobDescription'],'html.parser').get_text(' ',strip=True),'published':_workday_posting_date(BeautifulSoup(detail['jobDescription'],'html.parser').get_text(' ',strip=True)),'employment':detail.get('timeType','Not provided'),'url':detail.get('externalUrl',f'https://{p.netloc}/{site}'+path)})
         offset+=len(page)
         if offset>=d['total']:break
         if offset>2000:raise SourceError('Pagination safety limit reached')
