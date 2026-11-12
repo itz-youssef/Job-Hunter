@@ -79,3 +79,24 @@ def inspect_more():
      if k: print('JS_MARK',word,repr(page[max(0,k.start()-200):k.start()+400]),flush=True)
   except Exception as e:print('MORE_ERR',name,type(e).__name__,str(e)[:100],flush=True)
 if __name__=='__main__': inspect_more()
+
+def probe_link_ajax():
+ from app.custom_sources import _bytes,_safe_url
+ import re,urllib.request,urllib.parse
+ base="https://linkdevelopment.com/careers/opportunities/"
+ page=_bytes(base).decode('utf-8','replace')
+ for needle in ("careers_nonce","ajax_careers","latest_page","load_careers_listing_results"):
+  for m in list(re.finditer(needle,page,re.I))[:3]:
+   print("NONCE_MARK",needle,repr(page[max(0,m.start()-120):m.start()+260]),flush=True)
+ nonce=re.search(r'id=["\\\']careers_nonce["\\\'][^>]*value=["\\\']([^"\\\']+)',page,re.I)
+ if not nonce:
+  nonce=re.search(r'name=["\\\']careers_nonce["\\\'][^>]*value=["\\\']([^"\\\']+)',page,re.I)
+ n=nonce.group(1) if nonce else ''
+ data=urllib.parse.urlencode({'action':'load_careers_listing_results','current_page':'1','query_data':'&careers_keywords=&position_type=&position_department=&careers_nonce='+n}).encode()
+ try:
+  req=urllib.request.Request(_safe_url('https://linkdevelopment.com/wp/wp-admin/admin-ajax.php'),data=data,headers={'User-Agent':'Mozilla/5.0','Content-Type':'application/x-www-form-urlencoded','Referer':base})
+  with urllib.request.urlopen(req,timeout=14) as resp:
+   body=resp.read(1500000).decode('utf-8','replace')
+   print("AJAX_RESULT",resp.status,"bytes",len(body),"sample",body[:2500],flush=True)
+ except Exception as e:print("AJAX_ERROR",type(e).__name__,str(e)[:200],flush=True)
+if __name__=='__main__':probe_link_ajax()
