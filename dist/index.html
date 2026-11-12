@@ -52,6 +52,12 @@ html[data-theme="dark"] .breadcrumb span{color:var(--muted)}
 :focus-visible{outline:2px solid var(--purple);outline-offset:3px}
 @media(max-width:750px){.theme-toggle{min-width:66px;padding:0 8px}}
 
+
+.company-brand{flex:0 0 42px;width:42px;height:42px;display:grid;place-items:center;position:relative;border:1px solid var(--border);border-radius:10px;background:var(--panel);overflow:hidden}
+.company-brand .brand-monogram{display:grid;place-items:center;width:100%;height:100%;font-size:15px;font-weight:750;color:var(--purple);background:var(--soft)}
+.company-brand img{position:absolute;inset:6px;width:calc(100% - 12px);height:calc(100% - 12px);object-fit:contain;display:none}
+.company-brand img.brand-loaded{display:block;background:var(--panel)}
+.company-card{align-items:center}
   </style>
 </head>
 <body>
@@ -174,6 +180,37 @@ html[data-theme="dark"] .breadcrumb span{color:var(--muted)}
     const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':'Your job feed',saved?'Jobs you’ve bookmarked on this device.':'Jobs published by your monitoring workflows, with fit scores.');
     return h+`<div class="filters"><input class="search-box" id="job-search" type="search" placeholder="Search job title, company, skills…" value="${esc(state.query)}" aria-label="Search jobs"><select class="filter-select" id="role-filter" aria-label="Filter job family"><option value="all">All role families</option><option value="software" ${state.role==='software'?'selected':''}>Software</option><option value="ai" ${state.role==='ai'?'selected':''}>AI / ML</option><option value="cv" ${state.role==='cv'?'selected':''}>Computer Vision</option><option value="mlops" ${state.role==='mlops'?'selected':''}>MLOps</option></select></div><div class="cards" id="jobs-list">${list.length?list.map(jobCard).join(''):empty('No matching jobs','Try another search or refresh your monitoring results.')}</div><p class="tiny">${list.length} job(s) shown. Scores come from the backend filter — they are not acceptance probabilities.</p>`;
   }
+  // Brand-domain allowlist: ATS hosting domains (Lever/Workable/Ashby) are not company logos.
+  // Uses company website favicons; unknown domains retain a clean monogram.
+  const BRAND_DOMAINS = Object.freeze({
+    'VOIS':'vodafone.com','Bosta':'bosta.co','Thndr':'thndr.app',
+    'Klivvr':'klivvr.com','Emergence':'emergence.ai','Lean Technologies':'leantech.me',
+    'Chatbase':'chatbase.co','Lua Global':'lua.ai','IBM':'ibm.com',
+    'Schneider Electric':'se.com','Ericsson':'ericsson.com',
+    'Capgemini Egypt':'capgemini.com','DXC Technology':'dxc.com',
+    'Luxoft Egypt':'luxoft.com','Nokia':'nokia.com','SAP':'sap.com',
+    'Orange Egypt':'orange.eg','e& / Etisalat':'etisalat.eg',
+    'Telecom Egypt (WE)':'te.eg','Paymob':'paymob.com',
+    'Breadfast':'breadfast.com','ITWorx':'itworx.com',
+    'Sumerge':'sumerge.com','Luciq (formerly Instabug)':'luciq.ai',
+    'Breadfast Technology':'breadfast.com','Link Development':'linkdevelopment.com',
+    'Fawry':'fawry.com','Siemens':'siemens.com','Deloitte':'deloitte.com',
+    'BlackStone eIT':'blackstoneeit.com','Lamdax':'lamdax.com',
+    'Yassir':'yassir.com','Integrant':'integrant.com',
+    'inDrive':'indrive.com','robusta / RTG':'robustagroup.com',
+    'Incorta':'incorta.com','SOUM':'soum.sa','econstruct':'econstruct.ae',
+    'PetroApp':'petroapp.com','SSC HR Solutions':'ssc-hr.com',
+    'Mondia Group':'mondia.com','mylo by B.TECH':'btech.com',
+    'Infomineo':'infomineo.com','ArpuPlus':'arpuplus.com',
+    'Madar':'madarplatform.com'
+  });
+  function companyBrand(c){
+    const name=String(c.name||'');
+    const domain=BRAND_DOMAINS[name];
+    const mark=`<span class="brand-monogram" aria-hidden="true">${icon(name)}</span>`;
+    if(!domain)return `<span class="company-brand" role="img" aria-label="${esc(name)}">${mark}</span>`;
+    return `<span class="company-brand" role="img" aria-label="${esc(name)} logo">${mark}<img class="brand-image" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128"></span>`;
+  }
   function companyCard(c){
     const status=c.status||'pending', mapping={monitoring:['Monitoring','green'],partial:['Partial coverage','orange'],needs_adapter:['Needs adapter','orange'],access_blocked:['Access blocked','red'],error:['Scan error','red'],pending:['Waiting for scan','orange'],configured:['Configured','grey']};
     const [label,color]=mapping[status]||[status,status==='ok'?'green':'grey'];
@@ -184,7 +221,7 @@ html[data-theme="dark"] .breadcrumb span{color:var(--muted)}
       `<button class="btn secondary" data-edit-name="${esc(c.url)}">✎ Edit name</button>`+
       `<button class="btn danger" data-remove="${esc(c.url)}">Remove</button>`
     ):'';
-    return `<div class="company-card"><span class="job-logo">${icon(c.name)}</span><div class="company-name"><strong>${pin?'📌 ':''}${esc(c.name)}</strong><small>${esc(c.message || (c.managed?'Added to your watchlist':'Built-in monitored source'))}</small>${c.last?`<small>Last check: ${esc(prettyDate(c.last))}</small>`:''}${c.managed&&Number.isInteger(c.matched_jobs)?`<small>Eligible jobs: ${c.matched_jobs}</small>`:''}</div><div class="company-actions">${badge(label,color)}${url!=='#'?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="btn secondary">Careers ↗</a>`:''}${actions}</div></div>`;
+    return `<div class="company-card">${companyBrand(c)}<div class="company-name"><strong>${pin?'📌 ':''}${esc(c.name)}</strong><small>${esc(c.message || (c.managed?'Added to your watchlist':'Built-in monitored source'))}</small>${c.last?`<small>Last check: ${esc(prettyDate(c.last))}</small>`:''}${c.managed&&Number.isInteger(c.matched_jobs)?`<small>Eligible jobs: ${c.matched_jobs}</small>`:''}</div><div class="company-actions">${badge(label,color)}${url!=='#'?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="btn secondary">Careers ↗</a>`:''}${actions}</div></div>`;
   }
   function companiesPage(){
     const all=monitoredSources(), active=all.filter(c=>c.active).length, pending=all.filter(c=>c.status==='pending').length;
@@ -232,6 +269,19 @@ html[data-theme="dark"] .breadcrumb span{color:var(--muted)}
     }catch(e){toast(e.message,true);}
   }
   async function removeCompany(url){const token=window.prompt('Enter your admin token to remove this company:');if(!token)return;if(!confirm('Remove this company from monitoring?'))return;try{await companyApi('DELETE',{url},token);toast('Company removed from monitoring');await refresh(true);}catch(e){toast(e.message,true);}}
+  // Lazy logos never affect the scanner or dashboard if a provider icon is missing.
+  document.addEventListener('load', event=>{
+    const image=event.target;
+    if(image instanceof HTMLImageElement && image.matches('.company-brand img')){
+      if(image.naturalWidth>1 && image.naturalHeight>1) image.classList.add('brand-loaded');
+    }
+  },true);
+  document.addEventListener('error',event=>{
+    const image=event.target;
+    if(image instanceof HTMLImageElement && image.matches('.company-brand img')){
+      image.remove();
+    }
+  },true);
   function setup(){
     const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
     let initialTheme = null;
