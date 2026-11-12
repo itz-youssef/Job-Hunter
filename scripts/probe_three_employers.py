@@ -36,3 +36,25 @@ def main():
    page.close()
   browser.close()
 if __name__=="__main__":main()
+
+def server_probes():
+ from app.custom_sources import _bytes,_PageParser
+ import re
+ urls={
+ "VOIS-0":"https://jobs.vodafone.com/careers?location=Egypt&filter_brand=vois&start=0",
+ "VOIS-10":"https://jobs.vodafone.com/careers?location=Egypt&filter_brand=vois&start=10",
+ "Ericsson-0":"https://jobs.ericsson.com/careers?location=egypt&start=0",
+ "Ericsson-10":"https://jobs.ericsson.com/careers?location=egypt&start=10",
+ "Fawry-jobs":"https://www.fawry.com/jobs/",
+ "Fawry-feed":"https://www.fawry.com/?feed=job_feed&posts_per_page=50",
+ "Fawry-rss":"https://www.fawry.com/?post_type=job_listing&feed=rss2",
+ }
+ for name,url in urls.items():
+  try:
+   doc=_bytes(url).decode("utf-8","replace")
+   parser=_PageParser();parser.feed(doc)
+   matches=[(h,t[:130]) for h,t in parser.links if
+            re.search(r'/careers/job/[0-9]+|/job/|job_listing',h,re.I)]
+   print("HTTP_PROBE",name,"bytes",len(doc),"links",len(matches),"first",matches[:5],"xml",doc[:90],flush=True)
+  except Exception as exc:print("HTTP_ERROR",name,type(exc).__name__,str(exc)[:200],flush=True)
+if __name__=="__main__": server_probes()
