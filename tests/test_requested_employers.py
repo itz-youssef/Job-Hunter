@@ -68,3 +68,22 @@ def test_capgemini_api_complete_pagination_and_descriptions():
     assert rows[0]["location"]=="Cairo, Egypt"
     assert rows[0]["seniority"]=="Students/Graduates"
     assert all(relevance(j,{})[0]>0 for j in rows)
+
+
+def test_dxc_egypt_jsonp_scoped_and_official():
+    import json
+    from app.requested_employers import dxc_egypt
+    def fetch(url):
+        assert "primary_country%3AEG" in url
+        payload={"totalHits":2,"queryResult":[
+            {"title":"Junior Software Engineer","primary_country":"EG","primary_city":"Cairo",
+             "description":"<p>0-2 years Python</p>","url":"https://careers.dxc.com/job/123/junior-software-engineer-cairo-eg/"},
+            {"title":"AI Intern","primary_country":"EG","primary_city":"Giza",
+             "description":"<p>PyTorch intern</p>","url":"https://careers.dxc.com/job/124/ai-intern-giza-eg/"}
+        ]}
+        return ("CWS.jobs.jobCallback("+json.dumps(payload)+")").encode()
+    rows=dxc_egypt("DXC Technology",fetch,_job)
+    assert len(rows)==2
+    assert rows[0]["location"]=="Cairo, Egypt"
+    assert rows[0]["url"].startswith("https://careers.dxc.com/job/")
+    assert all(relevance(j,{})[0]>0 for j in rows)
