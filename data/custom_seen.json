@@ -33,8 +33,12 @@
       "seen_ids": []
     },
     "https://www.ibm.com/careers/search?": {
-      "initialized": false,
-      "seen_ids": []
+      "initialized": true,
+      "seen_ids": [
+        "custom-ibm-140869",
+        "custom-ibm-141858",
+        "custom-ibm-141863"
+      ]
     },
     "https://careers.se.com/Defaultlandingpage/jobs/categories?lang=en-US&utm_source=chatgpt.com": {
       "initialized": false,
@@ -61,7 +65,7 @@
       "seen_ids": []
     },
     "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com": {
-      "initialized": false,
+      "initialized": true,
       "seen_ids": []
     },
     "https://www.eand.com/ar/careers/careers.html?utm_source=chatgpt.com": {
@@ -73,7 +77,7 @@
       "seen_ids": []
     },
     "https://origin.paymob.com/en/careers?utm_source=chatgpt.com": {
-      "initialized": false,
+      "initialized": true,
       "seen_ids": []
     },
     "https://www.breadfast.com/careers/?utm_source=chatgpt.com": {
@@ -86,7 +90,9 @@
     },
     "https://www.sumerge.com/careers/job-openings?utm_source=chatgpt.com": {
       "initialized": true,
-      "seen_ids": []
+      "seen_ids": [
+        "custom-9fd0676b853b64a009c164a6"
+      ]
     },
     "https://www.luciq.ai/careers?utm_source=chatgpt.com": {
       "initialized": true,
