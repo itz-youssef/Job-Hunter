@@ -11,7 +11,7 @@ SITES={
  "IBM":"https://www.ibm.com/careers/search",
  "Schneider":"https://careers.se.com/Defaultlandingpage/jobs/categories?lang=en-US",
  "Orange":"https://orange.jobs/gb/en/egypt-results",
- "Paymob Recruitera":"https://app.recruitera.ai/careers/paymob",
+ "Paymob Recruitera":"https://app.recruitera.ai/careers/paymob/opportunities",
  "Fawry":"https://www.fawry.com/jobs/",
 }
 KEYS=re.compile(r"job|career|search|position|vacancy|requisition|posting|jobs|graphql|api/v2|widgets|wp-json|ajax",re.I)
@@ -53,7 +53,20 @@ async def probe(browser,sem,name,url):
      data=r.request.post_data_json
      if isinstance(data,dict):
       entry["request_shape"]=schema(data)
+      if name=="IBM" and urlsplit(r.url).hostname=="www-api.ibm.com":
+       entry["request_body"]=data
     except Exception:pass
+    if name=="IBM" and urlsplit(r.url).hostname=="www-api.ibm.com":
+     try:
+      response=await r.json()
+      hits=response.get("hits",{}).get("hits",[])
+      entry["first_hit"]={"id":hits[0].get("_id"),"source":hits[0].get("_source")} if hits else {}
+     except Exception:pass
+    if name=="Orange" and urlsplit(r.url).hostname=="orange.jobs" and urlsplit(r.url).path=="/widgets":
+     try:
+      d=await r.json()
+      entry["widget_data"]=d.get("dynaData",{}).get("data",{})
+     except Exception:pass
     print("API",json.dumps(entry,ensure_ascii=False),flush=True)
    tasks.append(asyncio.create_task(read()))
   page.on("response",resp)
@@ -65,6 +78,12 @@ async def probe(browser,sem,name,url):
    for a in anchors:
     if (KEYS.search(urlsplit(a["href"]).path) or TITLES.search(a["text"])) and a["href"].startswith("https:"):
      likely.append({"title":a["text"],"path":loc(a["href"])})
+   if name=="Orange":
+    job_anchors=[a for a in anchors if re.search(r"/job/|/job-details/|/jobs/|/jobdetail",urlsplit(a["href"]).path,re.I)]
+    print("ORANGE_JOB_LINKS",json.dumps(job_anchors[:15],ensure_ascii=False),flush=True)
+   if name=="Paymob Recruitera":
+    job_anchors=[a for a in anchors if "/careers/paymob/" in urlsplit(a["href"]).path and not a["href"].endswith("/opportunities")]
+    print("PAYMOB_JOB_LINKS",json.dumps(job_anchors[:30],ensure_ascii=False),flush=True)
    body=(await page.locator("body").inner_text(timeout=4500))[:230].replace("\n"," ")
    print("PAGE",json.dumps({"site":name,"http":response.status if response else None,"title":(await page.title())[:100],"text":body,"links":likely[:20],"anchor_count":len(anchors)},ensure_ascii=False),flush=True)
   except Exception as ex:
