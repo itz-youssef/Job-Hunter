@@ -12,5 +12,14 @@ def main():
     print("IBM_ELIGIBLE",len(good),[(j["title"],j["location"]) for j in good[:5]],flush=True)
     if status!="monitoring" or not jobs:
         raise SystemExit("IBM public integration did not yield current jobs")
+    jobs,status,message=scan_company({
+        "name":"Paymob",
+        "url":"https://origin.paymob.com/en/careers"
+    })
+    print("PAYMOB_LIVE",status,message,"total",len(jobs),flush=True)
+    print("PAYMOB_SAMPLES",[(j["title"],j["location"]) for j in jobs[:4]],flush=True)
+    if status!="monitoring" or not jobs:
+        raise SystemExit("Paymob public career feed was not completely parsed")
+
 
 if __name__=="__main__":main()
