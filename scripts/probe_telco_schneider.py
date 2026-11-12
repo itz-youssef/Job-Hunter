@@ -96,3 +96,24 @@ def candidates():
    print("CANDIDATE",name,status,len(jobs),"egypt",len(egypt),"sample",[(x["title"],x["location"]) for x in egypt[:3]],flush=True)
   except Exception as exc:print("CANDIDATE_ERROR",name,str(exc)[:200],flush=True)
 if __name__=="__main__": candidates()
+
+def precision():
+ from app.custom_sources import _bytes,_json
+ import re
+ for pag in (0,1,2):
+  try:
+   a=_json(f"https://careers.se.com/api/jobs?location=Egypt&limit=50&page={pag}")
+   rows=a.get("jobs") or []
+   print("JIBE_PAGE",pag,"total",a.get("totalCount"),"count",a.get("count"),"len",len(rows),flush=True)
+   for itm in rows[:3]:
+    d=itm.get("data") or {}
+    print("JIBE_ROW","outer",list(itm)[:15],"keys",list(d)[:32],"title",d.get("title"),
+      "location_fields",[(key,str(d[key])[:240]) for key in d if any(w in key.lower() for w in ("locat","city","country","publish","date","region"))],flush=True)
+  except Exception as exc:print("JIBE_PAGE_ERR",pag,str(exc)[:130],flush=True)
+ try:
+  h=_bytes("https://etisalatmisr.taleo.net/careersection/ex/joblist.ftl").decode("utf-8","replace")
+  for needle in ("Integration Senior Developer","requisitionListInterface.ID2335","260002GT","requisitionListInterface.ID","rlPager.gotoPage"):
+   hits=list(re.finditer(re.escape(needle),h,re.I))
+   for m in hits[-2:]:print("TALEO_DETAIL",needle,"at",m.start(),repr(h[max(0,m.start()-330):m.start()+950]),flush=True)
+ except Exception as exc:print("TALEO_DETAIL_ERR",str(exc)[:200],flush=True)
+if __name__=="__main__":precision()
