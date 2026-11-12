@@ -953,6 +953,12 @@ def scan_company(company: dict):
             name, url
         )
 
+        if kind == "linkdevelopment" and not jobs:
+            return (
+                [], "needs_adapter",
+                "Public listings rendered dynamically; no complete feed was extracted",
+            )
+
         return (
             jobs,
             "monitoring",
