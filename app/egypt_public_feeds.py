@@ -89,3 +89,72 @@ def telecom_egypt(name, get_json, make_job):
         raise ValueError("Telecom Egypt vacancy paging limit reached")
 
     return list(results.values())
+
+
+def siemens_software(name, get_json, make_job):
+    """Read the public Siemens Software search API seen in their careers UI.
+
+    The query is scoped to the Cairo area and reads all reported pages.
+    Missing job URLs, incomplete pages, and schema drift fail explicitly.
+    """
+    import re
+    from urllib.parse import urlencode, quote
+
+    endpoint = "https://prod-search-api.jobsyn.org/api/v1/solr/search"
+    results = {}
+    pages = 0
+    while pages < 12:
+        pages += 1
+        query = urlencode({
+            "location": "Cairo",
+            "page": pages,
+            "num_items": 100,
+        })
+        data = get_json(endpoint + "?" + query)
+        if not isinstance(data, dict) or not isinstance(data.get("jobs"), list):
+            raise ValueError("Siemens public jobs API schema changed")
+        p = data.get("pagination") or {}
+        if not isinstance(p, dict) or "has_more_pages" not in p:
+            raise ValueError("Siemens public jobs pagination missing")
+        rows = data["jobs"]
+        if not rows and p["has_more_pages"]:
+            raise ValueError("Incomplete Siemens jobs page")
+
+        for row in rows:
+            if not isinstance(row, dict) or row.get("is_posted") is False:
+                continue
+            country = str(row.get("country_exact") or row.get("country_short_exact") or "")
+            if country.strip().casefold() not in ("egypt", "egy", "eg"):
+                continue
+            title = str(row.get("title_exact") or "").strip()
+            city = str(row.get("city_slab_exact") or "").strip()
+            slug = str(row.get("title_slug") or "").strip()
+            guid = str(row.get("guid") or "").strip()
+            ccode = str(row.get("country_short_exact") or "EGY").lower()
+            if not title or not city or not slug or not re.fullmatch(r"[A-Za-z0-9-]{10,80}", guid):
+                continue
+            if not re.fullmatch(r"[a-z0-9-]+", city) or not re.fullmatch(r"[a-z0-9-]+", slug):
+                continue
+            url = (
+                "https://jobs.sw.siemens.com/"
+                + quote(city, safe="") + "-"
+                + quote(ccode, safe="") + "/"
+                + quote(slug, safe="") + "/"
+                + quote(guid, safe="") + "/job/"
+            )
+            location = str(row.get("location_exact") or row.get("city_exact") or "")
+            if not location:
+                location = str(row.get("city_exact") or "") + ", Egypt"
+            job = make_job(
+                name, title, location, url,
+                row.get("description") or "",
+                row.get("date_new") or row.get("date_added") or "",
+                ""
+            )
+            # The API GUID is stable even when a job title or slug changes.
+            job["id"] = "custom-siemens-" + guid
+            results[guid] = job
+
+        if not p["has_more_pages"]:
+            return list(results.values())
+    raise ValueError("Siemens jobs pagination exceeded the safe page limit")
