@@ -97,6 +97,11 @@ def probe_link_ajax():
   req=urllib.request.Request(_safe_url('https://linkdevelopment.com/wp/wp-admin/admin-ajax.php'),data=data,headers={'User-Agent':'Mozilla/5.0','Content-Type':'application/x-www-form-urlencoded','Referer':base})
   with urllib.request.urlopen(req,timeout=14) as resp:
    body=resp.read(1500000).decode('utf-8','replace')
-   print("AJAX_RESULT",resp.status,"bytes",len(body),"sample",body[:2500],flush=True)
+   print("AJAX_RESULT",resp.status,"bytes",len(body),"sample",body[:600],flush=True)
+   parsed=_PageParser();parsed.feed(body)
+   print("AJAX_LINKS",[(h," ".join(t.split())[:100]) for h,t in parsed.links[:30]],flush=True)
+   for term in ("opportunities/","latest_page","careers-page","Full Time","Egypt"):
+    for m in list(re.finditer(re.escape(term),body,re.I))[:2]:
+     print("AJAX_MARK",term,repr(body[max(0,m.start()-80):m.start()+180]),flush=True)
  except Exception as e:print("AJAX_ERROR",type(e).__name__,str(e)[:200],flush=True)
 if __name__=='__main__':probe_link_ajax()
