@@ -5,6 +5,7 @@ on:
     paths:
       - "app/custom_sources.py"
       - "app/requested_employers.py"
+      - "app/expanded_employers.py"
       - "app/three_employer_feeds.py"
       - "app/custom_monitor.py"
       - "app/filters.py"
@@ -13,6 +14,7 @@ on:
       - "dist/index.html"
       - "tests/test_smart_careers.py"
       - "tests/test_requested_employers.py"
+      - "tests/test_expanded_employers.py"
       - "tests/test_three_employer_feeds.py"
       - "tests/test_early_career_matching.py"
       - "tests/test_management_api.cjs"
@@ -36,7 +38,7 @@ jobs:
       - name: Check syntax
         run: python -m compileall -q app
       - name: Test ATS and matching
-        run: python -m pytest -q tests/test_smart_careers.py tests/test_custom_discovery.py tests/test_custom_monitor_integration.py tests/test_early_career_matching.py tests/test_three_employer_feeds.py
+        run: python -m pytest -q tests/test_smart_careers.py tests/test_custom_discovery.py tests/test_custom_monitor_integration.py tests/test_early_career_matching.py tests/test_three_employer_feeds.py tests/test_expanded_employers.py
 
   node:
     runs-on: ubuntu-latest

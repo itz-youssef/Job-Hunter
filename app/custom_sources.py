@@ -216,6 +216,9 @@ def _ats(url: str):
     ):
         return "capgemini_egypt", None
 
+    if host in ("career.luxoft.com","www.career.luxoft.com") and p.path.startswith(("/locations/egypt","/jobs")):
+        return "luxoft_egypt", None
+
     if host == "middleeastjobs.deloitte.com" and p.path.startswith("/careersME/SearchJobs"):
         return "deloitte_partial", None
 
@@ -535,7 +538,15 @@ def _board_jobs(name: str, url: str) -> list[dict]:
         from app.requested_employers import dxc_egypt
         return _dedupe(dxc_egypt(name, _bytes, _job))
 
+    if kind == "luxoft_egypt":
+        from app.expanded_employers import luxoft_egypt
+        return _dedupe(luxoft_egypt(name, _bytes, _job))
+
     if kind == "deloitte_partial":
+        from app.expanded_employers import deloitte_egypt_partial
+        return _dedupe(deloitte_egypt_partial(name, _bytes, _job))
+
+    if kind == "_old_deloitte_partial":
         from app.requested_employers import deloitte_middle_east_partial
 
         def parse_links(document):
@@ -574,8 +585,8 @@ def _board_jobs(name: str, url: str) -> list[dict]:
 
     # Link Development's public Egypt careers list
     if kind == "linkdevelopment":
-        from app.public_feeds import link_development
-        return _dedupe(link_development(name, url, _bytes, _job))
+        from app.expanded_employers import link_development_ajax
+        return _dedupe(link_development_ajax(name, _bytes, _job))
 
     # Public Oracle Candidate Experience recruiting pages
     if kind == "oracle":
@@ -1206,8 +1217,8 @@ def scan_company(company: dict):
         return (
             jobs,
             "partial" if kind == "deloitte_partial" else "monitoring",
-            (f"{len(jobs)} Egypt postings on current Deloitte search page; "
-             "full pagination not yet verified") if kind == "deloitte_partial"
+            (f"{len(jobs)} Egypt postings from paginated Deloitte search; "
+             "complete coverage not yet verified") if kind == "deloitte_partial"
             else f"{len(jobs)} jobs parsed from {kind}",
         )
 
