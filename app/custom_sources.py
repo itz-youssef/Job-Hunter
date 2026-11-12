@@ -219,6 +219,9 @@ def _ats(url: str):
     if host == "middleeastjobs.deloitte.com" and p.path.startswith("/careersME/SearchJobs"):
         return "deloitte_partial", None
 
+    if host == "careers.dxc.com" and p.path in ("", "/", "/job-search-results/"):
+        return "dxc_egypt", None
+
     if host in ("www.ibm.com", "ibm.com") and "/careers/search" in p.path:
         return "ibm_egypt", None
 
@@ -502,6 +505,10 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     if kind == "paymob_recruitera":
         from app.employer_feeds import paymob_recruitera
         return _dedupe(paymob_recruitera(name, _json, _job))
+
+    if kind == "dxc_egypt":
+        from app.requested_employers import dxc_egypt
+        return _dedupe(dxc_egypt(name, _bytes, _job))
 
     if kind == "deloitte_partial":
         from app.requested_employers import deloitte_middle_east_partial
