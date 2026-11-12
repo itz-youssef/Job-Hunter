@@ -78,3 +78,17 @@ def test_vois_work_experience_programme_is_eligible():
     )
     score, reasons = relevance(job, {})
     assert score > 0, reasons
+
+
+def test_vois_brand_facet_includes_unbranded_internship_titles():
+    payload={"data":{"count":1,"positions":[{
+        "id": 999, "name": "Technology Internship",
+        "locations": ["Cairo, Egypt"],
+        "positionUrl":"/careers/job/999"
+    }]}}
+    def fake(url):
+        assert "filter_brand=vois" in url
+        return payload
+    rows=eightfold_egypt("VOIS","jobs.vodafone.com","vodafone.com",fake,cs._job,vois=True)
+    assert len(rows)==1
+    assert rows[0]["title"]=="Technology Internship"
