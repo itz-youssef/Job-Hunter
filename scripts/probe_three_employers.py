@@ -58,3 +58,24 @@ def server_probes():
    print("HTTP_PROBE",name,"bytes",len(doc),"links",len(matches),"first",matches[:5],"xml",doc[:90],flush=True)
   except Exception as exc:print("HTTP_ERROR",name,type(exc).__name__,str(exc)[:200],flush=True)
 if __name__=="__main__": server_probes()
+
+def inspect_markup():
+ import re
+ from app.custom_sources import _bytes,_PageParser
+ targets={
+  "VOIS":"https://jobs.vodafone.com/careers?location=Egypt&filter_brand=vois&start=0",
+  "Ericsson":"https://jobs.ericsson.com/careers?location=egypt&start=0",
+  "Fawry":"https://www.fawry.com/jobs/",
+  "Fawry2":"https://www.fawry.com/jobs/page/2/",
+ }
+ for name,url in targets.items():
+  try:
+   doc=_bytes(url).decode("utf-8","replace")
+   parser=_PageParser();parser.feed(doc)
+   print("MARKUP",name,"COUNT",len(doc),
+     "LINKS",[(h,t.strip()[:45]) for h,t in parser.links if re.search(r"next|page|job|listings",h+" "+t,re.I)][-15:],flush=True)
+   for key in ("563018", "563121", "position_results", "positions", "job_list", "searchResult", "__NEXT_DATA__", "searchConfig", "job-listings"):
+    match=re.search(key,doc,re.I)
+    if match:print("MARK",name,key,repr(doc[max(0,match.start()-110):match.start()+250]),flush=True)
+  except Exception as e:print("MARKUP_ERROR",name,str(e)[:130],flush=True)
+if __name__=="__main__":inspect_markup()
