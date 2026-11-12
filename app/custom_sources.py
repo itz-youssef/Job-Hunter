@@ -170,6 +170,9 @@ def _ats(url: str):
     host = (p.hostname or "").lower()
     seg = [s for s in p.path.split("/") if s]
 
+    if host == "careers.itworx.com":
+        return "itworx", None
+
     if host in ("sumerge.com", "www.sumerge.com") and p.path.startswith("/careers"):
         return "workable", "sumerge-1"
 
@@ -433,6 +436,10 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     kind, meta = _ats(url)
     p = urllib.parse.urlsplit(url)
     jobs = []
+
+    if kind == "itworx":
+        from app.public_feeds import itworx
+        return _dedupe(itworx(name, _json, _job))
 
     # Public Workable careers widget (also powers Sumerge)
     if kind == "workable":
