@@ -17,7 +17,7 @@ def main():
  r=s.get(URL,timeout=18,headers=h,allow_redirects=False)
  print("SEED",r.status_code,"host",requests.utils.urlparse(r.url).hostname,flush=True)
  if r.status_code!=200:raise SystemExit("Seed was not public")
- match=re.search(r'["\\']csrfToken["\\']\s*:\s*["\\']([^"\\']+)',r.text)
+ match=re.search(r'csrfToken"\\s*:\\s*"([^"]+)',r.text)
  token=match.group(1) if match else ""
  if not token:
   for cookie in s.cookies:
