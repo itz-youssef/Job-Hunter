@@ -1,6 +1,6 @@
 {
   "mode": "snapshot",
-  "generated_at": "2026-11-12T13:44:59.328367+00:00",
+  "generated_at": "2026-11-12T14:22:55.854697+00:00",
   "sources": [
     {
       "id": 1,
@@ -149,5 +149,14 @@
     "locations": "egypt,cairo,giza",
     "min_score": 3
   },
-  "custom_sources": []
+  "custom_sources": [
+    {
+      "name": "VOIS",
+      "url": "https://jobs.vodafone.com/careers?domain=vodafone.com&start=0&location=Egypt&pid=563018698305416&sort_by=match&filter_include_remote=1&filter_include_relocation=0&filter_seniority=1%2C0",
+      "status": "monitoring",
+      "message": "1 jobs parsed",
+      "matched_jobs": 0,
+      "checked_at": "2026-11-12T14:22:55.840626+00:00"
+    }
+  ]
 }
