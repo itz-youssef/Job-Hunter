@@ -57,3 +57,42 @@ def test_ibm_country_and_junior_roles():
 def test_ibm_rejects_broken_schema():
     with pytest.raises(ValueError, match="schema"):
         ibm_egypt("IBM", lambda *args: {"error":"bad"}, cs._job)
+
+
+
+def test_paymob_cursor_pagination_and_country_fidelity():
+    from app.employer_feeds import paymob_recruitera
+    calls = []
+    def api(url):
+        calls.append(url)
+        if len(calls) == 1:
+            return {"data": [
+                {"id": "100", "title": "Junior Backend Engineer",
+                 "slug": "junior-backend-engineer-paymob-cairo-egypt-100",
+                 "location": "Cairo, Egypt", "excerpt": "0-2 years Python",
+                 "employment_type": "Full-time"},
+                {"id": "101", "title": "Commercial Sales", "slug": "sales",
+                 "location": "Paymob Head Office"}],
+                "meta": {"found": 3, "next_cursor": "PAGE2"}}
+        return {"data": [
+            {"id": "102", "title": "Intern AI Engineer", "slug": "ai-intern-102",
+             "location": "Giza, Egypt", "excerpt": "PyTorch"}
+        ], "meta": {"found": 3, "next_cursor": None}}
+
+    assert cs._ats("https://origin.paymob.com/en/careers")[0] == "paymob_recruitera"
+    jobs = paymob_recruitera("Paymob", api, cs._job)
+    assert len(jobs) == 3
+    assert "cursor=PAGE2" in calls[1]
+    assert jobs[0]["id"] == "custom-paymob-100"
+    assert relevance(jobs[0], {})[0] > 0
+    assert relevance(jobs[1], {})[0] == 0
+
+
+def test_paymob_incomplete_pagination_rejected():
+    from app.employer_feeds import paymob_recruitera
+    with pytest.raises(ValueError, match="stopped"):
+        paymob_recruitera(
+            "Paymob",
+            lambda _: {"data": [], "meta": {"found": 9, "next_cursor": None}},
+            cs._job,
+        )
