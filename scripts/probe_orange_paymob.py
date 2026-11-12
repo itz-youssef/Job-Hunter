@@ -26,6 +26,7 @@ async def main():
                 host=urlsplit(r.url).hostname
                 if not r.request.method in ("GET","POST"):return
                 if name=="Paymob" and not (host or "").endswith("recruitera.ai"):return
+                if name=="Paymob" and (path.startswith("/_nuxt/") or path.endswith((".css",".js",".svg",".png",".woff",".webp"))):return
                 if name=="Orange" and host!="orange.jobs":return
                 if name=="Orange" and path!="/widgets":return
                 key=(path,r.request.method,r.request.post_data or "")
@@ -73,7 +74,7 @@ async def main():
                 await page.wait_for_timeout(1100)
             except Exception as e:
                 print("ERROR",name,str(e).splitlines()[0][:140],flush=True)
-            print("OBS",name,json.dumps(observations[:35],ensure_ascii=False),flush=True)
+            print("OBS",name,json.dumps(observations[:60],ensure_ascii=False),flush=True)
             await page.close()
         await b.close()
 if __name__=="__main__":asyncio.run(main())
