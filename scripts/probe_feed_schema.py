@@ -11,8 +11,8 @@ SITES={
     "Breadfast":"https://www.breadfast.com/careers_categories/technology/",
     "Link Development":"https://linkdevelopment.com/careers/opportunities/",
 }
-TARGET_HOSTS=("jobsyn.org","phenompeople.com","te.eg","breadfast.com","linkdevelopment.com")
-TARGET_PATHS=("solr","search","vacanc","freshteams","wp-json","ajax","jobs","requisition","position")
+TARGET_HOSTS=("jobsyn.org","phenompeople.com","orange.jobs","te.eg","breadfast.com","linkdevelopment.com")
+TARGET_PATHS=("solr","widgets","search","vacanc","freshteams","wp-json","ajax","jobs","requisition","position")
 
 def shape(node,depth=0):
     if depth>2:return type(node).__name__
@@ -42,12 +42,47 @@ async def check(browser,name,url):
             try:
                 data=json.loads(response.request.post_data or "null")
                 entry["request_shape"]=shape(data)
+                if "linkdevelopment.com" in (p.hostname or ""):
+                    try:
+                        from urllib.parse import parse_qs
+                        parts=parse_qs(response.request.post_data or "")
+                        entry["form_keys"]=sorted(parts.keys())
+                        entry["form_action"]=parts.get("action",[""])[0][:70]
+                    except Exception:
+                        pass
             except (ValueError,TypeError):
                 pass
             try:
                 if "json" in (response.headers.get("content-type") or "").lower():
                     data=await response.json()
                     entry["response_shape"]=shape(data)
+                    if p.hostname == "prod-search-api.jobsyn.org":
+                        from urllib.parse import parse_qs
+                        params=parse_qs(p.query)
+                        entry["public_query"]={
+                            k:(v[0][:150] if k.lower() in ("location","offset","page","limit","keywords","q","query","sort","category") else "[redacted]")
+                            for k,v in params.items()
+                        }
+                        if isinstance(data,dict) and isinstance(data.get("jobs"),list) and data["jobs"]:
+                            first=data["jobs"][0]
+                            entry["job_fields"]=sorted(first.keys())
+                            entry["job_sample"]={
+                                k:str(first.get(k))[:100]
+                                for k in ("title","title_exact","city_exact","country_exact","location_exact","description","id","url","job_url","apply_url","job_slug","slug")
+                                if k in first
+                            }
+                    if p.path=="/o/c/vacancies/" and isinstance(data,dict) and data.get("items"):
+                        item=data["items"][0]
+                        entry["public_job_sample"]={
+                            k:str(item.get(k))[:120] for k in (
+                                "id","titleEnglish","locationEnglish","expiryDate","status","dateCreated"
+                            )
+                        }
+                    if "freshteams" in p.path and isinstance(data,dict):
+                        entry["public_errors"]=[
+                            {k:str(err.get(k))[:100] for k in ("code","message")}
+                            for err in data.get("errors",[]) if isinstance(err,dict)
+                        ]
             except Exception:
                 pass
             print(json.dumps(entry,ensure_ascii=False),flush=True)
