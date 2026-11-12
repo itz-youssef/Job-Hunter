@@ -192,3 +192,68 @@ def capgemini_egypt_api(name, get_json, make_job):
         if not rows:
             raise ValueError("Capgemini API returned an incomplete page")
     raise ValueError("Capgemini listings exceed pagination safety bound")
+
+
+def dxc_egypt(name, get_bytes, make_job):
+    """DXC public M-Cloud JSONP listings, constrained to Egyptian vacancies."""
+    import json
+    from html import unescape
+    from urllib.parse import urlencode, urlsplit
+    endpoint = "https://jobsapi-internal.m-cloud.io/api/job"
+    prefix = "CWS.jobs.jobCallback("
+    records = {}
+    expected_total = None
+    page_size = 100
+    offset = 1
+    for _ in range(20):
+        params = [
+            ("callback", "CWS.jobs.jobCallback"),
+            ("facet[]", "is_internal:DXCJobs"),
+            ("facet[]", "primary_country:EG"),
+            ("sortfield", "open_date"),
+            ("sortorder", "descending"),
+            ("Limit", str(page_size)),
+            ("Organization", "2492"),
+            ("offset", str(offset)),
+            ("fuzzy", "false"),
+        ]
+        raw = get_bytes(endpoint + "?" + urlencode(params)).decode("utf-8", "replace").strip()
+        if not raw.startswith(prefix) or not raw.endswith(")"):
+            raise ValueError("DXC job API returned an unexpected JSONP callback")
+        data = json.loads(raw[len(prefix):-1])
+        if not isinstance(data, dict) or not isinstance(data.get("queryResult"), list):
+            raise ValueError("DXC job API result schema changed")
+        try:
+            total = int(data["totalHits"])
+        except (KeyError, ValueError, TypeError) as exc:
+            raise ValueError("DXC job API omitted its result count") from exc
+        if expected_total is None:
+            expected_total = total
+        elif total != expected_total:
+            raise ValueError("DXC result count changed during scan")
+        rows = data["queryResult"]
+        for item in rows:
+            if not isinstance(item, dict) or item.get("primary_country") != "EG":
+                continue
+            title = str(item.get("title") or "").strip()
+            link = str(item.get("url") or "").strip().split("?", 1)[0]
+            p = urlsplit(link)
+            if not title or p.scheme != "https" or p.hostname != "careers.dxc.com" or not p.path.startswith("/job/"):
+                continue
+            city = str(item.get("primary_city") or "").strip()
+            location = (city + ", Egypt") if city else "Egypt"
+            description = " ".join(unescape(re.sub(
+                r"<[^>]+>", " ", str(item.get("description") or "")
+            )).split())[:20000]
+            job = make_job(name, title, location, link, description,
+                           str(item.get("open_date") or ""),
+                           str(item.get("employment_type") or ""))
+            job["seniority"] = str(item.get("level") or "")
+            records[link] = job
+
+        offset += len(rows)
+        if offset - 1 >= expected_total:
+            return list(records.values())
+        if not rows:
+            raise ValueError("DXC job search ended before all pages were fetched")
+    raise ValueError("DXC results exceed verified pagination bound")
