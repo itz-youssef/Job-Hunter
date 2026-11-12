@@ -4,12 +4,14 @@ on:
   pull_request:
     paths:
       - "app/custom_sources.py"
+      - "app/requested_employers.py"
       - "app/custom_monitor.py"
       - "app/filters.py"
       - "api/companies.js"
       - "api/email-destination.js"
       - "dist/index.html"
       - "tests/test_smart_careers.py"
+      - "tests/test_requested_employers.py"
       - "tests/test_early_career_matching.py"
       - "tests/test_management_api.cjs"
       - ".github/workflows/smart-company-tests.yml"
