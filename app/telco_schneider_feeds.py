@@ -2,7 +2,7 @@
 from __future__ import annotations
 import re
 from html import unescape
-from urllib.parse import urljoin
+from urllib.parse import urljoin, unquote
 
 EGYPT=re.compile(r"\b(?:egypt|cairo|giza|alexandria|smart village)\b",re.I)
 
@@ -48,7 +48,7 @@ def etisalat_taleo_partial(name,get_bytes,make_job):
     result={}
     for match in matches:
         ident=match.group("id")
-        title=unescape(match.group("title")).strip()
+        title=unescape(unquote(match.group("title"))).strip()
         if not title or title.isdecimal() or len(title)>160:continue
         tail=text[match.end():match.end()+900]
         number=re.search(r"Job Number:\s*([A-Z0-9]+)",tail,re.I)
