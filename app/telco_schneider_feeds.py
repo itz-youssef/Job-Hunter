@@ -41,7 +41,7 @@ def etisalat_taleo_partial(name,get_bytes,make_job):
         raise ValueError("Etisalat Taleo listings unavailable")
     start=doc.find("var _ftl")
     text=doc[start:] if start>=0 else doc
-    regex=re.compile(r"'(?P<id>[0-9]{5,8})','(?P<title>[^']{5,180})','(?P=id)','(?P=title)'",re.I)
+    regex=re.compile(r"'(?P<id>[0-9]{5,8})','(?P<title>[^']{8,180})'",re.I)
     matches=list(regex.finditer(text))
     if not matches:
         raise ValueError("Etisalat Taleo job identity schema changed")
@@ -49,8 +49,8 @@ def etisalat_taleo_partial(name,get_bytes,make_job):
     for match in matches:
         ident=match.group("id")
         title=unescape(match.group("title")).strip()
-        if not title or len(title)>160:continue
-        tail=text[match.end():match.end()+650]
+        if not title or title.isdecimal() or len(title)>160:continue
+        tail=text[match.end():match.end()+900]
         number=re.search(r"Job Number:\s*([A-Z0-9]+)",tail,re.I)
         if not number:continue
         job_url=("https://etisalatmisr.taleo.net/careersection/ex/"
