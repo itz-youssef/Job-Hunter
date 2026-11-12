@@ -77,3 +77,25 @@ def inspect_wordpress():
         print("WP_ERROR",url,type(exc).__name__,str(exc)[:120],flush=True)
 if __name__ == "__main__":
     inspect_wordpress()
+
+def inspect_embedded_markers():
+    import re
+    from app.custom_sources import _bytes
+    for name,url in [
+      ("DXC","https://careers.dxc.com/job-search-results/"),
+      ("Deloitte","https://middleeastjobs.deloitte.com/careersME/SearchJobs/"),
+      ("Taleo","https://etisalatmisr.taleo.net/careersection/ex/joblist.ftl"),
+    ]:
+      try:
+        body=_bytes(url).decode("utf-8","replace")
+        for needle in ("Egypt","jobid","jobId","/job/","jobdetail","jobDetail","jobsData","jobSearch","job-list"):
+          found=re.search(re.escape(needle),body,re.I)
+          if found:
+            print("MARKER",name,needle,repr(body[max(0,found.start()-110):found.start()+170]),flush=True)
+        for pattern in (r'/job/\\d+/[a-z0-9_-]+',r'jobdetail\\.ftl\\?job=[^"<> ]+',r'https://[^"<> ]+\\.json'):
+          matches=re.findall(pattern,body,re.I)
+          print("PATTERN",name,pattern,"count",len(matches),"first",matches[:5],flush=True)
+      except Exception as exc:print("MARKER_ERROR",name,type(exc).__name__,str(exc)[:120],flush=True)
+
+if __name__ == "__main__":
+    inspect_embedded_markers()
