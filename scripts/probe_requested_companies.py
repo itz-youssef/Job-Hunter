@@ -99,3 +99,18 @@ def inspect_embedded_markers():
 
 if __name__ == "__main__":
     inspect_embedded_markers()
+
+def inspect_capgemini_api():
+    from app.custom_sources import _json
+    url="https://cg-jobstream-api.azurewebsites.net/api/job-search?page=1&size=11&country_code=eg-en"
+    try:
+        data=_json(url)
+        rows=data.get("data") or []
+        print("CG_API_META","count",data.get("count"),"total",data.get("total"),flush=True)
+        if rows:
+            row=rows[0]
+            print("CG_API_FIELDS",sorted(row.keys()),flush=True)
+            print("CG_API_VALUES",{k:str(v)[:180] for k,v in row.items()
+                if any(z in k.lower() for z in ("title","name","city","location","url","link","posting","date","job_id","id","experience","country","contract","jobcode","reference"))},flush=True)
+    except Exception as exc: print("CG_API_ERROR",type(exc).__name__,str(exc)[:160],flush=True)
+if __name__ == "__main__": inspect_capgemini_api()
