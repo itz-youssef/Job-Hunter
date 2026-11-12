@@ -1,12 +1,11 @@
 
-"""Read jobs from public careers pages.
+"""Public career-site scanner for Job Hunter.
 
-Supported:
-- Greenhouse
-- Lever
-- Ashby
-- Public JSON-LD JobPosting pages
+Supports Greenhouse, Lever, Ashby, Workday,
+SmartRecruiters, Personio, PageUp and JobPosting HTML.
+No extra_adapters.py dependency.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -18,373 +17,932 @@ import socket
 import urllib.error
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 
 from html.parser import HTMLParser
-from typing import Any
 
 
-USER_AGENT = "JobHunterCareersMonitor/1.0"
-MAX_BYTES = 3_000_000
 TIMEOUT = 12
+MAX_BYTES = 3_000_000
+MAX_PAGES = 5
+MAX_DETAILS = 20
+USER_AGENT = "JobHunterCareersMonitor/2.0"
 
 
-def _public_https(url: str) -> str:
-    value = urllib.parse.urlsplit(url)
-    hostname = (value.hostname or "").lower()
+def _safe_url(url: str) -> str:
+    parts = urllib.parse.urlsplit(str(url))
+    host = (parts.hostname or "").lower()
 
     if (
-        value.scheme != "https"
-        or not hostname
-        or value.username
-        or value.password
-        or (value.port is not None and value.port != 443)
+        parts.scheme != "https"
+        or not host
+        or parts.username
+        or parts.password
+        or parts.port not in (None, 443)
+        or host == "localhost"
+        or host.endswith(
+            (".local", ".internal", ".localhost")
+        )
     ):
-        raise ValueError("Only public HTTPS URLs are supported")
-
-    if hostname == "localhost" or hostname.endswith(
-        (".local", ".internal", ".localhost")
-    ):
-        raise ValueError("Local URLs are blocked")
+        raise ValueError(
+            "Only public HTTPS careers URLs are allowed"
+        )
 
     try:
-        records = socket.getaddrinfo(
-            hostname, 443, type=socket.SOCK_STREAM
+        addresses = socket.getaddrinfo(
+            host, 443, type=socket.SOCK_STREAM
         )
     except socket.gaierror as exc:
-        raise ValueError("Host does not resolve") from exc
+        raise ValueError(
+            "Careers hostname could not be resolved"
+        ) from exc
 
-    if not records:
-        raise ValueError("Unresolvable host")
+    if not addresses or any(
+        not ipaddress.ip_address(row[4][0]).is_global
+        for row in addresses
+    ):
+        raise ValueError(
+            "Private or non-public network addresses are blocked"
+        )
 
-    for record in records:
-        address = ipaddress.ip_address(record[4][0])
-        if not address.is_global:
-            raise ValueError("Private network address blocked")
-
-    return urllib.parse.urlunsplit(value)
+    return urllib.parse.urlunsplit(parts)
 
 
-class SafeRedirect(urllib.request.HTTPRedirectHandler):
+class _SecureRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(
         self, req, fp, code, msg, headers, newurl
     ):
-        _public_https(newurl)
+        _safe_url(newurl)
         return super().redirect_request(
             req, fp, code, msg, headers, newurl
         )
 
 
-def fetch_bytes(url: str) -> bytes:
-    url = _public_https(url)
+def _bytes(url: str, body: dict | None = None) -> bytes:
+    url = _safe_url(url)
 
-    request = urllib.request.Request(
-        url,
-        headers={
-            "User-Agent": USER_AGENT,
-            "Accept": "application/json,text/html;q=0.9,*/*;q=0.5",
-        },
+    headers = {
+        "User-Agent": USER_AGENT,
+        "Accept": "application/json,text/html,application/xml,*/*",
+    }
+
+    data = None
+
+    if body is not None:
+        headers["Content-Type"] = "application/json"
+        data = json.dumps(body).encode("utf-8")
+
+    req = urllib.request.Request(
+        url, data=data, headers=headers
     )
 
-    opener = urllib.request.build_opener(SafeRedirect)
+    opener = urllib.request.build_opener(
+        _SecureRedirect
+    )
 
-    with opener.open(request, timeout=TIMEOUT) as response:
-        data = response.read(MAX_BYTES + 1)
+    with opener.open(req, timeout=TIMEOUT) as response:
+        content = response.read(MAX_BYTES + 1)
 
-        if len(data) > MAX_BYTES:
-            raise ValueError("Response size exceeded limit")
+        if len(content) > MAX_BYTES:
+            raise ValueError("Response exceeded size limit")
 
-        return data
-
-
-def get_json(url: str) -> Any:
-    return json.loads(fetch_bytes(url).decode("utf-8-sig"))
+        return content
 
 
-def plain(value: Any) -> str:
-    result = re.sub(r"<[^>]*>", " ", str(value or ""))
-    return " ".join(html.unescape(result).split())[:20000]
+def _json(url: str, body: dict | None = None):
+    return json.loads(
+        _bytes(url, body).decode("utf-8-sig")
+    )
 
 
-def make_job(
+def _clean(value) -> str:
+    raw = re.sub(r"<[^>]+>", " ", str(value or ""))
+    return " ".join(
+        html.unescape(raw).split()
+    )[:20000]
+
+
+def _job(
     company,
     title,
     location,
     url,
     description="",
-    published_at="",
-    employment="",
-):
+    published="",
+    employment=""
+) -> dict:
+
+    url = str(url or "")
+
     stable = hashlib.sha256(
-        (company.lower() + "|" + url.split("#")[0]).encode()
+        (
+            company.casefold()
+            + "|"
+            + url.split("#")[0]
+        ).encode()
     ).hexdigest()[:24]
 
     return {
         "id": "custom-" + stable,
-        "company": company,
-        "title": plain(title),
-        "location": plain(location),
-        "description": plain(description),
-        "employment": employment,
+        "company": _clean(company),
+        "title": _clean(title),
+        "location": _clean(location),
         "url": url,
-        "published_at": published_at,
+        "description": _clean(description),
+        "published_at": str(published or ""),
+        "employment": _clean(employment),
         "source": "Custom Careers",
     }
 
 
-def board_type(url):
-    parsed = urllib.parse.urlparse(url)
-    host = (parsed.hostname or "").lower()
-    paths = [p for p in parsed.path.split("/") if p]
+def _dedupe(jobs: list[dict]) -> list[dict]:
+    result = {}
 
-    if host in {
+    for job in jobs:
+        if job.get("title") and job.get("url"):
+            result[job["id"]] = job
+
+    return list(result.values())
+
+
+def _ats(url: str):
+    p = urllib.parse.urlsplit(url)
+    host = (p.hostname or "").lower()
+    seg = [s for s in p.path.split("/") if s]
+
+    if host in (
         "boards.greenhouse.io",
         "job-boards.greenhouse.io",
-    } and paths:
-        return "greenhouse", paths[0]
+    ) and seg:
+        return "greenhouse", seg[0]
 
-    if host == "jobs.lever.co" and paths:
-        return "lever", paths[0]
+    if host == "jobs.lever.co" and seg:
+        return "lever", seg[0]
 
-    if host == "jobs.ashbyhq.com" and paths:
-        return "ashby", paths[0]
+    if host == "jobs.ashbyhq.com" and seg:
+        return "ashby", seg[0]
 
-    return "jsonld", None
+    if host in (
+        "careers.smartrecruiters.com",
+        "jobs.smartrecruiters.com",
+    ) and seg:
+        return "smartrecruiters", seg[0]
 
-
-class JsonLdParser(HTMLParser):
-    def __init__(self):
-        super().__init__()
-        self.in_script = False
-        self.parts = []
-        self.blocks = []
-
-    def handle_starttag(self, tag, attrs):
-        if tag.lower() == "script" and any(
-            k.lower() == "type"
-            and v
-            and "application/ld+json" in v.lower()
-            for k, v in attrs
-        ):
-            self.in_script = True
-            self.parts = []
-
-    def handle_data(self, data):
-        if self.in_script:
-            self.parts.append(data)
-
-    def handle_endtag(self, tag):
-        if tag.lower() == "script" and self.in_script:
-            self.blocks.append("".join(self.parts))
-            self.in_script = False
-
-
-def walk_jsonld(node):
-    if isinstance(node, list):
-        for item in node:
-            yield from walk_jsonld(item)
-
-    elif isinstance(node, dict):
-        types = node.get("@type", [])
-        types = types if isinstance(types, list) else [types]
-
-        if "JobPosting" in types or any(
-            str(t).endswith("/JobPosting") for t in types
-        ):
-            yield node
-
-        for key in ("@graph", "mainEntity", "itemListElement"):
-            if key in node:
-                yield from walk_jsonld(node[key])
-
-
-def ld_location(value):
-    if isinstance(value, list):
-        return ", ".join(
-            x for item in value if (x := ld_location(item))
+    if host.endswith(".myworkdayjobs.com") and seg:
+        index = (
+            1
+            if re.fullmatch(
+                r"[a-z]{2}-[a-z]{2}", seg[0], re.I
+            ) and len(seg) > 1
+            else 0
         )
 
-    if isinstance(value, str):
-        return value
+        return "workday", (
+            host.split(".")[0],
+            seg[index],
+            "/".join(seg[:index + 1]),
+        )
 
-    if not isinstance(value, dict):
+    if host.endswith((
+        ".jobs.personio.de",
+        ".jobs.personio.com",
+    )):
+        return "personio", host
+
+    if (
+        host == "careers.pageuppeople.com"
+        and len(seg) >= 3
+    ):
+        return "pageup", "/".join(seg[:3])
+
+    return "html", None
+
+
+def _location(location) -> str:
+
+    if isinstance(location, list):
+        return ", ".join(
+            filter(
+                None,
+                (_location(v) for v in location)
+            )
+        )
+
+    if isinstance(location, str):
+        return (
+            "Egypt"
+            if location.upper() == "EG"
+            else location
+        )
+
+    if not isinstance(location, dict):
         return ""
 
-    address = value.get("address", value)
+    if "address" in location:
+        return _location(location["address"])
 
-    if isinstance(address, str):
-        return address
+    if isinstance(location.get("name"), str):
+        return location["name"]
 
-    if not isinstance(address, dict):
-        return ""
-
-    return ", ".join(
-        str(address[k])
+    pieces = [
+        location.get(k)
         for k in (
             "addressLocality",
             "addressRegion",
             "addressCountry",
         )
-        if address.get(k)
+    ]
+
+    if not any(pieces):
+        pieces = [
+            location.get(k)
+            for k in ("city", "region", "country")
+        ]
+
+    return ", ".join(
+        _location(v)
+        for v in pieces
+        if v
     )
 
 
-def parse_jsonld(page, company, page_url):
-    parser = JsonLdParser()
-    parser.feed(page)
+class _PageParser(HTMLParser):
 
-    jobs = []
+    def __init__(self):
+        super().__init__()
+        self.blocks = []
+        self.links = []
+        self._script = False
+        self._script_parts = []
+        self._href = None
+        self._anchor_text = []
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+
+        if (
+            tag == "script"
+            and "application/ld+json"
+            in attrs.get("type", "").lower()
+        ):
+            self._script = True
+            self._script_parts = []
+
+        if tag == "a":
+            self._href = attrs.get("href")
+            self._anchor_text = []
+
+        if tag == "iframe" and attrs.get("src"):
+            self.links.append((
+                attrs["src"],
+                "iframe jobs"
+            ))
+
+    def handle_data(self, data):
+        if self._script:
+            self._script_parts.append(data)
+
+        if self._href is not None:
+            self._anchor_text.append(data)
+
+    def handle_endtag(self, tag):
+        if tag == "script" and self._script:
+            self.blocks.append(
+                "".join(self._script_parts)
+            )
+            self._script = False
+
+        if tag == "a" and self._href is not None:
+            self.links.append((
+                self._href,
+                " ".join(self._anchor_text)
+            ))
+            self._href = None
+
+
+def _postings(node):
+
+    if isinstance(node, list):
+        for obj in node:
+            yield from _postings(obj)
+
+    elif isinstance(node, dict):
+        kinds = node.get("@type") or []
+
+        kinds = (
+            kinds
+            if isinstance(kinds, list)
+            else [kinds]
+        )
+
+        if any(
+            str(k).split("/")[-1] == "JobPosting"
+            for k in kinds
+        ):
+            yield node
+
+        for field in (
+            "@graph",
+            "mainEntity",
+            "itemListElement",
+        ):
+            if field in node:
+                yield from _postings(node[field])
+
+
+def _structured_jobs(
+    name: str,
+    page: str,
+    content: str
+) -> list[dict]:
+
+    parser = _PageParser()
+    parser.feed(content)
+
+    result = []
 
     for block in parser.blocks:
         try:
-            data = json.loads(block.strip())
-        except (ValueError, json.JSONDecodeError):
+            data = json.loads(block)
+        except (ValueError, TypeError):
             continue
 
-        for posting in walk_jsonld(data):
-            title = posting.get("title", "")
+        for item in _postings(data):
+            title = item.get("title", "")
+
             if not title:
                 continue
 
-            location = ld_location(posting.get("jobLocation"))
-
-            if (
-                not location
-                and posting.get("jobLocationType") == "TELECOMMUTE"
-            ):
-                location = "Remote - " + ld_location(
-                    posting.get("applicantLocationRequirements")
-                )
-
-            url = str(posting.get("url") or page_url)
-            url = urllib.parse.urljoin(page_url, url)
-
-            jobs.append(
-                make_job(
-                    company,
-                    title,
-                    location,
-                    url,
-                    posting.get("description", ""),
-                    str(posting.get("datePosted") or ""),
-                    str(posting.get("employmentType") or ""),
-                )
+            loc = _location(
+                item.get("jobLocation")
             )
 
-    return jobs
+            if (
+                not loc
+                and str(
+                    item.get("jobLocationType", "")
+                ).upper() == "TELECOMMUTE"
+            ):
+                loc = "Remote - " + _location(
+                    item.get(
+                        "applicantLocationRequirements"
+                    )
+                )
 
+            link = urllib.parse.urljoin(
+                page,
+                str(item.get("url") or page)
+            )
 
-def unique(jobs):
-    seen = set()
-    result = []
+            if (
+                urllib.parse.urlsplit(link).scheme
+                != "https"
+            ):
+                continue
 
-    for job in jobs:
-        if job["id"] not in seen:
-            seen.add(job["id"])
-            result.append(job)
+            result.append(
+                _job(
+                    name,
+                    title,
+                    loc,
+                    link,
+                    item.get("description", ""),
+                    item.get("datePosted", ""),
+                    item.get("employmentType", ""),
+                )
+            )
 
     return result
 
 
-def scan_company(company):
-    name = str(company.get("name") or "").strip()
-    url = str(company.get("url") or "").strip()
+def _board_jobs(name: str, url: str) -> list[dict]:
 
-    if not name or not url:
-        return [], "invalid", "Company name and URL required"
+    kind, meta = _ats(url)
+    p = urllib.parse.urlsplit(url)
+    jobs = []
 
-    try:
-        _public_https(url)
-        mode, slug = board_type(url)
+    # GREENHOUSE
+    if kind == "greenhouse":
+        slug = urllib.parse.quote(meta, safe="")
 
-        if mode == "greenhouse":
-            data = get_json(
-                f"https://boards-api.greenhouse.io/v1/boards/"
-                f"{slug}/jobs?content=true"
-            )
+        data = _json(
+            "https://boards-api.greenhouse.io"
+            f"/v1/boards/{slug}/jobs?content=true"
+        )
 
-            jobs = [
-                make_job(
+        for item in data.get("jobs", []):
+            jobs.append(
+                _job(
                     name,
-                    j.get("title", ""),
-                    (j.get("location") or {}).get("name", ""),
-                    j.get("absolute_url", ""),
-                    j.get("content", ""),
-                    j.get("updated_at", ""),
+                    item.get("title"),
+                    _location(item.get("location")),
+                    item.get("absolute_url"),
+                    item.get("content"),
+                    item.get("updated_at"),
                 )
-                for j in data.get("jobs", [])
-                if j.get("title") and j.get("absolute_url")
-            ]
-
-        elif mode == "lever":
-            data = get_json(
-                f"https://api.lever.co/v0/postings/"
-                f"{slug}?mode=json"
             )
 
-            jobs = [
-                make_job(
+    # LEVER
+    elif kind == "lever":
+        slug = urllib.parse.quote(meta, safe="")
+
+        data = _json(
+            "https://api.lever.co"
+            f"/v0/postings/{slug}?mode=json"
+        )
+
+        for item in data:
+            cat = item.get("categories") or {}
+
+            jobs.append(
+                _job(
                     name,
-                    j.get("text", ""),
-                    (j.get("categories") or {}).get(
-                        "location", ""
+                    item.get("text"),
+                    cat.get("location"),
+                    item.get("hostedUrl"),
+                    item.get("descriptionPlain")
+                    or item.get("description"),
+                    item.get("createdAt"),
+                    cat.get("commitment"),
+                )
+            )
+
+    # ASHBY
+    elif kind == "ashby":
+        slug = urllib.parse.quote(meta, safe="")
+
+        data = _json(
+            "https://api.ashbyhq.com"
+            f"/posting-api/job-board/{slug}"
+        )
+
+        for item in data.get("jobs", []):
+
+            if item.get("isListed", True):
+                jobs.append(
+                    _job(
+                        name,
+                        item.get("title"),
+                        item.get("location"),
+                        item.get("jobUrl"),
+                        item.get("descriptionPlain")
+                        or item.get("descriptionHtml"),
+                        item.get("publishedAt"),
+                        item.get("employmentType"),
+                    )
+                )
+
+    # SMARTRECRUITERS
+    elif kind == "smartrecruiters":
+        slug = urllib.parse.quote(meta, safe="")
+
+        for page in range(MAX_PAGES):
+            data = _json(
+                "https://api.smartrecruiters.com"
+                f"/v1/companies/{slug}/postings"
+                f"?limit=100&offset={page * 100}"
+            )
+
+            rows = data.get("content") or []
+
+            for item in rows:
+                loc = _location(item.get("location"))
+                job_id = str(item.get("id") or "")
+                details = item
+
+                if (
+                    job_id
+                    and re.search(
+                        r"egypt|cairo|giza|alexandria",
+                        loc,
+                        re.I
+                    )
+                    and len(jobs) < MAX_DETAILS
+                ):
+                    try:
+                        details = _json(
+                            "https://api.smartrecruiters.com"
+                            f"/v1/companies/{slug}/postings/"
+                            + urllib.parse.quote(
+                                job_id, safe=""
+                            )
+                        )
+                    except (
+                        urllib.error.HTTPError,
+                        urllib.error.URLError,
+                        ValueError,
+                    ):
+                        details = item
+
+                sections = (
+                    (details.get("jobAd") or {})
+                    .get("sections")
+                    or {}
+                )
+
+                description = " ".join(
+                    str(v.get("text", ""))
+                    if isinstance(v, dict)
+                    else str(v)
+                    for v in sections.values()
+                )
+
+                link = (
+                    details.get("postingUrl")
+                    or details.get("applyUrl")
+                    or (
+                        "https://jobs.smartrecruiters.com"
+                        f"/{slug}/{job_id}"
+                    )
+                )
+
+                typ = item.get(
+                    "typeOfEmployment"
+                ) or {}
+
+                jobs.append(
+                    _job(
+                        name,
+                        item.get("name")
+                        or item.get("title"),
+                        loc,
+                        link,
+                        description,
+                        details.get("releasedDate"),
+                        (
+                            typ.get("label", "")
+                            if isinstance(typ, dict)
+                            else typ
+                        ),
+                    )
+                )
+
+            if (
+                not rows
+                or (page + 1) * 100
+                >= data.get("totalFound", 0)
+            ):
+                break
+
+    # WORKDAY
+    elif kind == "workday":
+        tenant, site, public_prefix = meta
+
+        endpoint = (
+            f"https://{p.hostname}/wday/cxs/"
+            f"{urllib.parse.quote(tenant, safe='')}/"
+            f"{urllib.parse.quote(site, safe='')}"
+        )
+
+        detail_count = 0
+
+        for page in range(MAX_PAGES):
+
+            data = _json(
+                endpoint + "/jobs",
+                {
+                    "appliedFacets": {},
+                    "limit": 20,
+                    "offset": page * 20,
+                    "searchText": "",
+                }
+            )
+
+            rows = data.get("jobPostings") or []
+
+            for item in rows:
+
+                title = item.get("title") or ""
+                location = (
+                    item.get("locationsText") or ""
+                )
+                path = (
+                    item.get("externalPath") or ""
+                )
+
+                if not path:
+                    continue
+
+                description = ""
+
+                if (
+                    detail_count < MAX_DETAILS
+                    and re.search(
+                        r"egypt|cairo|giza|alexandria",
+                        location,
+                        re.I
+                    )
+                ):
+                    try:
+                        detail = _json(
+                            endpoint + path
+                        )
+                        description = (
+                            detail.get(
+                                "jobPostingInfo"
+                            ) or {}
+                        ).get(
+                            "jobDescription"
+                        ) or ""
+
+                    except (
+                        urllib.error.HTTPError,
+                        urllib.error.URLError,
+                        ValueError,
+                    ):
+                        pass
+
+                    detail_count += 1
+
+                public_url = (
+                    f"https://{p.hostname}/"
+                    f"{public_prefix}{path}"
+                )
+
+                jobs.append(
+                    _job(
+                        name,
+                        title,
+                        location,
+                        public_url,
+                        description,
+                        item.get("postedOn"),
+                    )
+                )
+
+            if (
+                not rows
+                or (page + 1) * 20
+                >= data.get("total", 0)
+            ):
+                break
+
+    # PERSONIO
+    elif kind == "personio":
+        host = p.hostname
+
+        root = ET.fromstring(
+            _bytes(
+                f"https://{host}/xml?language=en"
+            )
+        )
+
+        for position in root.findall(
+            ".//position"
+        ):
+
+            def field(key):
+                return position.findtext(
+                    key, default=""
+                )
+
+            description = " ".join(
+                " ".join(item.itertext())
+                for item in position.findall(
+                    "./jobDescriptions/jobDescription"
+                )
+            )
+
+            jobs.append(
+                _job(
+                    name,
+                    field("name"),
+                    field("office"),
+                    field("url")
+                    or (
+                        f"https://{host}/job/"
+                        f"{field('id')}"
                     ),
-                    j.get("hostedUrl", ""),
-                    j.get("descriptionPlain")
-                    or j.get("description", ""),
-                    str(j.get("createdAt") or ""),
-                    (j.get("categories") or {}).get(
-                        "commitment", ""
-                    ),
+                    description,
+                    field("createdAt"),
+                    field("employmentType"),
                 )
-                for j in data
-                if j.get("text") and j.get("hostedUrl")
-            ]
-
-        elif mode == "ashby":
-            data = get_json(
-                f"https://api.ashbyhq.com/posting-api/"
-                f"job-board/{slug}"
             )
 
-            jobs = [
-                make_job(
+    # PAGEUP (PUBLIC JSON FEED WHEN AVAILABLE)
+    elif kind == "pageup":
+        feed = _json(
+            f"https://{p.hostname}/{meta}/jobs.json"
+        )
+
+        rows = (
+            feed
+            if isinstance(feed, list)
+            else feed.get(
+                "Jobs",
+                feed.get("jobs", [])
+            )
+        )
+
+        for item in rows:
+            link = urllib.parse.urljoin(
+                url,
+                item.get("Url")
+                or item.get("URL")
+                or ""
+            )
+
+            jobs.append(
+                _job(
                     name,
-                    j.get("title", ""),
-                    j.get("location", ""),
-                    j.get("jobUrl", ""),
-                    j.get("descriptionPlain")
-                    or j.get("descriptionHtml", ""),
-                    j.get("publishedAt", ""),
-                    j.get("employmentType", ""),
+                    item.get("Title")
+                    or item.get("title"),
+                    _location(
+                        item.get("LocationList")
+                        or item.get("Location")
+                    ),
+                    link,
+                    item.get("Overview"),
+                    item.get("ClosingDate"),
                 )
-                for j in data.get("jobs", [])
-                if j.get("title")
-                and j.get("jobUrl")
-                and j.get("isListed", True)
-            ]
-           
-        else:
-            from app.extra_adapters import discover_jobs
-            return discover_jobs(name, link)
+            )
 
-            if not jobs:
-                return (
-                    [],
-                    "needs_adapter",
-                    "No JobPosting data found. "
-                    "Custom adapter required.",
+    else:
+        raise ValueError("Unrecognized ATS")
+
+    return _dedupe(jobs)
+
+
+def _discover(name: str, url: str):
+
+    queue = [url]
+    visited = set()
+    board_links = []
+    found_jobs = []
+
+    home_host = (
+        urllib.parse.urlsplit(url).hostname
+    )
+
+    while queue and len(visited) < 6:
+
+        page = queue.pop(0)
+
+        if page in visited:
+            continue
+
+        visited.add(page)
+
+        content = _bytes(page).decode(
+            "utf-8", "replace"
+        )
+
+        found_jobs.extend(
+            _structured_jobs(
+                name, page, content
+            )
+        )
+
+        parser = _PageParser()
+        parser.feed(content)
+
+        for href, label in parser.links:
+
+            target = urllib.parse.urljoin(
+                page, href
+            )
+
+            parts = urllib.parse.urlsplit(
+                target
+            )
+
+            if (
+                parts.scheme != "https"
+                or not parts.hostname
+            ):
+                continue
+
+            kind, _ = _ats(target)
+
+            if kind != "html":
+
+                if target not in board_links:
+                    board_links.append(
+                        target
+                    )
+
+            elif (
+                parts.hostname == home_host
+                and (
+                    re.search(
+                        r"jobs?|careers?|openings?|positions?|vacanc|join-us",
+                        parts.path,
+                        re.I
+                    )
+                    or re.search(
+                        r"engineer|developer|intern|graduate|job",
+                        label,
+                        re.I
+                    )
                 )
+            ):
+                if (
+                    target not in visited
+                    and target not in queue
+                    and len(queue) < 15
+                ):
+                    queue.append(target)
 
-        jobs = unique(jobs)
+    if found_jobs:
+        jobs = _dedupe(found_jobs)
 
         return (
             jobs,
             "monitoring",
-            f"{len(jobs)} jobs parsed",
+            f"{len(jobs)} structured job postings found",
+        )
+
+    for board in board_links[:4]:
+
+        try:
+            jobs = _board_jobs(
+                name, board
+            )
+
+            return (
+                jobs,
+                "monitoring",
+                f"{len(jobs)} postings from linked job board",
+            )
+
+        except (
+            OSError,
+            ValueError,
+            KeyError,
+            TypeError,
+            ET.ParseError,
+        ):
+            continue
+
+    return (
+        [],
+        "needs_adapter",
+        "No readable public JobPosting feed; "
+        "a company-specific adapter may be needed",
+    )
+
+
+def scan_company(company: dict):
+    """Return (jobs, status, reason)."""
+
+    name = str(
+        company.get("name") or ""
+    ).strip()
+
+    url = str(
+        company.get("url") or ""
+    ).strip()
+
+    if not name or not url:
+        return (
+            [],
+            "invalid",
+            "Company name and careers URL are required",
+        )
+
+    try:
+        _safe_url(url)
+
+        kind, _ = _ats(url)
+
+        if kind == "html":
+            return _discover(
+                name, url
+            )
+
+        jobs = _board_jobs(
+            name, url
+        )
+
+        return (
+            jobs,
+            "monitoring",
+            f"{len(jobs)} jobs parsed from {kind}",
+        )
+
+    except urllib.error.HTTPError as exc:
+
+        if exc.code in (401, 403, 429):
+            return (
+                [],
+                "access_blocked",
+                f"Careers website returned HTTP {exc.code}",
+            )
+
+        if exc.code == 404:
+            return (
+                [],
+                "needs_adapter",
+                "Public careers feed not found (HTTP 404)",
+            )
+
+        return (
+            [],
+            "error",
+            f"Careers website returned HTTP {exc.code}",
         )
 
     except (
-        urllib.error.HTTPError,
         urllib.error.URLError,
         TimeoutError,
         OSError,
@@ -392,16 +950,11 @@ def scan_company(company):
         TypeError,
         KeyError,
         json.JSONDecodeError,
-    ) as error:
+        ET.ParseError,
+    ) as exc:
 
-        if (
-            isinstance(error, urllib.error.HTTPError)
-            and error.code in (401, 403, 429)
-        ):
-            return (
-                [],
-                "access_blocked",
-                f"Website returned HTTP {error.code}",
-            )
-
-        return [], "error", str(error)[:220]
+        return (
+            [],
+            "error",
+            str(exc)[:200],
+        )
