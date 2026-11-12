@@ -100,3 +100,31 @@ def capgemini_egypt(name, get_bytes, parse_links, structured_jobs, make_job):
             raise ValueError("Capgemini pagination stopped advancing")
 
     raise ValueError("Capgemini Egypt list exceeds verified pagination bound")
+
+
+def deloitte_middle_east_partial(name, url, get_bytes, parse_links, make_job):
+    """Read official Deloitte Middle East public PipelineDetail links.
+
+    The rendered search page is paginated. Expose only verified records and
+    explicitly return *partial*, not a false complete-feed status.
+    """
+    from urllib.parse import urljoin, urlsplit
+    document = get_bytes(url).decode("utf-8", "replace")
+    found = {}
+    for href, text in parse_links(document):
+        target = urljoin(url, href).split("#", 1)[0]
+        p = urlsplit(target)
+        if p.hostname != "middleeastjobs.deloitte.com":
+            continue
+        if not re.match(r"^/careersME/PipelineDetail/[^/]+/[0-9]+/?$", p.path, re.I):
+            continue
+        label = " ".join(str(text).split())
+        # Multi-country listings involving Egypt are eligible; other
+        # Middle East locations are rejected unless the job itself says Egypt.
+        if not re.search(r"\\b(?:egypt|cairo|giza|alexandria)\\b",
+                         label + " " + p.path.replace("-", " "), re.I):
+            continue
+        if not label:
+            continue
+        found[target] = make_job(name, label, "Egypt", target, "", "", "")
+    return list(found.values())
