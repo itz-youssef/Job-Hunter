@@ -1,237 +1,354 @@
 {
-  "checked_at": "2026-11-12T17:47:21.466545+00:00",
+  "checked_at": "2026-11-12T17:49:26.297395+00:00",
   "companies": [
     {
       "name": "VOIS",
       "url": "https://jobs.vodafone.com/careers?domain=vodafone.com&start=0&location=Egypt&pid=563018698305416&sort_by=match&filter_include_remote=1&filter_include_relocation=0&filter_seniority=1%2C0",
       "status": "partial",
       "message": "1 structured posting(s); no complete job feed verified",
+      "parsed_jobs": 1,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.441113+00:00"
+      "excluded_jobs": 1,
+      "exclusion_reasons": {
+        "Excluded: job location is not explicitly in Egypt": 1
+      },
+      "checked_at": "2026-11-12T17:49:26.270342+00:00"
     },
     {
       "name": "Bosta",
       "url": "https://jobs.lever.co/Bosta/?utm_source=chatgpt.com",
       "status": "monitoring",
       "message": "94 jobs parsed from lever",
+      "parsed_jobs": 94,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.446500+00:00"
+      "excluded_jobs": 94,
+      "exclusion_reasons": {
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 82,
+        "Excluded: job location is not explicitly in Egypt": 12
+      },
+      "checked_at": "2026-11-12T17:49:26.277913+00:00"
     },
     {
       "name": "Thndr",
       "url": "https://jobs.ashbyhq.com/thndr?",
       "status": "monitoring",
       "message": "17 jobs parsed from ashby",
+      "parsed_jobs": 17,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.447104+00:00"
+      "excluded_jobs": 17,
+      "exclusion_reasons": {
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 7,
+        "Excluded: job location is not explicitly in Egypt": 7,
+        "Excluded: senior, mid-level or management title": 3
+      },
+      "checked_at": "2026-11-12T17:49:26.279009+00:00"
     },
     {
       "name": "Klivvr",
       "url": "https://jobs.lever.co/klivvr?utm_source=chatgpt.com",
       "status": "monitoring",
       "message": "7 jobs parsed from lever",
+      "parsed_jobs": 7,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.447284+00:00"
+      "excluded_jobs": 7,
+      "exclusion_reasons": {
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 7
+      },
+      "checked_at": "2026-11-12T17:49:26.279262+00:00"
     },
     {
       "name": "Emergence",
       "url": "https://jobs.ashbyhq.com/emergence?utm_source=chatgpt.com",
       "status": "monitoring",
       "message": "7 jobs parsed from ashby",
+      "parsed_jobs": 7,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.447660+00:00"
+      "excluded_jobs": 7,
+      "exclusion_reasons": {
+        "Excluded: job location is not explicitly in Egypt": 6,
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 1
+      },
+      "checked_at": "2026-11-12T17:49:26.279920+00:00"
     },
     {
       "name": "Lean Technologies",
       "url": "https://jobs.ashbyhq.com/LeanTech?utm_source=chatgpt.com",
       "status": "monitoring",
       "message": "8 jobs parsed from ashby",
+      "parsed_jobs": 8,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.448165+00:00"
+      "excluded_jobs": 8,
+      "exclusion_reasons": {
+        "Excluded: job location is not explicitly in Egypt": 8
+      },
+      "checked_at": "2026-11-12T17:49:26.280838+00:00"
     },
     {
       "name": "Chatbase",
       "url": "https://jobs.ashbyhq.com/chatbase?utm_source=chatgpt.com",
       "status": "monitoring",
       "message": "13 jobs parsed from ashby",
+      "parsed_jobs": 13,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.449716+00:00"
+      "excluded_jobs": 13,
+      "exclusion_reasons": {
+        "Excluded: job location is not explicitly in Egypt": 12,
+        "Excluded: junior, graduate, internship or 0–2 years not confirmed": 1
+      },
+      "checked_at": "2026-11-12T17:49:26.283294+00:00"
     },
     {
       "name": "Lua Global",
       "url": "https://jobs.ashbyhq.com/lua?utm_source=chatgpt.com",
       "status": "monitoring",
       "message": "0 jobs parsed from ashby",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.449732+00:00"
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-12T17:49:26.283303+00:00"
     },
     {
       "name": "IBM",
       "url": "https://www.ibm.com/careers/search?",
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.449739+00:00"
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-12T17:49:26.283308+00:00"
     },
     {
       "name": "Schneider Electric",
       "url": "https://careers.se.com/Defaultlandingpage/jobs/categories?lang=en-US&utm_source=chatgpt.com",
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.449743+00:00"
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-12T17:49:26.283311+00:00"
     },
     {
       "name": "Ericsson",
       "url": "https://jobs.ericsson.com/careers?utm_source=chatgpt.com&query=Software+Engineer&start=0&location=egypt&pid=563121777515649&sort_by=relevance&filter_include_remote=1&filter_include_relocation=0",
       "status": "partial",
       "message": "1 structured posting(s); no complete job feed verified",
+      "parsed_jobs": 1,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.449775+00:00"
+      "excluded_jobs": 1,
+      "exclusion_reasons": {
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 1
+      },
+      "checked_at": "2026-11-12T17:49:26.283358+00:00"
     },
     {
       "name": "Capgemini Egypt",
       "url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com",
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.449778+00:00"
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-12T17:49:26.283361+00:00"
     },
     {
       "name": "DXC Technology",
       "url": "https://careers.dxc.com/?utm_source=chatgpt.com",
-      "status": "needs_adapter",
-      "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "status": "access_blocked",
+      "message": "Careers website returned HTTP 403",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.449781+00:00"
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-12T17:49:26.283364+00:00"
     },
     {
       "name": "Luxoft Egypt",
       "url": "https://career.luxoft.com/locations/egypt?utm_source=chatgpt.com",
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.449784+00:00"
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-12T17:49:26.283367+00:00"
     },
     {
       "name": "Nokia",
       "url": "https://fa-evmr-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs",
       "status": "monitoring",
       "message": "0 jobs parsed from oracle",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.449787+00:00"
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-12T17:49:26.283370+00:00"
     },
     {
       "name": "SAP",
       "url": "https://jobs.sap.com/en/jobs/?location=Cairo&utm_source=chatgpt.com",
       "status": "access_blocked",
       "message": "Careers website returned HTTP 403",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.449792+00:00"
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-12T17:49:26.283375+00:00"
     },
     {
       "name": "Orange Egypt",
       "url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com",
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.449795+00:00"
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-12T17:49:26.283377+00:00"
     },
     {
       "name": "e& / Etisalat",
       "url": "https://www.eand.com/ar/careers/careers.html?utm_source=chatgpt.com",
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.449798+00:00"
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-12T17:49:26.283380+00:00"
     },
     {
       "name": "Telecom Egypt (WE)",
       "url": "https://te.eg/en/web/guest/about-te/careers-and-training?utm_source=chatgpt.com",
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.449801+00:00"
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-12T17:49:26.283383+00:00"
     },
     {
       "name": "Paymob",
       "url": "https://origin.paymob.com/en/careers?utm_source=chatgpt.com",
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.449803+00:00"
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-12T17:49:26.283386+00:00"
     },
     {
       "name": "Breadfast",
       "url": "https://www.breadfast.com/careers/?utm_source=chatgpt.com",
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.449806+00:00"
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-12T17:49:26.283389+00:00"
     },
     {
       "name": "ITWorx",
       "url": "https://careers.itworx.com/?utm_source=chatgpt.com",
       "status": "monitoring",
       "message": "3 jobs parsed from itworx",
+      "parsed_jobs": 3,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.449861+00:00"
+      "excluded_jobs": 3,
+      "exclusion_reasons": {
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 2,
+        "Excluded: senior, mid-level or management title": 1
+      },
+      "checked_at": "2026-11-12T17:49:26.283487+00:00"
     },
     {
       "name": "Sumerge",
       "url": "https://www.sumerge.com/careers/job-openings?utm_source=chatgpt.com",
       "status": "monitoring",
       "message": "8 jobs parsed from workable",
+      "parsed_jobs": 8,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.450015+00:00"
+      "excluded_jobs": 8,
+      "exclusion_reasons": {
+        "Excluded: junior, graduate, internship or 0–2 years not confirmed": 1,
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 5,
+        "Excluded: senior, mid-level or management title": 2
+      },
+      "checked_at": "2026-11-12T17:49:26.283746+00:00"
     },
     {
       "name": "Luciq (formerly Instabug)",
       "url": "https://www.luciq.ai/careers?utm_source=chatgpt.com",
-      "status": "needs_adapter",
-      "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "status": "monitoring",
+      "message": "2 postings found (linked boards: 1)",
+      "parsed_jobs": 2,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.450020+00:00"
+      "excluded_jobs": 2,
+      "exclusion_reasons": {
+        "Excluded: job location is not explicitly in Egypt": 2
+      },
+      "checked_at": "2026-11-12T17:49:26.283855+00:00"
     },
     {
       "name": "Breadfast Technology",
       "url": "https://www.breadfast.com/ar/careers_categories/technology/?utm_source=chatgpt.com",
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.450023+00:00"
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-12T17:49:26.283860+00:00"
     },
     {
       "name": "Link Development",
       "url": "https://linkdevelopment.com/careers/opportunities/?utm_source=chatgpt.com",
       "status": "needs_adapter",
       "message": "Public listings rendered dynamically; no complete feed was extracted",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.450026+00:00"
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-12T17:49:26.283863+00:00"
     },
     {
       "name": "Fawry",
       "url": "https://www.fawry.com/jobs/?utm_source=chatgpt.com",
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.450028+00:00"
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-12T17:49:26.283866+00:00"
     },
     {
       "name": "Siemens",
       "url": "https://jobs.sw.siemens.com/business-structure/electronic-design-automation-eda/jobs/?location=Cairo&utm_source=chatgpt.com",
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.450031+00:00"
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-12T17:49:26.283869+00:00"
     },
     {
       "name": "Deloitte",
       "url": "https://middleeastjobs.deloitte.com/careersME/SearchJobs/?9570=%5B25581143%5D&9570_format=11920&9571=%5B56311763%5D&9571_format=11921&12333=%5B56312272%5D&12333_format=16407&listFilterMode=1&pipelineRecordsPerPage=6&",
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T17:47:21.450034+00:00"
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-12T17:49:26.283871+00:00"
     }
   ]
 }
