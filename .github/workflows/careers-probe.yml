@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "scripts/probe_public_careers.py"
+      - "scripts/probe_career_structures.py"
       - ".github/workflows/careers-probe.yml"
   workflow_dispatch:
 
@@ -23,3 +24,5 @@ jobs:
         run: python -m py_compile scripts/probe_public_careers.py
       - name: Probe official public careers pages (read-only)
         run: python -m scripts.probe_public_careers
+      - name: Inspect available public listings
+        run: python -m scripts.probe_career_structures
