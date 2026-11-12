@@ -48,7 +48,9 @@ def workable(name, slug, get_json, get_bytes, structured, make_job):
                     place = matches[0].get("location") or place
             except (OSError, ValueError, TypeError):
                 pass
-        results.append(make_job(name,title,place,link,description,item.get("published_at") or item.get("published_on") or "",item.get("employment_type") or ""))
+        job = make_job(name,title,place,link,description,item.get("published_at") or item.get("published_on") or "",item.get("employment_type") or "")
+        job["seniority"] = str(item.get("experience") or "")
+        results.append(job)
     return results
 
 
@@ -112,11 +114,13 @@ def itworx(name, post_json, make_job):
             if not job_id.isdigit() or not EGYPT.search(location) or not TARGET.search(title):
                 continue
             description = " ".join(str(row.get(k) or "") for k in ("Description", "Requirements"))
-            found[job_id] = make_job(
+            job = make_job(
                 name, title, location,
                 f"https://careers.itworx.com/job-details/{job_id}",
-                description, "", " ".join(str(row.get(k) or "") for k in ("CareerLevel", "EmploymentType")),
+                description, "", str(row.get("EmploymentType") or ""),
             )
+            job["seniority"] = str(row.get("CareerLevel") or "")
+            found[job_id] = job
         total = int(data.get("TotalCount") or len(rows))
         if not rows or (page + 1) * page_size >= total:
             break
