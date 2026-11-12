@@ -1217,8 +1217,8 @@ def scan_company(company: dict):
         return (
             jobs,
             "partial" if kind == "deloitte_partial" else "monitoring",
-            (f"{len(jobs)} Egypt postings on current Deloitte search page; "
-             "full pagination not yet verified") if kind == "deloitte_partial"
+            (f"{len(jobs)} Egypt postings from paginated Deloitte search; "
+             "complete coverage not yet verified") if kind == "deloitte_partial"
             else f"{len(jobs)} jobs parsed from {kind}",
         )
 
