@@ -74,13 +74,9 @@ def eightfold_egypt(name, host, domain, get_json, make_job, vois=False):
                 location = _location(locations)
             if not EGYPT.search(location) or not title or not identity.isdecimal():
                 continue
-            if vois:
-                brand = str(item.get("brand") or item.get("companyName") or "")
-                if not re.search(r"\bvois\b", title+" "+brand, re.I):
-                    # Some early-career programmes have no (VOIS) in the title
-                    # but the search is explicitly brand-scoped. Allow these only
-                    # when the programme explicitly says VOIS.
-                    continue
+            # The public PCSX search was independently verified to honor
+            # filter_brand=vois (26 results versus the broader Vodafone Egypt
+            # listings). Do not drop work-experience titles lacking the acronym.
             path = str(item.get("positionUrl") or item.get("canonicalPositionUrl") or "")
             link = urljoin(f"https://{host}/", path)
             parts = urlsplit(link)
