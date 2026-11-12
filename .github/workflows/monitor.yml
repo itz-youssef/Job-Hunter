@@ -93,54 +93,10 @@ jobs:
             git push origin HEAD:main
           fi
 
-      - name: Test Gmail delivery
+      - name: Send new job alerts
         env:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           SMTP_FROM: ${{ secrets.SMTP_FROM }}
           ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
-        run: |
-          python - <<'PY'
-          import os
-          import smtplib
-          import ssl
-          from email.message import EmailMessage
-
-          required = [
-              "SMTP_USER", "SMTP_PASSWORD",
-              "SMTP_FROM", "ALERT_EMAIL",
-          ]
-          missing = [key for key in required if not os.getenv(key)]
-          if missing:
-              raise SystemExit("Missing secrets: " + ", ".join(missing))
-
-          message = EmailMessage()
-          message["Subject"] = "Job Hunter - Email test"
-          message["From"] = os.environ["SMTP_FROM"]
-          message["To"] = os.environ["ALERT_EMAIL"]
-          message.set_content(
-              "Your Job Hunter email connection works.\n"
-              "This is a test message, not a job alert."
-          )
-
-          try:
-              with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as server:
-                  server.ehlo()
-                  server.starttls(context=ssl.create_default_context())
-                  server.ehlo()
-                  server.login(
-                      os.environ["SMTP_USER"],
-                      os.environ["SMTP_PASSWORD"],
-                  )
-                  server.send_message(message)
-          except smtplib.SMTPAuthenticationError:
-              raise SystemExit(
-                  "Gmail login failed. Check SMTP_USER and SMTP_PASSWORD."
-              ) from None
-          except (OSError, smtplib.SMTPException):
-              raise SystemExit(
-                  "Email delivery failed. Check Gmail settings."
-              ) from None
-
-          print("Test email accepted by Gmail.")
-          PY
+        run: python -m app.notify_once
