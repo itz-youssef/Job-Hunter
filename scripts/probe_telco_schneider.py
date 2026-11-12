@@ -117,3 +117,16 @@ def precision():
    for m in hits[-2:]:print("TALEO_DETAIL",needle,"at",m.start(),repr(h[max(0,m.start()-330):m.start()+950]),flush=True)
  except Exception as exc:print("TALEO_DETAIL_ERR",str(exc)[:200],flush=True)
 if __name__=="__main__":precision()
+
+def verify_adapters():
+ from app.custom_sources import scan_company
+ targets={
+  "Schneider Electric":"https://careers.se.com/Defaultlandingpage/jobs/categories?lang=en-US",
+  "e& / Etisalat":"https://www.eand.com/ar/careers/careers.html",
+  "inDrive":"https://careers.indrive.com/vacancies/?country=Egypt",
+ }
+ for name,url in targets.items():
+  jobs,status,reason=scan_company({"name":name,"url":url})
+  print("VERIFY",name,status,len(jobs),reason,flush=True)
+  print("VERIFY_SAMPLE",name,[(j.get("title"),j.get("location"),j.get("url")) for j in jobs[:5]],flush=True)
+if __name__=="__main__":verify_adapters()
