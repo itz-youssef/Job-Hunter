@@ -46,7 +46,7 @@
   const REPO = 'https://github.com/itz-youssef/Job-Hunter';
   const el = (selector) => document.querySelector(selector);
   const esc = (x) => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const state = { snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyApiError:'', statusError:'', refreshedAt:null };
+  const state = { snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'' };
   const names = {home:'Home', jobs:'Job Feed', saved:'Saved Jobs', companies:'My Companies', alerts:'Email Alerts'};
   const where = (value) => String(value || '').toLowerCase().trim();
   const getDate = (s) => {const d=new Date(s); return Number.isNaN(+d)?null:d;};
@@ -81,9 +81,9 @@
     for(const c of state.companies){
       const name=c.name || 'Custom company';
       const scan=state.scans.find(x=>x.url===c.url);
-      map.set(where(name),{name,active:scan?.status==='monitoring',status:scan?.status||'pending',last:scan?.checked_at||'',url:c.url,message:scan?.message||'',matched_jobs:scan?.matched_jobs??0,managed:true});
+      map.set(where(name),{name,active:scan?.status==='monitoring',status:scan?.status||'pending',last:scan?.checked_at||'',url:c.url,message:scan?.message||'',matched_jobs:scan?.matched_jobs??0,managed:true,pinned:c.pinned===true});
     }
-    return [...map.values()];
+    return [...map.values()].sort((a,b)=>Number(Boolean(b.pinned))-Number(Boolean(a.pinned)) || a.name.localeCompare(b.name));
   }
   function matchesRole(j,role){const t=where(titleOf(j));if(role==='all')return true;const patterns={software:/software|back.?end|front.?end|full.?stack|developer|swe|sde/,ai:/\bai\b|artificial intelligence|genai|llm|nlp|machine learning|\bml\b|deep learning/,cv:/computer vision|image processing|perception|video analytics/,mlops:/mlops|ml platform|machine learning platform|ml infrastructure/};return patterns[role]?.test(t)||false;}
   async function json(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);return r.json();}
@@ -118,7 +118,7 @@
     `<section class="hero"><div><span class="eyebrow">✦ YOUR JOB RADAR</span><h2>Your next move<br>starts here.</h2><p>Junior, entry-level and internship opportunities in software engineering, AI and computer vision — with Egypt in focus.</p><button class="btn secondary" data-navigate="jobs">Explore opportunities ↗</button></div><div class="hero-graphic" aria-hidden="true"><span class="hero-arrow">↗</span></div></section>`+
     `<section class="stats">${stat('Matching opportunities','Matched in current snapshot',matching)}${stat('Monitored companies','Successful source checks',active)}${stat('Discovered jobs','Current published snapshot',list.length)}${stat('Saved jobs','Stored on this device',state.saved.size)}</section>`+
     `<div class="grid-two"><section class="panel"><div class="panel-head"><h2>✦ Your latest opportunities</h2><button class="link-button" data-navigate="jobs">View all ↗</button></div>${recent.length?recent.map(jobMini).join(''):empty('No jobs yet','Run the monitoring workflow to populate your feed.')}</section><section class="panel"><div class="panel-head"><h2>Monitoring status</h2><button class="link-button" data-navigate="companies">Manage ↗</button></div><div class="table-list">${statuses.length?statuses.map(s=>`<div class="source-line"><span class="job-logo">${icon(s.name)}</span><div class="source-name">${esc(s.name)}<small>${esc(s.message||s.status)}</small></div>${badge(s.active?'Active':s.status==='pending'?'Pending':s.status,s.active?'green':s.status==='pending'?'orange':'grey')}</div>`).join(''):empty('No companies yet','Add a career page to start building your watchlist.')}</div></section></div>`+
-    `<section class="panel"><div class="panel-head"><h2>Alerts destination</h2><button class="link-button" data-navigate="alerts">Email settings ↗</button></div><p class="muted" style="margin:0">${state.alerts?.recipient_masked?`New job alerts target <strong>${esc(state.alerts.recipient_masked)}</strong>.`:'The alert email is not yet published to your dashboard.'} <span class="tiny">${esc(state.alerts?.configured?'SMTP configuration detected. Delivery not independently verified.':'See Email Alerts for setup and test links.')}</span></p></section>`;
+    `<section class="panel"><div class="panel-head"><h2>Alerts destination</h2><button class="link-button" data-navigate="alerts">Email settings ↗</button></div><p class="muted" style="margin:0">${(state.fullEmail||state.alerts?.recipient_masked)?`New job alerts target <strong>${esc(state.fullEmail||state.alerts.recipient_masked)}</strong>.`:'The alert email is not yet published to your dashboard.'} <span class="tiny">${esc(state.alerts?.configured?'SMTP configuration detected. Delivery not independently verified.':'See Email Alerts for setup and test links.')}</span></p></section>`;
   }
   function jobCard(j){
     const id=jobKey(j), saved=state.saved.has(id), url=jobURL(j), score=scoreOf(j);
@@ -133,10 +133,16 @@
     return h+`<div class="filters"><input class="search-box" id="job-search" type="search" placeholder="Search job title, company, skills…" value="${esc(state.query)}" aria-label="Search jobs"><select class="filter-select" id="role-filter" aria-label="Filter job family"><option value="all">All role families</option><option value="software" ${state.role==='software'?'selected':''}>Software</option><option value="ai" ${state.role==='ai'?'selected':''}>AI / ML</option><option value="cv" ${state.role==='cv'?'selected':''}>Computer Vision</option><option value="mlops" ${state.role==='mlops'?'selected':''}>MLOps</option></select></div><div class="cards" id="jobs-list">${list.length?list.map(jobCard).join(''):empty('No matching jobs','Try another search or refresh your monitoring results.')}</div><p class="tiny">${list.length} job(s) shown. Scores come from the backend filter — they are not acceptance probabilities.</p>`;
   }
   function companyCard(c){
-    const status=c.status||'pending', mapping={monitoring:['Monitoring','green'],needs_adapter:['Needs adapter','orange'],access_blocked:['Access blocked','red'],error:['Scan error','red'],pending:['Waiting for scan','orange'],configured:['Configured','grey']};
+    const status=c.status||'pending', mapping={monitoring:['Monitoring','green'],partial:['Partial coverage','orange'],needs_adapter:['Needs adapter','orange'],access_blocked:['Access blocked','red'],error:['Scan error','red'],pending:['Waiting for scan','orange'],configured:['Configured','grey']};
     const [label,color]=mapping[status]||[status,status==='ok'?'green':'grey'];
     const url=link(c.url||'');
-    return `<div class="company-card"><span class="job-logo">${icon(c.name)}</span><div class="company-name"><strong>${esc(c.name)}</strong><small>${esc(c.message || (c.managed?'Added to your watchlist':'Built-in monitored source'))}</small>${c.last?`<small>Last check: ${esc(prettyDate(c.last))}</small>`:''}</div><div class="company-actions">${badge(label,color)}${url!=='#'?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="btn secondary">Careers ↗</a>`:''}${c.managed?`<button class="btn danger" data-remove="${esc(c.url)}">Remove</button>`:''}</div></div>`;
+    const pin=c.pinned===true;
+    const actions=c.managed?(
+      `<button class="btn secondary" title="${pin?'Unpin':'Pin'} company" data-pin="${esc(c.url)}" data-pinned="${pin?'true':'false'}">${pin?'📌 Pinned':'📍 Pin'}</button>`+
+      `<button class="btn secondary" data-edit-name="${esc(c.url)}">✎ Edit name</button>`+
+      `<button class="btn danger" data-remove="${esc(c.url)}">Remove</button>`
+    ):'';
+    return `<div class="company-card"><span class="job-logo">${icon(c.name)}</span><div class="company-name"><strong>${pin?'📌 ':''}${esc(c.name)}</strong><small>${esc(c.message || (c.managed?'Added to your watchlist':'Built-in monitored source'))}</small>${c.last?`<small>Last check: ${esc(prettyDate(c.last))}</small>`:''}${c.managed&&Number.isInteger(c.matched_jobs)?`<small>Eligible jobs: ${c.matched_jobs}</small>`:''}</div><div class="company-actions">${badge(label,color)}${url!=='#'?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="btn secondary">Careers ↗</a>`:''}${actions}</div></div>`;
   }
   function companiesPage(){
     const all=monitoredSources(), active=all.filter(c=>c.active).length, pending=all.filter(c=>c.status==='pending').length;
@@ -147,16 +153,41 @@
       `<div class="panel" style="margin-top:19px"><div class="panel-head"><h2>How monitoring works</h2></div><p class="muted">Adding a company saves it in GitHub. GitHub Actions then scans the source. <strong>Monitoring</strong> only means the last extraction succeeded — not that matching jobs were found. Workday and protected sites may need an adapter.</p><a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/actions/workflows/custom-companies.yml">Check scanner runs ↗</a></div>`;
   }
   function alertsPage(){
-    const a=state.alerts, good=Boolean(a?.configured), email=a?.recipient_masked||'Not published yet', updated=a?.checked_at;
+    const a=state.alerts, good=Boolean(a?.configured), email=state.fullEmail||a?.recipient_masked||'Not published yet', updated=a?.checked_at;
     return top('NOTIFICATIONS','Email alerts','See where job alerts are configured to go, and test delivery.')+
-      `<div class="alert-card"><span class="alert-icon">✉</span><div class="alert-content"><strong>Notifications are addressed to</strong><p><code>${esc(email)}</code></p><p>${a?'Masked from your GitHub Actions ALERT_EMAIL secret.':'Publish the notification status from GitHub Actions to display the masked destination.'}</p></div>${badge(good?'Configured':'Not confirmed',good?'green':'orange')}</div>`+
+      `<div class="alert-card"><span class="alert-icon">✉</span><div class="alert-content"><strong>Notifications are addressed to</strong><p><code>${esc(email)}</code></p><p>${state.fullEmail?'Verified using your Vercel admin credentials.': 'Masked by default. To reveal the full address, add ALERT_EMAIL to Vercel and authenticate.'}</p></div>${badge(good?'Configured':'Not confirmed',good?'green':'orange')}</div>`+
       `<div class="alert-card"><span class="alert-icon">◈</span><div class="alert-content"><strong>SMTP configuration</strong><p>${good?'All four SMTP secrets were present when this status was generated.':'SMTP setup has not been confirmed in the published status.'}</p><p class="tiny">${updated?'Last checked: '+esc(prettyDate(updated)):'No published check yet.'} This does not prove that email was delivered.</p></div></div>`+
+      `<section class="panel"><div class="panel-head"><h2>Your private destination</h2></div><p class="muted">The full recipient is available only after verifying your admin token. It is never published in the static job snapshot.</p><button class="btn primary" data-action="reveal-email">Reveal full email ↗</button></section>`+
       `<section class="panel"><div class="panel-head"><h2>Test your email delivery</h2></div><p class="muted">The only reliable test is to send a real email through your Test Email GitHub Actions workflow, then check the inbox.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn primary" target="_blank" rel="noopener noreferrer" href="${REPO}/actions/workflows/test-email.yml">Run Test Email ↗</a><a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/settings/secrets/actions">GitHub Actions secrets ↗</a></div></section>`+
       `<section class="panel"><div class="panel-head"><h2>Matching preferences</h2></div><div class="job-info">${badge('Egypt only','green')}${badge('Junior / Entry')}${badge('Internships')}${badge('Software Engineering')}${badge('AI / ML')}${badge('Computer Vision')}${badge('MLOps')}</div><p class="tiny">These are the target rules in your Python filtering file, not editable settings on this static dashboard.</p></section>`;
   }
   function render(){
     const root=el('#main-content');if(!root)return;
     root.innerHTML=state.page==='home'?home():state.page==='jobs'?jobsPage():state.page==='saved'?jobsPage(true):state.page==='companies'?companiesPage():alertsPage();
+  }
+  async function editCompany(url, changes){
+    const token=window.prompt('Enter your admin token to update this company:');
+    if(!token)return;
+    try{
+      await companyApi('PATCH',{url,...changes},token);
+      toast('Company updated successfully');
+      await refresh(true);
+    }catch(e){toast(e.message,true);}
+  }
+  async function showFullEmail(){
+    const token=window.prompt('Enter your admin token to view the full alert email:');
+    if(!token)return;
+    try{
+      const r=await fetch('/api/email-destination',{
+        headers:{'x-admin-token':token},
+        cache:'no-store'
+      });
+      const data=await r.json().catch(()=>({}));
+      if(!r.ok)throw Error(data.error||'Email destination unavailable');
+      state.fullEmail=data.email;
+      toast('Email address verified');
+      render();
+    }catch(e){toast(e.message,true);}
   }
   async function removeCompany(url){const token=window.prompt('Enter your admin token to remove this company:');if(!token)return;if(!confirm('Remove this company from monitoring?'))return;try{await companyApi('DELETE',{url},token);toast('Company removed from monitoring');await refresh(true);}catch(e){toast(e.message,true);}}
   function setup(){
@@ -169,6 +200,18 @@
       if(event.target.closest('[data-action="open-company"]')){el('#company-dialog').showModal();return;}
       const close=event.target.closest('[data-close-dialog]');if(close){el('#company-dialog').close();return;}
       const saved=event.target.closest('[data-save]');if(saved){const key=saved.dataset.save;state.saved.has(key)?state.saved.delete(key):state.saved.add(key);persistSaved();render();return;}
+      if(event.target.closest('[data-action="reveal-email"]')){showFullEmail();return;}
+      const edit=event.target.closest('[data-edit-name]');
+      if(edit){
+        const current=state.companies.find(c=>c.url===edit.dataset.editName);
+        if(!current)return;
+        const name=window.prompt('New display name for this company:',current.name);
+        if(name!==null && name.trim() && name.trim()!==current.name)
+          editCompany(current.url,{name:name.trim()});
+        return;
+      }
+      const pin=event.target.closest('[data-pin]');
+      if(pin){editCompany(pin.dataset.pin,{pinned:pin.dataset.pinned!=='true'});return;}
       const remove=event.target.closest('[data-remove]');if(remove){removeCompany(remove.dataset.remove);return;}
     });
     document.addEventListener('input',event=>{if(event.target.id==='job-search'){state.query=event.target.value;const at=event.target.selectionStart;render();const field=el('#job-search');field?.focus();try{field?.setSelectionRange(at,at);}catch{}}});
