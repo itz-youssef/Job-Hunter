@@ -90,6 +90,8 @@ def _bytes(url: str, body: dict | None = None) -> bytes:
     # page Referer. Match the regular site's navigation request.
     if urllib.parse.urlsplit(url).hostname == "prod-search-api.jobsyn.org":
         headers["Referer"] = "https://jobs.sw.siemens.com/"
+        headers["Origin"] = "https://jobs.sw.siemens.com"
+        headers["X-Origin"] = "jobs.sw.siemens.com"
         headers["Accept"] = "application/json"
 
     data = None
