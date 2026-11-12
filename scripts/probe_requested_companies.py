@@ -39,3 +39,22 @@ def inspect_public_pages():
 
 if __name__ == "__main__":
     inspect_public_pages()
+
+def inspect_pagination():
+    from app.custom_sources import _bytes, _PageParser
+    import re
+    urls = {
+      "capgemini page 2": "https://careers.capgemini.com/search/?q=&locationsearch=Egypt&startrow=25",
+      "dxc filtered": "https://careers.dxc.com/job-search-results/?country=Egypt",
+    }
+    for name,url in urls.items():
+      try:
+        body=_bytes(url).decode("utf-8","replace")
+        parser=_PageParser();parser.feed(body)
+        links=[href for href,txt in parser.links if re.search(r"/job/(?:Cairo|Giza|Alexandria|\d)",href,re.I)]
+        candidates=re.findall(r'https?[^"\s<>]{0,150}/job/[^"\s<>]{3,120}',body,re.I)[:5]
+        print("PAGED",name,"bytes",len(body),"links",len(links),"first",links[:5],"inline",candidates[:3],flush=True)
+      except Exception as exc:print("PAGED_ERROR",name,type(exc).__name__,str(exc)[:130],flush=True)
+
+if __name__ == "__main__":
+    inspect_pagination()
