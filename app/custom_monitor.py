@@ -346,20 +346,26 @@ def run(
             company["url"]
         ).strip()
 
-        matches = [
-            j
-            for raw in jobs
-            if (
-                j := _enrich(raw)
-            ) is not None
-        ]
+        matches = []
+        exclusions = {}
+        for raw in jobs:
+            enriched = _enrich(raw)
+            if enriched is not None:
+                matches.append(enriched)
+            else:
+                _, reasons = relevance(raw, {})
+                reason = reasons[0] if reasons else "Other eligibility criteria"
+                exclusions[reason] = exclusions.get(reason, 0) + 1
 
         statuses.append({
             "name": name,
             "url": url,
             "status": status,
             "message": message,
+            "parsed_jobs": len(jobs),
             "matched_jobs": len(matches),
+            "excluded_jobs": len(jobs) - len(matches),
+            "exclusion_reasons": exclusions,
             "checked_at": _now(),
         })
 
