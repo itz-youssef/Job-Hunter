@@ -170,6 +170,9 @@ def _ats(url: str):
     host = (p.hostname or "").lower()
     seg = [s for s in p.path.split("/") if s]
 
+    if host.endswith(".recruitee.com") and host.count(".") == 2:
+        return "recruitee", host
+
     if host == "careers.itworx.com":
         return "itworx", None
 
@@ -455,6 +458,41 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     if kind == "oracle":
         from app.oracle_adapter import scan as scan_oracle
         return _dedupe(scan_oracle(name, url, _json, _job))
+
+    # RECRUITEE: official company-scoped published offers feed.
+    elif kind == "recruitee":
+        data = _json(f"https://{meta}/api/offers/")
+        rows = data.get("offers", [])
+        if not isinstance(rows, list):
+            raise ValueError("Unexpected Recruitee offers schema")
+        for offer in rows:
+            if not isinstance(offer, dict):
+                continue
+            loc = offer.get("locations") or []
+            if not isinstance(loc, list):
+                loc = []
+            location = ", ".join(
+                filter(None, (_location(item) for item in loc))
+            ) or _location(offer.get("location")) or offer.get("city") or ""
+            apply_url = (
+                offer.get("careers_url")
+                or f"https://{meta}/o/{urllib.parse.quote(str(offer.get('slug') or ''), safe='')}"
+            )
+            description = " ".join(
+                str(offer.get(key) or "")
+                for key in ("description", "requirements")
+            )
+            jobs.append(
+                _job(
+                    name,
+                    offer.get("title"),
+                    location,
+                    apply_url,
+                    description,
+                    offer.get("published_at"),
+                    offer.get("employment_type_code"),
+                )
+            )
 
     # GREENHOUSE
     if kind == "greenhouse":
