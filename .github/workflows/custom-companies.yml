@@ -6,6 +6,9 @@ on:
     workflows: ["Job Hunter Monitor"]
     types: [completed]
   workflow_dispatch:
+  schedule:
+    # Offset from the main monitoring workflow to reduce collisions.
+    - cron: "7,22,37,52 * * * *"
 
 permissions:
   contents: write
