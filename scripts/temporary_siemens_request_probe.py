@@ -26,13 +26,14 @@ async def main():
         from urllib.parse import urlencode
         endpoint="https://prod-search-api.jobsyn.org/api/v1/solr/search?"
         params={"location":"Cairo","page":"1","businessStructures":"electronic-design-automation-eda","num_items":"10"}
-        for variant in ("plain","referer","browser-ua"):
+        for variant in ("plain","referer-only","browser-ua-referer","referer","browser-ua"):
             headers={"User-Agent":"JobHunterCareersMonitor/2.0"}
-            if variant in ("referer","browser-ua"):
+            if variant in ("referer-only","browser-ua-referer","referer","browser-ua"):
                 headers["Referer"]=url
-                headers["Origin"]="https://jobs.sw.siemens.com"
+                if variant in ("referer","browser-ua"):
+                    headers["Origin"]="https://jobs.sw.siemens.com"
                 headers["Accept"]="application/json,text/plain,*/*"
-            if variant=="browser-ua":
+            if variant in ("browser-ua","browser-ua-referer"):
                 headers["User-Agent"]="Mozilla/5.0"
             try:
                 with urlopen(Request(endpoint+urlencode(params),headers=headers),timeout=15) as response:
