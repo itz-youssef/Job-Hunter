@@ -8,7 +8,9 @@ on:
       - "tests/test_custom_discovery.py"
       - "scripts/diagnose_careers.py"
       - "app/export_site.py"
-      - "tests/test_export_custom.py"
+      - "app/public_feeds.py"
+      - "tests/test_public_feeds.py"
+      - "tests/test_export_custom.py tests/test_public_feeds.py"
       - ".github/workflows/test-career-adapters.yml"
   workflow_dispatch:
 
