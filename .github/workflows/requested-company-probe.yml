@@ -1,0 +1,23 @@
+name: Requested Employer Live Probe
+on:
+  pull_request:
+    paths:
+      - 'scripts/probe_requested_companies.py'
+      - 'app/custom_sources.py'
+      - 'app/requested_employers.py'
+      - 'companies.json'
+      - '.github/workflows/requested-company-probe.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Probe live public career sources
+        run: python -m scripts.probe_requested_companies
