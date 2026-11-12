@@ -15,10 +15,34 @@ async def main():
             if p.hostname=="prod-search-api.jobsyn.org" and p.path=="/api/v1/solr/search":
                 params=parse_qs(p.query,keep_blank_values=True)
                 requests.append({k:v[:3] for k,v in params.items()})
+                print("SIEMENS_BROWSER_URL",request.url,flush=True)
+                print("SIEMENS_PUBLIC_REQUEST_HEADERS",json.dumps({k:v for k,v in request.headers.items() if k.lower() in ("accept","origin","referer","user-agent")}),flush=True)
         page.on("request",handle)
         await page.goto(url,wait_until="domcontentloaded",timeout=25000)
         await page.wait_for_timeout(4800)
         print("SIEMENS_PUBLIC_SEARCH_QUERIES",json.dumps(requests,ensure_ascii=False),flush=True)
+        from urllib.request import Request, urlopen
+        from urllib.error import HTTPError
+        from urllib.parse import urlencode
+        endpoint="https://prod-search-api.jobsyn.org/api/v1/solr/search?"
+        params={"location":"Cairo","page":"1","businessStructures":"electronic-design-automation-eda","num_items":"10"}
+        for variant in ("plain","referer","browser-ua"):
+            headers={"User-Agent":"JobHunterCareersMonitor/2.0"}
+            if variant in ("referer","browser-ua"):
+                headers["Referer"]=url
+                headers["Origin"]="https://jobs.sw.siemens.com"
+                headers["Accept"]="application/json,text/plain,*/*"
+            if variant=="browser-ua":
+                headers["User-Agent"]="Mozilla/5.0"
+            try:
+                with urlopen(Request(endpoint+urlencode(params),headers=headers),timeout=15) as response:
+                    b=response.read(350)
+                    print("SIEMENS_HTTP_TEST",variant,response.status,b.decode(errors="replace"),flush=True)
+            except HTTPError as e:
+                b=e.read(400)
+                print("SIEMENS_HTTP_TEST",variant,e.code,b.decode(errors="replace"),flush=True)
+            except OSError as e:
+                print("SIEMENS_HTTP_TEST",variant,str(e)[:180],flush=True)
         await browser.close()
 if __name__=="__main__":
     asyncio.run(main())
