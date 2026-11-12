@@ -52,3 +52,13 @@ def test_itworx_egypt_only_with_requirements():
     assert len(jobs)==1
     assert jobs[0]["url"]=="https://careers.itworx.com/job-details/123"
     assert "0-2 years" in jobs[0]["description"]
+
+
+def test_seniority_metadata_blocks_midcareer_even_when_title_says_junior():
+    from app.filters import relevance
+    job = cs._job("Company","Junior Software Engineer","Cairo, Egypt",
+                  "https://example.com/positions/1","Python 1 year experience")
+    job["seniority"] = "Mid-Senior level"
+    assert relevance(job,{})[0] == 0
+    job["seniority"] = "Entry level"
+    assert relevance(job,{})[0] > 0
