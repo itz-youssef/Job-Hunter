@@ -130,3 +130,11 @@ def verify_adapters():
   print("VERIFY",name,status,len(jobs),reason,flush=True)
   print("VERIFY_SAMPLE",name,[(j.get("title"),j.get("location"),j.get("url")) for j in jobs[:5]],flush=True)
 if __name__=="__main__":verify_adapters()
+
+def assert_named_taleo():
+ from app.custom_sources import scan_company
+ jobs,status,msg=scan_company({"name":"e& / Etisalat","url":"https://www.eand.com/ar/careers/careers.html"})
+ print("TALEO_NAMED",status,len(jobs),[(j["title"],j["url"]) for j in jobs[:10]],flush=True)
+ assert jobs and any(not x["title"].isdigit() for x in jobs)
+ assert all(not x["title"].isdigit() for x in jobs)
+if __name__=="__main__":assert_named_taleo()
