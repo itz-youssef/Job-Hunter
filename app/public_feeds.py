@@ -6,7 +6,7 @@ from __future__ import annotations
 import re
 from urllib.parse import urlsplit, urljoin
 
-TARGET = re.compile(r"(software|engineer|developer|data science|machine learning|mlops|computer vision|python|intern|graduate|trainee|platform)", re.I)
+TARGET = re.compile(r"(software|engineer|developer|data science|machine learning|mlops|computer vision|python|platform)", re.I)
 EGYPT = re.compile(r"\b(egypt|cairo|giza|alexandria|maadi|new cairo|6th of october|smart village)\b", re.I)
 
 
