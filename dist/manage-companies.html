@@ -1,0 +1,236 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Manage Companies | Job Hunter</title>
+<style>
+:root {
+  --bg:#f6f7fb;
+  --text:#20263d;
+  --muted:#667187;
+  --accent:#6155e8;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,Arial,sans-serif;
+}
+main { max-width:800px;margin:40px auto;padding:20px; }
+header { display:flex;justify-content:space-between;align-items:center;gap:15px; }
+a { color:var(--accent); }
+.card {
+  background:white;
+  padding:25px;
+  margin:20px 0;
+  border:1px solid #dce1eb;
+  border-radius:16px;
+}
+label { display:block;margin-top:15px;font-weight:600; }
+input {
+  width:100%;
+  padding:13px;
+  border:1px solid #bac2d2;
+  border-radius:9px;
+  margin-top:7px;
+}
+button {
+  margin-top:18px;
+  padding:12px 18px;
+  border:0;
+  border-radius:9px;
+  background:var(--accent);
+  color:white;
+  cursor:pointer;
+}
+button:disabled { opacity:.6; }
+.remove { background:#f3e8eb;color:#8d1e3b;margin:0; }
+li { padding:15px 0;border-bottom:1px solid #eee; }
+.line { display:flex;justify-content:space-between;gap:10px; }
+.small { color:var(--muted);font-size:13px; }
+#message { margin-top:15px;white-space:pre-wrap; }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Manage career pages</h1>
+  <a href="/">Back to Dashboard</a>
+</header>
+
+<section class="card">
+  <h2>Add a company</h2>
+  <form id="form">
+    <label>Company name</label>
+    <input id="name" placeholder="Example: Siemens" required>
+
+    <label>Careers URL</label>
+    <input id="url" type="url"
+           placeholder="https://company.com/careers" required>
+
+    <label>Admin token</label>
+    <input id="token" type="password"
+           autocomplete="off" required>
+
+    <p class="small">
+      The admin token is used for this request only.
+      It is not saved in your browser.
+    </p>
+
+    <button id="submit" type="submit">Add company</button>
+  </form>
+  <div id="message"></div>
+</section>
+
+<section class="card">
+  <h2>Registered companies</h2>
+  <div id="companies">Loading...</div>
+  <p class="small">
+    Adding a URL registers the source. Some careers websites
+    may require a custom adapter before monitoring works.
+  </p>
+</section>
+</main>
+
+<script>
+const form = document.getElementById('form');
+const output = document.getElementById('message');
+const list = document.getElementById('companies');
+
+function message(text, error = false) {
+  output.textContent = text;
+  output.style.color = error ? '#a22140' : '#1b6b43';
+}
+
+async function api(method, url, token) {
+  const response = await fetch('/api/companies', {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'x-admin-token': token || ''
+    },
+    body: method === 'GET'
+      ? undefined
+      : JSON.stringify({
+          name: document.getElementById('name').value.trim(),
+          url
+        })
+  });
+
+  const data = await response.json().catch(
+    () => ({ error:'Invalid server response' })
+  );
+
+  if (!response.ok)
+    throw Error(data.error || `HTTP ${response.status}`);
+
+  return data;
+}
+
+async function load() {
+  try {
+    const data = await api('GET');
+    let statuses = [];
+
+    try {
+      const response = await fetch('/custom-status.json', {
+        cache:'no-store'
+      });
+      if (response.ok)
+        statuses = (await response.json()).companies || [];
+    } catch {}
+
+    list.replaceChildren();
+
+    if (!data.companies.length) {
+      list.textContent = 'No companies added yet.';
+      return;
+    }
+
+    const ul = document.createElement('ul');
+
+    for (const company of data.companies) {
+      const li = document.createElement('li');
+      const line = document.createElement('div');
+      line.className = 'line';
+
+      const link = document.createElement('a');
+      link.href = company.url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = company.name + ' — ' + company.url;
+
+      const remove = document.createElement('button');
+      remove.textContent = 'Remove';
+      remove.className = 'remove';
+
+      remove.onclick = async () => {
+        const token = document.getElementById('token').value;
+
+        if (!token) {
+          message('Enter admin token first', true);
+          return;
+        }
+
+        if (!confirm('Remove this company?')) return;
+
+        try {
+          await api('DELETE', company.url, token);
+          message('Company removed');
+          await load();
+        } catch (error) {
+          message(error.message, true);
+        }
+      };
+
+      line.append(link, remove);
+      li.append(line);
+
+      const status = statuses.find(s => s.url === company.url);
+      const details = document.createElement('p');
+      details.className = 'small';
+      details.textContent = status
+        ? `Status: ${status.status} | ${status.message}`
+        : 'Waiting for first scan';
+
+      li.append(details);
+      ul.append(li);
+    }
+
+    list.append(ul);
+  } catch (error) {
+    list.textContent = 'Error: ' + error.message;
+  }
+}
+
+form.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const button = document.getElementById('submit');
+  button.disabled = true;
+
+  try {
+    await api(
+      'POST',
+      document.getElementById('url').value.trim(),
+      document.getElementById('token').value
+    );
+
+    message('Company saved successfully in GitHub');
+    document.getElementById('name').value = '';
+    document.getElementById('url').value = '';
+    await load();
+  } catch (error) {
+    message(error.message, true);
+  } finally {
+    button.disabled = false;
+  }
+});
+
+load();
+</script>
+</body>
+</html>
