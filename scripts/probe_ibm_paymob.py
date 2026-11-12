@@ -48,6 +48,21 @@ def main():
  }
  for name,query in cases.items():
   print("IBM",name,json.dumps(ibm(query),ensure_ascii=False),flush=True)
+ import urllib.parse
+ def public_get(url):
+  req=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0","Accept":"application/json"})
+  with urllib.request.urlopen(req,timeout=20) as r:return json.load(r)
+ ep="https://app.recruitera.ai/api/public/v1/paymob/opportunities"
+ initial=public_get(ep)
+ token=initial.get("meta",{}).get("next_cursor")
+ print("PAYMOB_API_INITIAL",json.dumps({"count":len(initial.get("data",[])),"found":initial.get("meta",{}).get("found"),"cursor_present":bool(token),"first_id":initial.get("data",[{}])[0].get("id")},ensure_ascii=False),flush=True)
+ if token:
+  for field in ("cursor","next_cursor","after","page_cursor"):
+   try:
+    url=ep+"?"+urllib.parse.urlencode({field:token})
+    data=public_get(url)
+    print("PAYMOB_API_TEST",field,json.dumps({"count":len(data.get("data",[])),"found":data.get("meta",{}).get("found"),"next":bool(data.get("meta",{}).get("next_cursor")),"first_id":data.get("data",[{}])[0].get("id")},ensure_ascii=False),flush=True)
+   except Exception as ex:print("PAYMOB_API_TEST",field,"ERROR",str(ex)[:120],flush=True)
  for suffix in ("","?page=2","?page=3","?limit=100"):
   url="https://app.recruitera.ai/careers/paymob/opportunities"+suffix
   print("PAYMOB",suffix or "first",json.dumps(paymob(url),ensure_ascii=False),flush=True)
