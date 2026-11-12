@@ -96,3 +96,57 @@ def test_paymob_incomplete_pagination_rejected():
             lambda _: {"data": [], "meta": {"found": 9, "next_cursor": None}},
             cs._job,
         )
+
+
+
+def test_orange_scans_country_limited_public_results():
+    from app.employer_feeds import orange_egypt
+    requests = []
+    def api(url, body):
+        requests.append((url, body))
+        assert url == "https://orange.jobs/widgets"
+        assert body["selected_fields"] == {
+            "country": ["EGYPT"], "companyName": ["Orange Egypt"]
+        }
+        if len(requests) == 1:
+            return {
+                "refineSearch": {
+                    "totalHits": 3,
+                    "data": {"jobs": [
+                        {"title": "Junior Software Engineer", "jobId": "MNT-123456",
+                         "city": "Cairo", "country": "EGYPT",
+                         "description": "Python, 0-2 years",
+                         "applyUrl": "https://www.careers-page.com/orange-eg/job/123456/apply"},
+                        {"title": "Junior Software Engineer", "jobId": "MNT-123457",
+                         "city": "Paris", "country": "France"},
+                    ]}
+                }
+            }
+        assert body["from"] == 2
+        return {
+            "refineSearch": {
+                "totalHits": 3,
+                "data": {"jobs": [
+                    {"title": "Senior Software Engineer", "jobId": "MNT-123458",
+                     "city": "Cairo", "country": "EGYPT"}
+                ]}
+            }
+        }
+    assert cs._ats("https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com")[0] == "orange_egypt"
+    jobs = orange_egypt("Orange Egypt", api, cs._job)
+    assert len(requests) == 2
+    assert len(jobs) == 2
+    assert jobs[0]["id"] == "custom-orange-MNT-123456"
+    assert jobs[0]["location"] == "Cairo, Egypt"
+    assert relevance(jobs[0], {})[0] > 0
+    assert relevance(jobs[1], {})[0] == 0
+
+
+def test_orange_incomplete_page_fails_closed():
+    from app.employer_feeds import orange_egypt
+    with pytest.raises(ValueError, match="incomplete"):
+        orange_egypt(
+            "Orange Egypt",
+            lambda *args: {"refineSearch": {"totalHits": 6, "data": {"jobs": []}}},
+            cs._job
+        )
