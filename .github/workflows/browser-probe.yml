@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - scripts/probe_browser_careers.py
+      - scripts/probe_feed_schema.py
       - .github/workflows/browser-probe.yml
   workflow_dispatch:
 
@@ -25,3 +26,5 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Probe public pages with ordinary browser
         run: python -m scripts.probe_browser_careers
+      - name: Inspect public jobs feed schemas
+        run: python -m scripts.probe_feed_schema
