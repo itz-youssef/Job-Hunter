@@ -34,6 +34,18 @@ def run():
                     )) and res.ok:
                         try:
                             body = res.json()
+                            if name == "ITWorx" and isinstance(body, dict) and "AllRequisitions" in body:
+                                rows = body.get("AllRequisitions") or []
+                                print("DIAG_ITWORX", "method", res.request.method,
+                                      "request", str(res.request.post_data)[:350],
+                                      "total", body.get("TotalCount"),
+                                      "first", str(rows[0] if rows else {})[:1300], flush=True)
+                            if name == "Sumerge" and isinstance(body, dict) and "jobs" in body:
+                                rows = body.get("jobs") or []
+                                print("DIAG_SUMERGE", "total", len(rows), "first",
+                                      str(rows[0] if rows else {})[:1400], flush=True)
+                            if name == "Breadfast":
+                                print("DIAG_BREADFAST", str(body)[:750], flush=True)
                             print("DIAG_API_SCHEMA", name, res.url.split("?")[0],
                                   "top", list(body)[:15] if isinstance(body, dict) else "list",
                                   "items", len(body) if isinstance(body, list) else "",
