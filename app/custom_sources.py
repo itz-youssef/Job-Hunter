@@ -179,6 +179,9 @@ def _ats(url: str):
     if host.endswith(".recruitee.com") and host.count(".") == 2:
         return "recruitee", host
 
+    if host == "jobs.sw.siemens.com" and "/jobs" in p.path:
+        return "siemens_software", None
+
     if host == "te.eg" and "/about-te/careers-and-training" in p.path:
         return "telecom_egypt", None
 
@@ -448,6 +451,10 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     kind, meta = _ats(url)
     p = urllib.parse.urlsplit(url)
     jobs = []
+
+    if kind == "siemens_software":
+        from app.egypt_public_feeds import siemens_software
+        return _dedupe(siemens_software(name, _json, _job))
 
     if kind == "telecom_egypt":
         from app.egypt_public_feeds import telecom_egypt
