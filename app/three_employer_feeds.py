@@ -9,8 +9,8 @@ import re
 from datetime import datetime, timezone
 from urllib.parse import urlsplit, urljoin, urlencode, parse_qs
 
-EGYPT = re.compile(r"\\b(?:egypt|cairo|giza|alexandria|smart village|\\bEG\\b)\\b", re.I)
-TECH = re.compile(r"software|engineer|developer|intern|graduate|work experience|trainee|artificial intelligence|machine learning|\\bAI\\b|computer vision|data", re.I)
+EGYPT = re.compile(r"\b(?:egypt|cairo|giza|alexandria|smart village|\bEG\b)\b", re.I)
+TECH = re.compile(r"software|engineer|developer|intern|graduate|work experience|trainee|artificial intelligence|machine learning|\bAI\b|computer vision|data", re.I)
 
 
 def _location(values):
@@ -76,7 +76,7 @@ def eightfold_egypt(name, host, domain, get_json, make_job, vois=False):
                 continue
             if vois:
                 brand = str(item.get("brand") or item.get("companyName") or "")
-                if not re.search(r"\\bvois\\b", title+" "+brand, re.I):
+                if not re.search(r"\bvois\b", title+" "+brand, re.I):
                     # Some early-career programmes have no (VOIS) in the title
                     # but the search is explicitly brand-scoped. Allow these only
                     # when the programme explicitly says VOIS.
@@ -148,7 +148,7 @@ def fawry_public_partial(name, get_bytes, make_job):
             continue
         # The listing format is "Job title Anywhere Posted on November 3, 2025".
         label = " ".join(content.split())
-        parts = re.split(r"\\s+Anywhere\\s+Posted on\\s+|\\s+Posted on\\s+", label, maxsplit=1, flags=re.I)
+        parts = re.split(r"\s+Anywhere\s+Posted on\s+|\s+Posted on\s+", label, maxsplit=1, flags=re.I)
         title = parts[0].strip()
         if not title or len(title) > 130:
             continue
