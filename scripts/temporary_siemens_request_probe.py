@@ -19,7 +19,7 @@ async def main():
                 print("SIEMENS_BROWSER_URL",request.url,flush=True)
                 async def inspect_real_headers(req):
                     all_headers=await req.all_headers()
-                    safe_names=("origin","referer","host","sec-fetch-site","sec-fetch-mode","sec-fetch-dest","accept")
+                    safe_names=("origin","x-origin","referer","host","sec-fetch-site","sec-fetch-mode","sec-fetch-dest","accept")
                     print("SIEMENS_CHROME_WIRE_HEADERS",json.dumps({k:v for k,v in all_headers.items() if k in safe_names}),flush=True)
                     print("SIEMENS_HEADER_NAMES",sorted(all_headers.keys()),flush=True)
                 tasks.append(asyncio.create_task(inspect_real_headers(request)))
