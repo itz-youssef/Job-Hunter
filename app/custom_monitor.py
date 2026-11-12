@@ -379,7 +379,7 @@ def run(
             }
         )
 
-        if status != "monitoring":
+        if status not in ("monitoring", "partial"):
 
             # Preserve historical jobs if a
             # previously monitored site fails.
