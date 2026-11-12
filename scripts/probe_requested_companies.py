@@ -18,3 +18,24 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+def inspect_public_pages():
+    from app.custom_sources import _bytes, _PageParser
+    sources = {
+      "Capgemini search": "https://careers.capgemini.com/search/?q=&locationsearch=Egypt",
+      "DXC results": "https://careers.dxc.com/job-search-results/",
+      "Breadfast tech": "https://www.breadfast.com/ar/careers_categories/technology/",
+      "Etisalat Taleo": "https://etisalatmisr.taleo.net/careersection/ex/joblist.ftl",
+      "Deloitte": "https://middleeastjobs.deloitte.com/careersME/SearchJobs/",
+    }
+    for name,url in sources.items():
+      try:
+        body=_bytes(url).decode("utf-8","replace")
+        parser=_PageParser();parser.feed(body)
+        links=[(txt.strip()[:75],href[:180]) for href,txt in parser.links if any(term in (href+" "+txt).lower() for term in ("job/","jobdetail","careers/","intern","engineer","developer","job-search"))]
+        print("PAGE",name,"bytes",len(body),"links",len(parser.links),"joblinks",links[:12],flush=True)
+      except Exception as exc:
+        print("PAGE_ERROR",name,type(exc).__name__,str(exc)[:160],flush=True)
+
+if __name__ == "__main__":
+    inspect_public_pages()
