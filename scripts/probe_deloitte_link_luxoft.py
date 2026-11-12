@@ -56,3 +56,26 @@ def inspect_targeted():
    print("ADD_SCAN",company,status,len(jobs),msg,[(j.get("title"),j.get("location")) for j in jobs[:8]],flush=True)
   except Exception as exc:print("ADD_ERROR",company,type(exc).__name__,str(exc)[:160],flush=True)
 if __name__=='__main__':inspect_targeted()
+
+def inspect_more():
+ from app.custom_sources import _bytes, _PageParser, _json
+ import re
+ urls={
+  'Luxoft Egypt30':'https://career.luxoft.com/jobs?country%5B%5D=Egypt&perPage=30',
+  'Luxoft Egypt second':'https://career.luxoft.com/jobs?country%5B%5D=Egypt&page=2',
+  'Luxoft Egypt page60':'https://career.luxoft.com/jobs?country%5B%5D=Egypt&perPage=60',
+  'Link AJAX JS':'https://linkdevelopment.com/app/themes/linkdev/js/ajaxLoadMoreCareersAndSearch.min.js?ver=1.0.2',
+ }
+ for name,url in urls.items():
+  try:
+   page=_bytes(url).decode('utf-8','replace')
+   parser=_PageParser();parser.feed(page)
+   joblinks=[(h," ".join(t.split())[:80]) for h,t in parser.links if "/jobs/" in h]
+   pages=[h for h,t in parser.links if 'page=' in h]
+   print('MORE',name,'bytes',len(page),'jobs',len(joblinks),'job_first',joblinks[:3],'pagers',pages[-12:],'code',page[:1200] if 'JS' in name else '',flush=True)
+   if 'JS' in name:
+    for word in ('action','careers_listing','ajaxurl','page','posts_per_page'):
+     k=re.search(word,page,re.I)
+     if k: print('JS_MARK',word,repr(page[max(0,k.start()-200):k.start()+400]),flush=True)
+  except Exception as e:print('MORE_ERR',name,type(e).__name__,str(e)[:100],flush=True)
+if __name__=='__main__': inspect_more()
