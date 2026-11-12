@@ -41,7 +41,7 @@ ROLE_PATTERNS = {
 
 EARLY_TITLE = re.compile(
     r"\b(?:junior|jr\.?|entry[ -]level|new grad(?:uate)?|fresh grad(?:uate)?|"
-    r"graduate(?:\s+program(?:me)?)?|intern(?:ship)?|trainee|apprentice|"
+    r"graduate(?:\s+program(?:me)?)?|work\s+experience\s+(?:program(?:me)?)?|intern(?:ship)?|trainee|apprentice|"
     r"associate(?:\s+software\s+engineer)?)\b", re.I,
 )
 EARLY_DESCRIPTION = re.compile(
@@ -114,7 +114,7 @@ def relevance(job: dict, config: dict) -> tuple[int, list[str]]:
     # Include *all* Egypt-based internships, even when titles do not
     # contain "Software Engineer". Ordinary jobs remain title-restricted.
     internship = bool(re.search(
-        r"\b(?:intern|internship|summer\s+intern|industrial\s+training|"
+        r"\b(?:intern|internship|summer\s+intern|industrial\s+training|work\s+experience\s+(?:program(?:me)?)?|"
         r"trainee|traineeship|apprentice|apprenticeship)\b",
         title + " " + employment, re.I
     ))
