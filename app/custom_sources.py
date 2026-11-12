@@ -209,6 +209,13 @@ def _ats(url: str):
         host == "app.recruitera.ai" and "/careers/paymob" in p.path):
         return "paymob_recruitera", None
 
+    if (host in ("www.capgemini.com", "capgemini.com")
+        and p.path.startswith("/eg-en/careers")) or (
+        host == "careers.capgemini.com"
+        and p.path.startswith(("/search", "/job/"))
+    ):
+        return "capgemini_egypt", None
+
     if host in ("www.ibm.com", "ibm.com") and "/careers/search" in p.path:
         return "ibm_egypt", None
 
@@ -492,6 +499,18 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     if kind == "paymob_recruitera":
         from app.employer_feeds import paymob_recruitera
         return _dedupe(paymob_recruitera(name, _json, _job))
+
+    if kind == "capgemini_egypt":
+        from app.requested_employers import capgemini_egypt
+
+        def parse_links(document):
+            parser = _PageParser()
+            parser.feed(document)
+            return [(href, label) for href, label in parser.links]
+
+        return _dedupe(capgemini_egypt(
+            name, _bytes, parse_links, _structured_jobs, _job
+        ))
 
     if kind == "ibm_egypt":
         from app.employer_feeds import ibm_egypt
