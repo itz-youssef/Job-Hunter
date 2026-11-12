@@ -219,6 +219,15 @@ def _ats(url: str):
     if host == "middleeastjobs.deloitte.com" and p.path.startswith("/careersME/SearchJobs"):
         return "deloitte_partial", None
 
+    if host == "jobs.vodafone.com" and p.path.startswith("/careers"):
+        return "vois_egypt", None
+
+    if host == "jobs.ericsson.com" and p.path.startswith("/careers"):
+        return "ericsson_egypt", None
+
+    if host in ("www.fawry.com", "fawry.com") and p.path.startswith(("/jobs", "/careers")):
+        return "fawry_partial", None
+
     if host == "careers.dxc.com" and p.path in ("", "/", "/job-search-results/"):
         return "dxc_egypt", None
 
@@ -505,6 +514,22 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     if kind == "paymob_recruitera":
         from app.employer_feeds import paymob_recruitera
         return _dedupe(paymob_recruitera(name, _json, _job))
+
+    if kind == "vois_egypt":
+        from app.three_employer_feeds import eightfold_egypt
+        return _dedupe(eightfold_egypt(
+            name, "jobs.vodafone.com", "vodafone.com", _json, _job, vois=True
+        ))
+
+    if kind == "ericsson_egypt":
+        from app.three_employer_feeds import eightfold_egypt
+        return _dedupe(eightfold_egypt(
+            name, "jobs.ericsson.com", "ericsson.com", _json, _job
+        ))
+
+    if kind == "fawry_partial":
+        from app.three_employer_feeds import fawry_public_partial
+        return _dedupe(fawry_public_partial(name, _bytes, _job))
 
     if kind == "dxc_egypt":
         from app.requested_employers import dxc_egypt
@@ -1165,6 +1190,12 @@ def scan_company(company: dict):
         jobs = _board_jobs(
             name, url
         )
+
+        if kind == "fawry_partial":
+            return (
+                jobs, "partial",
+                f"{len(jobs)} public Fawry index postings; full pagination and freshness not verified",
+            )
 
         if kind == "linkdevelopment" and not jobs:
             return (
