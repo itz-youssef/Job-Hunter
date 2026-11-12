@@ -94,6 +94,12 @@ def _bytes(url: str, body: dict | None = None) -> bytes:
         headers["X-Origin"] = "jobs.sw.siemens.com"
         headers["Accept"] = "application/json"
 
+    if urllib.parse.urlsplit(url).hostname == "orange.jobs" and urllib.parse.urlsplit(url).path == "/widgets":
+        headers["Referer"] = "https://orange.jobs/gb/en/egypt-results"
+        headers["Origin"] = "https://orange.jobs"
+        headers["User-Agent"] = "Mozilla/5.0"
+        headers["Accept"] = "application/json"
+
     if urllib.parse.urlsplit(url).hostname == "www-api.ibm.com":
         headers["Referer"] = "https://www.ibm.com/careers/search"
         headers["User-Agent"] = "Mozilla/5.0"
@@ -191,6 +197,12 @@ def _ats(url: str):
 
     if host.endswith(".recruitee.com") and host.count(".") == 2:
         return "recruitee", host
+
+    if host == "orange.jobs" and (
+        p.path.startswith("/gb/en/egypt-results")
+        or p.path.startswith("/gb/en/africa-middle-east/egypt")
+    ):
+        return "orange_egypt", None
 
     if (host in ("origin.paymob.com", "paymobsolutions.com", "www.paymobsolutions.com")
         and "/careers" in p.path) or (
@@ -472,6 +484,10 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     kind, meta = _ats(url)
     p = urllib.parse.urlsplit(url)
     jobs = []
+
+    if kind == "orange_egypt":
+        from app.employer_feeds import orange_egypt
+        return _dedupe(orange_egypt(name, _json, _job))
 
     if kind == "paymob_recruitera":
         from app.employer_feeds import paymob_recruitera
