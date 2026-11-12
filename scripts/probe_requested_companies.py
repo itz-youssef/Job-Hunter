@@ -58,3 +58,22 @@ def inspect_pagination():
 
 if __name__ == "__main__":
     inspect_pagination()
+
+def inspect_wordpress():
+    from app.custom_sources import _bytes
+    from urllib.parse import urlsplit
+    tests = [
+      "https://www.breadfast.com/wp-sitemap.xml",
+      "https://www.breadfast.com/wp-json/wp/v2/types",
+      "https://www.breadfast.com/wp-json/wp/v2/search?search=engineer&per_page=10",
+      "https://www.breadfast.com/career-sitemap.xml",
+      "https://breadfast.com/wp-json/wp/v2/search?search=intern&per_page=10",
+    ]
+    for url in tests:
+      try:
+        result=_bytes(url).decode("utf-8","replace")
+        print("WP",url,"bytes",len(result),"sample",result[:380].replace(chr(10)," "),flush=True)
+      except Exception as exc:
+        print("WP_ERROR",url,type(exc).__name__,str(exc)[:120],flush=True)
+if __name__ == "__main__":
+    inspect_wordpress()
