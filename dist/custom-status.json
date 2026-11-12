@@ -1,21 +1,21 @@
 {
-  "checked_at": "2026-11-12T16:38:58.096324+00:00",
+  "checked_at": "2026-11-12T17:24:59.307808+00:00",
   "companies": [
     {
       "name": "VOIS",
       "url": "https://jobs.vodafone.com/careers?domain=vodafone.com&start=0&location=Egypt&pid=563018698305416&sort_by=match&filter_include_remote=1&filter_include_relocation=0&filter_seniority=1%2C0",
-      "status": "monitoring",
-      "message": "1 structured job postings found",
+      "status": "partial",
+      "message": "1 structured posting(s); no complete job feed verified",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.075867+00:00"
+      "checked_at": "2026-11-12T17:24:59.287791+00:00"
     },
     {
       "name": "Bosta",
       "url": "https://jobs.lever.co/Bosta/?utm_source=chatgpt.com",
-      "status": "error",
-      "message": "The read operation timed out",
+      "status": "monitoring",
+      "message": "94 jobs parsed from lever",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.075898+00:00"
+      "checked_at": "2026-11-12T17:24:59.291798+00:00"
     },
     {
       "name": "Thndr",
@@ -23,7 +23,7 @@
       "status": "monitoring",
       "message": "17 jobs parsed from ashby",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.078508+00:00"
+      "checked_at": "2026-11-12T17:24:59.292271+00:00"
     },
     {
       "name": "Klivvr",
@@ -31,15 +31,15 @@
       "status": "monitoring",
       "message": "7 jobs parsed from lever",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.078647+00:00"
+      "checked_at": "2026-11-12T17:24:59.292385+00:00"
     },
     {
       "name": "Emergence",
       "url": "https://jobs.ashbyhq.com/emergence?utm_source=chatgpt.com",
       "status": "monitoring",
-      "message": "5 jobs parsed from ashby",
+      "message": "7 jobs parsed from ashby",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.078871+00:00"
+      "checked_at": "2026-11-12T17:24:59.292660+00:00"
     },
     {
       "name": "Lean Technologies",
@@ -47,7 +47,7 @@
       "status": "monitoring",
       "message": "8 jobs parsed from ashby",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.079310+00:00"
+      "checked_at": "2026-11-12T17:24:59.293034+00:00"
     },
     {
       "name": "Chatbase",
@@ -55,7 +55,7 @@
       "status": "monitoring",
       "message": "13 jobs parsed from ashby",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080603+00:00"
+      "checked_at": "2026-11-12T17:24:59.294264+00:00"
     },
     {
       "name": "Lua Global",
@@ -63,7 +63,7 @@
       "status": "monitoring",
       "message": "0 jobs parsed from ashby",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080624+00:00"
+      "checked_at": "2026-11-12T17:24:59.294278+00:00"
     },
     {
       "name": "IBM",
@@ -71,7 +71,7 @@
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080631+00:00"
+      "checked_at": "2026-11-12T17:24:59.294284+00:00"
     },
     {
       "name": "Schneider Electric",
@@ -79,15 +79,15 @@
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080635+00:00"
+      "checked_at": "2026-11-12T17:24:59.294287+00:00"
     },
     {
       "name": "Ericsson",
       "url": "https://jobs.ericsson.com/careers?utm_source=chatgpt.com&query=Software+Engineer&start=0&location=egypt&pid=563121777515649&sort_by=relevance&filter_include_remote=1&filter_include_relocation=0",
-      "status": "monitoring",
-      "message": "1 structured job postings found",
+      "status": "partial",
+      "message": "1 structured posting(s); no complete job feed verified",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080664+00:00"
+      "checked_at": "2026-11-12T17:24:59.294312+00:00"
     },
     {
       "name": "Capgemini Egypt",
@@ -95,15 +95,15 @@
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080669+00:00"
+      "checked_at": "2026-11-12T17:24:59.294315+00:00"
     },
     {
       "name": "DXC Technology",
       "url": "https://careers.dxc.com/?utm_source=chatgpt.com",
-      "status": "access_blocked",
-      "message": "Careers website returned HTTP 403",
+      "status": "needs_adapter",
+      "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080672+00:00"
+      "checked_at": "2026-11-12T17:24:59.294318+00:00"
     },
     {
       "name": "Luxoft Egypt",
@@ -111,15 +111,15 @@
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080674+00:00"
+      "checked_at": "2026-11-12T17:24:59.294320+00:00"
     },
     {
       "name": "Nokia",
-      "url": "https://www.nokia.com/careers/?utm_source=chatgpt.com",
-      "status": "needs_adapter",
-      "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "url": "https://fa-evmr-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs",
+      "status": "monitoring",
+      "message": "0 jobs parsed from oracle",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080677+00:00"
+      "checked_at": "2026-11-12T17:24:59.294322+00:00"
     },
     {
       "name": "SAP",
@@ -127,7 +127,7 @@
       "status": "access_blocked",
       "message": "Careers website returned HTTP 403",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080679+00:00"
+      "checked_at": "2026-11-12T17:24:59.294326+00:00"
     },
     {
       "name": "Orange Egypt",
@@ -135,7 +135,7 @@
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080682+00:00"
+      "checked_at": "2026-11-12T17:24:59.294329+00:00"
     },
     {
       "name": "e& / Etisalat",
@@ -143,7 +143,7 @@
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080684+00:00"
+      "checked_at": "2026-11-12T17:24:59.294332+00:00"
     },
     {
       "name": "Telecom Egypt (WE)",
@@ -151,7 +151,7 @@
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080687+00:00"
+      "checked_at": "2026-11-12T17:24:59.294335+00:00"
     },
     {
       "name": "Paymob",
@@ -159,7 +159,7 @@
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080690+00:00"
+      "checked_at": "2026-11-12T17:24:59.294337+00:00"
     },
     {
       "name": "Breadfast",
@@ -167,23 +167,23 @@
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080693+00:00"
+      "checked_at": "2026-11-12T17:24:59.294339+00:00"
     },
     {
       "name": "ITWorx",
       "url": "https://careers.itworx.com/?utm_source=chatgpt.com",
-      "status": "needs_adapter",
-      "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "status": "monitoring",
+      "message": "3 jobs parsed from itworx",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080695+00:00"
+      "checked_at": "2026-11-12T17:24:59.294382+00:00"
     },
     {
       "name": "Sumerge",
       "url": "https://www.sumerge.com/careers/job-openings?utm_source=chatgpt.com",
-      "status": "needs_adapter",
-      "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "status": "monitoring",
+      "message": "8 jobs parsed from workable",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080698+00:00"
+      "checked_at": "2026-11-12T17:24:59.294504+00:00"
     },
     {
       "name": "Luciq (formerly Instabug)",
@@ -191,7 +191,7 @@
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080700+00:00"
+      "checked_at": "2026-11-12T17:24:59.294507+00:00"
     },
     {
       "name": "Breadfast Technology",
@@ -199,15 +199,15 @@
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080703+00:00"
+      "checked_at": "2026-11-12T17:24:59.294509+00:00"
     },
     {
       "name": "Link Development",
       "url": "https://linkdevelopment.com/careers/opportunities/?utm_source=chatgpt.com",
       "status": "needs_adapter",
-      "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
+      "message": "Public listings rendered dynamically; no complete feed was extracted",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080706+00:00"
+      "checked_at": "2026-11-12T17:24:59.294512+00:00"
     },
     {
       "name": "Fawry",
@@ -215,7 +215,7 @@
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080708+00:00"
+      "checked_at": "2026-11-12T17:24:59.294515+00:00"
     },
     {
       "name": "Siemens",
@@ -223,7 +223,7 @@
       "status": "needs_adapter",
       "message": "No readable public JobPosting feed; a company-specific adapter may be needed",
       "matched_jobs": 0,
-      "checked_at": "2026-11-12T16:38:58.080711+00:00"
+      "checked_at": "2026-11-12T17:24:59.294517+00:00"
     }
   ]
 }

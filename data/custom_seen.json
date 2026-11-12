@@ -56,10 +56,6 @@
       "initialized": false,
       "seen_ids": []
     },
-    "https://www.nokia.com/careers/?utm_source=chatgpt.com": {
-      "initialized": false,
-      "seen_ids": []
-    },
     "https://jobs.sap.com/en/jobs/?location=Cairo&utm_source=chatgpt.com": {
       "initialized": false,
       "seen_ids": []
@@ -85,11 +81,11 @@
       "seen_ids": []
     },
     "https://careers.itworx.com/?utm_source=chatgpt.com": {
-      "initialized": false,
+      "initialized": true,
       "seen_ids": []
     },
     "https://www.sumerge.com/careers/job-openings?utm_source=chatgpt.com": {
-      "initialized": false,
+      "initialized": true,
       "seen_ids": []
     },
     "https://www.luciq.ai/careers?utm_source=chatgpt.com": {
@@ -110,6 +106,10 @@
     },
     "https://jobs.sw.siemens.com/business-structure/electronic-design-automation-eda/jobs/?location=Cairo&utm_source=chatgpt.com": {
       "initialized": false,
+      "seen_ids": []
+    },
+    "https://fa-evmr-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs": {
+      "initialized": true,
       "seen_ids": []
     }
   },
