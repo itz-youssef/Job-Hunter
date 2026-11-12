@@ -217,7 +217,7 @@ def dxc_egypt(name, get_bytes, make_job):
             ("offset", str(offset)),
             ("fuzzy", "false"),
         ]
-        raw = get_bytes(endpoint + "?" + urlencode(params)).decode("utf-8", "replace").strip()
+        raw = get_bytes(endpoint + "?" + urlencode(params)).decode("utf-8", "replace").strip().rstrip(" ;")
         if not raw.startswith(prefix) or not raw.endswith(")"):
             raise ValueError("DXC job API returned an unexpected JSONP callback")
         data = json.loads(raw[len(prefix):-1])
