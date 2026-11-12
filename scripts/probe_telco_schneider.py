@@ -75,3 +75,24 @@ def probe_endpoints():
    if "requisition" in p.lower() or "Job Posting" in p:print("TALEO_ROW",re.sub(r"\\s+"," ",p)[:1600],flush=True);break
  except Exception as exc:print("TALEO_ERROR",type(exc).__name__,str(exc)[:130],flush=True)
 if __name__=="__main__":probe_endpoints()
+
+def candidates():
+ from app.custom_sources import scan_company
+ src={
+  "Yassir":"https://jobs.lever.co/Yassir/",
+  "Integrant":"https://apply.workable.com/integrant/",
+  "PetroApp":"https://apply.workable.com/petroapp/",
+  "SSC HR Solutions":"https://apply.workable.com/ssc-hr/",
+  "Mondia":"https://apply.workable.com/mondia-group/",
+  "mylo":"https://apply.workable.com/mylo-btech/",
+  "Infomineo":"https://apply.workable.com/infomineo/",
+  "ArpuPlus":"https://apply.workable.com/arpu-telecommunication-services/",
+  "Madar":"https://apply.workable.com/madarplatform/",
+ }
+ for name,url in src.items():
+  try:
+   jobs,status,reason=scan_company({"name":name,"url":url})
+   egypt=[j for j in jobs if __import__('re').search("egypt|cairo|giza|alexandria",j.get("location",""),__import__('re').I)]
+   print("CANDIDATE",name,status,len(jobs),"egypt",len(egypt),"sample",[(x["title"],x["location"]) for x in egypt[:3]],flush=True)
+  except Exception as exc:print("CANDIDATE_ERROR",name,str(exc)[:200],flush=True)
+if __name__=="__main__": candidates()
