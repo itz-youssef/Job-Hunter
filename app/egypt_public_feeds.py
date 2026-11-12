@@ -122,7 +122,7 @@ def siemens_software(name, get_json, make_job):
             raise ValueError("Incomplete Siemens jobs page")
 
         for row in rows:
-            if not isinstance(row, dict) or row.get("is_posted") is False:
+            if not isinstance(row, dict):
                 continue
             country = str(row.get("country_exact") or row.get("country_short_exact") or "")
             if country.strip().casefold() not in ("egypt", "egy", "eg"):
