@@ -189,6 +189,14 @@ def _ats(url: str):
     host = (p.hostname or "").lower()
     seg = [s for s in p.path.split("/") if s]
 
+    if host == "careers.pwc.com" and p.path.startswith(("/search", "/job")):
+        return "pwc_egypt", None
+    if host == "careers.deliveryhero.com" and p.path.startswith(("/jobs", "/talabat-jobs", "/talabat")):
+        return "talabat_egypt", None
+    if host in ("iaziqy.fa.ocs.oraclecloud.com", "jobs.uber.com") and p.path.startswith(("/hcmUI/CandidateExperience", "/en")):
+        return "uber_egypt", None
+    if host == "finaira.ai" and p.path.startswith(("/work-at-finaira", "/job/")):
+        return "finaira_egypt", None
     if host == "careers.ey.com" and p.path.startswith(("/ey/search", "/viewalljobs")):
         return "ey_egypt", None
     if host in ("blink22.com", "www.blink22.com") and p.path.startswith("/careers"):
@@ -530,6 +538,17 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     p = urllib.parse.urlsplit(url)
     jobs = []
 
+    if kind == "pwc_egypt":
+        from app.egypt_expansion_feeds import successfactors_egypt
+        return _dedupe(successfactors_egypt(name,_bytes,_job,"https://careers.pwc.com/search/?q=&locationsearch=Egypt"))
+    if kind == "talabat_egypt":
+        from app.egypt_expansion_feeds import talabat_egypt
+        return _dedupe(talabat_egypt(name,_bytes,_job))
+    if kind == "uber_egypt":
+        from app.egypt_expansion_feeds import uber_egypt_partial
+        return _dedupe(uber_egypt_partial(name,_bytes,_job))
+    if kind == "finaira_egypt":
+        return _dedupe(_generic_structured(name,url))
     if kind == "ey_egypt":
         from app.egypt_expansion_feeds import ey_egypt
         return _dedupe(ey_egypt(name,_bytes,_job))
@@ -1254,7 +1273,7 @@ def scan_company(company: dict):
             name, url
         )
 
-        if kind in ("etisalat_egypt", "indrive_egypt", "blink22_egypt"):
+        if kind in ("etisalat_egypt", "indrive_egypt", "blink22_egypt", "uber_egypt"):
             return (
                 jobs, "partial",
                 f"{len(jobs)} official public vacancies; location or full coverage not verified",
