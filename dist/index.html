@@ -57,8 +57,8 @@ html[data-theme="dark"] .breadcrumb span{color:var(--muted)}
 
 .company-brand{flex:0 0 42px;width:42px;height:42px;display:grid;place-items:center;position:relative;border:1px solid var(--border);border-radius:10px;background:var(--panel);overflow:hidden}
 .company-brand .brand-monogram{display:grid;place-items:center;width:100%;height:100%;font-size:15px;font-weight:750;color:var(--purple);background:var(--soft)}
-.company-brand img{position:absolute;inset:6px;width:calc(100% - 12px);height:calc(100% - 12px);object-fit:contain;display:none}
-.company-brand img.brand-loaded{display:block;background:var(--panel)}
+.company-brand img{position:absolute;inset:6px;width:calc(100% - 12px);height:calc(100% - 12px);object-fit:contain;display:block;opacity:0;transition:opacity .15s ease}
+.company-brand img.brand-loaded{display:block;opacity:1;background:var(--panel)}
 .company-card{align-items:center}
 
 .nav-divider-label{display:block;margin:13px 12px 2px;font-size:10px;letter-spacing:1.1px;color:var(--muted);font-weight:750}
@@ -348,7 +348,10 @@ a:hover{color:var(--ink)}
     'PetroApp':'petroapp.com','SSC HR Solutions':'ssc-hr.com',
     'Mondia Group':'mondia.com','mylo by B.TECH':'btech.com',
     'Infomineo':'infomineo.com','ArpuPlus':'arpuplus.com',
-    'Madar':'madarplatform.com'
+    'Madar':'madarplatform.com', 'Valeo':'valeo.com','Microsoft':'microsoft.com',
+    'Siemens Software':'siemens.com','Siemens':'siemens.com', 'ITWorx Egypt':'itworx.com',
+    'Capgemini':'capgemini.com','Deloitte Middle East':'deloitte.com',
+    'BlackStone eIT':'blackstoneeit.com','Link Development':'linkdevelopment.com'
   });
   const LOGO_KEY = 'jh-logo-overrides-v1';
   function readLogos(){
@@ -377,7 +380,7 @@ a:hover{color:var(--ink)}
     const override=safeLogoSrc(logoOverrides[logoKey(c)]);
     const mark=`<span class="brand-monogram" aria-hidden="true">${icon(name)}</span>`;
     if(!domain&&!override)return `<span class="company-brand" role="img" aria-label="${esc(name)}">${mark}</span>`;
-    return `<span class="company-brand" role="img" aria-label="${esc(name)} logo">${mark}<img class="brand-image" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" src="${esc(override||`https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`)}"></span>`;
+    return `<span class="company-brand" role="img" aria-label="${esc(name)} logo">${mark}<img class="brand-image" alt="" loading="lazy" decoding="async" src="${esc(override||`https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`)}"></span>`;
   }
   function companyCard(c){
     const status=c.status||'pending', mapping={monitoring:['Monitoring','green'],partial:['Partial coverage','orange'],needs_adapter:['Needs adapter','orange'],access_blocked:['Access blocked','red'],error:['Scan error','red'],pending:['Waiting for scan','orange'],configured:['Configured','grey']};
