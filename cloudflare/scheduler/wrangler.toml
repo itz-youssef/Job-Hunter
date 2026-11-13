@@ -1,0 +1,9 @@
+name = "job-hunter-scheduler"
+main = "worker.mjs"
+compatibility_date = "2026-11-13"
+
+# Separate scheduled-only Worker; leave the existing dashboard deployment intact.
+workers_dev = false
+
+[triggers]
+crons = ["*/5 * * * *", "3,18,33,48 * * * *"]

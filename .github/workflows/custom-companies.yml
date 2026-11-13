@@ -19,7 +19,12 @@ concurrency:
 
 jobs:
   scan:
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'workflow_dispatch')
+    # External cron avoids duplicate scheduled/chain-triggered scans once enabled.
+    # Until then, retain the previous GitHub fallback schedule unchanged.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'schedule' && vars.CLOUDFLARE_SCHEDULER_ACTIVE != 'true') ||
+      (github.event_name == 'workflow_run' && vars.CLOUDFLARE_SCHEDULER_ACTIVE != 'true' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -34,6 +39,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: pip
 
       - name: Install scanner dependencies
         run: python -m pip install -r requirements.txt
