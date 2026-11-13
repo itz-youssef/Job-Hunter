@@ -20,11 +20,17 @@ test('the circular signed-in avatar is at the right edge of the shared toolbar',
   assert.match(topbar,/href="\/account\.html\?mode=login&after=home"/);
   assert.match(topbar,/href="\/account\.html\?mode=register&after=home"/);
 });
-test('both appearance modes have inverse card/text palette',()=>{
-  assert.match(css,/--card-bg:#111111/);
-  assert.match(css,/--card-ink:#ffffff/);
-  assert.match(css,/html\[data-theme="dark"\]\{\s*--card-bg:#ffffff/);
-  assert.match(css,/--card-ink:#111111/);
+test('both themes match page, cards, text and nested backgrounds consistently',()=>{
+  const lightBlock=css.match(/:root\s*\{\s*--card-bg:([^;]+);\s*--card-ink:([^;]+);\s*--card-muted:([^;]+);\s*--card-border:([^;]+);\s*--card-soft:([^;]+);/);
+  const darkBlock=css.match(/html\[data-theme="dark"\]\s*\{\s*--card-bg:([^;]+);\s*--card-ink:([^;]+);\s*--card-muted:([^;]+);\s*--card-border:([^;]+);\s*--card-soft:([^;]+);/);
+  assert.ok(lightBlock,'light palette exists');
+  assert.ok(darkBlock,'dark palette exists');
+  assert.deepEqual(lightBlock.slice(1,3),['#ffffff','#111111']);
+  assert.deepEqual(darkBlock.slice(1,3),['#111111','#f5f5f5']);
+  assert.equal(lightBlock[5],lightBlock[1],'light inner card matches light card');
+  assert.equal(darkBlock[5],darkBlock[1],'dark inner card matches dark card');
+  assert.match(css,/--bg:#ffffff;--panel:#ffffff/);
+  assert.match(css,/--bg:#0b0b0b;--panel:#0b0b0b/);
   for(const card of ['job-card','company-card','feature-card','panel','stat',
     'job-filter-panel','sj-about-card','sj-home-hero','sj-service-card','sj-product-card']){
     assert.ok(css.includes('.'+card),card);
@@ -34,9 +40,22 @@ test('both appearance modes have inverse card/text palette',()=>{
   assert.match(css,/\.job-details p/);
   assert.match(css,/\.search-box/);
   assert.match(css,/\.btn\.primary/);
-  assert.match(account,/--account-card-bg:#111/);
-  assert.match(account,/html\[data-theme="dark"\]\{[\s\S]*?--account-card-bg:#fff/);
+  assert.match(account,/--account-card-bg:#ffffff/);
+  assert.match(account,/--account-card-ink:#111111/);
+  assert.match(account,/html\[data-theme="dark"\]\{\s*--account-card-bg:#111111/);
+  assert.match(account,/--account-card-ink:#f5f5f5/);
   assert.match(account,/\.panel\{\s*background:var\(--account-card-bg\)/);
+  assert.match(account,/\.panel \.stat,\.panel \.notice/);
+  assert.match(account,/\.nav button\.active\{background:var\(--paper\);color:var\(--ink\)/);
+});
+test('account icon, browser favicon, chevrons are all minimalist vector elements',()=>{
+  assert.match(account,/rel="icon" type="image\/svg\+xml" href="\/assets\/secretj-mark\.svg"/);
+  assert.match(account,/class="account-back" href="\/"/);
+  assert.match(account,/class="account-nav-icon"/);
+  assert.doesNotMatch(account,/Back to Secret J ↗/);
+  assert.match(home,/class="account-sidebar-icon"/);
+  assert.match(home,/class="account-sidebar-chevron"/);
+  assert.doesNotMatch(home,/id="account-link">♙/);
 });
 test('there is no Cloudflare-only bypass of account session discovery',()=>{
   assert.doesNotMatch(header,/location\.hostname\.endsWith\('\.workers\.dev'\)/);

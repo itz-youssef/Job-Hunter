@@ -9,6 +9,7 @@ on:
       - "dist/**"
       - "tests/test_cloudflare_site.cjs"
       - "tests/test_secretj_theme_session.cjs"
+      - "tests/test_secretj_member_features.cjs"
       - "package.json"
       - ".github/workflows/cloudflare-site.yml"
   push:
@@ -45,7 +46,7 @@ jobs:
         run: |
           node --check cloudflare/site/worker.mjs
           node --test tests/test_cloudflare_site.cjs tests/test_secretj_theme_session.cjs
-          node --test tests/test_secretj_accounts.cjs tests/test_secretj_health.cjs tests/test_neon_schema_contract.cjs
+          node --test tests/test_secretj_accounts.cjs tests/test_secretj_health.cjs tests/test_neon_schema_contract.cjs tests/test_secretj_member_features.cjs
       - name: Bundle complete Cloudflare website and verify routes
         run: npx --yes wrangler@4 deploy --dry-run --config cloudflare/site/wrangler.toml --outdir /tmp/secretj-site-worker-dry-run
 

@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#f7f7f7">
 <meta name="description" content="Secret J account workspace — manage your career, CV, applications, and opportunities.">
 <title>Secret J | My Account</title>
+<link rel="icon" type="image/svg+xml" href="/assets/secretj-mark.svg">
+<link rel="shortcut icon" href="/assets/secretj-mark.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,7 +15,7 @@
 try{const theme=localStorage.getItem('jh-theme');document.documentElement.dataset.theme=theme==='dark'?'dark':theme==='light'?'light':matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}catch{}
 </script>
 <style>
-:root{color-scheme:light;--bg:#f7f7f7;--paper:#fff;--ink:#111;--muted:#696969;--border:#e3e3e3;--accent:#111;--soft:#f0f0f0;--danger:#555;--btn-bg:#111;--btn-ink:#fff}html[data-theme="dark"]{color-scheme:dark;--bg:#0c0c0c;--paper:#111;--ink:#f3f3f3;--muted:#a7a7a7;--border:#292929;--accent:#f3f3f3;--soft:#1b1b1b;--danger:#ccc;--btn-bg:#f3f3f3;--btn-ink:#111}
+:root{color-scheme:light;--bg:#fff;--paper:#fff;--ink:#111;--muted:#111;--border:#e3e3e3;--accent:#111;--soft:#fff;--danger:#555;--btn-bg:#111;--btn-ink:#fff}html[data-theme="dark"]{color-scheme:dark;--bg:#0b0b0b;--paper:#0b0b0b;--ink:#f5f5f5;--muted:#f5f5f5;--border:#292929;--accent:#f3f3f3;--soft:#0b0b0b;--danger:#ccc;--btn-bg:#f3f3f3;--btn-ink:#111}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 Manrope,system-ui,-apple-system,Segoe UI,sans-serif}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
 button,input,textarea,select{font:inherit}button{cursor:pointer;border:0}button:disabled{opacity:.55;cursor:wait}
 header{display:flex;align-items:center;gap:18px;justify-content:space-between;background:var(--paper);border-bottom:1px solid var(--border);padding:18px max(20px,calc((100% - 1160px)/2))}
@@ -35,21 +37,21 @@ textarea{min-height:94px;resize:vertical}.btn{padding:12px 18px;background:var(-
 .provider-row{display:flex;align-items:center;gap:15px;flex-wrap:wrap;padding:17px;background:var(--bg);border-radius:13px;border:1px solid var(--border);margin-bottom:16px}.provider-row p{margin:0}.provider-row .btn{min-height:42px}.linkedin-photo{width:54px;height:54px;border-radius:50%;object-fit:cover}.provider-row .spacer{flex:1}.provider-row .tiny{font-size:11px;color:var(--muted)}.filebox{border:1px dashed var(--border);border-radius:12px;padding:20px;margin-top:14px;background:var(--soft)}.filebox input{width:100%;background:transparent}.small{font-size:12px}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
 [hidden]{display:none!important}@media(max-width:670px){main{margin-top:25px}header{padding:15px 16px}.panel{padding:18px}.grid{grid-template-columns:1fr}.wide{grid-column:auto}.summary{grid-template-columns:1fr}.item{align-items:flex-start;flex-direction:column}}
 
-/* Inverse account cards match the main Job Hunter theme.
-   Dark canvas: white form cards, black text. Light canvas: black cards, white text. */
+/* Every account surface follows its page theme.
+   Dark mode: black cards and white text. Light mode: white cards and black text. */
 :root{
-  --account-card-bg:#111;
-  --account-card-ink:#fff;
-  --account-card-muted:#cacaca;
-  --account-card-soft:#252525;
-  --account-card-border:#393939;
+  --account-card-bg:#ffffff;
+  --account-card-ink:#111111;
+  --account-card-muted:#111111;
+  --account-card-soft:#ffffff;
+  --account-card-border:#dedede;
 }
 html[data-theme="dark"]{
-  --account-card-bg:#fff;
-  --account-card-ink:#111;
-  --account-card-muted:#555;
-  --account-card-soft:#eee;
-  --account-card-border:#d4d4d4;
+  --account-card-bg:#111111;
+  --account-card-ink:#f5f5f5;
+  --account-card-muted:#f5f5f5;
+  --account-card-soft:#111111;
+  --account-card-border:#343434;
 }
 .panel{
   background:var(--account-card-bg);
@@ -65,9 +67,9 @@ html[data-theme="dark"]{
 }
 .panel :is(input,textarea)::placeholder{color:var(--account-card-muted);opacity:1}
 .panel .btn:not([disabled]){
-  background:var(--account-card-ink);
-  color:var(--account-card-bg);
-  border:1px solid var(--account-card-ink);
+  background:var(--account-card-bg);
+  color:var(--account-card-ink);
+  border:1px solid var(--account-card-border);
 }
 .panel .btn.secondary,.panel .btn.subtle,.panel .btn.danger{
   background:var(--account-card-soft);
@@ -92,16 +94,109 @@ html[data-theme="dark"]{
 .panel .item :is(small,p),.panel .stat small{color:var(--account-card-muted)}
 .panel a:not(.btn){color:var(--account-card-ink);text-decoration:underline}
 .panel .avatar{background:var(--account-card-soft);border-color:var(--account-card-border)}
-.panel .nav button.active{color:var(--account-card-bg)}
+.nav button.active{background:var(--paper);border:2px solid var(--ink);color:var(--ink);font-weight:800}
+.panel .nav button.active{background:var(--account-card-bg);border-color:var(--account-card-ink);color:var(--account-card-ink)}
+
+/* Monochrome account surfaces: black on black in dark mode, white on white in light mode. */
+.panel .stat,.panel .notice,.panel .provider-row,.panel .filebox,.panel .item{
+  background:var(--account-card-bg)!important;
+  color:var(--account-card-ink)!important;
+  border:1px solid var(--account-card-border)!important;
+}
+.panel :is(h1,h2,h3,h4,p,small,label,span,strong,b,code),
+.panel :is(.stat,.notice,.provider-row,.filebox,.item) :is(h1,h2,h3,h4,p,small,label,span,strong,b,code){
+  color:var(--account-card-ink);
+}
+.panel .tabs button.active{border:2px solid var(--account-card-ink);font-weight:800}
+.panel .tabs button:not(.active){color:var(--account-card-ink)}
+.panel :is(input,select,textarea){background:var(--account-card-bg);color:var(--account-card-ink)}
+.panel .btn:not([disabled]),.panel .btn.secondary,.panel .btn.subtle,
+.panel .btn.danger,.panel .btn:disabled{
+  background:var(--account-card-bg);
+  color:var(--account-card-ink);
+  border:1px solid var(--account-card-ink);
+}
+.panel .btn:hover,.panel .btn:focus-visible{outline:2px solid var(--account-card-ink);outline-offset:2px}
+.nav button:not(.active){color:var(--ink)}
+.nav button.active{background:var(--paper);color:var(--ink);border:2px solid var(--ink)}
+/* Selected item: reverse its text/icon only when its background reverses.
+   Non-selected buttons retain their base theme foreground. */
+.nav button.active,.nav button.active *,
+.nav button.active svg,.nav button.active svg *{
+  background:var(--ink)!important;color:var(--bg)!important;stroke:currentColor!important;
+}
+html[data-theme="dark"] .nav button.active,
+html[data-theme="dark"] .nav button.active *{
+  background:#fff!important;color:#111!important;
+}
+html[data-theme="light"] .nav button.active,
+html[data-theme="light"] .nav button.active *{
+  background:#111!important;color:#fff!important;
+}
+.top-profile summary{border:none!important;background:transparent!important;
+  padding:4px 2px 4px 4px!important;gap:8px!important;border-radius:9px!important}
+.top-profile summary:hover{background:var(--soft)!important}
+.top-profile summary:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.profile-avatar-icon{width:34px;height:34px;min-width:34px;border-radius:50%}
+.account-menu-label{line-height:1.2;font-size:12px;font-weight:750}
+.account-menu-chevron{height:15px;width:15px;display:block;align-self:center;
+  position:relative;top:-2px;flex:none;transition:transform .16s}
+.top-profile[open] .account-menu-chevron{transform:rotate(180deg)}
+
+/* Consistent 16px line icons and an understated back navigation link. */
+.account-back{display:inline-flex;gap:8px;align-items:center}
+.account-back svg,.account-nav-icon,.account-btn-icon{width:16px;height:16px;stroke:currentColor;stroke-width:1.9;fill:none;flex:none}
+.account-back:hover{text-decoration:underline}
 @media (prefers-reduced-motion:reduce){.btn{transition:none}}
 
+
+/* Inline CV preview and drag-to-center photo editor, matching selected theme. */
+#sj-cv-preview{width:min(960px,96vw);height:min(85vh,850px);max-width:96vw;max-height:90vh;
+  padding:0;border:1px solid var(--border);border-radius:12px;background:var(--paper);color:var(--ink)}
+#sj-cv-preview::backdrop{background:rgba(0,0,0,.7)}
+.sj-preview-head{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:13px 18px;border-bottom:1px solid var(--border)}
+.sj-preview-head h2{margin:0}
+.sj-preview-body{height:calc(100% - 58px);overflow:auto;background:var(--paper)}
+#sj-preview-pdf{border:0;width:100%;height:100%}
+#sj-preview-text{padding:25px;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ink);font:13px/1.7 Manrope,system-ui}
+.sj-preview-close{background:var(--paper);color:var(--ink);border:1px solid var(--border);
+  border-radius:8px;padding:8px 12px;cursor:pointer}
+.sj-crop-backdrop{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;
+  padding:15px;background:rgba(0,0,0,.8)}
+.sj-crop-modal{width:min(410px,100%);background:var(--paper);color:var(--ink);
+  border:1px solid var(--border);border-radius:15px;padding:23px;box-shadow:0 25px 75px rgba(0,0,0,.25)}
+.sj-crop-modal p{font-size:12px;line-height:1.65;margin:6px 0 18px}
+.sj-crop-heading{display:flex;align-items:center;justify-content:space-between}
+.sj-crop-heading h2{margin:0}
+.sj-crop-heading button{background:transparent;color:var(--ink);font-size:28px}
+.sj-crop-modal canvas{display:block;aspect-ratio:1;width:min(256px,100%);height:auto;
+  border-radius:50%;margin:auto;border:1px solid var(--border);touch-action:none;cursor:grab}
+.sj-crop-modal canvas:active{cursor:grabbing}
+.sj-crop-slider{margin:19px 0;display:flex;align-items:center;gap:12px}
+.sj-crop-slider label{font-size:12px}
+.sj-crop-slider button{background:var(--paper);color:var(--ink);border:1px solid var(--border);
+  border-radius:8px;width:32px;height:32px;flex:none}
+.sj-crop-slider input{flex:1;min-width:0;accent-color:var(--ink)}
+.sj-crop-buttons{display:flex;justify-content:flex-end;gap:10px}
+.sj-crop-buttons button{background:var(--paper);color:var(--ink);padding:10px 14px;
+  border:1px solid var(--border);border-radius:8px}
+.sj-crop-buttons [data-save]{font-weight:800}
+.sj-eye-icon{height:17px;width:17px;fill:none;stroke:currentColor;stroke-width:1.8;
+  vertical-align:-3px;margin-right:5px}
+
+.profile-avatar-picture{width:34px;height:34px;min-width:34px;aspect-ratio:1;border-radius:50%;object-fit:cover;display:block;border:1px solid var(--border)}
+.profile-avatar-picture[hidden],.profile-avatar-icon[hidden]{display:none!important}
 </style>
+<link rel="stylesheet" href="/assets/secretj-global-theme.css">
+<script src="/assets/secretj-cv-parser.js" defer></script>
+<script src="/assets/secretj-avatar-crop.js" defer></script>
 <script src="/assets/secretj-account.js" defer></script>
 </head>
 <body>
-<header><a class="brand" href="/"><img src="/assets/secretj-mark.svg" alt="" width="35" height="35" style="vertical-align:middle;border-radius:9px;margin-right:9px">SECRET <span>J.</span> <span style="font-size:12px;color:var(--muted)">/ JOB HUNTER</span></a><div class="top-links"><a href="/">Back to Secret J ↗</a>
+<header><a class="brand" href="/"><img src="/assets/secretj-mark.svg" alt="" width="35" height="35" style="vertical-align:middle;border-radius:9px;margin-right:9px">SECRET <span>J.</span> <span style="font-size:12px;color:var(--muted)">/ JOB HUNTER</span></a><div class="top-links"><a class="account-back" href="/" aria-label="Back to Secret J"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m14 6-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Back to Secret J</span></a>
 <details id="account-profile-menu" class="top-profile" hidden>
-<summary><span class="profile-avatar-icon" id="account-profile-initial">SJ</span><span>Profile⌄</span></summary>
+<summary aria-label="Open profile menu"><span class="profile-avatar-icon" id="account-profile-initial">SJ</span><img id="account-profile-photo" class="profile-avatar-picture" alt="Your profile photo" hidden><span class="account-menu-label">Profile</span><svg class="account-menu-chevron" aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
 <div class="profile-dropdown">
 <a href="/account.html?view=overview">Dashboard</a><a href="/account.html?view=profile">My profile</a>
 <a href="/account.html?view=documents">CV &amp; photo</a><a href="/account.html?view=saved">Saved jobs</a>
@@ -129,7 +224,7 @@ html[data-theme="dark"]{
 <p class="muted" id="account-email"></p>
 <div class="nav" id="account-nav" role="navigation" aria-label="Account features">
 <button type="button" data-view="overview" class="active">Overview</button>
-<button type="button" data-view="profile">My profile</button>
+<button type="button" data-view="profile"><svg class="account-nav-icon" viewBox="0 0 24 24" aria-hidden="true" style="vertical-align:-3px;margin-right:5px"><circle cx="12" cy="8" r="4"/><path d="M4.5 20c0-4 3.3-6 7.5-6s7.5 2 7.5 6"/></svg>My profile</button>
 <button type="button" data-view="saved">Saved jobs</button>
 <button type="button" data-view="applications">Applications</button>
 <button type="button" data-view="preferences">Preferences</button>
@@ -137,4 +232,11 @@ html[data-theme="dark"]{
 <button type="button" data-view="admin" id="admin-nav" hidden>Admin</button></div>
 <div id="account-content" class="panel"></div>
 </section>
-</main></body></html>
+</main>
+<dialog id="sj-cv-preview" aria-labelledby="sj-preview-title">
+  <div class="sj-preview-head"><h2 id="sj-preview-title">CV preview</h2>
+    <button class="sj-preview-close" type="button" id="sj-preview-close">Close</button></div>
+  <div class="sj-preview-body"><iframe id="sj-preview-pdf" title="Private PDF CV preview" hidden></iframe>
+    <pre id="sj-preview-text" hidden></pre></div>
+</dialog>
+</body></html>

@@ -39,9 +39,9 @@ test('company copy is minimal, professional, without invented founders or AI pun
 });
 test('existing light and dark modes use only neutral palettes with Manrope',()=>{
   const css=fs.readFileSync('dist/assets/secretj-home.css','utf8');
-  assert.match(css,/--purple:#202020/);
+  assert.match(css,/--purple:#111111/);
   assert.match(css,/html\[data-theme="dark"\]/);
-  assert.match(css,/--bg:#0c0c0c/);
+  assert.match(css,/--bg:#0b0b0b/);
   assert.match(css,/font-family:"Manrope"/);
   assert.match(html,/fonts\.googleapis\.com\/css2\?family=Manrope/);
   assert.doesNotMatch(css,/#(?:6757eb|80c4b6|245f61|cbff87|6652db)/i);
@@ -75,11 +75,12 @@ test('account profile menu honors account ownership and linked services',()=>{
   assert.match(accountJS,/\/api\/secretj-linkedin\?action=disconnect/);
 });
 test('alert email comes from authenticated signup identity; preferences saved to Neon',()=>{
-  assert.match(accountJS,/Alert destination:/);
-  assert.match(accountJS,/esc\(state\.user\.email\)/);
+  assert.match(accountJS,/Your alert email/);
+  assert.match(accountJS,/recipient=emailState\.recipient\|\|state\.user\.email/);
   assert.match(accountJS,/api\(dataUrl\('preferences'\),'PUT'/);
   assert.match(accountJS,/email_alerts_enabled|email_alerts/);
-  assert.match(accountJS,/Personalized email delivery is still being developed/);
+  assert.match(accountJS,/\/api\/secretj-email\?action=test/);
+  assert.match(accountJS,/\/api\/secretj-email\?action=verify/);
 });
 test('new LinkedIn migration preserves existing tables and restricts public grants',()=>{
   assert.match(sql,/CREATE TABLE IF NOT EXISTS public\.sj_linkedin_connections/);
