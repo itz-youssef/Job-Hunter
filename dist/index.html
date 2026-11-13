@@ -355,17 +355,21 @@ a:hover{color:var(--ink)}
   function toast(message, bad=false){const t=el('#toast');t.textContent=message;t.classList.toggle('error',bad);t.hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.hidden=true,5000);}
   // GitHub's public read-only Actions API reflects actual workflow runs.
   // It is best-effort and rate-limited; leave snapshots usable if unavailable.
-  const RUNS_API='https://api.github.com/repos/itz-youssef/Job-Hunter/actions/runs?branch=main&per_page=40';
-  const RUNS_REFRESH_MS=150000;
-  function latestScannerRuns(data){
+  // Narrow queries avoid losing infrequent core runs among many custom scans.
+  // Three-minute polling costs at most 40 public API requests per hour.
+  const RUNS_API_ROOT='https://api.github.com/repos/itz-youssef/Job-Hunter/actions/workflows/';
+  const RUNS_REFRESH_MS=180000;
+  const SCANNER_CHANNELS=[
+    {key:'custom',workflow:'custom-companies.yml'},
+    {key:'core',workflow:'monitor.yml'}
+  ];
+  function latestScannerRun(data,workflow){
     if(!Array.isArray(data?.workflow_runs))throw Error('Unexpected GitHub workflow response');
-    const result={};
-    for(const run of data.workflow_runs){
-      if(run.head_branch!=='main'||run.conclusion==='skipped')continue;
-      const channel=run.path==='.github/workflows/custom-companies.yml'?'custom':run.path==='.github/workflows/monitor.yml'?'core':null;
-      if(channel&&!result[channel])result[channel]=run;
-    }
-    return result;
+    return data.workflow_runs.find(run=>
+      run.head_branch==='main'&&
+      run.path==='.github/workflows/'+workflow&&
+      run.conclusion!=='skipped'
+    )||null;
   }
   async function refresh(silent=false){
     const runsDue=Date.now()-state.runsCheckedAt>=RUNS_REFRESH_MS;
@@ -375,9 +379,9 @@ a:hover{color:var(--ink)}
          json(liveFile('companies.json')).then(companies=>({companies})),
          json(liveFile('dist/custom-status.json')),
          json(liveFile('dist/notification-status.json')),
-         runsDue?json(RUNS_API):Promise.resolve(null)]
+         runsDue?Promise.allSettled(SCANNER_CHANNELS.map(c=>json(RUNS_API_ROOT+c.workflow+'/runs?branch=main&per_page=5'))):Promise.resolve(null)]
       : [json('/data.json'),companyApi(),json('/custom-status.json'),json('/notification-status.json'),
-         runsDue?json(RUNS_API):Promise.resolve(null)]);
+         runsDue?Promise.allSettled(SCANNER_CHANNELS.map(c=>json(RUNS_API_ROOT+c.workflow+'/runs?branch=main&per_page=5'))):Promise.resolve(null)]);
     if(res[0].status==='fulfilled')state.snapshot=res[0].value;
     if(res[1].status==='fulfilled'){state.companies=res[1].value.companies||[];state.companyApiError='';}
     else state.companyApiError=IS_CLOUDFLARE?'GitHub watchlist could not be loaded.':'Company API unavailable — check Vercel deployment.';
@@ -385,15 +389,20 @@ a:hover{color:var(--ink)}
     else state.statusError='No custom scanner report published yet.';
     if(res[3].status==='fulfilled')state.alerts=res[3].value;
     if(runsDue){
-      try{
-        if(res[4].status!=='fulfilled')throw Error('GitHub Actions API unavailable');
-        state.runs=latestScannerRuns(res[4].value);
-        state.runsError='';
-      }catch{
-        // Never claim a fresh run result from a failed API request.
-        state.runs={};
-        state.runsError='Live GitHub runs unavailable; published scan timestamps are shown below.';
-      }
+      // Partial GitHub API outages must not hide a healthy independent channel.
+      const results=res[4].status==='fulfilled'?res[4].value:[];
+      const current={};
+      const unavailable=[];
+      SCANNER_CHANNELS.forEach((channel,index)=>{
+        try{
+          if(results[index]?.status!=='fulfilled')throw Error('API unavailable');
+          current[channel.key]=latestScannerRun(results[index].value,channel.workflow);
+        }catch{unavailable.push(channel.key);}
+      });
+      state.runs=current;
+      state.runsError=unavailable.length
+        ?'Live status unavailable for '+unavailable.join(' and ')+'; published timestamps are shown below.'
+        :'';
     }
     state.refreshedAt=new Date();
     el('#nav-job-count').textContent=validJobs().length;
