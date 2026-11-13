@@ -45,7 +45,8 @@ EARLY_TITLE = re.compile(
     r"associate(?:\s+software\s+engineer)?)\b", re.I,
 )
 EARLY_DESCRIPTION = re.compile(
-    r"\b(?:fresh(?:\s+graduate|er)?s?|recent graduates?|no (?:prior )?experience|"
+    r"\b(?:(?:employer\s+career\s+level|experience\s+level)\s*:\s*early\s+professional|"
+    r"fresh(?:\s+graduate|er)?s?|recent graduates?|no (?:prior )?experience|"
     r"0\s*(?:-|–|to)\s*[012]\s*years?|"
     r"[01]\s*(?:-|–|to)\s*2\s*years?|"
     r"(?:up to|maximum(?: of)?|max\.?)\s*2\s*years?|"
