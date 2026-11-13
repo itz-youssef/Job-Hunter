@@ -160,6 +160,9 @@ def _send_email(job):
             f"Position: {job['title']}",
             f"Location: {job['location']}",
             f"Match score: {job['match_score']}",
+            f"Employer posting date: {job.get('published_at') or job.get('published') or 'Not provided'}",
+            f"First detected by Job Hunter (UTC): {job.get('discovered_at') or 'Unknown'}",
+            f"Alert prepared (UTC): {_now()}",
             f"Apply: {job['url']}",
         ])
     )
@@ -320,9 +323,11 @@ def run(
     custom_jobs = {}
     statuses = []
 
-    # Scan up to four companies simultaneously.
+    # Parallelize independent public career sources to reduce alert latency.
+    # Results remain in registry order; stored IDs and deduplication are unchanged.
+    scan_started_at = _now()
     with ThreadPoolExecutor(
-        max_workers=4
+        max_workers=8
     ) as pool:
 
         scan_results = list(
@@ -535,6 +540,9 @@ def run(
         status_path,
         {
             "checked_at": _now(),
+            "scan_started_at": scan_started_at,
+            "emails_accepted_by_smtp": sent,
+            "pending_alerts": len(state["pending"]),
             "companies": statuses,
         }
     )

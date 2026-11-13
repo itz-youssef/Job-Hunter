@@ -189,6 +189,9 @@ def _ats(url: str):
     host = (p.hostname or "").lower()
     seg = [s for s in p.path.split("/") if s]
 
+    if host in ("jobs.sap.com", "www.jobs.sap.com") and p.path.startswith("/en/jobs"):
+        return "sap_cairo", None
+
     if host in ("www.adcb.com.eg", "adcb.com.eg") and p.path.startswith("/available-careers"):
         return "adcb_egypt", None
     if host in ("www.fab-minds.com", "fab-minds.com") and p.path.startswith("/careers"):
@@ -545,6 +548,10 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     p = urllib.parse.urlsplit(url)
     jobs = []
 
+    if kind == "sap_cairo":
+        from app.weak_employer_adapters import sap_egypt
+        return _dedupe(sap_egypt(name, _bytes, _job))
+
     if kind in ("adcb_egypt", "fab_minds_egypt"):
         from app.verified_egypt_employers import adcb_egypt, fab_minds_egypt
         reader = adcb_egypt if kind == "adcb_egypt" else fab_minds_egypt
@@ -567,8 +574,8 @@ def _board_jobs(name: str, url: str) -> list[dict]:
         return _dedupe(ey_egypt(name,_bytes,_job))
 
     if kind == "blink22_egypt":
-        from app.egypt_expansion_feeds import blink22_egypt
-        return _dedupe(blink22_egypt(name,_bytes,_job))
+        from app.weak_employer_adapters import blink22_listings
+        return _dedupe(blink22_listings(name, _bytes, _job))
 
     if kind == "tp_egypt":
         from app.egypt_expansion_feeds import tp_egypt
@@ -1289,7 +1296,13 @@ def scan_company(company: dict):
         if kind in ("adcb_egypt", "fab_minds_egypt"):
             return jobs, "partial", f"{len(jobs)} public vacancy details from official company pages; coverage may be incomplete"
 
-        if kind in ("etisalat_egypt", "indrive_egypt", "blink22_egypt", "uber_egypt", "cib_egypt", "adib_egypt"):
+        if kind == "blink22_egypt":
+            verified = sum(1 for job in jobs if job.get("location"))
+            return (jobs, "partial",
+                    f"{len(jobs)} official Blink22 vacancies; {verified} with explicit Egypt location; "
+                    "only verified jobs can match Egypt-only filters")
+
+        if kind in ("etisalat_egypt", "indrive_egypt", "uber_egypt", "cib_egypt", "adib_egypt"):
             return (
                 jobs, "partial",
                 f"{len(jobs)} official public vacancies; location or full coverage not verified",

@@ -1,0 +1,48 @@
+name: Weak Career Source Diagnostics
+on:
+  pull_request:
+    paths:
+      - "scripts/probe_weak_sources.py"
+      - "app/weak_employer_adapters.py"
+      - "app/custom_sources.py"
+      - "app/custom_monitor.py"
+      - "tests/test_weak_employer_adapters.py"
+      - "tests/test_alert_latency_telemetry.py"
+      - ".github/workflows/weak-career-probe.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -r requirements-dev.txt
+      - name: Python syntax and isolated regression suite
+        run: |
+          python -m compileall -q app scripts
+          python -m pytest -q tests/test_weak_employer_adapters.py tests/test_alert_latency_telemetry.py tests/test_custom_monitor_integration.py tests/test_egypt_expansion_feeds.py tests/test_smart_careers.py
+      - name: Real-source smoke test — Blink22 and SAP
+        run: |
+          python - <<'PY'
+          from app.custom_sources import scan_company
+          for company in (
+              {"name":"Blink22","url":"https://blink22.com/careers/"},
+              {"name":"SAP","url":"https://jobs.sap.com/en/jobs/?location=Cairo"}
+          ):
+              jobs,status,reason=scan_company(company)
+              print(company["name"],status,len(jobs),reason,flush=True)
+              assert status in ("partial","monitoring")
+              assert len(jobs)>0
+              assert all(item.get("url","").startswith("https://") and item.get("title") for item in jobs)
+              if company["name"]=="Blink22":
+                  assert len(jobs)>=12
+                  assert "Software Engineering Intern" in {x["title"] for x in jobs}
+          PY
+      - name: Read-only investigation of remaining weak sources
+        if: always()
+        run: python -m scripts.probe_weak_sources
