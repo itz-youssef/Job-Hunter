@@ -204,34 +204,62 @@ function readBase64(file) {
 }
 async function documents(root){
   const [cv,avatar]=await Promise.all([api(dataUrl('cv')),api(dataUrl('avatar'))]);
-  root.innerHTML=`<h2>Private CV &amp; profile photo</h2>
-    <p class="muted">Files are accessible only after signing in. Small files are stored privately in Neon for the initial free-tier release.</p>
+  root.innerHTML=`<h2>CV and profile photo</h2>
+    <p class="muted">Your files are stored privately in Neon and available only to your account.</p>
     ${avatar.found?`<img class="avatar" alt="Your profile photo" src="data:${esc(avatar.file.mime_type)};base64,${esc(avatar.file.base64)}">`:
-      '<div class="avatar" aria-label="No photo"></div>'}
-    <div class="filebox"><h3>Profile photo</h3><p class="small muted">JPG/PNG/WebP. Images are resized in your browser; stored image limit 100 KB.</p>
-    <input id="avatar-upload" type="file" accept="image/jpeg,image/png,image/webp"></div>
-    <div class="filebox"><h3>My resume</h3>
-      <p>${cv.found?`Saved: <strong>${esc(cv.file.original_name)}</strong> (${Math.round(cv.file.size_bytes/1024)} KB)`:'No cloud resume uploaded yet.'}</p>
-      <p class="small muted">PDF or DOCX up to 768 KB. Files are stored in Neon (not public GitHub).</p>
+      '<div class="avatar" aria-label="No profile photo"></div>'}
+    <div class="filebox"><h3>Profile photo</h3>
+      <p class="small muted">Upload a JPG, PNG or WebP. Drag the image to center your face, then use the Zoom control. Preview before saving.</p>
+      <input id="avatar-upload" type="file" accept="image/jpeg,image/png,image/webp"></div>
+    <div class="filebox"><h3>My CV</h3>
+      <p>${cv.found?`Saved: <strong>${esc(cv.file.original_name)}</strong> (${Math.round(cv.file.size_bytes/1024)} KB)`:'No CV uploaded yet.'}</p>
+      <p class="small muted">PDF or DOCX up to 768 KB. After uploading, readable sections are automatically imported into empty profile fields; existing information is never overwritten.</p>
       <input id="cv-upload" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
-      ${cv.found?'<div class="actions"><button class="btn secondary" data-download-cv>Download CV</button><button class="btn danger" data-delete-cv>Delete CV</button></div>':''}
+      ${cv.found?`<div class="actions">
+        <button type="button" class="btn secondary" data-preview-cv aria-label="Preview saved CV">
+          <svg class="sj-eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>Preview CV</button>
+        <button type="button" class="btn secondary" data-download-cv>Download</button>
+        <button type="button" class="btn secondary" data-import-cv>Re-import to profile</button>
+        <button type="button" class="btn danger" data-delete-cv>Delete CV</button>
+      </div>`:''}
     </div>`;
 }
-async function photoBlob(file){
-  if(!/^image\/(png|jpeg|webp)$/.test(file.type))throw Error('Only JPG, PNG and WebP photos are supported');
-  const url=URL.createObjectURL(file);
-  try{
-    const img=new Image();
-    await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(Error('Image cannot be opened'));img.src=url;});
-    const scale=Math.min(1,240/Math.max(img.width,img.height));
-    const canvas=document.createElement('canvas');
-    canvas.width=Math.max(1,Math.round(img.width*scale));
-    canvas.height=Math.max(1,Math.round(img.height*scale));
-    canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
-    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',0.70));
-    if(!blob||blob.size>102400)throw Error('Image is still too large after resizing');
-    return blob;
-  }finally{URL.revokeObjectURL(url);}
+function fileFromStoredCV(file){
+  if(!file||!['application/pdf','application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(file.mime_type))
+    throw Error('Unsupported saved CV');
+  const bytes=Uint8Array.from(atob(file.base64),ch=>ch.charCodeAt(0));
+  return new File([bytes],file.original_name||'resume.pdf',{type:file.mime_type});
+}
+let cvPreviewURL=null;
+async function previewCV(){
+  const {found,file}=await api(dataUrl('cv'));
+  if(!found)throw Error('Upload a CV first.');
+  const saved=fileFromStoredCV(file);
+  const dialog=$('#sj-cv-preview'),frame=$('#sj-preview-pdf'),pre=$('#sj-preview-text');
+  $('#sj-preview-title').textContent='CV preview: '+(file.original_name||'Resume');
+  frame.hidden=true;pre.hidden=true;pre.textContent='';
+  if(saved.type==='application/pdf'){
+    cvPreviewURL=URL.createObjectURL(saved);
+    frame.src=cvPreviewURL;frame.hidden=false;
+  }else{
+    if(!window.SecretJCVParser)throw Error('Word preview parser is not available');
+    pre.textContent=await window.SecretJCVParser.extractText(saved);
+    pre.hidden=false;
+  }
+  dialog.showModal();
+}
+async function importCVProfile(file){
+  if(!window.SecretJCVParser)throw Error('The CV parser is unavailable.');
+  const parsed=await window.SecretJCVParser.extract(file);
+  const current=(await api(dataUrl('profile'))).profile||{};
+  const merged={};
+  for(const field of window.SecretJCVParser.fields){
+    merged[field]=String(current[field]||'').trim()||
+      String(parsed[field]||'').trim();
+  }
+  const count=window.SecretJCVParser.fields.filter(k=>!String(current[k]||'').trim()&&String(parsed[k]||'').trim()).length;
+  if(count)await api(dataUrl('profile'),'PUT',merged);
+  return count;
 }
 async function admin(root){
   const [data,stats]=await Promise.all([
@@ -257,6 +285,12 @@ async function admin(root){
   <h3>Latest administrative activity</h3><div class="cards">
   ${stats.activity.map(a=>`<div class="item"><span>${esc(a.action)}</span><small>${esc(a.actor_email||'Admin')} · ${esc(a.created_at)}</small></div>`).join('')||'<p>No changes yet.</p>'}</div>`;
 }
+$('#sj-preview-close')?.addEventListener('click',()=>$('#sj-cv-preview').close());
+$('#sj-cv-preview')?.addEventListener('close',()=>{
+  $('#sj-preview-pdf').removeAttribute('src');
+  $('#sj-preview-text').textContent='';
+  if(cvPreviewURL){URL.revokeObjectURL(cvPreviewURL);cvPreviewURL=null;}
+});
 $('#tab-login').addEventListener('click',()=>authMode(false));
 $('#tab-register').addEventListener('click',()=>authMode(true));
 $('#auth-form').addEventListener('submit',async event=>{
@@ -304,6 +338,14 @@ $('#account-content').addEventListener('click',async event=>{
   const b=event.target.closest('button');if(!b)return;
   try {
     if(b.dataset.go)return showView(b.dataset.go);
+    if(b.hasAttribute('data-preview-cv'))return await previewCV();
+    if(b.hasAttribute('data-import-cv')){
+      const {found,file}=await api(dataUrl('cv'));
+      if(!found)throw Error('No saved CV');
+      const count=await importCVProfile(fileFromStoredCV(file));
+      await showView('profile');banner(count?count+' new profile fields imported from your CV.':'Your existing profile is already complete, or no new fields were recognized.');
+      return;
+    }
     if(b.hasAttribute('data-linkedin-disabled'))return banner('LinkedIn connection requires app approval and server-side OAuth credentials.',true);
     if(b.hasAttribute('data-linkedin-disconnect')){
       if(!confirm('Disconnect LinkedIn? Your saved profile details will remain.'))return;
@@ -351,13 +393,28 @@ $('#account-content').addEventListener('change',async event=>{
     if(input.id==='cv-upload'&&input.files[0]){
       const file=input.files[0];
       if(file.size>786432)throw Error('CV limit: 768 KB');
-      await api(dataUrl('cv'),'POST',{name:file.name,mime:file.type,content:await readBase64(file)});
-      banner('CV saved privately.');await showView('documents');
+      const mime=file.type||
+        (file.name.toLowerCase().endsWith('.pdf')?'application/pdf':
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+      await api(dataUrl('cv'),'POST',{name:file.name,mime,content:await readBase64(file)});
+      try{
+        const count=await importCVProfile(file);
+        await showView('profile');
+        banner(count?
+          'CV saved to Neon. '+count+' profile fields auto-filled. Review and edit any details.':
+          'CV saved. No new fields recognized; existing profile details were preserved.');
+      }catch(parseError){
+        await showView('documents');
+        banner('CV saved to Neon. Automatic parsing could not complete: '+parseError.message,true);
+      }
     }
     if(input.id==='avatar-upload'&&input.files[0]){
-      const file=await photoBlob(input.files[0]);
+      if(!window.SecretJAvatarCrop)throw Error('Photo editor unavailable.');
+      const file=await window.SecretJAvatarCrop.open(input.files[0]);
+      if(!file)return; // Cancel leaves the stored avatar untouched.
       await api(dataUrl('avatar'),'POST',{mime:'image/webp',content:await readBase64(file)});
-      banner('Profile photo saved.');await showView('documents');
+      await showView('documents');
+      banner('Your centered profile photo was saved to Neon.');
     }
   }catch(e){banner(e.message,true);}
 });
