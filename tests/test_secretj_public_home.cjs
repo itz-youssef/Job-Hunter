@@ -39,9 +39,9 @@ test('company copy is minimal, professional, without invented founders or AI pun
 });
 test('existing light and dark modes use only neutral palettes with Manrope',()=>{
   const css=fs.readFileSync('dist/assets/secretj-home.css','utf8');
-  assert.match(css,/--purple:#202020/);
+  assert.match(css,/--purple:#111111/);
   assert.match(css,/html\[data-theme="dark"\]/);
-  assert.match(css,/--bg:#0c0c0c/);
+  assert.match(css,/--bg:#0b0b0b/);
   assert.match(css,/font-family:"Manrope"/);
   assert.match(html,/fonts\.googleapis\.com\/css2\?family=Manrope/);
   assert.doesNotMatch(css,/#(?:6757eb|80c4b6|245f61|cbff87|6652db)/i);
