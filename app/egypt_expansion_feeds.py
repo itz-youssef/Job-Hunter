@@ -119,3 +119,44 @@ def tp_egypt(name,get_bytes,make_job):
         results[link]=make_job(name,name_part,"Egypt",link,"","","")
     if not results:raise ValueError("TP Egypt official vacancy list is missing")
     return list(results.values())
+
+
+def amazon_egypt(name,get_json,make_job,aws_only=False):
+    """Verified official Amazon Jobs JSON API scoped to Egypt; complete pagination."""
+    from urllib.parse import urlencode
+    root="https://www.amazon.jobs/en/search.json"
+    size=100
+    results={}
+    expected=None
+    for page in range(10):
+        url=root+"?"+urlencode({"offset":page*size,"result_limit":size,"country":"EGY"})
+        data=get_json(url)
+        if not isinstance(data,dict) or not isinstance(data.get("jobs"),list):
+            raise ValueError("Amazon JSON jobs schema unavailable")
+        try:count=int(data["hits"])
+        except (ValueError,TypeError,KeyError) as exc:raise ValueError("Amazon job total unavailable") from exc
+        if expected is None:expected=count
+        elif count!=expected:raise ValueError("Amazon jobs changed during pagination")
+        rows=data["jobs"]
+        if not rows and expected>page*size:raise ValueError("Amazon jobs paging incomplete")
+        for item in rows:
+            if not isinstance(item,dict) or str(item.get("country_code")or"").upper()!="EGY":
+                continue
+            title=str(item.get("title")or"").strip()
+            path=str(item.get("job_path")or"")
+            if not re.fullmatch(r"/en/jobs/\d+/[a-z0-9-]+/?",path,re.I) or not title:continue
+            team=" ".join(str(item.get(key)or"") for key in ("business_category","business_category_list","team","normalized_business_category","job_category"))
+            if aws_only and not re.search(r"\b(?:aws|amazon web services)\b",team,re.I):
+                continue
+            location=str(item.get("location")or item.get("city")or"Egypt")
+            if not EGYPT.search(location) and "virtual" not in location.lower():
+                location+=" , Egypt"
+            job=make_job(name,title,location,
+                "https://www.amazon.jobs"+path,
+                str(item.get("description")or"")+" "+str(item.get("basic_qualifications")or""),
+                str(item.get("posted_date")or item.get("updated_time")or""),
+                str(item.get("job_schedule_type")or""))
+            job["external_id"]=path.split("/")[3]
+            results[path]=job
+        if (page+1)*size>=expected:return list(results.values())
+    raise ValueError("Amazon jobs exceed safe pagination limit")
