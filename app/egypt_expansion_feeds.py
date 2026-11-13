@@ -285,3 +285,49 @@ def talabat_egypt(name, get_bytes, make_job, max_pages=8):
             raise ValueError("Talabat pagination repeated unexpectedly")
         if expected is None and len(found_this_page)<12:return list(out.values())
     raise ValueError("Talabat jobs exceed pagination safety cap")
+
+
+def uber_egypt_partial(name,get_bytes,make_job):
+    """Uber's public Oracle Recruiting CE source, scoped to Egypt.
+
+    Scans the public worksite's live job list, not third-party search results.
+    A missing/changed API schema raises an error instead of claiming coverage.
+    """
+    import json
+    from urllib.parse import urlencode
+    base="https://iaziqy.fa.ocs.oraclecloud.com"
+    path="/hcmRestApi/resources/11.13.18.05/recruitingCEJobRequisitions"
+    size=100
+    matches={}
+    total=None
+    for offset in range(0,1000,size):
+        params={"onlyData":"true","expand":"requisitionList",
+                "finder":f"findReqs;siteNumber=CX_1,limit={size},offset={offset},location=Egypt"}
+        url=base+path+"?"+urlencode(params)
+        payload=json.loads(get_bytes(url).decode("utf-8","replace"))
+        if not isinstance(payload,dict) or not isinstance(payload.get("items"),list) or not payload["items"]:
+            raise ValueError("Uber Oracle jobs schema changed")
+        record=payload["items"][0]
+        expected=int(record.get("TotalJobsCount",-1))
+        if expected<0 or not isinstance(record.get("requisitionList"),list):
+            raise ValueError("Uber Oracle requisition list unavailable")
+        if total is None:total=expected
+        elif total!=expected:raise ValueError("Uber Egypt jobs changed during scan")
+        rows=record["requisitionList"]
+        if not rows and offset<total:raise ValueError("Uber Egypt requisition pagination incomplete")
+        for item in rows:
+            if not isinstance(item,dict):continue
+            # Verify country even after an Egypt-filtered API request.
+            if str(item.get("PrimaryLocationCountry")or"").upper() not in ("EG","EGY"):
+                continue
+            identity=str(item.get("Id")or"")
+            title=str(item.get("Title")or"").strip()
+            if not identity.isdecimal() or not title:continue
+            location=str(item.get("PrimaryLocation")or"Egypt")
+            if not EGYPT.search(location):location="Egypt"
+            url=(base+"/hcmUI/CandidateExperience/en/sites/UberCareers/job/"+identity)
+            j=make_job(name,title,location,url,"",str(item.get("PostedDate")or""),"")
+            j["external_id"]=identity
+            matches[identity]=j
+        if offset+len(rows)>=total:return list(matches.values())
+    raise ValueError("Uber Oracle Egypt results exceed pagination safety cap")
