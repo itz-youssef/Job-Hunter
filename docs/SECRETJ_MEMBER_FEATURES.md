@@ -19,7 +19,7 @@ In Account > CV & Photo:
 
 ## Email alerts per member, not admin
 
-The legacy operator `ALERT_EMAIL` remains restricted to backend monitoring workflows. Member test email and periodic alerts NEVER use it. All member recipients derive from the verified session and `sj_users.email` in Neon. The frontend cannot provide an arbitrary recipient address.
+The legacy operator `ALERT_EMAIL` remains restricted to backend monitoring workflows. Member test email and periodic alerts NEVER use it. Members can choose an alert address in Account Preferences. The selected address must be confirmed with a six-digit inbox code first. Scheduled alerts use only the address verified for that authenticated user, stored in Neon. No administrator destination is used as a fallback.
 
 **Required activation:**
 
@@ -29,9 +29,9 @@ The legacy operator `ALERT_EMAIL` remains restricted to backend monitoring workf
    - `SECRETJ_EMAIL_FROM`: sender email on the verified domain, e.g. alerts@jobsnow.tech
    - `SECRETJ_ALERTS_ENABLED`: already set to true in the website Wrangler configuration.
 3. For later Vercel deployment, add its own separate `RESEND_API_KEY` and `SECRETJ_EMAIL_FROM` environment variables; Cloudflare's secrets are not shared.
-4. On the website, sign in to your account and go to Account > Preferences. Press Send test & verification code. A six-digit code is sent only to your registered account email.
+4. On the website, sign in to your account and go to Account > Preferences. Enter the email where you want alerts, then press Send test & verification code. A six-digit code is sent only to that selected address.
 5. Enter the code within ten minutes. Then enable job alert opt-in, choose roles/Egypt/internships, and save.
-6. Subsequent Test Email requests go to the same verified account email, rate-limited to once every 15 minutes. A provider-accepted test is not a guarantee of arrival in the inbox.
+6. Subsequent Test Email requests go to the selected verified address, rate-limited to once every 15 minutes. Changing the address requires a new verification code and clears eligibility for automatic delivery until reconfirmed. A provider-accepted test is not a guarantee of arrival in the inbox.
 
 At minute 17 of every hour the website Worker (separate from existing job-scan scheduler) checks newly published job snapshots, selects opted-in verified members and matches jobs to each user's saved preferences. A per-user/job deduplication table limits repeat sends. The initial batch is deliberately small to suit free-tier hosting. No operator email is used as fallback. Email delivery will not occur before the Neon migration, Resend key and sender are configured.
 
