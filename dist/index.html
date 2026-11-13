@@ -132,6 +132,12 @@ html[data-theme="dark"] .hero,html[data-theme="dark"] .sidebar-tip{background:va
 a:hover{color:var(--ink)}
 :focus-visible{outline:2px solid var(--ink);outline-offset:3px}
 
+
+.cv-vault{max-width:720px}.cv-vault .btn{margin:12px 8px 6px 0}
+.cv-upload-label{display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:10px 16px;border-radius:7px}
+.cv-current{display:flex;gap:12px;align-items:center;padding:12px 0}
+.cv-current strong{color:var(--ink);word-break:break-word}
+.cv-privacy{margin-top:22px;line-height:1.8;max-width:580px}
   </style>
 </head>
 <body>
@@ -144,6 +150,7 @@ a:hover{color:var(--ink)}
         <button type="button" data-page="home"><span>⌂</span> Home</button>
         <button type="button" data-page="radar"><span>◉</span> Job Hunter</button>
         <button type="button" data-page="resume"><span>▤</span> Resume Updater</button>
+        <button type="button" data-page="cv"><span>▣</span> CV Holder</button>
         <span class="nav-divider-label">JOB HUNTER TOOLS</span>
         <button type="button" data-page="jobs"><span>▤</span> Job Feed <b class="nav-count" id="nav-job-count">0</b></button>
         <button type="button" data-page="saved"><span>♡</span> Saved Jobs</button>
@@ -187,7 +194,7 @@ a:hover{color:var(--ink)}
   const el = (selector) => document.querySelector(selector);
   const esc = (x) => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const state = { snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'' };
-  const names = {home:'Home',radar:'Job Hunter',resume:'Resume Updater', jobs:'Job Feed', saved:'Saved Jobs', companies:'My Companies', alerts:'Email Alerts'};
+  const names = {home:'Home',radar:'Job Hunter',resume:'Resume Updater',cv:'CV Holder', jobs:'Job Feed', saved:'Saved Jobs', companies:'My Companies', alerts:'Email Alerts'};
   const where = (value) => String(value || '').toLowerCase().trim();
   const getDate = (s) => {const d=new Date(s); return Number.isNaN(+d)?null:d;};
   const prettyDate = (s) => {const d=getDate(s);return d?d.toLocaleString('en-EG',{dateStyle:'medium',timeStyle:'short'}):'Not yet available';};
@@ -310,6 +317,59 @@ a:hover{color:var(--ink)}
       '</section>'+
       '<section class="workspace-brief"><span class="eyebrow">AT A GLANCE</span><div class="brief-values"><span><strong>'+matched+'</strong> matching opportunities</span><span><strong>'+sources.length+'</strong> tracked sources</span></div></section>';
   }
+
+  // CV files never leave the current device. IndexedDB stores the original file Blob.
+  let cvEntry=null;
+  const CV_DB='jobhunter-cv-holder-v1';
+  function cvStore(){
+    return new Promise((resolve,reject)=>{
+      if(!('indexedDB' in window))return reject(Error('CV storage is not available in this browser.'));
+      const request=indexedDB.open(CV_DB,1);
+      request.onupgradeneeded=()=>request.result.createObjectStore('files');
+      request.onerror=()=>reject(request.error||Error('Could not open CV storage.'));
+      request.onsuccess=()=>resolve(request.result);
+    });
+  }
+  async function cvAction(mode,payload){
+    const db=await cvStore();
+    return new Promise((resolve,reject)=>{
+      const tx=db.transaction('files',mode==='get'?'readonly':'readwrite');
+      const store=tx.objectStore('files');
+      const request=mode==='get'?store.get('primary'):mode==='delete'?store.delete('primary'):store.put(payload,'primary');
+      request.onsuccess=()=>resolve(request.result);
+      request.onerror=()=>reject(request.error||Error('CV storage operation failed.'));
+      tx.oncomplete=()=>db.close();
+      tx.onerror=()=>{db.close();reject(tx.error||Error('CV storage failed.'));};
+    });
+  }
+  function cvPage(){
+    const file=cvEntry;
+    return top('CAREER DOCUMENTS','CV Holder','Keep your primary CV ready for the future Resume Updater.')+
+      '<section class="panel cv-vault">'+
+        '<div class="panel-head"><h2>Your primary CV</h2></div>'+
+        (file?'<div class="cv-current"><span class="feature-mark">▣</span><div><strong>'+esc(file.name)+'</strong><p class="tiny">'+(file.blob.size/1024/1024).toFixed(2)+' MB · Saved on this device · '+esc(prettyDate(file.savedAt))+'</p></div></div>':
+         '<p class="muted">No CV saved yet. Upload your current PDF or Word document.</p>')+
+        '<label for="cv-upload" class="btn primary cv-upload-label">'+(file?'Replace CV':'Upload CV')+'</label>'+
+        '<input type="file" id="cv-upload" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>'+
+        (file?'<button type="button" class="btn secondary" data-cv-download>Download CV</button><button type="button" class="btn secondary" data-cv-remove>Remove CV</button>':'')+
+        '<p class="tiny cv-privacy">Your document stays in this browser using IndexedDB. It is not uploaded to GitHub, Cloudflare, or Vercel, and is not synced across devices. Keep a backup. Limit: 10 MB.</p>'+
+      '</section>';
+  }
+  async function refreshCv(){
+    try{cvEntry=await cvAction('get');if(state.page==='cv')render();}
+    catch(e){if(state.page==='cv')toast(e.message,true);}
+  }
+  async function acceptCV(file){
+    if(!file)return;
+    const extension=/\.(pdf|docx)$/i.test(file.name);
+    const types=['application/pdf','application/vnd.openxmlformats-officedocument.wordprocessingml.document',''];
+    if(!extension||!types.includes(file.type)||file.size>10*1024*1024||file.size<1)
+      throw Error('Select a nonempty PDF or DOCX no larger than 10 MB.');
+    const item={name:file.name.slice(0,180),blob:file,savedAt:new Date().toISOString()};
+    await cvAction('save',item);
+    cvEntry=item;
+    render();
+  }
   function resumePage(){
     return top('WORKSPACE / UPCOMING','Resume Updater','Planned feature — not yet available.')+
       '<section class="upcoming-panel"><span class="feature-mark">▤</span><h2>Resume Updater</h2><p>In the future, this workspace will help tailor your CV to specific roles and track improvements. No resume is uploaded or processed here yet.</p><button class="btn secondary" data-navigate="home">Back to Home</button></section>';
@@ -414,7 +474,7 @@ a:hover{color:var(--ink)}
   }
   function render(){
     const root=el('#main-content');if(!root)return;
-    root.innerHTML=state.page==='home'?home():state.page==='radar'?radarHome():state.page==='resume'?resumePage():state.page==='jobs'?jobsPage():state.page==='saved'?jobsPage(true):state.page==='companies'?companiesPage():alertsPage();
+    root.innerHTML=state.page==='home'?home():state.page==='radar'?radarHome():state.page==='resume'?resumePage():state.page==='cv'?cvPage():state.page==='jobs'?jobsPage():state.page==='saved'?jobsPage(true):state.page==='companies'?companiesPage():alertsPage();
   }
   async function editCompany(url, changes){
     const token=window.prompt('Enter your admin token to update this company:');
@@ -508,7 +568,7 @@ a:hover{color:var(--ink)}
       setTheme(isDark);
       try { localStorage.setItem('jh-theme',isDark?'dark':'light'); } catch {}
     });
-    readSaved();
+    readSaved();refreshCv();
     document.querySelectorAll('nav button[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
     window.addEventListener('hashchange',()=>go(location.hash.replace('#','')));
     el('#refresh-button').addEventListener('click',()=>refresh());
@@ -520,6 +580,20 @@ a:hover{color:var(--ink)}
       if(logo){editLogoDialog(logo.dataset.editLogo);return;}
       if(event.target.closest('[data-close-logo]')){el('#logo-dialog').close();return;}
       const saved=event.target.closest('[data-save]');if(saved){const key=saved.dataset.save;state.saved.has(key)?state.saved.delete(key):state.saved.add(key);persistSaved();render();return;}
+      if(event.target.closest('[data-cv-download]')){
+        if(cvEntry?.blob){
+          const download=URL.createObjectURL(cvEntry.blob);
+          const anchor=document.createElement('a');
+          anchor.href=download;anchor.download=cvEntry.name;document.body.append(anchor);anchor.click();anchor.remove();
+          setTimeout(()=>URL.revokeObjectURL(download),5000);
+        }
+        return;
+      }
+      if(event.target.closest('[data-cv-remove]')){
+        if(!confirm('Remove the locally saved CV from this browser?'))return;
+        cvAction('delete').then(()=>{cvEntry=null;render();toast('CV removed from this browser');}).catch(e=>toast(e.message,true));
+        return;
+      }
       if(event.target.closest('[data-action="reveal-email"]')){showFullEmail();return;}
       const edit=event.target.closest('[data-edit-name]');
       if(edit){
@@ -535,7 +609,13 @@ a:hover{color:var(--ink)}
       const remove=event.target.closest('[data-remove]');if(remove){removeCompany(remove.dataset.remove);return;}
     });
     document.addEventListener('input',event=>{if(event.target.id==='job-search'){state.query=event.target.value;const at=event.target.selectionStart;render();const field=el('#job-search');field?.focus();try{field?.setSelectionRange(at,at);}catch{}}});
-    document.addEventListener('change',event=>{if(event.target.id==='role-filter'){state.role=event.target.value;render();}});
+    document.addEventListener('change',async event=>{
+      if(event.target.id==='role-filter'){state.role=event.target.value;render();}
+      if(event.target.id==='cv-upload'){
+        try{await acceptCV(event.target.files?.[0]);toast('CV securely stored on this device');}
+        catch(e){toast(e.message||'CV upload failed',true);}
+      }
+    });
     el('#logo-reset').addEventListener('click',()=>{
       const key=el('#logo-form').elements.logo_key.value;
       const next={...logoOverrides};
