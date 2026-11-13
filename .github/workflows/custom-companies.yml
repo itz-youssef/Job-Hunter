@@ -35,6 +35,14 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install scanner dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Verify scanner imports and source configuration
+        run: |
+          python -c "from bs4 import BeautifulSoup; import app.custom_sources, app.egypt_expansion_feeds, app.verified_egypt_employers; print('Scanner imports OK')"
+          python -m compileall -q app
+
       - name: Scan custom career pages
         run: python -m app.custom_monitor
         env:
