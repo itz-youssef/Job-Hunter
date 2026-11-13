@@ -205,8 +205,8 @@ def siemens(source,client):
             bool(old)
             and (old.get('score') or 0)<=0
             and refresh_budget>0
-            and re.search(r'\\b(?:software|developer|programmer|machine learning|artificial intelligence|\\bai\\b|data engineer)\\b',title_hint,re.I)
-            and not re.search(r'\\b(?:senior|manager|director|principal|lead|staff|architect)\\b',title_hint,re.I)
+            and re.search(r'\b(?:software|developer|programmer|machine learning|artificial intelligence|ai|data engineer)\b',title_hint,re.I)
+            and not re.search(r'\b(?:senior|manager|director|principal|lead|staff|architect)\b',title_hint,re.I)
             and 'Employer career level:' not in str(old.get('description') or '')
         )
         if old and not needs_refresh:
