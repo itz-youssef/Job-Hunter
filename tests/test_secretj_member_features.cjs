@@ -132,21 +132,20 @@ test('member cron delivers only to verified, opted-in users and never operator e
 test('email migration restricts data to account ownership with no public grants',()=>{
   const sql=fs.readFileSync('database/migrations/003_secretj_member_email.sql','utf8');
   for(const table of ['sj_email_verifications','sj_email_alert_log']){
-    assert.match(sql,new RegExp('CREATE TABLE IF NOT EXISTS public\\\\.'+table));
-    assert.match(sql,new RegExp('ALTER TABLE public\\\\.'+table+' ENABLE ROW LEVEL SECURITY'));
+    assert.match(sql,new RegExp('CREATE TABLE IF NOT EXISTS public\\.'+table));
+    assert.match(sql,new RegExp('ALTER TABLE public\\.'+table+' ENABLE ROW LEVEL SECURITY'));
   }
   assert.match(sql,/REVOKE ALL ON TABLE public\.sj_email_verifications/);
   assert.doesNotMatch(sql,/\b(?:DROP|TRUNCATE)\s+TABLE/);
 });
 test('auto CV parsing extracts structured fields without inventing missing experience',()=>{
-  const parsed=parseText(
-    'Jane Doe\\nAI Engineer\\nCairo, Egypt\\nlinkedin.com/in/janedoe\\n'+
-    'Summary\\nI build machine learning applications.\\n'+
-    'Skills\\nPython, PyTorch, SQL\\n'+
-    'Experience\\nComputer Vision Intern at Example Labs, 2026\\n'+
-    'Education\\nBSc Computer Science\\n'
-      .replaceAll('\\\\n','\\n')
-  );
+  const parsed=parseText([
+    'Jane Doe','AI Engineer','Cairo, Egypt','linkedin.com/in/janedoe',
+    'Summary','I build machine learning applications.',
+    'Skills','Python, PyTorch, SQL',
+    'Experience','Computer Vision Intern at Example Labs, 2026',
+    'Education','BSc Computer Science'
+  ].join('\n'));
   assert.equal(parsed.display_name,'Jane Doe');
   assert.equal(parsed.skills,'Python, PyTorch, SQL');
   assert.ok(parsed.experience.includes('Computer Vision Intern'));
