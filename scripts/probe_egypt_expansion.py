@@ -1,26 +1,36 @@
-"""Breadfast portfolio site card links and rendered hydration diagnostics."""
+"""Read-only focused Henkel Coca-Cola HBC, Breadfast job feed probes."""
 from app.custom_sources import _bytes
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-import re,json
-url="https://careers.4dxventures.com/companies/breadfast"
-html=_bytes(url).decode("utf-8","replace")
-soup=BeautifulSoup(html,"html.parser")
-print("BREAD_LINKS",[(a.get("href"),a.get_text(" ",strip=True)[:120]) for a in soup.select("a[href]") if "/jobs" in (a.get("href")or"")][:36],flush=True)
-print("BREAD_SCRIPT",[(sc.get("id"),sc.get("type"),len(sc.get_text())) for sc in soup.select("script") if sc.get_text()][:20],flush=True)
-print("BREAD_IDS",[(x,html.find(x)) for x in ["98855990","Breadfast","openJobs","jobListings","jobs_count","jobPage","__NEXT_DATA__"]],flush=True)
-for m in list(re.finditer(r"98855990|Open jobs at Breadfast|jobs at Breadfast",html,re.I))[:5]:
- print("BREAD_AROUND",html[max(0,m.start()-250):m.start()+500],flush=True)
-for url in [
- "https://careers.4dxventures.com/companies/breadfast/jobs",
- "https://www.breadfast.com/wp-json/",
- "https://blink22.com/careers/",
-]:
+import json,re
+URLS=[
+"https://www.henkel.jobs/",
+"https://www.henkel.jobs/search/?q=&locationsearch=Egypt",
+"https://www.henkel.com/careers/find-your-job-apply",
+"https://www.henkel.com/careers/find-your-job-apply/2182732-2182732",
+"https://eg.coca-colahellenic.com/en/working-with-us",
+"https://www.coca-colahellenic.com/en/careers",
+"https://careers.coca-colacompany.com/",
+"https://careers.4dxventures.com/jobs",
+"https://careers.4dxventures.com/companies/breadfast"
+]
+for u in URLS:
  try:
-  x=_bytes(url).decode("utf-8","replace")
-  print("CHECK",url,len(x),flush=True)
-  if "blink22" in url:
-   d=BeautifulSoup(x,"html.parser")
-   for a in d.select("a[href*='/careers/']")[:22]:
-    print("BLINK",a.get_text(" ",strip=True)[:110],a.get("href"),flush=True)
- except Exception as exc:print("ERROR",url,str(exc)[:130],flush=True)
+  html=_bytes(u).decode("utf-8","replace")
+  d=BeautifulSoup(html,"html.parser")
+  links=[(urljoin(u,a.get("href","")),a.get_text(" ",strip=True)[:75])
+        for a in d.select("a[href]") if re.search(r"job|vacanc|career|work|apply|search",a.get("href","")+" "+a.get_text(" ",strip=True),re.I)]
+  print("FETCH",u,len(html),"LINKS",links[:33],flush=True)
+  for label,regex in [
+    ("HENKEL_JOB",r'.{0,100}(?:henkel.jobs|henkel.com/careers/find-your-job-apply/|graphql|algolia|jobOffers|jobList|searchResult).{0,150}'),
+    ("COCA_SOURCE",r'.{0,90}(?:successfactors|oraclecloud|workday|apply|jobSearch|searchjobs|vacancies|careers.coca-colahellenic).{0,150}'),
+    ("BREAD_NEXT",r'.{0,60}(?:__NEXT_DATA__|Breadfast|jobs).{0,100}'),
+   ]:
+   matches=re.findall(regex,html,re.I)
+   print("MATCH",label,u,matches[:12],flush=True)
+  if "4dxventures.com" in u:
+   node=d.find("script",id="__NEXT_DATA__")
+   if node:
+    j=json.loads(node.get_text())
+    print("NEXT_KEYS",u,list(j.keys()),str(j.get("props",{}))[:2800],flush=True)
+ except Exception as e:print("ERROR",u,type(e).__name__,str(e)[:170],flush=True)
