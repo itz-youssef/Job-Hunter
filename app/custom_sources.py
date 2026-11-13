@@ -189,6 +189,11 @@ def _ats(url: str):
     host = (p.hostname or "").lower()
     seg = [s for s in p.path.split("/") if s]
 
+    if host in ("www.adcb.com.eg", "adcb.com.eg") and p.path.startswith("/available-careers"):
+        return "adcb_egypt", None
+    if host in ("www.fab-minds.com", "fab-minds.com") and p.path.startswith("/careers"):
+        return "fab_minds_egypt", None
+
     if host == "cibeg.taleo.net" and p.path.startswith("/careersection/cib_ex/"):
         return "cib_egypt", None
     if host == "adibegypt.taleo.net" and p.path.startswith("/careersection/ex/"):
@@ -539,6 +544,11 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     kind, meta = _ats(url)
     p = urllib.parse.urlsplit(url)
     jobs = []
+
+    if kind in ("adcb_egypt", "fab_minds_egypt"):
+        from app.verified_egypt_employers import adcb_egypt, fab_minds_egypt
+        reader = adcb_egypt if kind == "adcb_egypt" else fab_minds_egypt
+        return _dedupe(reader(name, _bytes, _job))
 
     if kind in ("cib_egypt","adib_egypt"):
         from app.egypt_expansion_feeds import taleo_bank_partial
@@ -1275,6 +1285,9 @@ def scan_company(company: dict):
         jobs = _board_jobs(
             name, url
         )
+
+        if kind in ("adcb_egypt", "fab_minds_egypt"):
+            return jobs, "partial", f"{len(jobs)} public vacancy details from official company pages; coverage may be incomplete"
 
         if kind in ("etisalat_egypt", "indrive_egypt", "blink22_egypt", "uber_egypt", "cib_egypt", "adib_egypt"):
             return (
