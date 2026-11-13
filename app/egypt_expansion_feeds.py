@@ -228,3 +228,60 @@ def successfactors_egypt(name,get_bytes,make_job,base,max_pages=8):
         if len(current)<25 and total is None:return list(jobs.values())
     if total is not None and len(jobs)>=total:return list(jobs.values())
     raise ValueError("SuccessFactors page safety limit reached")
+
+
+def talabat_egypt(name, get_bytes, make_job, max_pages=8):
+    """Delivery Hero's own talabat+Egypt filtered recruitment board.
+
+    Only actual job detail cards are read; cards are restricted to Egypt and
+    talabat rather than relying on employer-name assumptions. All public
+    pagination pages must be read or the scan fails visibly.
+    """
+    root="https://careers.deliveryhero.com/jobs?options=252%2C845"
+    out={}
+    expected=None
+    for page in range(1,max_pages+1):
+        url=root+"&page="+str(page)
+        html=get_bytes(url).decode("utf-8","replace")
+        document=BeautifulSoup(html,"html.parser")
+        body=document.get_text(" ",strip=True)
+        match=re.search(r"\b([\d,]+)\s+result\(s\)",body,re.I)
+        if match:
+            count=int(match.group(1).replace(",",""))
+            if expected is None: expected=count
+            elif expected!=count: raise ValueError("Talabat search result total changed mid-scan")
+        cards=document.select("[data-jobid]")
+        found_this_page={}
+        for card in cards:
+            a=card.select_one("a[href*='/job/']")
+            if a is None:continue
+            link=urljoin(url,a.get("href")or"")
+            parsed=urlsplit(link)
+            if parsed.hostname!="careers.deliveryhero.com" or not re.fullmatch(r"/job/[a-z0-9-]+-jid-\d+/?",parsed.path,re.I):
+                continue
+            title=a.get_text(" ",strip=True)
+            text=card.get_text(" ",strip=True)
+            if not title or not re.search(r"\btalabat\b",text,re.I):continue
+            if not EGYPT.search(text):continue
+            loc=re.search(r"\b(?:Cairo|Maadi|Alexandria|Giza|Egypt)\b",text,re.I)
+            where=(loc.group(0)+", Egypt") if loc and loc.group(0).lower()!="egypt" else "Egypt"
+            category=re.search(r"Job\s+Category\s*:?\s*([^:]{3,70}?)(?:Job\s+Type|Location|Brand|Description|$)",text,re.I)
+            posted=""
+            job=make_job(name,title,where,link,
+                text[:1800],posted,"")
+            job["external_id"]=str(card.get("data-jobid")or"")
+            found_this_page[link]=job
+        if not found_this_page:
+            if page==1 and expected!=0:
+                raise ValueError("Talabat filtered careers page returned no readable postings")
+            if expected is not None and len(out)<expected:
+                raise ValueError(f"Talabat pagination stopped at {len(out)}/{expected}")
+            return list(out.values())
+        before=len(out)
+        out.update(found_this_page)
+        if expected is not None and len(out)>=expected:
+            return list(out.values())
+        if len(out)==before:
+            raise ValueError("Talabat pagination repeated unexpectedly")
+        if expected is None and len(found_this_page)<12:return list(out.values())
+    raise ValueError("Talabat jobs exceed pagination safety cap")
