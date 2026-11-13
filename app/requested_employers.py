@@ -126,7 +126,7 @@ def deloitte_middle_east_partial(name, url, get_bytes, parse_links, make_job):
             if not re.match(r"^/careersME/PipelineDetail/[^/]+/[0-9]+/?$", p.path, re.I):
                 continue
             label = " ".join(str(text).split())
-            if not re.search(r"\\b(?:egypt|cairo|giza|alexandria)\\b",
+            if not re.search(r"\b(?:egypt|cairo|giza|alexandria)\b",
                              label + " " + p.path.replace("-", " "), re.I):
                 continue
             if label:
@@ -177,7 +177,7 @@ def capgemini_egypt_api(name, get_json, make_job):
                 continue
             if not location:
                 location = "Egypt"
-            elif not re.search(r"\\b(?:egypt|EG)\\b", location, re.I):
+            elif not re.search(r"\b(?:egypt|EG)\b", location, re.I):
                 location += ", Egypt"
             description = item.get("description_stripped") or item.get("description") or ""
             description = " ".join(unescape(re.sub(r"<[^>]+>", " ", str(description))).split())[:20000]

@@ -1,0 +1,53 @@
+name: Repository Quality Gates
+
+# Validate release-critical Python logic, browser logic and Cron contracts
+# without contacting SMTP or deploying either hosted site.
+on:
+  pull_request:
+    paths:
+      - "app/**"
+      - "api/**"
+      - "dist/index.html"
+      - "tests/**"
+      - "cloudflare/scheduler/**"
+      - ".github/workflows/**"
+      - "README.md"
+      - "docs/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    name: All offline Python tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install test dependencies
+        run: python -m pip install -r requirements-dev.txt
+      - name: Compile Python modules
+        run: python -m compileall -q app scripts
+      - name: Run all offline Python tests
+        run: python -m pytest -q tests
+
+  browser:
+    name: All UI, API contract and scheduler tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run all browser and API Node tests
+        run: node --test tests/*.cjs
+      - name: Verify scheduler worker syntax and mocked GitHub API behavior
+        run: |
+          node --check cloudflare/scheduler/worker.mjs
+          node --test cloudflare/scheduler/worker.test.mjs

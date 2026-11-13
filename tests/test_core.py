@@ -20,12 +20,15 @@ def test_baseline_and_dedup():
     with db() as c:
         assert c.execute('SELECT count(*) FROM jobs').fetchone()[0]==2
         assert c.execute('SELECT count(*) FROM outbox').fetchone()[0]==1
-        assert c.execute("SELECT published FROM jobs WHERE external_id='one'").fetchone()[0] is None
+        # Later employer-provided dates legitimately backfill previously unknown dates.
+        assert c.execute("SELECT published FROM jobs WHERE external_id='one'").fetchone()[0] == '2026-11-12'
 
 def test_description_and_location():
     assert score(job())[0]>=3
     j=job();j['location']='Berlin, Germany';assert score(j)[0]==0
-    j=job();j['description']='Civil bridge construction';assert score(j)[0]==0
+    # Generic internships are deliberately included; a civil *full-time* role is not.
+    j=job();j['title']='Civil Engineer';j['employment']='Full time'
+    j['description']='Civil bridge construction';assert score(j)[0]==0
 
 def test_private_urls_rejected():
     for url in ['http://example.com','https://127.0.0.1','https://169.254.169.254','https://user:pass@example.com','https://[::1]']:
@@ -53,7 +56,12 @@ def test_uncertain_mail_not_retried(monkeypatch):
         c.execute('UPDATE settings SET value=? WHERE key=?',(json.dumps('test@example.com'),'email'))
     monkeypatch.setattr(mail,'ready',lambda:True);calls=[]
     def send(*args):calls.append(args);raise TimeoutError()
-    monkeypatch.setattr(mail,'send',send);mail.deliver();mail.deliver()
+    monkeypatch.setattr(mail,'send',send)
+    # Real delivery failures must fail the workflow while leaving an uncertain
+    # record, preventing an unsafe automatic resend that could duplicate email.
+    with pytest.raises(RuntimeError, match="not confirmed"):
+        mail.deliver()
+    mail.deliver()
     assert len(calls)==1
     with db() as c:assert c.execute('SELECT state FROM outbox').fetchone()[0]=='uncertain'
 
