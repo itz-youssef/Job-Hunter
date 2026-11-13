@@ -20,7 +20,10 @@ def test_capgemini_egypt_links_location_and_paging():
         if "startrow=0" in url:
             return b'''<a href="/job/Cairo-Junior-Software-Engineer/123456/">Junior Software Engineer</a>
                          <a href="/job/London-Senior-Engineer/777777/">Senior Engineer</a>'''
-        raise AssertionError("should stop at partial last page")
+        if "/job/Cairo-Junior-Software-Engineer/123456/" in url:
+            # The adapter deliberately fetches detail pages for relevant roles.
+            return b"<section class='jobdescription'>Python, early-career software</section>"
+        raise AssertionError("should stop after the partial listing page")
     jobs = capgemini_egypt("Capgemini Egypt", get, parse, lambda *args: [], _job)
     assert len(jobs) == 1
     assert jobs[0]["location"] == "Cairo, Egypt"
