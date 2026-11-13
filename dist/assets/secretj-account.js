@@ -54,9 +54,9 @@ function authMode(register) {
 function escapeAttrs(record,key) { return esc(record?.[key]||''); }
 function formField(field,label,record={},textarea=false) {
   const name=esc(field),v=escapeAttrs(record,field);
-  return `<label class="\${['summary','skills','experience','education'].includes(field)?'wide':''}">\${esc(label)}
-    \${textarea?`<textarea name="\${name}" maxlength="12000">\${v}</textarea>`:
-    `<input name="\${name}" value="\${v}" maxlength="500" autocomplete="off">`}</label>`;
+  return `<label class="${['summary','skills','experience','education'].includes(field)?'wide':''}">${esc(label)}
+    ${textarea?`<textarea name="${name}" maxlength="12000">${v}</textarea>`:
+    `<input name="${name}" value="${v}" maxlength="500" autocomplete="off">`}</label>`;
 }
 async function showView(view) {
   if(view==='admin' && state.user?.role!=='admin')return;
@@ -86,9 +86,9 @@ async function overview(root) {
   root.innerHTML=`<h2>Your career command center</h2>
     <p class="muted">Everything here is private to your Secret J account. The job-scanning system remains shared across all users.</p>
     <div class="summary">
-      <div class="stat"><strong>\${savedData.jobs.length}</strong><small>Saved opportunities</small></div>
-      <div class="stat"><strong>\${apps.applications.length}</strong><small>Tracked applications</small></div>
-      <div class="stat"><strong>\${cv.found?'1':'0'}</strong><small>Cloud CV</small></div>
+      <div class="stat"><strong>${savedData.jobs.length}</strong><small>Saved opportunities</small></div>
+      <div class="stat"><strong>${apps.applications.length}</strong><small>Tracked applications</small></div>
+      <div class="stat"><strong>${cv.found?'1':'0'}</strong><small>Cloud CV</small></div>
     </div>
     <div class="notice"><strong>Keep discovering:</strong> the existing Job Hunter scanner checks official companies centrally.
       You can save matching jobs to this account from the main job feed.</div>
@@ -100,36 +100,36 @@ async function profile(root) {
   root.innerHTML=`<h2>Professional profile</h2>
     <p class="muted">Describe your experience, education, and skills. Your information is stored in Neon, not locally.</p>
     <form id="profile-form" class="grid">
-      \${formField('display_name','Full name',state.profile)}
-      \${formField('headline','Professional headline',state.profile)}
-      \${formField('location','Location',state.profile)}
-      \${formField('skills','Skills',state.profile,true)}
-      \${formField('summary','About me',state.profile,true)}
-      \${formField('experience','Work experience',state.profile,true)}
-      \${formField('education','Education',state.profile,true)}
-      \${formField('linkedin','LinkedIn profile URL',state.profile)}
-      \${formField('github','GitHub URL',state.profile)}
-      \${formField('portfolio','Portfolio URL',state.profile)}
+      ${formField('display_name','Full name',state.profile)}
+      ${formField('headline','Professional headline',state.profile)}
+      ${formField('location','Location',state.profile)}
+      ${formField('skills','Skills',state.profile,true)}
+      ${formField('summary','About me',state.profile,true)}
+      ${formField('experience','Work experience',state.profile,true)}
+      ${formField('education','Education',state.profile,true)}
+      ${formField('linkedin','LinkedIn profile URL',state.profile)}
+      ${formField('github','GitHub URL',state.profile)}
+      ${formField('portfolio','Portfolio URL',state.profile)}
       <button class="btn wide" type="submit">Save my profile</button>
     </form>`;
 }
 function jobCard(row){
   const j=row.job_snapshot||{};
   const validLink=String(j.url||'').startsWith('https://')?j.url:'#';
-  return `<div class="item"><div><strong>\${esc(j.title||row.job_key)}</strong>
-    <small>\${esc(j.company||'Unknown employer')} · \${esc(j.location||'')}</small>
-    <small>Saved \${esc(new Date(row.saved_at).toLocaleDateString())}</small></div>
+  return `<div class="item"><div><strong>${esc(j.title||row.job_key)}</strong>
+    <small>${esc(j.company||'Unknown employer')} · ${esc(j.location||'')}</small>
+    <small>Saved ${esc(new Date(row.saved_at).toLocaleDateString())}</small></div>
     <div class="item-actions">
-      \${validLink!=='#'?`<a class="btn secondary" href="\${esc(validLink)}" target="_blank" rel="noopener noreferrer">Apply ↗</a>`:''}
-      <button class="btn subtle" data-app-from="\${esc(row.job_key)}" data-company="\${esc(j.company||'')}" data-title="\${esc(j.title||'')}">Track</button>
-      <button class="btn danger" data-remove-saved="\${esc(row.job_key)}">Remove</button>
+      ${validLink!=='#'?`<a class="btn secondary" href="${esc(validLink)}" target="_blank" rel="noopener noreferrer">Apply ↗</a>`:''}
+      <button class="btn subtle" data-app-from="${esc(row.job_key)}" data-company="${esc(j.company||'')}" data-title="${esc(j.title||'')}">Track</button>
+      <button class="btn danger" data-remove-saved="${esc(row.job_key)}">Remove</button>
     </div></div>`;
 }
 async function saved(root) {
   const data=await api(dataUrl('saved'));
   root.innerHTML=`<h2>Saved opportunities</h2>
     <p class="muted">Your bookmarks follow your account across devices.</p>
-    <div class="cards">\${data.jobs.length?data.jobs.map(jobCard).join(''):'<p>No cloud-saved jobs yet. Browse the job feed and select Save job.</p>'}</div>
+    <div class="cards">${data.jobs.length?data.jobs.map(jobCard).join(''):'<p>No cloud-saved jobs yet. Browse the job feed and select Save job.</p>'}</div>
     <div class="actions"><a class="btn secondary" href="/#jobs">Open job feed ↗</a></div>`;
 }
 const STAGES=['interested','applied','assessment','interview','offer','rejected','withdrawn'];
@@ -143,12 +143,12 @@ async function applications(root){
       <label class="wide">Notes<textarea name="notes" maxlength="6000"></textarea></label>
       <button class="btn wide" type="submit">Add application</button>
     </form>
-    <h3>Your applications (\${data.applications.length})</h3>
-    <div class="cards">\${data.applications.map(a=>`<div class="item">
-      <div><strong>\${esc(a.title||a.job_key)}</strong><small>\${esc(a.company||'')} · \${esc(a.stage)}</small></div>
+    <h3>Your applications (${data.applications.length})</h3>
+    <div class="cards">${data.applications.map(a=>`<div class="item">
+      <div><strong>${esc(a.title||a.job_key)}</strong><small>${esc(a.company||'')} · ${esc(a.stage)}</small></div>
       <div class="item-actions">
-        <select aria-label="Application stage" data-stage="\${esc(a.job_key)}">\${STAGES.map(x=>`<option value="\${x}" \${x===a.stage?'selected':''}>\${x}</option>`).join('')}</select>
-        <button class="btn danger" data-remove-application="\${esc(a.job_key)}">Remove</button>
+        <select aria-label="Application stage" data-stage="${esc(a.job_key)}">${STAGES.map(x=>`<option value="${x}" ${x===a.stage?'selected':''}>${x}</option>`).join('')}</select>
+        <button class="btn danger" data-remove-application="${esc(a.job_key)}">Remove</button>
       </div></div>`).join('')||'<p>No applications recorded yet.</p>'}</div>`;
 }
 async function preferences(root){
@@ -156,13 +156,13 @@ async function preferences(root){
   root.innerHTML=`<h2>Job preferences</h2>
   <p class="muted">Saved to your account for future personalized matching. The current shared email scanner is unchanged.</p>
   <form id="preferences-form">
-  <label><span><input type="checkbox" name="egypt_only" style="width:auto" \${p.egypt_only?'checked':''}> Egypt-based opportunities</span></label>
-  <label><span><input type="checkbox" name="internships" style="width:auto" \${p.internships?'checked':''}> Include internships</span></label>
-  <label>Maximum preferred experience (years)<input name="max_experience_years" type="number" min="0" max="10" value="\${Number(p.max_experience_years)}"></label>
+  <label><span><input type="checkbox" name="egypt_only" style="width:auto" ${p.egypt_only?'checked':''}> Egypt-based opportunities</span></label>
+  <label><span><input type="checkbox" name="internships" style="width:auto" ${p.internships?'checked':''}> Include internships</span></label>
+  <label>Maximum preferred experience (years)<input name="max_experience_years" type="number" min="0" max="10" value="${Number(p.max_experience_years)}"></label>
   <h3>Role families</h3><div class="grid">
-  \${[['software','Software Engineering'],['ai_ml','AI / ML'],['cv','Computer Vision'],['mlops','MLOps']].map(([v,label])=>
-   `<label><span><input type="checkbox" style="width:auto" name="roles" value="\${v}" \${p.role_families.includes(v)?'checked':''}> \${label}</span></label>`).join('')}</div>
-  <label><span><input type="checkbox" name="email_alerts" style="width:auto" \${p.email_alerts?'checked':''}> Opt in to future personalized emails</span></label>
+  ${[['software','Software Engineering'],['ai_ml','AI / ML'],['cv','Computer Vision'],['mlops','MLOps']].map(([v,label])=>
+   `<label><span><input type="checkbox" style="width:auto" name="roles" value="${v}" ${p.role_families.includes(v)?'checked':''}> ${label}</span></label>`).join('')}</div>
+  <label><span><input type="checkbox" name="email_alerts" style="width:auto" ${p.email_alerts?'checked':''}> Opt in to future personalized emails</span></label>
   <button class="btn" type="submit">Save preferences</button></form>`;
 }
 function readBase64(file) {
@@ -177,15 +177,15 @@ async function documents(root){
   const [cv,avatar]=await Promise.all([api(dataUrl('cv')),api(dataUrl('avatar'))]);
   root.innerHTML=`<h2>Private CV &amp; profile photo</h2>
     <p class="muted">Files are accessible only after signing in. Small files are stored privately in Neon for the initial free-tier release.</p>
-    \${avatar.found?`<img class="avatar" alt="Your profile photo" src="data:\${esc(avatar.file.mime_type)};base64,\${esc(avatar.file.base64)}">`:
+    ${avatar.found?`<img class="avatar" alt="Your profile photo" src="data:${esc(avatar.file.mime_type)};base64,${esc(avatar.file.base64)}">`:
       '<div class="avatar" aria-label="No photo"></div>'}
     <div class="filebox"><h3>Profile photo</h3><p class="small muted">JPG/PNG/WebP. Images are resized in your browser; stored image limit 100 KB.</p>
     <input id="avatar-upload" type="file" accept="image/jpeg,image/png,image/webp"></div>
     <div class="filebox"><h3>My resume</h3>
-      <p>\${cv.found?`Saved: <strong>\${esc(cv.file.original_name)}</strong> (\${Math.round(cv.file.size_bytes/1024)} KB)`:'No cloud resume uploaded yet.'}</p>
+      <p>${cv.found?`Saved: <strong>${esc(cv.file.original_name)}</strong> (${Math.round(cv.file.size_bytes/1024)} KB)`:'No cloud resume uploaded yet.'}</p>
       <p class="small muted">PDF or DOCX up to 768 KB. Files are stored in Neon (not public GitHub).</p>
       <input id="cv-upload" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
-      \${cv.found?'<div class="actions"><button class="btn secondary" data-download-cv>Download CV</button><button class="btn danger" data-delete-cv>Delete CV</button></div>':''}
+      ${cv.found?'<div class="actions"><button class="btn secondary" data-download-cv>Download CV</button><button class="btn danger" data-delete-cv>Delete CV</button></div>':''}
     </div>`;
 }
 async function photoBlob(file){
@@ -213,20 +213,20 @@ async function admin(root){
   root.innerHTML=`<h2>Secret J · Administration</h2>
   <p class="muted">Visible only to accounts with the server-verified admin role.</p>
   <div class="summary">
-    <div class="stat"><strong>\${s.users}</strong><small>Total accounts</small></div>
-    <div class="stat"><strong>\${s.active_users}</strong><small>Active users</small></div>
-    <div class="stat"><strong>\${s.applications}</strong><small>Tracked applications</small></div>
+    <div class="stat"><strong>${s.users}</strong><small>Total accounts</small></div>
+    <div class="stat"><strong>${s.active_users}</strong><small>Active users</small></div>
+    <div class="stat"><strong>${s.applications}</strong><small>Tracked applications</small></div>
   </div><h3>User management</h3><div class="cards">
-  \${data.users.map(u=>`<div class="item"><div>
-    <strong>\${esc(u.display_name||u.email)}</strong><small>\${esc(u.email)} · \${esc(u.role)}</small>
-    <small>\${u.is_active?'Active':'Suspended'}</small></div>
-    \${u.id===state.user.id?'<small>Your admin account</small>':
+  ${data.users.map(u=>`<div class="item"><div>
+    <strong>${esc(u.display_name||u.email)}</strong><small>${esc(u.email)} · ${esc(u.role)}</small>
+    <small>${u.is_active?'Active':'Suspended'}</small></div>
+    ${u.id===state.user.id?'<small>Your admin account</small>':
        `<div class="item-actions">
-        <button class="btn secondary" data-admin-id="\${esc(u.id)}" data-admin-field="role" data-admin-value="\${u.role==='admin'?'member':'admin'}">\${u.role==='admin'?'Remove admin':'Make admin'}</button>
-        <button class="btn \${u.is_active?'danger':'secondary'}" data-admin-id="\${esc(u.id)}" data-admin-field="is_active" data-admin-value="\${u.is_active?'false':'true'}">\${u.is_active?'Suspend':'Activate'}</button>
+        <button class="btn secondary" data-admin-id="${esc(u.id)}" data-admin-field="role" data-admin-value="${u.role==='admin'?'member':'admin'}">${u.role==='admin'?'Remove admin':'Make admin'}</button>
+        <button class="btn ${u.is_active?'danger':'secondary'}" data-admin-id="${esc(u.id)}" data-admin-field="is_active" data-admin-value="${u.is_active?'false':'true'}">${u.is_active?'Suspend':'Activate'}</button>
        </div>`}</div>`).join('')}</div>
   <h3>Latest administrative activity</h3><div class="cards">
-  \${stats.activity.map(a=>`<div class="item"><span>\${esc(a.action)}</span><small>\${esc(a.actor_email||'Admin')} · \${esc(a.created_at)}</small></div>`).join('')||'<p>No changes yet.</p>'}</div>`;
+  ${stats.activity.map(a=>`<div class="item"><span>${esc(a.action)}</span><small>${esc(a.actor_email||'Admin')} · ${esc(a.created_at)}</small></div>`).join('')||'<p>No changes yet.</p>'}</div>`;
 }
 $('#tab-login').addEventListener('click',()=>authMode(false));
 $('#tab-register').addEventListener('click',()=>authMode(true));
