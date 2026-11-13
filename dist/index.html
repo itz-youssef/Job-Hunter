@@ -234,6 +234,7 @@ a:hover{color:var(--ink)}
       </nav>
       <p class="nav-title nav-title-second">TOOLS</p>
       <div class="secondary-links">
+        <a href="https://www.jobsnow.tech/account.html" id="account-link">♙ <span>My Account</span> ↗</a>
         <a href="https://github.com/itz-youssef/Job-Hunter/actions" target="_blank" rel="noopener noreferrer">◷ <span>Monitoring Runs</span> ↗</a>
         <a href="https://github.com/itz-youssef/Job-Hunter" target="_blank" rel="noopener noreferrer">⌘ <span>Source Code</span> ↗</a>
       </div>
@@ -272,7 +273,7 @@ a:hover{color:var(--ink)}
   const liveFile = name => RAW + name + '?v=' + Date.now();
   const el = (selector) => document.querySelector(selector);
   const esc = (x) => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const state = { snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'score', jobType:'all', companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
+  const state = { member:null, snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'score', jobType:'all', companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
   const names = {home:'Home',radar:'Job Hunter',resume:'Resume Updater',cv:'CV Holder',profile:'My Profile', jobs:'Job Feed', saved:'Saved Jobs', companies:'My Companies', alerts:'Email Alerts'};
   const where = (value) => String(value || '').toLowerCase().trim();
   const getDate = (s) => {const d=new Date(s); return Number.isNaN(+d)?null:d;};
@@ -290,6 +291,35 @@ a:hover{color:var(--ink)}
   const snippet = j => String(textOf(j.description || j.summary || j.details)).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').slice(0,230);
   function readSaved(){try{state.saved=new Set(JSON.parse(localStorage.getItem('jh-saved-v2')||'[]'));}catch{state.saved=new Set();}}
   function persistSaved(){try{localStorage.setItem('jh-saved-v2',JSON.stringify([...state.saved]));}catch{/* Storage can be disabled by privacy settings. */}}
+  // On Vercel, authenticated members use Neon; guests retain legacy local
+  // bookmarks. Never merge a shared browser's guest data into another account.
+  async function hydrateMember(){
+    if(IS_CLOUDFLARE)return;
+    try{
+      const result=await json('/api/secretj-auth?action=session');
+      if(!result.user)return;
+      const cloud=await json('/api/secretj-data?scope=saved');
+      state.member=result.user;
+      state.saved=new Set((cloud.jobs||[]).map(x=>String(x.job_key)));
+      render();
+    }catch{/* The public feed stays functional while Neon is offline. */}
+  }
+  async function cloudSave(key,remove){
+    const j=jobs().find(x=>jobKey(x)===key);
+    if(!j&&!remove)throw Error('Job no longer available in the feed');
+    const response=await fetch('/api/secretj-data?scope=saved'+(remove?'&key='+encodeURIComponent(key):''),{
+      method:remove?'DELETE':'POST',cache:'no-store',credentials:'same-origin',
+      headers:{'Content-Type':'application/json'},
+      ...(remove?{}:{body:JSON.stringify({key,job:{
+        title:titleOf(j),company:companyOf(j),location:locationOf(j),
+        url:jobURL(j)==='#'?'':jobURL(j),score:scoreOf(j),published:postedDate(j)
+      }})})
+    });
+    if(!response.ok){
+      const data=await response.json().catch(()=>({}));
+      throw Error(data.error||'Could not synchronize saved job');
+    }
+  }
   function jobs(){const list=state.snapshot.jobs || state.snapshot.job_feed || [];return Array.isArray(list)?list.filter(j=>j && typeof j==='object'):[];}
   // Scanners retain rejected jobs for diagnostics. They must never appear as recommendations.
   const SENIOR_ROLE = /\b(?:senior|sr\.?|lead|principal|staff|manager|management|director|head\s+of|architect|expert|mid[\s-]level|mid[\s-]senior|team\s+lead|tech\s+lead)\b/i;
@@ -450,6 +480,7 @@ a:hover{color:var(--ink)}
   function home(){
     const sources=monitoredSources(), matched=validJobs().filter(j=>scoreOf(j)>0).length;
     return top('JOB HUNTER / WORKSPACE','Your career toolkit','One place for your career workflows. Choose a feature to get started.')+
+      `<p class="tiny">${state.member?'Signed in to Secret J · cloud saved jobs enabled':'Save jobs locally, or <a href="https://www.jobsnow.tech/account.html">create an account</a> to sync across devices.'}</p>`+
       '<section class="feature-grid" aria-label="Workspace features">'+
       '<button type="button" class="feature-card" data-navigate="radar"><span class="feature-mark">↗</span><span class="feature-meta">AVAILABLE NOW</span><strong>Job Hunter</strong><span class="feature-description">Discover internships and early-career engineering roles, monitor employers, and save opportunities.</span><span class="feature-foot">Open Job Hunter <span aria-hidden="true">↗</span></span></button>'+
       '<div class="feature-card feature-upcoming"><span class="feature-mark">▤</span><span class="feature-meta">COMING SOON</span><strong>Resume Updater</strong><span class="feature-description">A dedicated space to tailor and improve your resume for each opportunity. Development is planned.</span><span class="feature-foot">Not available yet</span></div>'+
@@ -1151,7 +1182,26 @@ a:hover{color:var(--ink)}
       const logo=event.target.closest('[data-edit-logo]');
       if(logo){editLogoDialog(logo.dataset.editLogo);return;}
       if(event.target.closest('[data-close-logo]')){el('#logo-dialog').close();return;}
-      const saved=event.target.closest('[data-save]');if(saved){const key=saved.dataset.save;state.saved.has(key)?state.saved.delete(key):state.saved.add(key);persistSaved();render();return;}
+      const saved=event.target.closest('[data-save]');
+      if(saved){
+        const key=saved.dataset.save;
+        const wasSaved=state.saved.has(key);
+        if(state.member){
+          saved.disabled=true;
+          cloudSave(key,wasSaved)
+            .then(()=>{
+              wasSaved?state.saved.delete(key):state.saved.add(key);
+              render();
+              toast(wasSaved?'Removed from your cloud account':'Saved to your Secret J account');
+            })
+            .catch(error=>{saved.disabled=false;toast(error.message,true);});
+        }else{
+          wasSaved?state.saved.delete(key):state.saved.add(key);
+          persistSaved();render();
+          toast('Saved locally. Sign in to sync jobs across devices.');
+        }
+        return;
+      }
       if(event.target.closest('[data-email-test]')){sendEmailTest().catch(e=>toast(e.message,true));return;}
       if(event.target.closest('[data-email-status]')){emailTestStatus().catch(e=>toast(e.message,true));return;}
       if(event.target.closest('[data-profile-parse]')){
@@ -1269,7 +1319,10 @@ a:hover{color:var(--ink)}
       try{await companyApi('POST',{name:String(f.get('name')||'').trim(),url:String(f.get('url')||'').trim()},String(f.get('admin_token')||''));form.reset();el('#company-dialog').close();toast('Company saved! It will be scanned by GitHub Actions.');await refresh(true);go('companies');}
       catch(e){toast(e.message,true);}finally{button.disabled=false;}
     });
-    go(location.hash.replace('#','')||'home');refresh(true);setInterval(()=>refresh(true),60000);
+    if(!IS_CLOUDFLARE)el('#account-link').href='/account.html';
+    go(location.hash.replace('#','')||'home');
+    refresh(true).then(()=>hydrateMember());
+    setInterval(()=>refresh(true),60000);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
 })();

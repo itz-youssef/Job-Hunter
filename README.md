@@ -47,6 +47,19 @@ The scheduler is a **separate Worker**, not the Cloudflare-hosted website. It ha
 
 See [Cloudflare scheduler setup, security and rollback](cloudflare/scheduler/README.md).
 
+## Secret J accounts (Neon PostgreSQL)
+
+The first multi-user account layer is **separate** from the public job scanning system and the legacy admin-token APIs. It adds:
+
+- A dedicated account page at **/account.html** on Vercel for registration, login, profile, job preferences, cloud bookmarks, tracked applications, private small CV uploads and avatars.
+- Admin-only management of account roles/activation with an audit log. There is no hard-coded initial admin user or password.
+- Private serverless routes: api/secretj-auth.js, api/secretj-data.js, api/secretj-admin.js; reusable server-only primitives in lib/secretj/.
+- New isolated tables starting with sj_ in database/migrations/001_secret_j_multitenant.sql. Existing source history, outbox, scanner, GitHub Actions and Cloudflare Cron are unchanged.
+
+**Not yet provisioned by a GitHub commit:** Neon requires the SQL migration and a server-side DATABASE_URL on Vercel. Activation steps, first admin setup, limitations and rollback are in [Secret J Neon deployment guide](docs/SECRETJ_NEON_SETUP.md). The setup is not live merely because this code merges.
+
+The initial account module is a *pilot*: email verification/password recovery and per-user SMTP job alert delivery are not implemented yet. Do not present it as unrestricted production-ready public authentication. Guest saved jobs still work locally, while signed-in Vercel members save to Neon. Small CV/avatar files use private PostgreSQL bytea temporarily; object storage is the intended scale-up.
+
 ## Codebase map
 
 | Area | Files |
