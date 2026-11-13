@@ -1,7 +1,7 @@
 'use strict';
 
 /** Cookie-based member auth. Admin roles can NEVER be set by this endpoint. */
-const core = require('./_secretj/core');
+const core = require('../lib/secretj/core');
 
 module.exports = async function handler(req,res) {
   try {
