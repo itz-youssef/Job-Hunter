@@ -419,8 +419,8 @@ a:hover{color:var(--ink)}
         '<label for="cv-upload" class="btn primary cv-upload-label">'+(file?'Replace CV':'Upload CV')+'</label>'+
         '<input type="file" id="cv-upload" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>'+
         (file?'<button type="button" class="btn secondary" data-cv-preview><svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg> View CV</button><button type="button" class="btn secondary" data-cv-download>Download CV</button><button type="button" class="btn secondary" data-cv-remove>Remove CV</button>':'')+
-        '<p class="tiny cv-privacy">Your CV is saved locally in this browser (up to 10 MB). Optional private GitHub cloud backup is available from the Vercel dashboard with admin authentication; cloud uploads are limited to 2 MB and require a separate private repository.</p>
-        ${!IS_CLOUDFLARE?'<div class="cv-cloud-actions"><button type="button" class="btn secondary" data-cv-cloud-save>Back up CV privately</button><button type="button" class="btn secondary" data-cv-cloud-load>Restore CV from cloud</button></div>':'<p class="tiny">To sync with a private GitHub repository, use the Vercel dashboard. This Cloudflare preview cannot access private Vercel APIs.</p>'}'+
+        '<p class="tiny cv-privacy">Your CV is saved locally in this browser (up to 10 MB). Optional private GitHub cloud backup is available from the Vercel dashboard with admin authentication; cloud uploads are limited to 2 MB and require a separate private repository.</p>'+
+        (!IS_CLOUDFLARE?'<div class="cv-cloud-actions"><button type="button" class="btn secondary" data-cv-cloud-save>Back up CV privately</button><button type="button" class="btn secondary" data-cv-cloud-load>Restore CV from cloud</button></div>':'<p class="tiny">To sync with a private GitHub repository, use the Vercel dashboard. This Cloudflare preview cannot access private Vercel APIs.</p>')+
       '</section>';
   }
 
