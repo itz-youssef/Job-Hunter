@@ -201,6 +201,17 @@ a:hover{color:var(--ink)}
 .profile-photo-box{flex-basis:72px;width:72px;height:72px}
 .profile-controls .btn,.cv-cloud-actions .btn{width:100%;justify-content:center}
 }
+
+/* Monitor status is independently fetched from GitHub; use theme tokens. */
+.monitoring-summary{margin:18px 0}
+.monitoring-summary .panel-head{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.monitoring-run{padding:13px 0;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px}
+.monitoring-run strong{display:block;font-size:13px}
+.monitoring-run small{display:block;color:var(--muted);font-size:11px;margin-top:4px}
+.monitoring-run-action{display:flex;align-items:center;gap:9px;flex-shrink:0}
+.monitoring-run-action .btn{font-size:11px}
+.monitoring-freshness{display:flex;align-items:center;flex-wrap:wrap;gap:9px;font-size:12px;margin:14px 0}
+@media(max-width:640px){.monitoring-run{align-items:flex-start;flex-direction:column}.monitoring-run-action{width:100%;justify-content:space-between}}
   </style>
 </head>
 <body>
@@ -261,7 +272,7 @@ a:hover{color:var(--ink)}
   const liveFile = name => RAW + name + '?v=' + Date.now();
   const el = (selector) => document.querySelector(selector);
   const esc = (x) => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const state = { snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'score', jobType:'all', companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'' };
+  const state = { snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'score', jobType:'all', companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
   const names = {home:'Home',radar:'Job Hunter',resume:'Resume Updater',cv:'CV Holder',profile:'My Profile', jobs:'Job Feed', saved:'Saved Jobs', companies:'My Companies', alerts:'Email Alerts'};
   const where = (value) => String(value || '').toLowerCase().trim();
   const getDate = (s) => {const d=new Date(s); return Number.isNaN(+d)?null:d;};
@@ -342,19 +353,57 @@ a:hover{color:var(--ink)}
     const data=await r.json().catch(()=>({}));if(!r.ok)throw Error(data.error||`API error (${r.status})`);return data;
   }
   function toast(message, bad=false){const t=el('#toast');t.textContent=message;t.classList.toggle('error',bad);t.hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.hidden=true,5000);}
+  // GitHub's public read-only Actions API reflects actual workflow runs.
+  // It is best-effort and rate-limited; leave snapshots usable if unavailable.
+  // Narrow queries avoid losing infrequent core runs among many custom scans.
+  // Three-minute polling costs at most 40 public API requests per hour.
+  const RUNS_API_ROOT='https://api.github.com/repos/itz-youssef/Job-Hunter/actions/workflows/';
+  const RUNS_REFRESH_MS=180000;
+  const SCANNER_CHANNELS=[
+    {key:'custom',workflow:'custom-companies.yml'},
+    {key:'core',workflow:'monitor.yml'}
+  ];
+  function latestScannerRun(data,workflow){
+    if(!Array.isArray(data?.workflow_runs))throw Error('Unexpected GitHub workflow response');
+    return data.workflow_runs.find(run=>
+      run.head_branch==='main'&&
+      run.path==='.github/workflows/'+workflow&&
+      run.conclusion!=='skipped'
+    )||null;
+  }
   async function refresh(silent=false){
+    const runsDue=Date.now()-state.runsCheckedAt>=RUNS_REFRESH_MS;
+    if(runsDue)state.runsCheckedAt=Date.now();
     const res=await Promise.allSettled(IS_CLOUDFLARE
       ? [json(liveFile('dist/data.json')),
          json(liveFile('companies.json')).then(companies=>({companies})),
          json(liveFile('dist/custom-status.json')),
-         json(liveFile('dist/notification-status.json'))]
-      : [json('/data.json'),companyApi(),json('/custom-status.json'),json('/notification-status.json')]);
+         json(liveFile('dist/notification-status.json')),
+         runsDue?Promise.allSettled(SCANNER_CHANNELS.map(c=>json(RUNS_API_ROOT+c.workflow+'/runs?branch=main&per_page=5'))):Promise.resolve(null)]
+      : [json('/data.json'),companyApi(),json('/custom-status.json'),json('/notification-status.json'),
+         runsDue?Promise.allSettled(SCANNER_CHANNELS.map(c=>json(RUNS_API_ROOT+c.workflow+'/runs?branch=main&per_page=5'))):Promise.resolve(null)]);
     if(res[0].status==='fulfilled')state.snapshot=res[0].value;
     if(res[1].status==='fulfilled'){state.companies=res[1].value.companies||[];state.companyApiError='';}
     else state.companyApiError=IS_CLOUDFLARE?'GitHub watchlist could not be loaded.':'Company API unavailable — check Vercel deployment.';
-    if(res[2].status==='fulfilled'){state.scans=res[2].value.companies||[];state.statusError='';}
+    if(res[2].status==='fulfilled'){state.scanReport=res[2].value;state.scans=res[2].value.companies||[];state.statusError='';}
     else state.statusError='No custom scanner report published yet.';
     if(res[3].status==='fulfilled')state.alerts=res[3].value;
+    if(runsDue){
+      // Partial GitHub API outages must not hide a healthy independent channel.
+      const results=res[4].status==='fulfilled'?res[4].value:[];
+      const current={};
+      const unavailable=[];
+      SCANNER_CHANNELS.forEach((channel,index)=>{
+        try{
+          if(results[index]?.status!=='fulfilled')throw Error('API unavailable');
+          current[channel.key]=latestScannerRun(results[index].value,channel.workflow);
+        }catch{unavailable.push(channel.key);}
+      });
+      state.runs=current;
+      state.runsError=unavailable.length
+        ?'Live status unavailable for '+unavailable.join(' and ')+'; published timestamps are shown below.'
+        :'';
+    }
     state.refreshedAt=new Date();
     el('#nav-job-count').textContent=validJobs().length;
     render();
@@ -393,6 +442,7 @@ a:hover{color:var(--ink)}
     return top('YOUR PERSONAL CAREER ASSISTANT','Hello, Youssef 👋','Here’s what your job radar is finding for you.',IS_CLOUDFLARE?'':`<button class="btn primary" data-action="open-company">+ Add company</button>`)+
     `<section class="hero"><div><span class="eyebrow">✦ YOUR JOB RADAR</span><h2>Your next move<br>starts here.</h2><p>Junior, entry-level and internship opportunities in software engineering, AI and computer vision — with Egypt in focus.</p><button class="btn secondary" data-navigate="jobs">Explore opportunities ↗</button></div><div class="hero-graphic" aria-hidden="true"><span class="hero-arrow">↗</span></div></section>`+
     `<section class="stats">${stat('Matching opportunities','Matched in current snapshot',matching)}${stat('Monitored companies','Successful source checks',active)}${stat('Discovered jobs','Current published snapshot',list.length)}${stat('Saved jobs','Stored on this device',state.saved.size)}</section>`+
+    monitoringPanel()+
     `<div class="grid-two"><section class="panel"><div class="panel-head"><h2>✦ Your latest opportunities</h2><button class="link-button" data-navigate="jobs">View all ↗</button></div>${recent.length?recent.map(jobMini).join(''):empty('No jobs yet','Run the monitoring workflow to populate your feed.')}</section><section class="panel"><div class="panel-head"><h2>Monitoring status</h2><button class="link-button" data-navigate="companies">Manage ↗</button></div><div class="table-list">${statuses.length?statuses.map(s=>`<div class="source-line"><span class="job-logo">${icon(s.name)}</span><div class="source-name">${esc(s.name)}<small>${esc(s.message||s.status)}</small></div>${badge(s.active?'Active':s.status==='pending'?'Pending':s.status,s.active?'green':s.status==='pending'?'orange':'grey')}</div>`).join(''):empty('No companies yet','Add a career page to start building your watchlist.')}</div></section></div>`+
     `<section class="panel"><div class="panel-head"><h2>Alerts destination</h2><button class="link-button" data-navigate="alerts">Email settings ↗</button></div><p class="muted" style="margin:0">${(state.fullEmail||state.alerts?.recipient_masked)?`New job alerts target <strong>${esc(state.fullEmail||state.alerts.recipient_masked)}</strong>.`:'The alert email is not yet published to your dashboard.'} <span class="tiny">${esc(state.alerts?.configured?'SMTP configuration detected. Delivery not independently verified.':'See Email Alerts for setup and test links.')}</span></p></section>`;
   }
@@ -404,6 +454,7 @@ a:hover{color:var(--ink)}
       '<button type="button" class="feature-card" data-navigate="radar"><span class="feature-mark">↗</span><span class="feature-meta">AVAILABLE NOW</span><strong>Job Hunter</strong><span class="feature-description">Discover internships and early-career engineering roles, monitor employers, and save opportunities.</span><span class="feature-foot">Open Job Hunter <span aria-hidden="true">↗</span></span></button>'+
       '<div class="feature-card feature-upcoming"><span class="feature-mark">▤</span><span class="feature-meta">COMING SOON</span><strong>Resume Updater</strong><span class="feature-description">A dedicated space to tailor and improve your resume for each opportunity. Development is planned.</span><span class="feature-foot">Not available yet</span></div>'+
       '</section>'+
+      monitoringPanel()+
       '<section class="workspace-brief"><span class="eyebrow">AT A GLANCE</span><div class="brief-values"><span><strong>'+matched+'</strong> matching opportunities</span><span><strong>'+sources.length+'</strong> tracked sources</span></div></section>';
   }
 
@@ -894,26 +945,69 @@ a:hover{color:var(--ink)}
     if(!domain&&!override)return `<span class="company-brand" role="img" aria-label="${esc(name)}">${mark}</span>`;
     return `<span class="company-brand" role="img" aria-label="${esc(name)} logo">${mark}<img class="brand-image" alt="" loading="lazy" decoding="async" src="${esc(override||`https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`)}"></span>`;
   }
-  // Estimated UTC cron slots, not guaranteed actual GitHub start times.
+  // Cloudflare calls custom company scans every five minutes and core
+  // scans at :03/:18/:33/:48 UTC. An expected slot is NOT proof of a run.
+  const CUSTOM_SCAN_MINUTES=Array.from({length:12},(_,i)=>i*5);
+  const CORE_SCAN_MINUTES=[3,18,33,48];
+
   function nextExpectedCheck(company,now=Date.now()){
-    const slots=company.managed?(company.alsoMain?[3,10,18,25,33,40,48,55]:[10,25,40,55]):[3,18,33,48];
+    const minutes=company.managed
+      ? (company.alsoMain?[...new Set([...CUSTOM_SCAN_MINUTES,...CORE_SCAN_MINUTES])].sort((a,b)=>a-b):CUSTOM_SCAN_MINUTES)
+      : CORE_SCAN_MINUTES;
     const moment=new Date(now);
     if(!Number.isFinite(+moment))return null;
-    const value=slots.find(m=>m>moment.getUTCMinutes());
+    const value=minutes.find(m=>m>moment.getUTCMinutes());
     const planned=new Date(now);
     planned.setUTCSeconds(0,0);
-    if(value===undefined)planned.setUTCHours(planned.getUTCHours()+1,slots[0],0,0);
+    if(value===undefined)planned.setUTCHours(planned.getUTCHours()+1,minutes[0],0,0);
     else planned.setUTCMinutes(value,0,0);
     return planned;
   }
+
   function expectedCheckLabel(company){
+    if(!company.managed&&!company.active)return '<small class="next-check">Not currently scheduled</small>';
     const planned=nextExpectedCheck(company);
     if(!planned)return '';
     const clock=new Intl.DateTimeFormat(undefined,{hour:'numeric',minute:'2-digit',timeZoneName:'short'}).format(planned);
     const last=company.last?new Date(company.last):null;
-    const overdue=last&&Number.isFinite(+last)&&Date.now()-last.getTime()>35*60000;
-    if(!company.managed&&!company.active)return '<small class="next-check">Not currently scheduled</small>';
-    return `<small class="next-check">Next scheduled: ${esc(clock)} (approx.)${overdue?' · Last scan overdue':''}</small>`;
+    const overdueMinutes=company.managed?15:35;
+    const overdue=last&&Number.isFinite(+last)&&Date.now()-last.getTime()>overdueMinutes*60000;
+    return `<small class="next-check">Next cron slot: ${esc(clock)} (approx.)${overdue?' · Last scan overdue':''}</small>`;
+  }
+
+  // Honest monitoring diagnostics: GitHub Actions API = actual runs;
+  // custom-status.json = last committed scanner output. Neither guarantees
+  // email inbox delivery or that every official career page is accessible.
+  function monitoringRunRow(label,cadence,company,run){
+    const next=nextExpectedCheck(company);
+    const nextLabel=next?prettyDate(next.toISOString()):'Unknown';
+    const reported=run?.created_at?prettyDate(run.created_at):'No recent run returned';
+    const running=run&&run.status!=='completed';
+    const stateLabel=!run?'Unknown':running?'Running / queued':run.conclusion==='success'?'Success':run.conclusion==='failure'?'Failed':run.conclusion||'Completed';
+    const color=!run?'grey':running?'orange':run.conclusion==='success'?'green':'red';
+    const id=Number(run?.id);
+    const url=Number.isSafeInteger(id)&&id>0?`${REPO}/actions/runs/${id}`:`${REPO}/actions`;
+    return `<div class="monitoring-run">
+      <div><strong>${esc(label)}</strong><small>Target: ${esc(cadence)} · Next cron slot: ${esc(nextLabel)}</small><small>Latest actual GitHub run: ${esc(reported)}</small></div>
+      <div class="monitoring-run-action">${badge(stateLabel,color)}<a class="btn secondary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View run ↗</a></div>
+    </div>`;
+  }
+  function monitoringPanel(){
+    const stamp=state.scanReport?.checked_at||'';
+    const scanTime=stamp?new Date(stamp):null;
+    const overdue=!scanTime||!Number.isFinite(+scanTime)||Date.now()-scanTime.getTime()>15*60000;
+    const last=scanTime&&Number.isFinite(+scanTime)?prettyDate(stamp):'Not yet published';
+    const accepted=state.scanReport?.emails_accepted_by_smtp;
+    const count=Number.isInteger(accepted)?` · SMTP accepted ${accepted} alert(s)`:'';
+    return `<section class="panel monitoring-summary" aria-label="GitHub scanner activity">
+      <div class="panel-head"><h2>◷ Live monitoring runs</h2><a class="link-button" href="${REPO}/actions" target="_blank" rel="noopener noreferrer">All runs ↗</a></div>
+      <p class="muted">Cloudflare requests checks on schedule; GitHub Actions executes the Python scans. Only actual completed runs and published results confirm progress.</p>
+      ${monitoringRunRow('Custom company scanner','every 5 min',{managed:true},state.runs.custom)}
+      ${monitoringRunRow('Core scanner','every 15 min',{managed:false,active:true},state.runs.core)}
+      <p class="monitoring-freshness">${badge(overdue?'Snapshot overdue':'Snapshot published',overdue?'orange':'green')} Last published custom scan: ${esc(last)}${esc(count)}.</p>
+      ${state.runsError?`<p class="tiny">${esc(state.runsError)}</p>`:''}
+      <p class="tiny">Next cron times are estimates, not guaranteed starts. Run status is checked from GitHub periodically; job data refreshes from the published snapshot. SMTP acceptance does not confirm inbox delivery.</p>
+    </section>`;
   }
   function companyCard(c){
     const status=c.status||'pending', mapping={monitoring:['Monitoring','green'],partial:['Partial coverage','orange'],needs_adapter:['Needs adapter','orange'],access_blocked:['Access blocked','red'],error:['Scan error','red'],pending:['Waiting for scan','orange'],configured:['Configured','grey']};
@@ -931,6 +1025,7 @@ a:hover{color:var(--ink)}
     const all=monitoredSources(), active=all.filter(c=>c.active).length, pending=all.filter(c=>c.status==='pending').length;
     return top('YOUR WATCHLIST','My companies','Every company and its actual monitoring status, together.',IS_CLOUDFLARE?'':`<button class="btn primary" data-action="open-company">+ Add company</button>`)+
       `<section class="stats">${stat('Tracked companies','Built-in + manually added',all.length)}${stat('Monitoring','Last scan succeeded',active)}${stat('Waiting for scan','Not checked yet',pending)}${stat('Custom career pages','Managed from this site',state.companies.length)}</section>`+
+      monitoringPanel()+
       `${IS_CLOUDFLARE?'<p class="tiny">Live monitoring data from GitHub. Company editing is available from the Vercel dashboard.</p>':''}`+
       `${state.companyApiError?`<p class="inline-error">${esc(state.companyApiError)}</p>`:''}${state.statusError?`<p class="tiny">${esc(state.statusError)}</p>`:''}`+
       `<div class="cards">${all.length?all.map(companyCard).join(''):empty('Build your company watchlist','Add a careers page to start checking for eligible roles.')}</div>`+
