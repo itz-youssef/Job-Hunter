@@ -43,6 +43,8 @@ export async function runNodeHandler(handler,request){
     try{body=raw?JSON.parse(raw):{};}catch{return json(400,{ok:false,error:'Invalid JSON'});}
   }
   const headers=Object.fromEntries(request.headers);
+  // Bind origin checks to the actual routed Worker host, not a spoofed Host.
+  headers.host=url.host;
   // The CF-Connecting-IP header is supplied by Cloudflare at the edge.
   // Do not trust a client-supplied X-Forwarded-For for login throttling.
   headers['x-forwarded-for']=request.headers.get('cf-connecting-ip')||'unknown';
