@@ -1,0 +1,17 @@
+{
+  "name": "secret-j-jobhunter",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Secret J / Job Hunter serverless Neon account APIs",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "1.2.0"
+  },
+  "scripts": {
+    "test": "node --test tests/*.cjs cloudflare/scheduler/worker.test.mjs",
+    "test:api": "node --test tests/test_secretj_accounts.cjs tests/test_neon_schema_contract.cjs"
+  }
+}
