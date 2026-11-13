@@ -409,6 +409,60 @@ a:hover{color:var(--ink)}
       tx.onerror=()=>{db.close();reject(tx.error||Error('CV storage failed.'));};
     });
   }
+
+  const PROFILE_FIELDS=['name','headline','email','phone','location','summary','skills','education','experience','linkedin','github','portfolio'];
+  const blankProfile=()=>Object.fromEntries(PROFILE_FIELDS.map(k=>[k,'']));
+  let profile={...blankProfile(),photo:'',cvName:'',cvMime:'',updatedAt:''};
+  let profileMessage='';
+  async function profileStore(mode,value){
+    const db=await cvStore();
+    return new Promise((resolve,reject)=>{
+      const tx=db.transaction('files',mode==='get'?'readonly':'readwrite');
+      const request=mode==='get'?tx.objectStore('files').get('profile'):tx.objectStore('files').put(value,'profile');
+      request.onsuccess=()=>resolve(request.result);
+      request.onerror=()=>reject(request.error||Error('Browser profile storage failed'));
+      tx.oncomplete=()=>db.close();
+      tx.onerror=()=>{db.close();reject(tx.error||Error('Profile transaction failed'));};
+    });
+  }
+  async function refreshProfile(){
+    try{
+      const saved=await profileStore('get');
+      if(saved&&typeof saved==='object')profile={...blankProfile(),...saved};
+      if(state.page==='profile')render();
+    }catch(e){if(state.page==='profile')toast(e.message,true);}
+  }
+  function profilePage(){
+    const field=(name,label,placeholder='')=>'<label class="profile-field">'+esc(label)+
+      '<input type="text" name="'+name+'" value="'+esc(profile[name]||'')+
+      '" placeholder="'+esc(placeholder)+'" maxlength="500"></label>';
+    const area=(name,label)=>'<label class="profile-field profile-wide">'+esc(label)+
+      '<textarea name="'+name+'" rows="'+(name==='skills'?3:5)+'" maxlength="9000">'+esc(profile[name]||'')+'</textarea></label>';
+    const image=profile.photo?'<img class="profile-photo" alt="Profile photo" src="'+esc(profile.photo)+'">':
+      '<span class="profile-placeholder" aria-hidden="true">◉</span>';
+    return top('CAREER WORKSPACE','My Profile','Review information extracted from your CV, edit your skills, and add a profile picture.')+
+      '<section class="panel profile-panel">'+
+      '<div class="profile-photo-row"><div class="profile-photo-box">'+image+'</div><div><strong>Profile picture</strong>'+
+      '<p class="tiny">JPG, PNG or WebP under 3 MB. Stored locally unless you choose private backup.</p>'+
+      '<label class="btn secondary photo-upload-label" for="profile-photo-input">Choose photo</label> '+
+      (profile.photo?'<button type="button" class="btn secondary" data-profile-photo-remove>Remove</button>':'')+
+      '<input id="profile-photo-input" type="file" accept="image/png,image/jpeg,image/webp" hidden></div></div>'+
+      '<form id="profile-form"><div class="profile-form-grid">'+
+      field('name','Full name')+field('headline','Professional headline','AI & Software Engineer')+
+      field('email','Email')+field('phone','Phone')+
+      field('location','Location')+field('linkedin','LinkedIn')+
+      field('github','GitHub')+field('portfolio','Portfolio')+
+      area('summary','Summary')+area('skills','Skills')+
+      area('experience','Work experience')+area('education','Education')+
+      '</div><div class="profile-controls"><button class="btn primary" type="submit">Save profile locally</button>'+
+      (cvEntry?'<button type="button" class="btn secondary" data-profile-parse>Import from CV</button>':'')+
+      (!IS_CLOUDFLARE?'<button type="button" class="btn secondary" data-profile-cloud-save>Private cloud backup</button><button type="button" class="btn secondary" data-profile-cloud-load>Restore private profile</button>':'')+
+      '</div></form>'+
+      '<p class="tiny profile-notice">'+esc(profileMessage||'CV extraction is best effort. Review imported information before using it for job applications.')+'</p>'+
+      '<p class="tiny">Your details stay on this device unless you explicitly choose private cloud backup. The public website repository never stores your personal data.</p>'+
+      (IS_CLOUDFLARE?'<p class="tiny">Private GitHub sync is available only through the authenticated Vercel dashboard.</p>':'')+
+      '</section>';
+  }
   function cvPage(){
     const file=cvEntry;
     return top('CAREER DOCUMENTS','CV Holder','Keep your primary CV ready for the future Resume Updater.')+
