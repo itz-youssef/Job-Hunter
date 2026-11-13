@@ -91,7 +91,7 @@ def telecom_egypt(name, get_json, make_job):
     return list(results.values())
 
 
-def siemens_software(name, get_json, make_job):
+def siemens_software(name, get_json, make_job, get_bytes=None):
     """Read the public Siemens Software search API seen in their careers UI.
 
     The query is scoped to the Cairo area and reads all reported pages.
@@ -102,6 +102,7 @@ def siemens_software(name, get_json, make_job):
 
     endpoint = "https://prod-search-api.jobsyn.org/api/v1/solr/search"
     results = {}
+    details_checked = 0
     pages = 0
     while pages < 40:
         pages += 1
@@ -151,12 +152,36 @@ def siemens_software(name, get_json, make_job):
             location = str(row.get("location_exact") or row.get("city_exact") or "")
             if not location:
                 location = str(row.get("city_exact") or "") + ", Egypt"
+            # First use explicit employer-owned ATS career-level fields; never
+            # infer entry-level from a generic engineering title alone.
+            experience = " ".join(str(row.get(key) or "") for key in (
+                "experience_level_exact", "experience_level", "career_level",
+                "experienceLevel", "job_level_exact", "job_level",
+            ))
+            description = str(row.get("description") or "")
+            published = row.get("date_new") or row.get("date_added") or ""
+            if not re.search(r"\\b(?:early professional|entry.level|junior|graduate|intern)\\b", experience, re.I):
+                # A limited number of ambiguous technical jobs are checked
+                # against their official detail page for explicit career-level evidence.
+                technical = re.search(r"\\b(?:software|ai|machine learning|data|backend|frontend|developer|programmer)\\b", title, re.I)
+                if get_bytes is not None and technical and details_checked < 24:
+                    details_checked += 1
+                    try:
+                        detail = get_bytes(url).decode("utf-8", "replace")
+                        from html import unescape
+                        plain = re.sub(r"<[^>]*>", " ", detail)
+                        plain = re.sub(r"\\s+", " ", unescape(plain))
+                        match = re.search(r"\\bExperience level\\s*:\\s*(Early Professional|Entry Level|Junior|Graduate|Internship)\\b", plain, re.I)
+                        if match:
+                            experience = match.group(1)
+                    except (OSError, ValueError, TimeoutError):
+                        pass
             job = make_job(
-                name, title, location, url,
-                row.get("description") or "",
-                row.get("date_new") or row.get("date_added") or "",
-                ""
+                name, title, location, url, description, published, ""
             )
+            if re.search(r"\\b(?:early professional|entry.level|junior|graduate|intern)\\b", experience, re.I):
+                job["seniority"] = "Early Professional" if re.search("early professional",experience,re.I) else experience.strip()[:100]
+            job["external_id"] = str(row.get("req_id") or row.get("job_id") or "")
             # The API GUID is stable even when a job title or slug changes.
             job["id"] = "custom-siemens-" + guid
             results[guid] = job
