@@ -1,36 +1,35 @@
-"""Read-only focused Henkel Coca-Cola HBC, Breadfast job feed probes."""
+"""Targeted Egypt employer source structure probing, read-only."""
 from app.custom_sources import _bytes
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import json,re
-URLS=[
-"https://www.henkel.jobs/",
-"https://www.henkel.jobs/search/?q=&locationsearch=Egypt",
-"https://www.henkel.com/careers/find-your-job-apply",
-"https://www.henkel.com/careers/find-your-job-apply/2182732-2182732",
-"https://eg.coca-colahellenic.com/en/working-with-us",
-"https://www.coca-colahellenic.com/en/careers",
-"https://careers.coca-colacompany.com/",
-"https://careers.4dxventures.com/jobs",
-"https://careers.4dxventures.com/companies/breadfast"
-]
-for u in URLS:
+URLS={
+"PwC":"https://careers.pwc.com/search/?q=&locationsearch=Egypt",
+"PwC cairo":"https://careers.pwc.com/search/?q=&locationsearch=Cairo",
+"Systems":"https://www.systemsltd.com/careers/",
+"Finaira":"https://finaira.ai/work-at-finaira/",
+"Octane":"https://www.octane-tech.io/",
+"blnk":"https://blnk.zenats.com/en/careers_page",
+"Henkel":"https://www.henkel.com/careers/find-your-job-apply",
+"Coca HBC":"https://careers.coca-colahellenic.com/en_US/careers/SearchJobs/?1293=%5B7423%5D&1293_format=2880&493=%5B7466%5D&493_format=2198&listFilterMode=1&projectRecordsPerPage=10",
+"Breadfast 4DX":"https://careers.4dxventures.com/jobs",
+"TP Egypt":"https://tpegyptcareers.teleperformance.com.eg/vacancies",
+}
+for name,u in URLS.items():
  try:
   html=_bytes(u).decode("utf-8","replace")
-  d=BeautifulSoup(html,"html.parser")
-  links=[(urljoin(u,a.get("href","")),a.get_text(" ",strip=True)[:75])
-        for a in d.select("a[href]") if re.search(r"job|vacanc|career|work|apply|search",a.get("href","")+" "+a.get_text(" ",strip=True),re.I)]
-  print("FETCH",u,len(html),"LINKS",links[:33],flush=True)
-  for label,regex in [
-    ("HENKEL_JOB",r'.{0,100}(?:henkel.jobs|henkel.com/careers/find-your-job-apply/|graphql|algolia|jobOffers|jobList|searchResult).{0,150}'),
-    ("COCA_SOURCE",r'.{0,90}(?:successfactors|oraclecloud|workday|apply|jobSearch|searchjobs|vacancies|careers.coca-colahellenic).{0,150}'),
-    ("BREAD_NEXT",r'.{0,60}(?:__NEXT_DATA__|Breadfast|jobs).{0,100}'),
-   ]:
-   matches=re.findall(regex,html,re.I)
-   print("MATCH",label,u,matches[:12],flush=True)
-  if "4dxventures.com" in u:
-   node=d.find("script",id="__NEXT_DATA__")
-   if node:
-    j=json.loads(node.get_text())
-    print("NEXT_KEYS",u,list(j.keys()),str(j.get("props",{}))[:2800],flush=True)
- except Exception as e:print("ERROR",u,type(e).__name__,str(e)[:170],flush=True)
+  soup=BeautifulSoup(html,"html.parser")
+  links=[(urljoin(u,a.get("href","")),a.get_text(" ",strip=True)[:100]) for a in soup.select("a[href]")
+       if re.search(r"/job/|/jobs/|/ProjectDetail/|career|vacanc|/positions/|/details/",a.get("href","")+" "+a.get_text(" ",strip=True),re.I)]
+  print("PROBE",name,len(html),"LINKS",links[:17],flush=True)
+  if name in ("PwC","Coca HBC","blnk","Finaira","Systems","Henkel"):
+   print("STRUCT",name,[(x,len(soup.select(x))) for x in ['tr','a.jobTitle-link','a.jobTitle','[class*=job]','[class*=Job]','iframe','script[src]']],flush=True)
+   print("MARK",name,re.findall(r'.{0,75}(?:api/|[a-z]+_api|jobTitle-link|Job offers:|job-count|jobportal|requisition|open positions|vacancies|workday|successfactors).{0,180}',html,re.I)[:13],flush=True)
+  if name=="Breadfast 4DX":
+   j=json.loads(soup.select_one("script#__NEXT_DATA__").text)
+   pg=j.get("props",{}).get("pageProps",{})
+   print("GETRO_KEYS",list(pg.keys()),flush=True)
+   print("GETRO_LIST_KEYS",[(k,type(v).__name__,len(v) if isinstance(v,(list,dict)) else str(v)[:50])for k,v in pg.items() if re.search('job|page|filter|search',k,re.I)],flush=True)
+   print("GETRO_JOB",str(pg.get('jobs',None))[:1200],flush=True)
+ except Exception as exc:
+  print("PROBE_ERROR",name,type(exc).__name__,str(exc)[:160],flush=True)
