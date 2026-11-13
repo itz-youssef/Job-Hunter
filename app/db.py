@@ -34,9 +34,14 @@ def ingest(source,jobs,score_fn):
     with db() as c:
         for j in jobs:
             score,reasons=score_fn(j); stamp=now()
-            old=c.execute('SELECT id FROM jobs WHERE source_id=? AND external_id=?',(source['id'],j['external_id'])).fetchone()
+            old=c.execute('SELECT id, score FROM jobs WHERE source_id=? AND external_id=?',(source['id'],j['external_id'])).fetchone()
             if old:
                 c.execute('UPDATE jobs SET title=?,location=?,description=?,last_seen=?,score=?,reasons=?,published=COALESCE(NULLIF(?, \'\'),published) WHERE id=?',(j['title'],j['location'],j['description'],stamp,score,json.dumps(reasons),j.get('published'),old['id']))
+                # A previously rejected role can gain employer-verified junior
+                # evidence later. Alert once when it first becomes eligible.
+                # UNIQUE(outbox.job_id) also prevents duplicate queue entries.
+                if source['baseline'] and (old['score'] or 0)<settings()['min_score'] and score>=settings()['min_score']:
+                    c.execute('INSERT OR IGNORE INTO outbox(job_id,created) VALUES (?,?)',(old['id'],stamp))
                 continue
             cur=c.execute('INSERT INTO jobs(source_id,external_id,title,location,description,published,url,employment,detected,last_seen,score,reasons) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',(source['id'],j['external_id'],j['title'],j['location'],j['description'],j.get('published'),j['url'],j.get('employment','Not provided'),stamp,stamp,score,json.dumps(reasons)))
             fresh+=1
