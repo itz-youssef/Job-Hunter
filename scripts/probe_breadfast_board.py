@@ -9,6 +9,11 @@ URLS = (
     "https://careers.4dxventures.com/companies/breadfast",
     "https://careers.4dxventures.com/companies/breadfast?page=2",
     "https://careers.4dxventures.com/jobs",
+    "https://careers.4dxventures.com/jobs?q=Software",
+    "https://careers.4dxventures.com/jobs?q=Engineer",
+    "https://careers.4dxventures.com/jobs?q=Technology",
+    "https://careers.4dxventures.com/jobs?q=Intern",
+    "https://careers.4dxventures.com/jobs?page=2",
     "https://www.breadfast.com/ar/careers_categories/technology/",
 )
 
@@ -21,6 +26,12 @@ for url in URLS:
         continue
     soup=BeautifulSoup(html, "html.parser")
     links={}
+    embedded=soup.select_one("script#__NEXT_DATA__")
+    print("NEXT DATA length",len(embedded.get_text()) if embedded else 0, flush=True)
+    for probe in ("information-technology-help-desk","98855989","breadfast/jobs/","jobsByCompany","openJobs","hasNextPage"):
+        match=re.search(re.escape(probe),html,re.I)
+        if match:
+            print("EMBEDDED HINT",probe,repr(html[max(0,match.start()-110):match.start()+220][:320]),flush=True)
     for a in soup.select("a[href]"):
         href=urljoin(url,a.get("href") or "").split("#")[0]
         p=urlsplit(href)
