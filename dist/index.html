@@ -179,6 +179,28 @@ a:hover{color:var(--ink)}
 }
 @media(max-width:370px){.main-content{padding:16px 10px}.stats{grid-template-columns:1fr}.theme-toggle{min-width:0}.topbar{height:50px}}
 .next-check{color:var(--ink);font-weight:550} .next-check::before{content:'◷ ';color:var(--muted)}
+
+.profile-panel{max-width:880px}
+.profile-photo-row{display:flex;align-items:center;gap:18px;padding:6px 0 22px;border-bottom:1px solid var(--border);margin-bottom:22px}
+.profile-photo-box{flex:0 0 96px;width:96px;height:96px;border-radius:50%;background:var(--soft);border:1px solid var(--border);overflow:hidden;display:grid;place-items:center}
+.profile-photo{width:100%;height:100%;object-fit:cover}
+.profile-placeholder{font-size:38px;color:var(--muted)}
+.photo-upload-label{display:inline-flex;cursor:pointer;padding:10px 14px;margin-top:5px}
+.profile-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.profile-field{display:flex;flex-direction:column;gap:7px;font-weight:650;font-size:12px;color:var(--muted);min-width:0}
+.profile-field input,.profile-field textarea{background:var(--panel);color:var(--ink);font:inherit;font-size:13px;border:1px solid var(--border);border-radius:7px;padding:11px;min-width:0;width:100%;line-height:1.55}
+.profile-field textarea{resize:vertical}
+.profile-field:focus-within{color:var(--ink)}
+.profile-wide{grid-column:1/-1}
+.profile-controls,.cv-cloud-actions{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 8px}
+.profile-notice{margin:16px 0 10px}
+@media(max-width:640px){
+.profile-form-grid{grid-template-columns:1fr}
+.profile-wide{grid-column:auto}
+.profile-photo-row{align-items:flex-start;gap:12px}
+.profile-photo-box{flex-basis:72px;width:72px;height:72px}
+.profile-controls .btn,.cv-cloud-actions .btn{width:100%;justify-content:center}
+}
   </style>
 </head>
 <body>
@@ -192,6 +214,7 @@ a:hover{color:var(--ink)}
         <button type="button" data-page="radar"><span>◉</span> Job Hunter</button>
         <button type="button" data-page="resume"><span>▤</span> Resume Updater</button>
         <button type="button" data-page="cv"><span>▣</span> CV Holder</button>
+        <button type="button" data-page="profile"><span>◉</span> My Profile</button>
         <span class="nav-divider-label">JOB HUNTER TOOLS</span>
         <button type="button" data-page="jobs"><span>▤</span> Job Feed <b class="nav-count" id="nav-job-count">0</b></button>
         <button type="button" data-page="saved"><span>♡</span> Saved Jobs</button>
@@ -239,7 +262,7 @@ a:hover{color:var(--ink)}
   const el = (selector) => document.querySelector(selector);
   const esc = (x) => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const state = { snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'score', jobType:'all', companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'' };
-  const names = {home:'Home',radar:'Job Hunter',resume:'Resume Updater',cv:'CV Holder', jobs:'Job Feed', saved:'Saved Jobs', companies:'My Companies', alerts:'Email Alerts'};
+  const names = {home:'Home',radar:'Job Hunter',resume:'Resume Updater',cv:'CV Holder',profile:'My Profile', jobs:'Job Feed', saved:'Saved Jobs', companies:'My Companies', alerts:'Email Alerts'};
   const where = (value) => String(value || '').toLowerCase().trim();
   const getDate = (s) => {const d=new Date(s); return Number.isNaN(+d)?null:d;};
   const prettyDate = (s) => {const d=getDate(s);return d?d.toLocaleString('en-EG',{dateStyle:'medium',timeStyle:'short'}):'Not yet available';};
@@ -408,6 +431,242 @@ a:hover{color:var(--ink)}
       tx.onerror=()=>{db.close();reject(tx.error||Error('CV storage failed.'));};
     });
   }
+
+  const PROFILE_FIELDS=['name','headline','email','phone','location','summary','skills','education','experience','linkedin','github','portfolio'];
+  const blankProfile=()=>Object.fromEntries(PROFILE_FIELDS.map(k=>[k,'']));
+  let profile={...blankProfile(),photo:'',cvName:'',cvMime:'',updatedAt:''};
+  let profileMessage='';
+  async function profileStore(mode,value){
+    const db=await cvStore();
+    return new Promise((resolve,reject)=>{
+      const tx=db.transaction('files',mode==='get'?'readonly':'readwrite');
+      const request=mode==='get'?tx.objectStore('files').get('profile'):tx.objectStore('files').put(value,'profile');
+      request.onsuccess=()=>resolve(request.result);
+      request.onerror=()=>reject(request.error||Error('Browser profile storage failed'));
+      tx.oncomplete=()=>db.close();
+      tx.onerror=()=>{db.close();reject(tx.error||Error('Profile transaction failed'));};
+    });
+  }
+  async function refreshProfile(){
+    try{
+      const saved=await profileStore('get');
+      if(saved&&typeof saved==='object')profile={...blankProfile(),...saved};
+      if(state.page==='profile')render();
+    }catch(e){if(state.page==='profile')toast(e.message,true);}
+  }
+  function profilePage(){
+    const field=(name,label,placeholder='')=>'<label class="profile-field">'+esc(label)+
+      '<input type="text" name="'+name+'" value="'+esc(profile[name]||'')+
+      '" placeholder="'+esc(placeholder)+'" maxlength="500"></label>';
+    const area=(name,label)=>'<label class="profile-field profile-wide">'+esc(label)+
+      '<textarea name="'+name+'" rows="'+(name==='skills'?3:5)+'" maxlength="9000">'+esc(profile[name]||'')+'</textarea></label>';
+    const image=profile.photo?'<img class="profile-photo" alt="Profile photo" src="'+esc(profile.photo)+'">':
+      '<span class="profile-placeholder" aria-hidden="true">◉</span>';
+    return top('CAREER WORKSPACE','My Profile','Review information extracted from your CV, edit your skills, and add a profile picture.')+
+      '<section class="panel profile-panel">'+
+      '<div class="profile-photo-row"><div class="profile-photo-box">'+image+'</div><div><strong>Profile picture</strong>'+
+      '<p class="tiny">JPG, PNG or WebP under 3 MB. Stored locally unless you choose private backup.</p>'+
+      '<label class="btn secondary photo-upload-label" for="profile-photo-input">Choose photo</label> '+
+      (profile.photo?'<button type="button" class="btn secondary" data-profile-photo-remove>Remove</button>':'')+
+      '<input id="profile-photo-input" type="file" accept="image/png,image/jpeg,image/webp" hidden></div></div>'+
+      '<form id="profile-form"><div class="profile-form-grid">'+
+      field('name','Full name')+field('headline','Professional headline','AI & Software Engineer')+
+      field('email','Email')+field('phone','Phone')+
+      field('location','Location')+field('linkedin','LinkedIn')+
+      field('github','GitHub')+field('portfolio','Portfolio')+
+      area('summary','Summary')+area('skills','Skills')+
+      area('experience','Work experience')+area('education','Education')+
+      '</div><div class="profile-controls"><button class="btn primary" type="submit">Save profile locally</button>'+
+      (cvEntry?'<button type="button" class="btn secondary" data-profile-parse>Import from CV</button>':'')+
+      (!IS_CLOUDFLARE?'<button type="button" class="btn secondary" data-profile-cloud-save>Private cloud backup</button><button type="button" class="btn secondary" data-profile-cloud-load>Restore private profile</button>':'')+
+      '</div></form>'+
+      '<p class="tiny profile-notice">'+esc(profileMessage||'CV extraction is best effort. Review imported information before using it for job applications.')+'</p>'+
+      '<p class="tiny">Your details stay on this device unless you explicitly choose private cloud backup. The public website repository never stores your personal data.</p>'+
+      (IS_CLOUDFLARE?'<p class="tiny">Private GitHub sync is available only through the authenticated Vercel dashboard.</p>':'')+
+      '</section>';
+  }
+
+  function parseCVInfo(raw){
+    const text=String(raw||'').slice(0,160000);
+    const lines=text.replace(/\r/g,'').split('\n').map(v=>v.trim()).filter(Boolean);
+    const email=text.match(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/)?.[0]||'';
+    const phone=text.match(/(?:\+?20[\s.-]?)?(?:0?1[0125])[\s.-]?\d{4}[\s.-]?\d{4}/)?.[0]||'';
+    const linked=text.match(/(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/[\w-]+\/?/i)?.[0]||'';
+    const github=text.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/[a-zA-Z0-9-]+\/?/i)?.[0]||'';
+    const headings=/^(?:professional\s+summary|summary|profile|about\s+me|technical\s+skills|skills|education|academic\s+background|work\s+experience|professional\s+experience|experience|projects|certifications|courses|languages|achievements|awards|activities)\s*:?\s*$/i;
+    function section(heading,limit){
+      const i=lines.findIndex(v=>heading.test(v));
+      if(i<0)return '';
+      const out=[];
+      for(let j=i+1;j<Math.min(lines.length,i+limit+1);j++){
+        if(headings.test(lines[j]))break;
+        out.push(lines[j]);
+      }
+      return out.join('\n').slice(0,9000);
+    }
+    const name=lines.slice(0,7).find(v=>/^[a-zA-Z\u0600-\u06FF][a-zA-Z\u0600-\u06FF .'-]{4,75}$/.test(v)&&
+      !headings.test(v)&&!/\b(engineer|developer|student|linkedin|github|resume|curriculum|computer|cv)\b/i.test(v))||'';
+    const headline=lines.slice(0,10).find(v=>/\b(?:AI|software|machine learning|computer vision|data|backend|frontend)\b.*\b(?:engineer|developer)\b/i.test(v))||'';
+    return {name,headline,email,phone,
+      linkedin:linked?(linked.startsWith('http')?linked:'https://'+linked):'',
+      github:github?(github.startsWith('http')?github:'https://'+github):'',
+      summary:section(/^(?:professional\s+summary|summary|profile|about\s+me)\s*:?\s*$/i,12),
+      skills:section(/^(?:technical\s+skills|skills)\s*:?\s*$/i,20),
+      experience:section(/^(?:work\s+experience|professional\s+experience|experience)\s*:?\s*$/i,65),
+      education:section(/^(?:education|academic\s+background)\s*:?\s*$/i,32)};
+  }
+  async function pdfCVText(blob){
+    // PDF.js is version-pinned. The PDF bytes are processed locally in-browser.
+    const lib=await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs');
+    lib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs';
+    const pdf=await lib.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;
+    const sections=[];
+    try{
+      for(let i=1;i<=Math.min(pdf.numPages,12);i++){
+        const page=await pdf.getPage(i);
+        const content=await page.getTextContent();
+        let previousY=null,paragraph='';
+        for(const item of content.items){
+          if(!item.str)continue;
+          const y=item.transform?.[5];
+          if(previousY!==null&&typeof y==='number'&&Math.abs(y-previousY)>3)paragraph+='\n';
+          else if(paragraph&&!paragraph.endsWith('\n'))paragraph+=' ';
+          paragraph+=item.str;
+          previousY=y;
+        }
+        sections.push(paragraph);
+      }
+    }finally{await pdf.destroy();}
+    return sections.join('\n').slice(0,160000);
+  }
+  async function importProfileFromCV(){
+    if(!cvEntry?.blob)throw Error('Upload your CV first');
+    const text=/\.docx$/i.test(cvEntry.name)?await extractDocxText(cvEntry.blob):await pdfCVText(cvEntry.blob);
+    if(text.trim().length<30)throw Error('No readable CV text found. Scanned PDFs may need OCR; you can enter profile details manually.');
+    const values=parseCVInfo(text);
+    let fields=0;
+    for(const [key,value] of Object.entries(values)){
+      if(value&&!profile[key]){profile[key]=value;fields++;}
+    }
+    profile.cvName=cvEntry.name;
+    profile.cvMime=cvEntry.blob.type||(/\.pdf$/i.test(cvEntry.name)?'application/pdf':'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    profile.updatedAt=new Date().toISOString();
+    await profileStore('save',profile);
+    profileMessage=fields+' fields imported from your CV. Check names, experience, and skills before using them.';
+    if(state.page==='profile')render();
+    return fields;
+  }
+  async function setProfilePhoto(file){
+    if(!file||file.size>3*1024*1024||!['image/png','image/jpeg','image/webp'].includes(file.type))
+      throw Error('Choose a PNG, JPG or WebP image under 3 MB.');
+    const url=URL.createObjectURL(file);
+    try{
+      const img=new Image();
+      await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=url;});
+      const scale=Math.min(256/img.naturalWidth,256/img.naturalHeight,1);
+      if(!Number.isFinite(scale)||scale<=0)throw Error('Invalid image dimensions');
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+      canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+      const data=canvas.toDataURL('image/webp',0.78);
+      if(data.length>180000)throw Error('Photo remains too large after resizing');
+      profile.photo=data;
+      await profileStore('save',profile);
+      render();
+    }finally{URL.revokeObjectURL(url);}
+  }
+
+  async function profileCloud(method,kind,payload,token){
+    if(IS_CLOUDFLARE)throw Error('Private GitHub backup is available through Vercel only');
+    const res=await fetch('/api/profile?kind='+encodeURIComponent(kind),{
+      method,cache:'no-store',
+      headers:{'x-admin-token':token,'Content-Type':'application/json'},
+      ...(payload?{body:JSON.stringify(payload)}:{})
+    });
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok)throw Error(data.error||'Private backup failed');
+    return data;
+  }
+  function adminForCloud(){
+    if(IS_CLOUDFLARE)throw Error('Open the Vercel dashboard for private cloud backup.');
+    const token=window.prompt('Enter your admin token for private GitHub backup:');
+    if(!token)throw Error('Cloud backup cancelled');
+    return token;
+  }
+  async function bytesToBase64(file){
+    const bytes=new Uint8Array(await file.arrayBuffer());
+    let str='';
+    for(let i=0;i<bytes.length;i+=8192){
+      str+=String.fromCharCode(...bytes.subarray(i,i+8192));
+    }
+    return btoa(str);
+  }
+  function base64Blob(content,mime){
+    const binary=atob(content),bytes=new Uint8Array(binary.length);
+    for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+    return new Blob([bytes],{type:mime});
+  }
+  async function saveCloudProfile(token){
+    await profileCloud('PUT','profile',{profile:{...profile,
+      cvName:cvEntry?.name||profile.cvName||'',
+      cvMime:cvEntry?.blob.type||profile.cvMime||''}},token);
+    profileMessage='Private profile backup saved in your separate private GitHub repository.';
+  }
+  async function restoreCloudProfile(token){
+    const result=await profileCloud('GET','profile',null,token);
+    if(!result.found)throw Error('No private cloud profile backup found');
+    if(!confirm('Replace your locally saved profile with the private cloud version?'))return;
+    profile={...blankProfile(),...result.profile};
+    await profileStore('save',profile);
+    profileMessage='Profile restored from private GitHub';
+    render();
+  }
+  async function saveCloudCV(token){
+    if(!cvEntry?.blob)throw Error('Upload a CV first');
+    if(cvEntry.blob.size>2*1024*1024)throw Error('Cloud backup supports files up to 2 MB. Your larger CV remains saved locally.');
+    const mime=/\.pdf$/i.test(cvEntry.name)?'application/pdf':'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    await profileCloud('PUT','cv',{content:await bytesToBase64(cvEntry.blob),mime},token);
+    await saveCloudProfile(token);
+  }
+  async function restoreCloudCV(token){
+    const metadata=await profileCloud('GET','profile',null,token);
+    const result=await profileCloud('GET','cv',null,token);
+    if(!result.found)throw Error('No CV exists in your private GitHub backup');
+    if(!confirm('Replace the CV currently saved on this browser?'))return;
+    const saved=metadata.found?metadata.profile:{};
+    const mime=saved.cvMime||'application/pdf';
+    const filename=saved.cvName||'Job_Hunter_CV.pdf';
+    const blob=base64Blob(result.content,mime);
+    const item={blob,name:filename,savedAt:new Date().toISOString()};
+    await cvAction('save',item);
+    cvEntry=item;
+    if(metadata.found){profile={...blankProfile(),...saved};await profileStore('save',profile);}
+    profileMessage='CV restored from private GitHub storage';
+    render();
+  }
+  async function sendEmailTest(){
+    if(IS_CLOUDFLARE)throw Error('Use the GitHub Actions test link on Cloudflare.');
+    const token=window.prompt('Enter your admin token to send one SMTP test email:');
+    if(!token)return;
+    if(!confirm('Send one test email to the address configured in GitHub Actions?'))return;
+    const response=await fetch('/api/test-email',{method:'POST',
+      headers:{'x-admin-token':token,'Content-Type':'application/json'}});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw Error(data.error||'Could not request an email test');
+    toast('Email test queued. Open GitHub Actions or check the run status shortly.');
+  }
+  async function emailTestStatus(){
+    if(IS_CLOUDFLARE)throw Error('Email test run status is available on Vercel.');
+    const token=window.prompt('Admin token to check latest test email run:');
+    if(!token)return;
+    const response=await fetch('/api/test-email',{headers:{'x-admin-token':token},cache:'no-store'});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw Error(result.error||'Could not read email test status');
+    const latest=result.runs?.[0];
+    if(!latest){toast('No email delivery tests have run yet');return;}
+    toast('Email test: '+(latest.conclusion||latest.status)+' — check the inbox for actual delivery.');
+  }
   function cvPage(){
     const file=cvEntry;
     return top('CAREER DOCUMENTS','CV Holder','Keep your primary CV ready for the future Resume Updater.')+
@@ -418,7 +677,8 @@ a:hover{color:var(--ink)}
         '<label for="cv-upload" class="btn primary cv-upload-label">'+(file?'Replace CV':'Upload CV')+'</label>'+
         '<input type="file" id="cv-upload" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>'+
         (file?'<button type="button" class="btn secondary" data-cv-preview><svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg> View CV</button><button type="button" class="btn secondary" data-cv-download>Download CV</button><button type="button" class="btn secondary" data-cv-remove>Remove CV</button>':'')+
-        '<p class="tiny cv-privacy">Your document stays in this browser using IndexedDB. It is not uploaded to GitHub, Cloudflare, or Vercel, and is not synced across devices. Keep a backup. Limit: 10 MB.</p>'+
+        '<p class="tiny cv-privacy">Your CV is saved locally in this browser (up to 10 MB). Optional private GitHub cloud backup is available from the Vercel dashboard with admin authentication; cloud uploads are limited to 2 MB and require a separate private repository.</p>'+
+        (!IS_CLOUDFLARE?'<div class="cv-cloud-actions"><button type="button" class="btn secondary" data-cv-cloud-save>Back up CV privately</button><button type="button" class="btn secondary" data-cv-cloud-load>Restore CV from cloud</button></div>':'<p class="tiny">To sync with a private GitHub repository, use the Vercel dashboard. This Cloudflare preview cannot access private Vercel APIs.</p>')+
       '</section>';
   }
 
@@ -513,6 +773,10 @@ a:hover{color:var(--ink)}
     await cvAction('save',item);
     cvEntry=item;
     render();
+    try{await importProfileFromCV();}
+    catch(error){
+      profileMessage='CV saved, but automatic extraction was unavailable: '+error.message+'. You can complete your profile manually.';
+    }
   }
   function resumePage(){
     return top('WORKSPACE / UPCOMING','Resume Updater','Planned feature — not yet available.')+
@@ -673,12 +937,12 @@ a:hover{color:var(--ink)}
       `<div class="alert-card"><span class="alert-icon">✉</span><div class="alert-content"><strong>Notifications are addressed to</strong><p><code>${esc(email)}</code></p><p>${state.fullEmail?'Verified using your Vercel admin credentials.': 'Masked by default. To reveal the full address, add ALERT_EMAIL to Vercel and authenticate.'}</p></div>${badge(good?'Configured':'Not confirmed',good?'green':'orange')}</div>`+
       `<div class="alert-card"><span class="alert-icon">◈</span><div class="alert-content"><strong>SMTP configuration</strong><p>${good?'All four SMTP secrets were present when this status was generated.':'SMTP setup has not been confirmed in the published status.'}</p><p class="tiny">${updated?'Last checked: '+esc(prettyDate(updated)):'No published check yet.'} This does not prove that email was delivered.</p></div></div>`+
       `<section class="panel"><div class="panel-head"><h2>Your private destination</h2></div><p class="muted">The full recipient is not published in the static job snapshot.</p>${IS_CLOUDFLARE?`<p class="tiny">To reveal the destination, use the authenticated Vercel dashboard. Cloudflare does not expose that private API.</p>`:`<button class="btn primary" data-action="reveal-email">Reveal full email ↗</button>`}</section>`+
-      `<section class="panel"><div class="panel-head"><h2>Test your email delivery</h2></div><p class="muted">Run the manual GitHub Actions test, then inspect the workflow result and your inbox. SMTP acceptance alone does not guarantee inbox delivery.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn primary" target="_blank" rel="noopener noreferrer" href="${REPO}/actions/workflows/test-email.yml">Run Test Email ↗</a><a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/settings/secrets/actions">GitHub Actions secrets ↗</a></div></section>`+
+      `<section class="panel"><div class="panel-head"><h2>Test your email delivery</h2></div><p class="muted">Run the manual GitHub Actions test, then inspect the workflow result and your inbox. SMTP acceptance alone does not guarantee inbox delivery.</p><div style="display:flex;gap:10px;flex-wrap:wrap">${!IS_CLOUDFLARE?'<button type="button" class="btn primary" data-email-test>Send test email</button><button type="button" class="btn secondary" data-email-status>Check latest test</button>':''}<a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/actions/workflows/test-email.yml">GitHub Actions ↗</a><a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/settings/secrets/actions">Email secrets ↗</a></div><p class="tiny">${IS_CLOUDFLARE?'Cloudflare does not host authenticated Vercel endpoints. Open the Vercel dashboard for one-click testing, or run the GitHub workflow manually.':'An admin token is required. The website queues a real SMTP test through GitHub Actions; success still requires checking the inbox.'}</p></section>`+
       `<section class="panel"><div class="panel-head"><h2>Matching preferences</h2></div><div class="job-info">${badge('Egypt only','green')}${badge('Junior / Entry')}${badge('Internships')}${badge('Software Engineering')}${badge('AI / ML')}${badge('Computer Vision')}${badge('MLOps')}</div><p class="tiny">These are the target rules in your Python filtering file, not editable settings on this static dashboard.</p></section>`;
   }
   function render(){
     const root=el('#main-content');if(!root)return;
-    root.innerHTML=state.page==='home'?home():state.page==='radar'?radarHome():state.page==='resume'?resumePage():state.page==='cv'?cvPage():state.page==='jobs'?jobsPage():state.page==='saved'?jobsPage(true):state.page==='companies'?companiesPage():alertsPage();
+    root.innerHTML=state.page==='home'?home():state.page==='radar'?radarHome():state.page==='resume'?resumePage():state.page==='cv'?cvPage():state.page==='profile'?profilePage():state.page==='jobs'?jobsPage():state.page==='saved'?jobsPage(true):state.page==='companies'?companiesPage():alertsPage();
   }
   async function editCompany(url, changes){
     const token=window.prompt('Enter your admin token to update this company:');
@@ -776,7 +1040,7 @@ a:hover{color:var(--ink)}
       el('#cv-preview-content').replaceChildren();
       if(cvPreviewBlobUrl){URL.revokeObjectURL(cvPreviewBlobUrl);cvPreviewBlobUrl=null;}
     });
-    readSaved();refreshCv();
+    readSaved();refreshCv();refreshProfile();
     document.querySelectorAll('nav button[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
     window.addEventListener('hashchange',()=>go(location.hash.replace('#','')));
     el('#refresh-button').addEventListener('click',()=>refresh());
@@ -788,6 +1052,30 @@ a:hover{color:var(--ink)}
       if(logo){editLogoDialog(logo.dataset.editLogo);return;}
       if(event.target.closest('[data-close-logo]')){el('#logo-dialog').close();return;}
       const saved=event.target.closest('[data-save]');if(saved){const key=saved.dataset.save;state.saved.has(key)?state.saved.delete(key):state.saved.add(key);persistSaved();render();return;}
+      if(event.target.closest('[data-email-test]')){sendEmailTest().catch(e=>toast(e.message,true));return;}
+      if(event.target.closest('[data-email-status]')){emailTestStatus().catch(e=>toast(e.message,true));return;}
+      if(event.target.closest('[data-profile-parse]')){
+        importProfileFromCV().then(n=>toast(n+' CV fields imported. Review your profile.')).catch(e=>toast('CV parsing: '+e.message,true));return;
+      }
+      if(event.target.closest('[data-profile-photo-remove]')){
+        profile.photo='';profileStore('save',profile).then(()=>render()).catch(e=>toast(e.message,true));return;
+      }
+      if(event.target.closest('[data-profile-cloud-save]')){
+        try{const token=adminForCloud();saveCloudProfile(token).then(()=>{render();toast('Private profile backup saved');}).catch(e=>toast(e.message,true));}
+        catch(e){toast(e.message,true);}return;
+      }
+      if(event.target.closest('[data-profile-cloud-load]')){
+        try{const token=adminForCloud();restoreCloudProfile(token).catch(e=>toast(e.message,true));}
+        catch(e){toast(e.message,true);}return;
+      }
+      if(event.target.closest('[data-cv-cloud-save]')){
+        try{const token=adminForCloud();saveCloudCV(token).then(()=>toast('Private CV backup saved')).catch(e=>toast(e.message,true));}
+        catch(e){toast(e.message,true);}return;
+      }
+      if(event.target.closest('[data-cv-cloud-load]')){
+        try{const token=adminForCloud();restoreCloudCV(token).then(()=>toast('Private CV restored')).catch(e=>toast(e.message,true));}
+        catch(e){toast(e.message,true);}return;
+      }
       if(event.target.closest('[data-cv-preview]')){openCvPreview().catch(e=>toast(e.message,true));return;}
       if(event.target.closest('[data-cv-close]')){closeCvPreview();return;}
       if(event.target.closest('[data-cv-download]')){
@@ -823,12 +1111,33 @@ a:hover{color:var(--ink)}
       const remove=event.target.closest('[data-remove]');if(remove){removeCompany(remove.dataset.remove);return;}
     });
     document.addEventListener('input',event=>{if(event.target.id==='job-search'){state.query=event.target.value;const at=event.target.selectionStart;render();const field=el('#job-search');field?.focus();try{field?.setSelectionRange(at,at);}catch{}}});
+    document.addEventListener('submit',async event=>{
+      if(event.target.id!=='profile-form')return;
+      event.preventDefault();
+      const form=event.target;
+      for(const key of PROFILE_FIELDS){
+        profile[key]=String(form.elements.namedItem(key)?.value||'').trim();
+      }
+      profile.updatedAt=new Date().toISOString();
+      try{
+        await profileStore('save',profile);
+        profileMessage='Your profile is saved locally. Private cloud sync is optional.';
+        render();
+        toast('Profile saved on this device');
+      }catch(e){toast(e.message||'Could not save profile',true);}
+    });
     document.addEventListener('change',async event=>{
       const fields={'role-filter':'role','company-filter':'companyFilter','date-filter':'dateFilter','date-basis':'dateBasis','sort-filter':'sortBy','type-filter':'jobType'};
       if(fields[event.target.id]){state[fields[event.target.id]]=event.target.value;render();}
       if(event.target.id==='cv-upload'){
-        try{await acceptCV(event.target.files?.[0]);toast('CV securely stored on this device');}
-        catch(e){toast(e.message||'CV upload failed',true);}
+        try{
+          await acceptCV(event.target.files?.[0]);
+          toast(profileMessage.startsWith('CV saved, but')?profileMessage:'CV saved and profile fields extracted when available');
+        }catch(e){toast(e.message||'CV upload failed',true);}
+      }
+      if(event.target.id==='profile-photo-input'){
+        try{await setProfilePhoto(event.target.files?.[0]);toast('Profile picture saved on this device');}
+        catch(e){toast(e.message,true);}
       }
     });
     el('#logo-reset').addEventListener('click',()=>{
