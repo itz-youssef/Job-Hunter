@@ -554,6 +554,97 @@ a:hover{color:var(--ink)}
       render();
     }finally{URL.revokeObjectURL(url);}
   }
+
+  async function profileCloud(method,kind,payload,token){
+    if(IS_CLOUDFLARE)throw Error('Private GitHub backup is available through Vercel only');
+    const res=await fetch('/api/profile?kind='+encodeURIComponent(kind),{
+      method,cache:'no-store',
+      headers:{'x-admin-token':token,'Content-Type':'application/json'},
+      ...(payload?{body:JSON.stringify(payload)}:{})
+    });
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok)throw Error(data.error||'Private backup failed');
+    return data;
+  }
+  function adminForCloud(){
+    if(IS_CLOUDFLARE)throw Error('Open the Vercel dashboard for private cloud backup.');
+    const token=window.prompt('Enter your admin token for private GitHub backup:');
+    if(!token)throw Error('Cloud backup cancelled');
+    return token;
+  }
+  async function bytesToBase64(file){
+    const bytes=new Uint8Array(await file.arrayBuffer());
+    let str='';
+    for(let i=0;i<bytes.length;i+=8192){
+      str+=String.fromCharCode(...bytes.subarray(i,i+8192));
+    }
+    return btoa(str);
+  }
+  function base64Blob(content,mime){
+    const binary=atob(content),bytes=new Uint8Array(binary.length);
+    for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+    return new Blob([bytes],{type:mime});
+  }
+  async function saveCloudProfile(token){
+    await profileCloud('PUT','profile',{profile:{...profile,
+      cvName:cvEntry?.name||profile.cvName||'',
+      cvMime:cvEntry?.blob.type||profile.cvMime||''}},token);
+    profileMessage='Private profile backup saved in your separate private GitHub repository.';
+  }
+  async function restoreCloudProfile(token){
+    const result=await profileCloud('GET','profile',null,token);
+    if(!result.found)throw Error('No private cloud profile backup found');
+    if(!confirm('Replace your locally saved profile with the private cloud version?'))return;
+    profile={...blankProfile(),...result.profile};
+    await profileStore('save',profile);
+    profileMessage='Profile restored from private GitHub';
+    render();
+  }
+  async function saveCloudCV(token){
+    if(!cvEntry?.blob)throw Error('Upload a CV first');
+    if(cvEntry.blob.size>2*1024*1024)throw Error('Cloud backup supports files up to 2 MB. Your larger CV remains saved locally.');
+    const mime=/\.pdf$/i.test(cvEntry.name)?'application/pdf':'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    await profileCloud('PUT','cv',{content:await bytesToBase64(cvEntry.blob),mime},token);
+    await saveCloudProfile(token);
+  }
+  async function restoreCloudCV(token){
+    const metadata=await profileCloud('GET','profile',null,token);
+    const result=await profileCloud('GET','cv',null,token);
+    if(!result.found)throw Error('No CV exists in your private GitHub backup');
+    if(!confirm('Replace the CV currently saved on this browser?'))return;
+    const saved=metadata.found?metadata.profile:{};
+    const mime=saved.cvMime||'application/pdf';
+    const filename=saved.cvName||'Job_Hunter_CV.pdf';
+    const blob=base64Blob(result.content,mime);
+    const item={blob,name:filename,savedAt:new Date().toISOString()};
+    await cvAction('save',item);
+    cvEntry=item;
+    if(metadata.found){profile={...blankProfile(),...saved};await profileStore('save',profile);}
+    profileMessage='CV restored from private GitHub storage';
+    render();
+  }
+  async function sendEmailTest(){
+    if(IS_CLOUDFLARE)throw Error('Use the GitHub Actions test link on Cloudflare.');
+    const token=window.prompt('Enter your admin token to send one SMTP test email:');
+    if(!token)return;
+    if(!confirm('Send one test email to the address configured in GitHub Actions?'))return;
+    const response=await fetch('/api/test-email',{method:'POST',
+      headers:{'x-admin-token':token,'Content-Type':'application/json'}});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw Error(data.error||'Could not request an email test');
+    toast('Email test queued. Open GitHub Actions or check the run status shortly.');
+  }
+  async function emailTestStatus(){
+    if(IS_CLOUDFLARE)throw Error('Email test run status is available on Vercel.');
+    const token=window.prompt('Admin token to check latest test email run:');
+    if(!token)return;
+    const response=await fetch('/api/test-email',{headers:{'x-admin-token':token},cache:'no-store'});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw Error(result.error||'Could not read email test status');
+    const latest=result.runs?.[0];
+    if(!latest){toast('No email delivery tests have run yet');return;}
+    toast('Email test: '+(latest.conclusion||latest.status)+' — check the inbox for actual delivery.');
+  }
   function cvPage(){
     const file=cvEntry;
     return top('CAREER DOCUMENTS','CV Holder','Keep your primary CV ready for the future Resume Updater.')+
