@@ -178,6 +178,7 @@ a:hover{color:var(--ink)}
   .cv-vault .btn,.cv-upload-label{max-width:100%;margin:6px 6px 6px 0}
 }
 @media(max-width:370px){.main-content{padding:16px 10px}.stats{grid-template-columns:1fr}.theme-toggle{min-width:0}.topbar{height:50px}}
+.next-check{color:var(--ink);font-weight:550} .next-check::before{content:'◷ ';color:var(--muted)}
   </style>
 </head>
 <body>
@@ -301,12 +302,12 @@ a:hover{color:var(--ink)}
       if(!name)continue;
       const status=where(s.status || s.state || '');
       const active=Boolean(s.enabled===true || ['ok','healthy','monitoring','active','success','working'].includes(status));
-      map.set(where(name),{name,active,status:status||'configured',last:s.last_checked || s.checked_at || s.last_scan || ''});
+      map.set(where(name),{name,active,status:status||'configured',last:s.last_check || s.last_checked || s.checked_at || s.last_scan || ''});
     }
     for(const c of state.companies){
       const name=c.name || 'Custom company';
       const scan=state.scans.find(x=>x.url===c.url);
-      map.set(where(name),{name,active:scan?.status==='monitoring',status:scan?.status||'pending',last:scan?.checked_at||'',url:c.url,message:scan?.message||'',matched_jobs:scan?.matched_jobs??0,managed:true,pinned:c.pinned===true});
+      map.set(where(name),{name,active:scan?.status==='monitoring',status:scan?.status||'pending',last:scan?.checked_at||'',alsoMain:Boolean(map.get(where(name))?.active),url:c.url,message:scan?.message||'',matched_jobs:scan?.matched_jobs??0,managed:true,pinned:c.pinned===true});
     }
     return [...map.values()].sort((a,b)=>Number(Boolean(b.pinned))-Number(Boolean(a.pinned)) || a.name.localeCompare(b.name));
   }
@@ -624,6 +625,27 @@ a:hover{color:var(--ink)}
     if(!domain&&!override)return `<span class="company-brand" role="img" aria-label="${esc(name)}">${mark}</span>`;
     return `<span class="company-brand" role="img" aria-label="${esc(name)} logo">${mark}<img class="brand-image" alt="" loading="lazy" decoding="async" src="${esc(override||`https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`)}"></span>`;
   }
+  // Estimated UTC cron slots, not guaranteed actual GitHub start times.
+  function nextExpectedCheck(company,now=Date.now()){
+    const slots=company.managed?(company.alsoMain?[3,10,18,25,33,40,48,55]:[10,25,40,55]):[3,18,33,48];
+    const moment=new Date(now);
+    if(!Number.isFinite(+moment))return null;
+    const value=slots.find(m=>m>moment.getUTCMinutes());
+    const planned=new Date(now);
+    planned.setUTCSeconds(0,0);
+    if(value===undefined)planned.setUTCHours(planned.getUTCHours()+1,slots[0],0,0);
+    else planned.setUTCMinutes(value,0,0);
+    return planned;
+  }
+  function expectedCheckLabel(company){
+    const planned=nextExpectedCheck(company);
+    if(!planned)return '';
+    const clock=new Intl.DateTimeFormat(undefined,{hour:'numeric',minute:'2-digit',timeZoneName:'short'}).format(planned);
+    const last=company.last?new Date(company.last):null;
+    const overdue=last&&Number.isFinite(+last)&&Date.now()-last.getTime()>35*60000;
+    if(!company.managed&&!company.active)return '<small class="next-check">Not currently scheduled</small>';
+    return `<small class="next-check">Next scheduled: ${esc(clock)} (approx.)${overdue?' · Last scan overdue':''}</small>`;
+  }
   function companyCard(c){
     const status=c.status||'pending', mapping={monitoring:['Monitoring','green'],partial:['Partial coverage','orange'],needs_adapter:['Needs adapter','orange'],access_blocked:['Access blocked','red'],error:['Scan error','red'],pending:['Waiting for scan','orange'],configured:['Configured','grey']};
     const [label,color]=mapping[status]||[status,status==='ok'?'green':'grey'];
@@ -634,7 +656,7 @@ a:hover{color:var(--ink)}
       `<button class="btn secondary" data-edit-name="${esc(c.url)}">✎ Edit name</button>`+
       `<button class="btn danger" data-remove="${esc(c.url)}">Remove</button>`
     ):'';
-    return `<div class="company-card">${companyBrand(c)}<div class="company-name"><strong>${pin?'📌 ':''}${esc(c.name)}</strong><small>${esc(c.message || (c.managed?'Added to your watchlist':'Built-in monitored source'))}</small>${c.last?`<small>Last check: ${esc(prettyDate(c.last))}</small>`:''}${c.managed&&Number.isInteger(c.matched_jobs)?`<small>Eligible jobs: ${c.matched_jobs}</small>`:''}</div><div class="company-actions"><button class="btn secondary logo-edit-button" data-edit-logo="${esc(logoKey(c))}" aria-label="Change ${esc(c.name)} logo">Edit logo</button>${badge(label,color)}${url!=='#'?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="btn secondary">Careers ↗</a>`:''}${actions}</div></div>`;
+    return `<div class="company-card">${companyBrand(c)}<div class="company-name"><strong>${pin?'📌 ':''}${esc(c.name)}</strong><small>${esc(c.message || (c.managed?'Added to your watchlist':'Built-in monitored source'))}</small>${c.last?`<small>Last check: ${esc(prettyDate(c.last))}</small>`:''}${expectedCheckLabel(c)}${c.managed&&Number.isInteger(c.matched_jobs)?`<small>Eligible jobs: ${c.matched_jobs}</small>`:''}</div><div class="company-actions"><button class="btn secondary logo-edit-button" data-edit-logo="${esc(logoKey(c))}" aria-label="Change ${esc(c.name)} logo">Edit logo</button>${badge(label,color)}${url!=='#'?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="btn secondary">Careers ↗</a>`:''}${actions}</div></div>`;
   }
   function companiesPage(){
     const all=monitoredSources(), active=all.filter(c=>c.active).length, pending=all.filter(c=>c.status==='pending').length;

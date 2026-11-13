@@ -3,7 +3,7 @@ name: Job Hunter Monitor
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "3,18,33,48 * * * *"
 
 permissions:
   contents: read
@@ -23,7 +23,7 @@ jobs:
 
     env:
       DB_PATH: data/jobs.db
-      MONITOR_COMPANIES: Valeo,Microsoft
+      MONITOR_COMPANIES: Valeo,Microsoft,Siemens
 
     steps:
       - name: Download project
