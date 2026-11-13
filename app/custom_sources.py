@@ -589,7 +589,7 @@ def _board_jobs(name: str, url: str) -> list[dict]:
 
     if kind == "siemens_software":
         from app.egypt_public_feeds import siemens_software
-        return _dedupe(siemens_software(name, _json, _job))
+        return _dedupe(siemens_software(name, _json, _job, _bytes))
 
     if kind == "telecom_egypt":
         from app.egypt_public_feeds import telecom_egypt
