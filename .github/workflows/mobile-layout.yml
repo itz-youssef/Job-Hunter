@@ -1,0 +1,27 @@
+name: Mobile layout
+on:
+  pull_request:
+    paths: ['dist/**', 'scripts/check-mobile-layout.cjs', '.github/workflows/mobile-layout.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  responsive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --package-lock=false playwright
+      - run: npx playwright install --with-deps chromium
+      - name: Check page overflow at phone, tablet and desktop widths
+        run: |
+          python3 -m http.server 8765 --directory dist >/tmp/mobile-server.log 2>&1 &
+          node scripts/check-mobile-layout.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-layout-preview
+          path: mobile-account.png
