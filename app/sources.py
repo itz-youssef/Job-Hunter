@@ -89,7 +89,7 @@ class Client:
 def _workday_posting_date(text):
     """Only explicit employer 'Job Posting Date' is used; never infer it from startDate."""
     from datetime import date
-    match=re.search(r"\\bJob\\s+Posting\\s+Date\\s*:\\s*(\\d{4}-\\d{2}-\\d{2})\\b",str(text or ""),re.I)
+    match=re.search(r"\bJob\s+Posting\s+Date\s*:\s*(\d{4}-\d{2}-\d{2})\b",str(text or ""),re.I)
     if not match:return None
     try:
         value=date.fromisoformat(match.group(1))
