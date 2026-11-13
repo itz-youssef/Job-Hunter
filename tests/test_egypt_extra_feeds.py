@@ -44,3 +44,26 @@ def test_blnk_location_and_date_read_from_listing_row():
     assert len(rows)==1
     assert rows[0]["location"]=="Cairo, Egypt"
     assert rows[0]["published_at"]=="2026-11-12"
+
+def test_adcb_collects_actual_job_detail_and_rejects_generic_apply():
+    from app.egypt_extra_feeds import adcb_egypt
+    listing=b'<a href="/adcb_careers/junior-software-engineer/">Junior Software Engineer</a><a href="/about-us/careers/apply-now/?id=1">Apply</a>'
+    detail=b'<main><h1>Junior Software Engineer</h1><p>Python graduate programme</p></main>'
+    jobs=adcb_egypt("ADCB Egypt",lambda url:listing if "available-careers" in url else detail,_job)
+    assert len(jobs)==1
+    assert jobs[0]["title"]=="Junior Software Engineer"
+    assert "/adcb_careers/" in jobs[0]["url"]
+
+def test_fab_minds_collects_job_pages_not_marketing_links():
+    from app.egypt_extra_feeds import fab_minds_egypt
+    listing=b'<a href="/careers/junior-software-developer/">Junior Software Developer</a><a href="/careers/">Careers</a>'
+    detail=b'<h1>Junior Software Developer</h1><p>Python and SQL</p>'
+    jobs=fab_minds_egypt("Fab Minds Egypt",lambda url:listing if url.rstrip("/").endswith("careers") else detail,_job)
+    assert len(jobs)==1
+    assert jobs[0]["title"]=="Junior Software Developer"
+
+def test_adib_konecta_use_existing_supported_ats():
+    from app.custom_sources import _ats
+    assert _ats("https://adibegypt.taleo.net/careersection/ex/jobsearch.ftl?lang=en")[0]=="adib_egypt"
+    kind, _ = _ats("https://konectagroup.wd3.myworkdayjobs.com/Konecta")
+    assert kind=="workday"
