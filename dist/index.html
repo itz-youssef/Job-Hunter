@@ -205,7 +205,41 @@ a:hover{color:var(--ink)}
   function readSaved(){try{state.saved=new Set(JSON.parse(localStorage.getItem('jh-saved-v2')||'[]'));}catch{state.saved=new Set();}}
   function persistSaved(){try{localStorage.setItem('jh-saved-v2',JSON.stringify([...state.saved]));}catch{/* Storage can be disabled by privacy settings. */}}
   function jobs(){const list=state.snapshot.jobs || state.snapshot.job_feed || [];return Array.isArray(list)?list.filter(j=>j && typeof j==='object'):[];}
-  function validJobs(){const seen=new Set();return jobs().filter(j=>{const id=jobKey(j);if(seen.has(id))return false;seen.add(id);return true;});}
+  // Scanners retain rejected jobs for diagnostics. They must never appear as recommendations.
+  const SENIOR_ROLE = /\b(?:senior|sr\.?|lead|principal|staff|manager|management|director|head\s+of|architect|expert|mid[\s-]level|mid[\s-]senior|team\s+lead|tech\s+lead)\b/i;
+  function eligibleJob(job){
+    const n=scoreOf(job);
+    const reasons=textOf(job.match_reasons||job.reasons||[]);
+    const title=String(titleOf(job));
+    if(!Number.isFinite(n)||n<8||job.matched===false)return false;
+    if(/\bexcluded:|\bno technical match\b/i.test(reasons))return false;
+    if(SENIOR_ROLE.test(title))return false;
+    return true;
+  }
+  function validJobs(){
+    const seen=new Set();
+    return jobs().filter(j=>{
+      if(!eligibleJob(j))return false;
+      const id=jobKey(j);
+      if(seen.has(id))return false;
+      seen.add(id);
+      return true;
+    });
+  }
+  // Only employer-published dates are described as posting dates.
+  // Workday sometimes includes one explicitly in its description.
+  function postedDate(job){
+    let source=job.published_at||job.published||job.date_posted||'';
+    if(!source && typeof job.description==='string'){
+      const match=job.description.match(/\bJob\s+Posting\s+Date\s*:\s*(\d{4}-\d{2}-\d{2})\b/i);
+      if(match)source=match[1];
+    }
+    if(!source)return '';
+    const d=new Date(source);
+    if(Number.isNaN(+d)||d.getTime()>Date.now()+86400000)return '';
+    return source;
+  }
+  function firstSeenDate(job){return job.discovered_at||job.detected||job.detected_at||'';}
   function sourceItems(){const raw = state.snapshot.sources || state.snapshot.companies || [];return Array.isArray(raw)?raw:(raw && typeof raw==='object'?Object.values(raw):[]);}
   function monitoredSources(){
     const map=new Map();
@@ -283,7 +317,7 @@ a:hover{color:var(--ink)}
   function jobCard(j){
     const id=jobKey(j), saved=state.saved.has(id), url=jobURL(j), score=scoreOf(j);
     const reasons = textOf(j.match_reasons || j.reasons || []);
-    return `<article class="job-card"><div class="job-card-top"><span class="job-logo">${icon(companyOf(j))}</span><div class="job-details"><h3>${esc(titleOf(j))}</h3><p>${esc(companyOf(j))} · ${esc(locationOf(j))}</p></div><span class="score">${score} pts</span></div><div class="job-info">${badge(j.employment||j.job_type||'Role')}${badge('Egypt focus','green')}${j.published_at?badge('Published: '+prettyDate(j.published_at)) : ''}</div>${snippet(j)?`<p class="job-desc">${esc(snippet(j))}</p>`:''}${reasons?`<p class="tiny" style="margin-bottom:14px">${esc(reasons)}</p>`:''}<div class="job-actions"><button class="plain-button ${saved?'saved':''}" data-save="${esc(id)}">${saved?'♥ Saved':'♡ Save job'}</button><div class="right">${url==='#'?badge('No application link','grey'):`<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View job ↗</a>`}</div></div></article>`;
+    return `<article class="job-card"><div class="job-card-top"><span class="job-logo">${icon(companyOf(j))}</span><div class="job-details"><h3>${esc(titleOf(j))}</h3><p>${esc(companyOf(j))} · ${esc(locationOf(j))}</p></div><span class="score">${score} pts</span></div><div class="job-info">${badge(j.employment||j.job_type||'Role')}${badge('Egypt focus','green')}${postedDate(j)?badge('Posted: '+prettyDate(postedDate(j))):badge(firstSeenDate(j)?'First seen: '+prettyDate(firstSeenDate(j)):'Posting date unavailable','grey')}</div>${snippet(j)?`<p class="job-desc">${esc(snippet(j))}</p>`:''}${reasons?`<p class="tiny" style="margin-bottom:14px">${esc(reasons)}</p>`:''}<div class="job-actions"><button class="plain-button ${saved?'saved':''}" data-save="${esc(id)}">${saved?'♥ Saved':'♡ Save job'}</button><div class="right">${url==='#'?badge('No application link','grey'):`<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View job ↗</a>`}</div></div></article>`;
   }
   function jobsPage(saved=false){
     const whole=validJobs();let list=saved?whole.filter(j=>state.saved.has(jobKey(j))):whole;
