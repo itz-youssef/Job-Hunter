@@ -71,3 +71,8 @@ img,video{max-width:100%}
  .footer{gap:8px;letter-spacing:.5px}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* Let profile text shrink beside the avatar, including long email addresses. */
+.profile-photo-row>div{min-width:0;overflow-wrap:anywhere}
+.profile-photo-row>.avatar{flex-shrink:0}
+@media(max-width:480px){.profile-photo-row{flex-wrap:wrap}.profile-photo-row>div{flex:1 1 100%}}
