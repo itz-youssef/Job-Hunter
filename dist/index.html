@@ -463,6 +463,97 @@ a:hover{color:var(--ink)}
       (IS_CLOUDFLARE?'<p class="tiny">Private GitHub sync is available only through the authenticated Vercel dashboard.</p>':'')+
       '</section>';
   }
+
+  function parseCVInfo(raw){
+    const text=String(raw||'').slice(0,160000);
+    const lines=text.replace(/\r/g,'').split('\n').map(v=>v.trim()).filter(Boolean);
+    const email=text.match(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/)?.[0]||'';
+    const phone=text.match(/(?:\+?20[\s.-]?)?(?:0?1[0125])[\s.-]?\d{4}[\s.-]?\d{4}/)?.[0]||'';
+    const linked=text.match(/(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/[\w-]+\/?/i)?.[0]||'';
+    const github=text.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/[a-zA-Z0-9-]+\/?/i)?.[0]||'';
+    const headings=/^(?:professional\s+summary|summary|profile|about\s+me|technical\s+skills|skills|education|academic\s+background|work\s+experience|professional\s+experience|experience|projects|certifications|courses|languages|achievements|awards|activities)\s*:?\s*$/i;
+    function section(heading,limit){
+      const i=lines.findIndex(v=>heading.test(v));
+      if(i<0)return '';
+      const out=[];
+      for(let j=i+1;j<Math.min(lines.length,i+limit+1);j++){
+        if(headings.test(lines[j]))break;
+        out.push(lines[j]);
+      }
+      return out.join('\n').slice(0,9000);
+    }
+    const name=lines.slice(0,7).find(v=>/^[a-zA-Z\u0600-\u06FF][a-zA-Z\u0600-\u06FF .'-]{4,75}$/.test(v)&&
+      !headings.test(v)&&!/\b(engineer|developer|student|linkedin|github|resume|curriculum|computer|cv)\b/i.test(v))||'';
+    const headline=lines.slice(0,10).find(v=>/\b(?:AI|software|machine learning|computer vision|data|backend|frontend)\b.*\b(?:engineer|developer)\b/i.test(v))||'';
+    return {name,headline,email,phone,
+      linkedin:linked?(linked.startsWith('http')?linked:'https://'+linked):'',
+      github:github?(github.startsWith('http')?github:'https://'+github):'',
+      summary:section(/^(?:professional\s+summary|summary|profile|about\s+me)\s*:?\s*$/i,12),
+      skills:section(/^(?:technical\s+skills|skills)\s*:?\s*$/i,20),
+      experience:section(/^(?:work\s+experience|professional\s+experience|experience)\s*:?\s*$/i,65),
+      education:section(/^(?:education|academic\s+background)\s*:?\s*$/i,32)};
+  }
+  async function pdfCVText(blob){
+    // PDF.js is version-pinned. The PDF bytes are processed locally in-browser.
+    const lib=await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs');
+    lib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs';
+    const pdf=await lib.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;
+    const sections=[];
+    try{
+      for(let i=1;i<=Math.min(pdf.numPages,12);i++){
+        const page=await pdf.getPage(i);
+        const content=await page.getTextContent();
+        let previousY=null,paragraph='';
+        for(const item of content.items){
+          if(!item.str)continue;
+          const y=item.transform?.[5];
+          if(previousY!==null&&typeof y==='number'&&Math.abs(y-previousY)>3)paragraph+='\n';
+          else if(paragraph&&!paragraph.endsWith('\n'))paragraph+=' ';
+          paragraph+=item.str;
+          previousY=y;
+        }
+        sections.push(paragraph);
+      }
+    }finally{await pdf.destroy();}
+    return sections.join('\n').slice(0,160000);
+  }
+  async function importProfileFromCV(){
+    if(!cvEntry?.blob)throw Error('Upload your CV first');
+    const text=/\.docx$/i.test(cvEntry.name)?await extractDocxText(cvEntry.blob):await pdfCVText(cvEntry.blob);
+    if(text.trim().length<30)throw Error('No readable CV text found. Scanned PDFs may need OCR; you can enter profile details manually.');
+    const values=parseCVInfo(text);
+    let fields=0;
+    for(const [key,value] of Object.entries(values)){
+      if(value&&!profile[key]){profile[key]=value;fields++;}
+    }
+    profile.cvName=cvEntry.name;
+    profile.cvMime=cvEntry.blob.type||(/\.pdf$/i.test(cvEntry.name)?'application/pdf':'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    profile.updatedAt=new Date().toISOString();
+    await profileStore('save',profile);
+    profileMessage=fields+' fields imported from your CV. Check names, experience, and skills before using them.';
+    if(state.page==='profile')render();
+    return fields;
+  }
+  async function setProfilePhoto(file){
+    if(!file||file.size>3*1024*1024||!['image/png','image/jpeg','image/webp'].includes(file.type))
+      throw Error('Choose a PNG, JPG or WebP image under 3 MB.');
+    const url=URL.createObjectURL(file);
+    try{
+      const img=new Image();
+      await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=url;});
+      const scale=Math.min(256/img.naturalWidth,256/img.naturalHeight,1);
+      if(!Number.isFinite(scale)||scale<=0)throw Error('Invalid image dimensions');
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+      canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+      const data=canvas.toDataURL('image/webp',0.78);
+      if(data.length>180000)throw Error('Photo remains too large after resizing');
+      profile.photo=data;
+      await profileStore('save',profile);
+      render();
+    }finally{URL.revokeObjectURL(url);}
+  }
   function cvPage(){
     const file=cvEntry;
     return top('CAREER DOCUMENTS','CV Holder','Keep your primary CV ready for the future Resume Updater.')+
