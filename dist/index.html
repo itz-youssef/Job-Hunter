@@ -532,8 +532,8 @@ a:hover{color:var(--ink)}
       if(q && !where([titleOf(j),companyOf(j),locationOf(j),snippet(j)].join(' ')).includes(q))return false;
       if(!matchesRole(j,state.role))return false;
       if(state.companyFilter!=='all' && companyOf(j)!==state.companyFilter)return false;
-      if(state.jobType==='internship'&&!/\\b(intern(?:ship)?s?|trainee|graduate program(?:me)?|work experience)\\b/i.test(titleOf(j)+' '+(j.employment||'')))return false;
-      if(state.jobType==='junior' && /\\b(intern(?:ship)?s?|trainee)\\b/i.test(titleOf(j)))return false;
+      if(state.jobType==='internship'&&!/\b(intern(?:ship)?s?|trainee|graduate program(?:me)?|work experience)\b/i.test(titleOf(j)+' '+(j.employment||'')))return false;
+      if(state.jobType==='junior' && /\b(intern(?:ship)?s?|trainee)\b/i.test(titleOf(j)))return false;
       if(state.dateFilter!=='all'){
         const days=Number(state.dateFilter);
         const d=getDate(jobDateForFilter(j));
