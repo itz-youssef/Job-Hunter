@@ -45,6 +45,7 @@ def test_cached_siemens_excluded_technical_jobs_revisited(monkeypatch):
             if "SearchJobs" in url:return R('<a href="/en_US/externaljobs/JobDetail/527985">Role</a>')
             return R("""<div class="article__content__view__field"><span class="article__content__view__field__label">Job ID</span><span class="article__content__view__field__value">527985</span></div>
             <div class="article__content__view__field"><span class="article__content__view__field__label">Experience level</span><span class="article__content__view__field__value">Early Professional</span></div>
+            <div class="article__content__view__field"><span class="article__content__view__field__label">Location(s)</span><span class="article__content__view__field__value">Cairo - Al Qahirah - Egypt</span></div>
             <h3 class="section__header__text__title">Software Development Engineer</h3>
             <div class="tf_replaceFieldVideoTokens">C++ Python programming</div>""")
     jobs=sources.siemens({"id":23},C())
