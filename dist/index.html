@@ -239,7 +239,7 @@ a:hover{color:var(--ink)}
       </nav>
       <p class="nav-title nav-title-second">TOOLS</p>
       <div class="secondary-links">
-        <a href="https://www.jobsnow.tech/account.html" id="account-link">♙ <span>My Account</span> ↗</a>
+        <a href="/account.html" id="account-link">♙ <span>My Account</span> ↗</a>
         <a href="https://github.com/itz-youssef/Job-Hunter/actions" target="_blank" rel="noopener noreferrer">◷ <span>Monitoring Runs</span> ↗</a>
         <a href="https://github.com/itz-youssef/Job-Hunter" target="_blank" rel="noopener noreferrer">⌘ <span>Source Code</span> ↗</a>
       </div>
@@ -314,7 +314,7 @@ a:hover{color:var(--ink)}
   // On Vercel, authenticated members use Neon; guests retain legacy local
   // bookmarks. Never merge a shared browser's guest data into another account.
   async function hydrateMember(){
-    if(IS_CLOUDFLARE)return;
+    // The Cloudflare website now hosts the same authenticated Neon APIs.
     try{
       const result=await json('/api/secretj-auth?action=session');
       if(!result.user)return;
@@ -1381,7 +1381,7 @@ a:hover{color:var(--ink)}
       try{await companyApi('POST',{name:String(f.get('name')||'').trim(),url:String(f.get('url')||'').trim()},String(f.get('admin_token')||''));form.reset();el('#company-dialog').close();toast('Company saved! It will be scanned by GitHub Actions.');await refresh(true);go('companies');}
       catch(e){toast(e.message,true);}finally{button.disabled=false;}
     });
-    if(!IS_CLOUDFLARE)el('#account-link').href='/account.html';
+    el('#account-link').href='/account.html';
     go(location.hash.replace('#','')||'home');
     refresh(true).then(()=>hydrateMember());
     setInterval(()=>refresh(true),60000);

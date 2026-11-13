@@ -1,0 +1,18 @@
+name = "jobhunter-youssef"
+main = "worker.mjs"
+compatibility_date = "2026-11-13"
+workers_dev = true
+
+# Current GitHub main dist/ becomes the active Cloudflare UI.
+# Keep this Worker DISTINCT from cloudflare/scheduler/wrangler.toml
+# which deploys job-hunter-scheduler and preserves its Cron triggers.
+[assets]
+directory = "../../dist"
+binding = "ASSETS"
+run_worker_first = true
+
+[vars]
+NODE_ENV = "production"
+# Pilot switch: signup only works when a private DATABASE_URL secret has
+# also been provisioned on this website Worker.
+SECRETJ_REGISTRATION_ENABLED = "true"

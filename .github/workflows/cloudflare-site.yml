@@ -1,0 +1,91 @@
+name: Cloudflare Secret J Website
+
+on:
+  pull_request:
+    paths:
+      - "cloudflare/site/**"
+      - "api/secretj-*.js"
+      - "lib/secretj/**"
+      - "dist/**"
+      - "tests/test_cloudflare_site.cjs"
+      - "package.json"
+      - ".github/workflows/cloudflare-site.yml"
+  push:
+    branches: [main]
+    paths:
+      - "cloudflare/site/**"
+      - "api/secretj-*.js"
+      - "lib/secretj/**"
+      - "dist/**"
+      - "package.json"
+      - ".github/workflows/cloudflare-site.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-secretj-site
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Validate Worker, API and latest static assets
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Neon driver
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Run Cloudflare site security and asset tests
+        run: |
+          node --check cloudflare/site/worker.mjs
+          node --test tests/test_cloudflare_site.cjs
+          node --test tests/test_secretj_accounts.cjs tests/test_secretj_health.cjs tests/test_neon_schema_contract.cjs
+      - name: Bundle complete Cloudflare website and verify routes
+        run: npx --yes wrangler@4 deploy --dry-run --config cloudflare/site/wrangler.toml --outdir /tmp/secretj-site-worker-dry-run
+
+  deploy:
+    name: Publish current main UI and backend to Cloudflare
+    needs: verify
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check Cloudflare deployment credentials
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "::error::Missing CLOUDFLARE_API_TOKEN"; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "::error::Missing CLOUDFLARE_ACCOUNT_ID"; exit 1; }
+      - name: Install Neon driver
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Include exact published revision in assets
+        run: |
+          printf '{"git_sha":"%s","source":"github-main","worker":"jobhunter-youssef"}\n' "$GITHUB_SHA" > dist/build-version.json
+      - name: Deploy WEBSITE Worker with dist assets (not the scheduler)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx --yes wrangler@4 deploy --config cloudflare/site/wrangler.toml
+      - name: Verify deployed revision
+        run: |
+          SITE="https://jobhunter-youssef.yoyoyasso19.workers.dev"
+          sleep 5
+          for attempt in 1 2 3 4 5; do
+            if curl -fsS --max-time 15 "$SITE/build-version.json" | grep -q "$GITHUB_SHA"; then
+              echo "Live website revision verified: $GITHUB_SHA"
+              exit 0
+            fi
+            sleep 6
+          done
+          echo "::error::Cloudflare website revision could not be verified."
+          exit 1
