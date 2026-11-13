@@ -4,7 +4,7 @@
 process.env.NODE_ENV='test';
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const core=require('../api/_secretj/core');
+const core=require('../lib/secretj/core');
 const auth=require('../api/secretj-auth');
 const data=require('../api/secretj-data');
 const admin=require('../api/secretj-admin');
