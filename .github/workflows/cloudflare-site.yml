@@ -76,6 +76,20 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npx --yes wrangler@4 deploy --config cloudflare/site/wrangler.toml
+      - name: Confirm deployed Neon database API responds
+        run: |
+          SITE="https://jobhunter-youssef.yoyoyasso19.workers.dev"
+          echo "Checking public health endpoint (no secrets are logged)"
+          curl -sS --max-time 25 --retry 2 --retry-delay 2 \
+            "$SITE/api/secretj-health" -o /tmp/secretj-neon-health.json \
+            -w "Neon health HTTP: %{http_code}\n"
+          cat /tmp/secretj-neon-health.json
+          echo
+          if grep -q '"database":"ready"' /tmp/secretj-neon-health.json; then
+            echo "Production Neon connection: READY"
+          else
+            echo "::warning::Neon is not ready yet; see the sanitized database reason above."
+          fi
       - name: Verify deployed revision
         run: |
           SITE="https://jobhunter-youssef.yoyoyasso19.workers.dev"
