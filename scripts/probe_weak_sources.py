@@ -76,5 +76,43 @@ def main():
     for name,url in SOURCES:
         inspect(name,url)
 
+
+
+def deeper():
+    print("\n=== EXTRA JOB METADATA ===", flush=True)
+    base="https://blink22.com/careers/"
+    doc=BeautifulSoup(_bytes(base).decode("utf-8","replace"),"html.parser")
+    for anchor in doc.select("a[href]"):
+        href=urljoin(base,anchor.get("href") or "")
+        if not re.fullmatch(r"/careers/[a-z0-9-]+/?",urlsplit(href).path,re.I):
+            continue
+        card=anchor.parent.parent if anchor.parent else anchor
+        text=card.get_text(" ",strip=True)
+        print("CARD",urlsplit(href).path,repr(text[:320]),flush=True)
+    for slug in ["software-engineering-intern","software-engineer","qa-engineer","uiux-design-intern"]:
+        href=base+slug+"/"
+        try:
+            doc=BeautifulSoup(_bytes(href).decode("utf-8","replace"),"html.parser")
+            main=doc.select_one("main") or doc
+            plain=main.get_text(" ",strip=True)
+            print("\nJOB",slug,"HEAD",repr(plain[:1100]),flush=True)
+            print("JOB TAIL",repr(plain[-550:]),flush=True)
+            for script in doc.select("script[type='application/ld+json']"):
+                print("JOB JSON-LD",repr(script.get_text()[:650]),flush=True)
+            for word in ["Egypt","Alexandria","Cairo","remote","Work From Home","location","internship","experience"]:
+                for match in list(re.finditer(re.escape(word),plain,re.I))[:3]:
+                    print("JOB CONTEXT",slug,word,repr(plain[max(0,match.start()-60):match.end()+100]),flush=True)
+        except Exception as exc:
+            print("JOB ERROR",slug,str(exc)[:90],flush=True)
+    try:
+        html=_bytes("https://jobs.sap.com/en/jobs/?location=Cairo").decode("utf-8","replace")
+        for marker in [r'displayDate',r'locations\\',r'__NEXT_DATA__',r'__next_f.push',r'\"jobTitle\"']:
+            m=re.search(marker,html)
+            if m:
+                print("SAP PAYLOAD",marker,repr(html[max(0,m.start()-500):m.start()+1000]),flush=True)
+    except Exception as exc:
+        print("SAP EXTRA ERROR",str(exc)[:160],flush=True)
+
 if __name__ == "__main__":
     main()
+    deeper()
