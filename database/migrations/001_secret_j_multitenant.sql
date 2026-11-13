@@ -151,5 +151,8 @@ ALTER TABLE public.sj_cv_files ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sj_avatars ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sj_admin_audit ENABLE ROW LEVEL SECURITY;
 
-REVOKE ALL ON ALL TABLES IN SCHEMA public FROM PUBLIC;
+REVOKE ALL ON TABLE public.sj_users, public.sj_sessions, public.sj_auth_attempts,
+  public.sj_profiles, public.sj_preferences, public.sj_saved_jobs,
+  public.sj_applications, public.sj_cv_files, public.sj_avatars,
+  public.sj_admin_audit FROM PUBLIC;
 COMMIT;
