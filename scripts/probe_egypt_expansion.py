@@ -1,20 +1,20 @@
-"""Actual source adapter smoke (read-only)."""
-from app.custom_sources import scan_company
-targets={
-"EY":"https://careers.ey.com/ey/search/?q=&locationsearch=Egypt",
-"PwC Egypt":"https://careers.pwc.com/search/?q=&locationsearch=Egypt",
-"Breadfast":"https://www.breadfast.com/careers/",
-"Breadfast Technology":"https://www.breadfast.com/careers_categories/technology/",
-"Blink22":"https://blink22.com/careers/",
-"Finaira":"https://finaira.ai/work-at-finaira/",
-"talabat Egypt":"https://careers.deliveryhero.com/jobs?options=252%2C845&page=1",
-"Amazon Egypt":"https://www.amazon.jobs/en/location/egypt",
-"AWS Egypt":"https://www.amazon.jobs/en/search?country=EGY",
-"Teleperformance Egypt":"https://tpegyptcareers.teleperformance.com.eg/vacancies",
-}
-for name,url in targets.items():
+"""Uber Oracle Recruiting CE expanded jobs, real source scope."""
+from app.custom_sources import _json
+from urllib.parse import urlencode
+root="https://iaziqy.fa.ocs.oraclecloud.com/hcmRestApi/resources/11.13.18.05/recruitingCEJobRequisitions"
+queries=[
+ {"onlyData":"true","expand":"requisitionList","finder":"findReqs;siteNumber=CX_1,limit=12,offset=0"},
+ {"onlyData":"true","expand":"requisitionList","finder":"findReqs;siteNumber=CX_1,limit=20,offset=0,location=Egypt"},
+ {"onlyData":"true","expand":"requisitionList","finder":"findReqs;siteNumber=CX_1,limit=12,offset=0,workLocationCountryCode=EG"},
+ {"onlyData":"true","expand":"requisitionList","finder":"findReqs;siteNumber=CX_1,limit=12,offset=0,sortBy=POSTING_DATES_DESC"}
+]
+for q in queries:
  try:
-  jobs,status,reason=scan_company({"name":name,"url":url})
-  print("SMOKE",name,status,len(jobs),reason,
-   [(j.get("title"),j.get("location"),j.get("url"))for j in jobs[:3]],flush=True)
- except Exception as e:print("SMOKE_ERR",name,type(e).__name__,str(e)[:170],flush=True)
+  r=_json(root+"?"+urlencode(q))
+  a=(r.get("items")or[{}])[0]
+  jobs=a.get("requisitionList")or[]
+  print("ORACLE",q,"total",a.get("TotalJobsCount"),"returned",len(jobs),"keys",list(a)[:60],flush=True)
+  for job in jobs[:4]:
+   print("JOB",[(k,str(job.get(k))[:230])for k in ("Id","Title","PrimaryLocation","PostedDate","ExternalUrl","ExternalUrlSeo","PrimaryLocationCountry","EmployerName","Country","City")],flush=True)
+  print("FACET",[(x.get("Name"),x.get("TotalCount"))for x in a.get("locationsFacet",[])if "Egypt" in x.get("Name","")],flush=True)
+ except Exception as e:print("ORACLE_ERROR",str(e)[:250],flush=True)
