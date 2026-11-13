@@ -32,6 +32,8 @@ jobs:
         run: node --check cloudflare/scheduler/worker.mjs
       - name: Test dispatch, queue guarding, authentication failures
         run: node --test cloudflare/scheduler/worker.test.mjs
+      - name: Validate Worker bundle and Cron configuration (dry run only)
+        run: npx --yes wrangler@4 deploy --dry-run --config cloudflare/scheduler/wrangler.toml --outdir /tmp/job-hunter-scheduler-dry-run
 
   deploy:
     name: Deploy scheduled Worker (manual only)
@@ -39,7 +41,6 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.deploy
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment: production
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
