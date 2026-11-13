@@ -202,11 +202,31 @@ async function applications(root){
       </div></div>`).join('')||'<p>No applications recorded yet.</p>'}</div>`;
 }
 async function preferences(root){
-  const data=await api(dataUrl('preferences'));const p=data.preferences;
+  const [data,emailState]=await Promise.all([
+    api(dataUrl('preferences')),
+    api('/api/secretj-email?action=status').catch(()=>({configured:false,verified:false}))
+  ]);
+  const p=data.preferences;
+  const emailReady=emailState.configured===true;
+  const verified=emailState.verified===true;
+  const recipient=emailState.recipient||state.user.email;
   root.innerHTML=`<h2>Job preferences &amp; alerts</h2>
-  <div class="notice"><strong>Alert destination:</strong> <code>${esc(state.user.email)}</code>
-  <p class="small muted">We use your account login email as the default alert address and save this preference in Neon. Personalized email delivery is still being developed; switching it on does not send messages yet.</p></div>
-  <p class="muted">Preferences are saved privately in Neon for personalized matching. Existing shared scanner emails remain unchanged.</p>
+  <div class="notice">
+    <strong>Your alert email</strong>
+    <p><code>${esc(recipient)}</code></p>
+    <p class="small">Alerts belong to your Secret J account and can never go to another user's email or the administrator's mailbox.</p>
+    <p class="small"><strong>Email status:</strong> ${verified?'Verified':'Not verified yet'}.
+      ${emailReady?'Email delivery is available.':'Email service is not configured by Secret J yet.'}</p>
+    <div class="actions">
+      <button class="btn secondary" type="button" data-email-test ${emailReady?'':'disabled'}>${verified?'Send test email':'Send test &amp; verification code'}</button>
+    </div>
+    ${verified?'':`<form id="email-verify-form" class="actions">
+      <label>6-digit code from your inbox<input name="code" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" required placeholder="000000"></label>
+      <button class="btn secondary" type="submit" ${emailReady?'':'disabled'}>Verify my email</button>
+    </form>`}
+    <p class="small">The test goes only to the email shown above. Sending is limited to once every 15 minutes. A successful request means the mail provider accepted it, not guaranteed inbox delivery.</p>
+  </div>
+  <p class="muted">Choose the jobs you want alerts about. Preferences are stored privately in Neon; automatic emails require verification, opt-in and activated mail service.</p>
   <form id="preferences-form">
   <label><span><input type="checkbox" name="egypt_only" style="width:auto" ${p.egypt_only?'checked':''}> Egypt-based opportunities</span></label>
   <label><span><input type="checkbox" name="internships" style="width:auto" ${p.internships?'checked':''}> Include internships</span></label>
@@ -214,7 +234,7 @@ async function preferences(root){
   <h3>Role families</h3><div class="grid">
   ${[['software','Software Engineering'],['ai_ml','AI / ML'],['cv','Computer Vision'],['mlops','MLOps']].map(([v,label])=>
    `<label><span><input type="checkbox" style="width:auto" name="roles" value="${v}" ${p.role_families.includes(v)?'checked':''}> ${label}</span></label>`).join('')}</div>
-  <label><span><input type="checkbox" name="email_alerts" style="width:auto" ${p.email_alerts?'checked':''}> Opt in to future personalized emails</span></label>
+  <label><span><input type="checkbox" name="email_alerts" style="width:auto" ${p.email_alerts?'checked':''}> Enable job alerts to my verified account email</span></label>
   <button class="btn" type="submit">Save preferences</button></form>`;
 }
 function readBase64(file) {
@@ -340,6 +360,12 @@ $('#account-content').addEventListener('submit',async event=>{
   const button=form.querySelector('button[type=submit]');
   if(button)button.disabled=true;
   try{
+    if(form.id==='email-verify-form'){
+      await api('/api/secretj-email?action=verify','POST',{code:String(values.code||'')});
+      await showView('preferences');
+      banner('Email verified. You can now opt in to job alerts.');
+      return;
+    }
     if(form.id==='profile-form')await api(dataUrl('profile'),'PUT',values);
     else if(form.id==='preferences-form'){
       await api(dataUrl('preferences'),'PUT',{
@@ -361,6 +387,17 @@ $('#account-content').addEventListener('click',async event=>{
   const b=event.target.closest('button');if(!b)return;
   try {
     if(b.dataset.go)return showView(b.dataset.go);
+    if(b.hasAttribute('data-email-test')){
+      b.disabled=true;
+      try{
+        const result=await api('/api/secretj-email?action=test','POST',{});
+        await showView('preferences');
+        banner(result.needs_verification?
+          'Test email sent to your account email. Enter the code to verify it.':
+          'Test message accepted by the mail provider. Check your inbox.');
+      }finally{b.disabled=false;}
+      return;
+    }
     if(b.hasAttribute('data-preview-cv'))return await previewCV();
     if(b.hasAttribute('data-import-cv')){
       const {found,file}=await api(dataUrl('cv'));
