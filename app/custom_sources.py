@@ -585,9 +585,13 @@ def _board_jobs(name: str, url: str) -> list[dict]:
         from app.egypt_expansion_feeds import amazon_egypt
         return _dedupe(amazon_egypt(name,_json,_job,aws_only=(name=="AWS Egypt")))
 
-    if kind in ("breadfast_egypt","breadfast_tech"):
+    if kind == "breadfast_tech":
+        from app.breadfast_company_board import breadfast_technology
+        return _dedupe(breadfast_technology(name, _bytes, _job))
+
+    if kind == "breadfast_egypt":
         from app.egypt_expansion_feeds import breadfast_egypt
-        return _dedupe(breadfast_egypt(name,_bytes,_job,tech_only=(kind=="breadfast_tech")))
+        return _dedupe(breadfast_egypt(name, _bytes, _job, tech_only=False))
 
     if kind == "schneider_egypt":
         from app.telco_schneider_feeds import schneider_egypt
@@ -1307,7 +1311,12 @@ def scan_company(company: dict):
                 jobs, "partial",
                 f"{len(jobs)} official public vacancies; location or full coverage not verified",
             )
-        if kind in ("breadfast_egypt","breadfast_tech"):
+        if kind == "breadfast_tech":
+            return (
+                jobs, "partial",
+                f"{len(jobs)} detail-verified technology roles from Breadfast's public investor board searches",
+            )
+        if kind == "breadfast_egypt":
             return (
                 jobs, "partial",
                 f"{len(jobs)} employer-related portfolio listings; original Breadfast Freshteam feed unavailable",
