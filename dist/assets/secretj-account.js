@@ -29,6 +29,7 @@ async function api(endpoint,method='GET',body) {
 const authUrl=action=>'/api/secretj-auth?action='+encodeURIComponent(action);
 const dataUrl=scope=>'/api/secretj-data?scope='+encodeURIComponent(scope);
 function showAuth() {
+  $('#account-profile-menu').hidden=true;
   $('#auth-panel').hidden=false;
   $('#member-panel').hidden=true;
   $('#logout').hidden=true;
@@ -40,7 +41,12 @@ async function signedIn(user) {
   $('#logout').hidden=false;
   $('#account-email').textContent=user.email;
   $('#admin-nav').hidden=user.role!=='admin';
-  await showView('overview');
+  $('#account-admin-profile-link').hidden=user.role!=='admin';
+  $('#account-profile-menu').hidden=false;
+  $('#account-profile-initial').textContent=(user.email.split('@')[0].slice(0,2)||'SJ').toUpperCase();
+  const target=new URLSearchParams(location.search).get('view');
+  await showView(['overview','profile','saved','applications','preferences','documents','admin'].includes(target)?target:'overview');
+  if(new URLSearchParams(location.search).get('after')==='home')location.assign('/');
 }
 let isRegistration=false;
 function authMode(register) {
@@ -96,9 +102,28 @@ async function overview(root) {
     <button class="btn secondary" data-go="profile">Complete profile</button></div>`;
 }
 async function profile(root) {
-  const data=await api(dataUrl('profile'));state.profile=data.profile||{};
+  const [data,linked]=await Promise.all([
+    api(dataUrl('profile')),
+    api('/api/secretj-linkedin?action=status').catch(()=>({configured:false,connected:false}))
+  ]);
+  state.profile=data.profile||{};
+  const connection=linked.connection||null;
+  const photo=linked.connected&&connection?.picture_url?
+     `<img class="linkedin-photo" src="${esc(connection.picture_url)}" alt="LinkedIn photo" referrerpolicy="no-referrer">`:'';
+  const connect=linked.connected?
+    `<button class="btn danger" type="button" data-linkedin-disconnect>Disconnect LinkedIn</button>`:
+    `<a class="btn secondary" href="/api/secretj-linkedin?action=start" ${linked.configured?'':'aria-disabled="true" data-linkedin-disabled="true"'}>Connect LinkedIn ↗</a>`;
   root.innerHTML=`<h2>Professional profile</h2>
     <p class="muted">Describe your experience, education, and skills. Your information is stored in Neon, not locally.</p>
+    <div class="provider-row">
+      ${photo}<div class="spacer"><strong>LinkedIn profile connection</strong>
+      <p class="small muted">${linked.connected?
+        `Connected as ${esc(connection?.full_name||'LinkedIn member')}. Name, email and photo metadata are saved privately.`:
+        'Import your name, primary email and photo with your permission. Full work history and education need additional LinkedIn API approvals.'}</p>
+      ${linked.configured?'':'<p class="tiny">Coming soon — LinkedIn developer application approval is still required.</p>'}</div>
+      ${connect}
+    </div>
+    <p class="small muted">Your login email and alert destination never change automatically when you connect LinkedIn.</p>
     <form id="profile-form" class="grid">
       ${formField('display_name','Full name',state.profile)}
       ${formField('headline','Professional headline',state.profile)}
@@ -153,8 +178,10 @@ async function applications(root){
 }
 async function preferences(root){
   const data=await api(dataUrl('preferences'));const p=data.preferences;
-  root.innerHTML=`<h2>Job preferences</h2>
-  <p class="muted">Saved to your account for future personalized matching. The current shared email scanner is unchanged.</p>
+  root.innerHTML=`<h2>Job preferences &amp; alerts</h2>
+  <div class="notice"><strong>Alert destination:</strong> <code>${esc(state.user.email)}</code>
+  <p class="small muted">We use your account login email as the default alert address and save this preference in Neon. Personalized email delivery is still being developed; switching it on does not send messages yet.</p></div>
+  <p class="muted">Preferences are saved privately in Neon for personalized matching. Existing shared scanner emails remain unchanged.</p>
   <form id="preferences-form">
   <label><span><input type="checkbox" name="egypt_only" style="width:auto" ${p.egypt_only?'checked':''}> Egypt-based opportunities</span></label>
   <label><span><input type="checkbox" name="internships" style="width:auto" ${p.internships?'checked':''}> Include internships</span></label>
@@ -275,6 +302,13 @@ $('#account-content').addEventListener('click',async event=>{
   const b=event.target.closest('button');if(!b)return;
   try {
     if(b.dataset.go)return showView(b.dataset.go);
+    if(b.hasAttribute('data-linkedin-disabled'))return banner('LinkedIn connection requires app approval and server-side OAuth credentials.',true);
+    if(b.hasAttribute('data-linkedin-disconnect')){
+      if(!confirm('Disconnect LinkedIn? Your saved profile details will remain.'))return;
+      await api('/api/secretj-linkedin?action=disconnect','POST',{});
+      banner('LinkedIn account disconnected. Your saved profile remains intact.');
+      return showView('profile');
+    }
     if(b.hasAttribute('data-remove-saved')){
       await api(dataUrl('saved')+'&key='+encodeURIComponent(b.dataset.removeSaved),'DELETE');
     }else if(b.hasAttribute('data-app-from')){
@@ -326,6 +360,10 @@ $('#account-content').addEventListener('change',async event=>{
   }catch(e){banner(e.message,true);}
 });
 (async()=>{
+  authMode(new URLSearchParams(location.search).get('mode')==='register');
+  const linkedin=new URLSearchParams(location.search).get('linkedin');
+  if(linkedin==='error')banner('LinkedIn authorization did not complete. No profile information was changed.',true);
+  if(linkedin==='connected')banner('LinkedIn profile connected successfully. Your account information is saved in Neon.');
   try {
     const session=await api(authUrl('session'));
     if(session.user)await signedIn(session.user);
