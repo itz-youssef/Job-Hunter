@@ -331,3 +331,35 @@ def uber_egypt_partial(name,get_bytes,make_job):
             matches[identity]=j
         if offset+len(rows)>=total:return list(matches.values())
     raise ValueError("Uber Oracle Egypt results exceed pagination safety cap")
+
+
+def taleo_bank_partial(name,base_url,get_bytes,make_job):
+    """Public Taleo first-page requisitions for Egyptian banks; partial coverage."""
+    import html as html_lib
+    from urllib.parse import unquote
+    host=urlsplit(base_url).hostname
+    if host not in ("cibeg.taleo.net","adibegypt.taleo.net"):
+        raise ValueError("Unverified bank Taleo hostname")
+    page=get_bytes(base_url).decode("utf-8","replace")
+    if "requisitionListInterface" not in page:
+        raise ValueError("Bank Taleo public job-list markup unavailable")
+    content=page[page.find("var _ftl"):] if "var _ftl" in page else page
+    # Mirror Taleo's server-built requisition grid, not unrelated navigation.
+    pattern=re.compile(r"'(?P<id>\d{5,8})','(?P<title>[^']{8,180})'",re.I)
+    entries={}
+    for match in pattern.finditer(content):
+        title=html_lib.unescape(unquote(match.group("title"))).strip()
+        if not title or title.isdecimal() or len(title)>160:continue
+        tail=content[match.end():match.end()+1100]
+        job_number=re.search(r"Job Number:\s*([A-Z0-9]+)",tail,re.I)
+        if not job_number:continue
+        parsed=urlsplit(base_url)
+        section=parsed.path.split("/")[2]
+        link=f"https://{host}/careersection/{section}/jobdetail.ftl?job={job_number.group(1)}&lang=en"
+        posted=re.search(r"'([0-3]?\d/[A-Za-z]{3}/\d{4})'",tail)
+        job=make_job(name,title,"Egypt",link,"",posted.group(1) if posted else "","")
+        job["external_id"]=job_number.group(1)
+        entries[job_number.group(1)]=job
+    if not entries:
+        raise ValueError("No bank Taleo requisitions with verified public job numbers")
+    return list(entries.values())
