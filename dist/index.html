@@ -179,6 +179,28 @@ a:hover{color:var(--ink)}
 }
 @media(max-width:370px){.main-content{padding:16px 10px}.stats{grid-template-columns:1fr}.theme-toggle{min-width:0}.topbar{height:50px}}
 .next-check{color:var(--ink);font-weight:550} .next-check::before{content:'◷ ';color:var(--muted)}
+
+.profile-panel{max-width:880px}
+.profile-photo-row{display:flex;align-items:center;gap:18px;padding:6px 0 22px;border-bottom:1px solid var(--border);margin-bottom:22px}
+.profile-photo-box{flex:0 0 96px;width:96px;height:96px;border-radius:50%;background:var(--soft);border:1px solid var(--border);overflow:hidden;display:grid;place-items:center}
+.profile-photo{width:100%;height:100%;object-fit:cover}
+.profile-placeholder{font-size:38px;color:var(--muted)}
+.photo-upload-label{display:inline-flex;cursor:pointer;padding:10px 14px;margin-top:5px}
+.profile-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.profile-field{display:flex;flex-direction:column;gap:7px;font-weight:650;font-size:12px;color:var(--muted);min-width:0}
+.profile-field input,.profile-field textarea{background:var(--panel);color:var(--ink);font:inherit;font-size:13px;border:1px solid var(--border);border-radius:7px;padding:11px;min-width:0;width:100%;line-height:1.55}
+.profile-field textarea{resize:vertical}
+.profile-field:focus-within{color:var(--ink)}
+.profile-wide{grid-column:1/-1}
+.profile-controls,.cv-cloud-actions{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 8px}
+.profile-notice{margin:16px 0 10px}
+@media(max-width:640px){
+.profile-form-grid{grid-template-columns:1fr}
+.profile-wide{grid-column:auto}
+.profile-photo-row{align-items:flex-start;gap:12px}
+.profile-photo-box{flex-basis:72px;width:72px;height:72px}
+.profile-controls .btn,.cv-cloud-actions .btn{width:100%;justify-content:center}
+}
   </style>
 </head>
 <body>
@@ -751,6 +773,10 @@ a:hover{color:var(--ink)}
     await cvAction('save',item);
     cvEntry=item;
     render();
+    try{await importProfileFromCV();}
+    catch(error){
+      profileMessage='CV saved, but automatic extraction was unavailable: '+error.message+'. You can complete your profile manually.';
+    }
   }
   function resumePage(){
     return top('WORKSPACE / UPCOMING','Resume Updater','Planned feature — not yet available.')+
@@ -911,7 +937,7 @@ a:hover{color:var(--ink)}
       `<div class="alert-card"><span class="alert-icon">✉</span><div class="alert-content"><strong>Notifications are addressed to</strong><p><code>${esc(email)}</code></p><p>${state.fullEmail?'Verified using your Vercel admin credentials.': 'Masked by default. To reveal the full address, add ALERT_EMAIL to Vercel and authenticate.'}</p></div>${badge(good?'Configured':'Not confirmed',good?'green':'orange')}</div>`+
       `<div class="alert-card"><span class="alert-icon">◈</span><div class="alert-content"><strong>SMTP configuration</strong><p>${good?'All four SMTP secrets were present when this status was generated.':'SMTP setup has not been confirmed in the published status.'}</p><p class="tiny">${updated?'Last checked: '+esc(prettyDate(updated)):'No published check yet.'} This does not prove that email was delivered.</p></div></div>`+
       `<section class="panel"><div class="panel-head"><h2>Your private destination</h2></div><p class="muted">The full recipient is not published in the static job snapshot.</p>${IS_CLOUDFLARE?`<p class="tiny">To reveal the destination, use the authenticated Vercel dashboard. Cloudflare does not expose that private API.</p>`:`<button class="btn primary" data-action="reveal-email">Reveal full email ↗</button>`}</section>`+
-      `<section class="panel"><div class="panel-head"><h2>Test your email delivery</h2></div><p class="muted">Run the manual GitHub Actions test, then inspect the workflow result and your inbox. SMTP acceptance alone does not guarantee inbox delivery.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn primary" target="_blank" rel="noopener noreferrer" href="${REPO}/actions/workflows/test-email.yml">Run Test Email ↗</a><a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/settings/secrets/actions">GitHub Actions secrets ↗</a></div></section>`+
+      `<section class="panel"><div class="panel-head"><h2>Test your email delivery</h2></div><p class="muted">Run the manual GitHub Actions test, then inspect the workflow result and your inbox. SMTP acceptance alone does not guarantee inbox delivery.</p><div style="display:flex;gap:10px;flex-wrap:wrap">${!IS_CLOUDFLARE?'<button type="button" class="btn primary" data-email-test>Send test email</button><button type="button" class="btn secondary" data-email-status>Check latest test</button>':''}<a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/actions/workflows/test-email.yml">GitHub Actions ↗</a><a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/settings/secrets/actions">Email secrets ↗</a></div><p class="tiny">${IS_CLOUDFLARE?'Cloudflare does not host authenticated Vercel endpoints. Open the Vercel dashboard for one-click testing, or run the GitHub workflow manually.':'An admin token is required. The website queues a real SMTP test through GitHub Actions; success still requires checking the inbox.'}</p></section>`+
       `<section class="panel"><div class="panel-head"><h2>Matching preferences</h2></div><div class="job-info">${badge('Egypt only','green')}${badge('Junior / Entry')}${badge('Internships')}${badge('Software Engineering')}${badge('AI / ML')}${badge('Computer Vision')}${badge('MLOps')}</div><p class="tiny">These are the target rules in your Python filtering file, not editable settings on this static dashboard.</p></section>`;
   }
   function render(){
@@ -1026,6 +1052,30 @@ a:hover{color:var(--ink)}
       if(logo){editLogoDialog(logo.dataset.editLogo);return;}
       if(event.target.closest('[data-close-logo]')){el('#logo-dialog').close();return;}
       const saved=event.target.closest('[data-save]');if(saved){const key=saved.dataset.save;state.saved.has(key)?state.saved.delete(key):state.saved.add(key);persistSaved();render();return;}
+      if(event.target.closest('[data-email-test]')){sendEmailTest().catch(e=>toast(e.message,true));return;}
+      if(event.target.closest('[data-email-status]')){emailTestStatus().catch(e=>toast(e.message,true));return;}
+      if(event.target.closest('[data-profile-parse]')){
+        importProfileFromCV().then(n=>toast(n+' CV fields imported. Review your profile.')).catch(e=>toast('CV parsing: '+e.message,true));return;
+      }
+      if(event.target.closest('[data-profile-photo-remove]')){
+        profile.photo='';profileStore('save',profile).then(()=>render()).catch(e=>toast(e.message,true));return;
+      }
+      if(event.target.closest('[data-profile-cloud-save]')){
+        try{const token=adminForCloud();saveCloudProfile(token).then(()=>{render();toast('Private profile backup saved');}).catch(e=>toast(e.message,true));}
+        catch(e){toast(e.message,true);}return;
+      }
+      if(event.target.closest('[data-profile-cloud-load]')){
+        try{const token=adminForCloud();restoreCloudProfile(token).catch(e=>toast(e.message,true));}
+        catch(e){toast(e.message,true);}return;
+      }
+      if(event.target.closest('[data-cv-cloud-save]')){
+        try{const token=adminForCloud();saveCloudCV(token).then(()=>toast('Private CV backup saved')).catch(e=>toast(e.message,true));}
+        catch(e){toast(e.message,true);}return;
+      }
+      if(event.target.closest('[data-cv-cloud-load]')){
+        try{const token=adminForCloud();restoreCloudCV(token).then(()=>toast('Private CV restored')).catch(e=>toast(e.message,true));}
+        catch(e){toast(e.message,true);}return;
+      }
       if(event.target.closest('[data-cv-preview]')){openCvPreview().catch(e=>toast(e.message,true));return;}
       if(event.target.closest('[data-cv-close]')){closeCvPreview();return;}
       if(event.target.closest('[data-cv-download]')){
@@ -1061,12 +1111,33 @@ a:hover{color:var(--ink)}
       const remove=event.target.closest('[data-remove]');if(remove){removeCompany(remove.dataset.remove);return;}
     });
     document.addEventListener('input',event=>{if(event.target.id==='job-search'){state.query=event.target.value;const at=event.target.selectionStart;render();const field=el('#job-search');field?.focus();try{field?.setSelectionRange(at,at);}catch{}}});
+    document.addEventListener('submit',async event=>{
+      if(event.target.id!=='profile-form')return;
+      event.preventDefault();
+      const form=event.target;
+      for(const key of PROFILE_FIELDS){
+        profile[key]=String(form.elements.namedItem(key)?.value||'').trim();
+      }
+      profile.updatedAt=new Date().toISOString();
+      try{
+        await profileStore('save',profile);
+        profileMessage='Your profile is saved locally. Private cloud sync is optional.';
+        render();
+        toast('Profile saved on this device');
+      }catch(e){toast(e.message||'Could not save profile',true);}
+    });
     document.addEventListener('change',async event=>{
       const fields={'role-filter':'role','company-filter':'companyFilter','date-filter':'dateFilter','date-basis':'dateBasis','sort-filter':'sortBy','type-filter':'jobType'};
       if(fields[event.target.id]){state[fields[event.target.id]]=event.target.value;render();}
       if(event.target.id==='cv-upload'){
-        try{await acceptCV(event.target.files?.[0]);toast('CV securely stored on this device');}
-        catch(e){toast(e.message||'CV upload failed',true);}
+        try{
+          await acceptCV(event.target.files?.[0]);
+          toast(profileMessage.startsWith('CV saved, but')?profileMessage:'CV saved and profile fields extracted when available');
+        }catch(e){toast(e.message||'CV upload failed',true);}
+      }
+      if(event.target.id==='profile-photo-input'){
+        try{await setProfilePhoto(event.target.files?.[0]);toast('Profile picture saved on this device');}
+        catch(e){toast(e.message,true);}
       }
     });
     el('#logo-reset').addEventListener('click',()=>{
