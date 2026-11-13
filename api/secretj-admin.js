@@ -1,7 +1,7 @@
 'use strict';
 
 /** Admin-only operations. Never accept role assignment from registration. */
-const core=require('./_secretj/core');
+const core=require('../lib/secretj/core');
 
 module.exports=async function handler(req,res){
   try {
