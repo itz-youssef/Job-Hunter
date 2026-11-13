@@ -72,6 +72,8 @@
       email.textContent = user.email;
       initial.textContent = (user.email.split('@')[0].slice(0, 2) || 'SJ').toUpperCase();
       admin.hidden = user.role !== 'admin';
+      const ops = document.getElementById('sj-admin-tools');
+      if (ops) ops.hidden = user.role !== 'admin';
 
       if (String(user.id) !== lastUserId) {
         lastUserId = String(user.id);
@@ -84,6 +86,8 @@
       lastUserId = null;
       guest.hidden = false;
       member.hidden = true;
+      const ops = document.getElementById('sj-admin-tools');
+      if (ops) ops.hidden = true;
       resetAvatar();
       if (menu) menu.open = false;
     }
