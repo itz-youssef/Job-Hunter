@@ -381,11 +381,11 @@ $('#account-content').addEventListener('change',async event=>{
         if(!response.ok){
           const reason=health.database;
           const message=reason==='not_configured'?
-            'Neon is not connected to Vercel. Set DATABASE_URL in the Vercel Production environment and redeploy.':
+            'Neon is not connected to Vercel. Set Neon database connection setting in the Vercel Production environment and redeploy.':
             reason==='migration_required'?
             'The database connection works, but required Secret J tables are missing. Run database migration 001 in Neon.':
             reason==='connection_failed'?
-            'Neon connection failed. Check the current DATABASE_URL in Vercel and review the Function logs.':
+            'Neon connection failed. Check the current Neon database connection setting in Vercel and review the Function logs.':
             response.status===404?
             'This deployment does not include the new account API. Deploy the latest main branch on Vercel.':
             'Account setup is not ready. Check the Neon connection and Vercel deployment.';
