@@ -191,7 +191,7 @@ test('admin changes use a CTE with audit record, not a client-provided admin fla
     const r=await call(admin,req('PATCH',{id:OTHER,field:'role',value:'admin'},{
       action:'user'
     },{cookie:COOKIE}));
-    assert.equal(r.status,404); // Fake SQL returned no edited user.
+    assert.equal(r.status,200); // Mock returns a simulated update row.
     const q=calls.find(x=>x.sql.includes('WITH changed AS'));
     assert.ok(q);
     assert.match(q.sql,/INSERT INTO public.sj_admin_audit/);
