@@ -1,0 +1,58 @@
+name: Test Email Delivery
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  send-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Send one verified SMTP test email
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
+          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+        run: |
+          python - <<'PY'
+          import os, smtplib
+          from datetime import datetime, timezone
+          from email.message import EmailMessage
+          required=('SMTP_USER','SMTP_PASSWORD','SMTP_FROM','ALERT_EMAIL')
+          missing=[key for key in required if not os.environ.get(key)]
+          if missing:
+              raise SystemExit('Missing GitHub Actions secrets: '+', '.join(missing))
+          host=os.environ.get('SMTP_HOST') or 'smtp.gmail.com'
+          port=int(os.environ.get('SMTP_PORT') or '587')
+          sender=os.environ['SMTP_FROM']
+          recipient=os.environ['ALERT_EMAIL']
+          msg=EmailMessage()
+          msg['From']=sender
+          msg['To']=recipient
+          msg['Subject']='Job Hunter - SMTP delivery test'
+          msg.set_content(
+              'This is a manually requested Job Hunter SMTP test.\n'
+              'The job-monitoring system is unchanged.\n'
+              'Sent: '+datetime.now(timezone.utc).isoformat()+'\n'
+          )
+          if port==465:
+              with smtplib.SMTP_SSL(host,port,timeout=18) as smtp:
+                  smtp.login(os.environ['SMTP_USER'],os.environ['SMTP_PASSWORD'])
+                  smtp.send_message(msg)
+          elif port in (587,25):
+              with smtplib.SMTP(host,port,timeout=18) as smtp:
+                  smtp.ehlo()
+                  smtp.starttls()
+                  smtp.ehlo()
+                  smtp.login(os.environ['SMTP_USER'],os.environ['SMTP_PASSWORD'])
+                  smtp.send_message(msg)
+          else:
+              raise SystemExit('SMTP_PORT must be 465, 587 or 25.')
+          print('SMTP server accepted the test email. Inbox delivery must be checked separately.')
+          PY
