@@ -189,6 +189,17 @@ def _ats(url: str):
     host = (p.hostname or "").lower()
     seg = [s for s in p.path.split("/") if s]
 
+    if host == "careers.ey.com" and p.path.startswith(("/ey/search", "/viewalljobs")):
+        return "ey_egypt", None
+    if host in ("blink22.com", "www.blink22.com") and p.path.startswith("/careers"):
+        return "blink22_egypt", None
+    if host == "tpegyptcareers.teleperformance.com.eg" and p.path.startswith("/vacancies"):
+        return "tp_egypt", None
+    if host in ("www.amazon.jobs", "amazon.jobs") and p.path.startswith(("/en/location/egypt", "/en/search", "/en/amazon-web-services", "/en-gb/amazon-web-services")):
+        return "amazon_egypt", None
+    if host in ("breadfast.com", "www.breadfast.com") and p.path.startswith(("/careers", "/ar/careers", "/en/careers")):
+        return "breadfast_tech" if "/careers_categories/technology" in p.path else "breadfast_egypt", None
+
     if host.endswith(".bamboohr.com") and host.count(".") == 2:
         return "bamboohr", host
 
@@ -518,6 +529,26 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     kind, meta = _ats(url)
     p = urllib.parse.urlsplit(url)
     jobs = []
+
+    if kind == "ey_egypt":
+        from app.egypt_expansion_feeds import ey_egypt
+        return _dedupe(ey_egypt(name,_bytes,_job))
+
+    if kind == "blink22_egypt":
+        from app.egypt_expansion_feeds import blink22_egypt
+        return _dedupe(blink22_egypt(name,_bytes,_job))
+
+    if kind == "tp_egypt":
+        from app.egypt_expansion_feeds import tp_egypt
+        return _dedupe(tp_egypt(name,_bytes,_job))
+
+    if kind == "amazon_egypt":
+        from app.egypt_expansion_feeds import amazon_egypt
+        return _dedupe(amazon_egypt(name,_json,_job,aws_only=(name=="AWS Egypt")))
+
+    if kind in ("breadfast_egypt","breadfast_tech"):
+        from app.egypt_expansion_feeds import breadfast_egypt
+        return _dedupe(breadfast_egypt(name,_bytes,_job,tech_only=(kind=="breadfast_tech")))
 
     if kind == "schneider_egypt":
         from app.telco_schneider_feeds import schneider_egypt
@@ -1222,6 +1253,17 @@ def scan_company(company: dict):
         jobs = _board_jobs(
             name, url
         )
+
+        if kind in ("etisalat_egypt", "indrive_egypt", "blink22_egypt"):
+            return (
+                jobs, "partial",
+                f"{len(jobs)} official public vacancies; location or full coverage not verified",
+            )
+        if kind in ("breadfast_egypt","breadfast_tech"):
+            return (
+                jobs, "partial",
+                f"{len(jobs)} employer-related portfolio listings; original Breadfast Freshteam feed unavailable",
+            )
 
         if kind in ("etisalat_egypt", "indrive_egypt"):
             return (
