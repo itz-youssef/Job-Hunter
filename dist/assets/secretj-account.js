@@ -369,7 +369,34 @@ $('#account-content').addEventListener('change',async event=>{
   try {
     const session=await api(authUrl('session'));
     if(session.user)await signedIn(session.user);
-    else showAuth();
+    else {
+      showAuth();
+      // An anonymous session response does not verify database connectivity.
+      // Report configuration errors without showing credentials or internals.
+      try {
+        const response=await fetch('/api/secretj-health',{
+          credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}
+        });
+        const health=await response.json().catch(()=>({}));
+        if(!response.ok){
+          const reason=health.database;
+          const message=reason==='not_configured'?
+            'Neon is not connected to Vercel. Set Neon database connection setting in the Vercel Production environment and redeploy.':
+            reason==='migration_required'?
+            'The database connection works, but required Secret J tables are missing. Run database migration 001 in Neon.':
+            reason==='connection_failed'?
+            'Neon connection failed. Check the current Neon database connection setting in Vercel and review the Function logs.':
+            response.status===404?
+            'This deployment does not include the new account API. Deploy the latest main branch on Vercel.':
+            'Account setup is not ready. Check the Neon connection and Vercel deployment.';
+          banner(message,true);
+        }else if(!health.registration_enabled){
+          banner('Sign up is not enabled yet. Existing members can sign in. Enable SECRETJ_REGISTRATION_ENABLED in Vercel to register new accounts.');
+        }
+      }catch{
+        banner('Account services are currently unavailable. Confirm the latest Vercel deployment is ready.',true);
+      }
+    }
   }catch(e){showAuth();banner('Backend unavailable. The existing job feed still works; '+e.message,true);}
 })();
 })();

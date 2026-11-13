@@ -15,36 +15,47 @@ const homeJS=fs.readFileSync('dist/assets/secretj-home.js','utf8');
 const accountJS=fs.readFileSync('dist/assets/secretj-account.js','utf8');
 const sql=fs.readFileSync('database/migrations/002_secretj_linkedin_oauth.sql','utf8');
 
-test('Secret J is the public homepage; existing Job Hunter controls retained',()=>{
-  assert.match(html,/id="sj-public-home"/);
-  assert.match(html,/id="sj-public-main"/);
-  assert.match(html,/id="sj-about"/);
-  assert.match(html,/id="sj-offerings"/);
-  assert.match(html,/id="sj-product"/);
+test('Secret J lives within the original Job Hunter sidebar and toolbar',()=>{
+  assert.match(html,/class="layout"/);
+  assert.match(html,/class="sidebar"/);
+  assert.match(html,/id="navigation"/);
+  assert.match(html,/class="topbar"/);
+  assert.match(html,/id="main-content"/);
+  assert.doesNotMatch(html,/id="sj-public-home"/);
+  assert.match(html,/function home\(\)[\s\S]*?Software built for real life\./);
+  assert.match(html,/function home\(\)[\s\S]*?monitoringPanel\(\)/);
   assert.match(html,/data-page="jobs"/);
   assert.match(html,/data-page="companies"/);
-  assert.match(html,/document\.body\.classList\.toggle\('sj-show-app',state\.page!=='home'\)/);
   assert.match(html,/src="\/assets\/secretj-mark\.svg"/);
   assert.match(html,/src="\/assets\/secretj-home\.js"/);
-  assert.match(html,/href="https:\/\/www\.linkedin\.com\/company\/secretj\/home\/"/);
+  assert.match(html,/https:\/\/www\.linkedin\.com\/company\/secretj\/home\//);
 });
-test('public Secret J branding does not disclose owner personal name',()=>{
-  const landing=html.split('<div id="sj-public-home">')[1].split('<div class="layout">')[0];
-  assert.doesNotMatch(landing,/Youssef|Yasser|Built for Youssef/i);
-  assert.match(landing,/OUR STORY/);
-  assert.match(landing,/OUR MISSION/);
-  assert.match(landing,/Our vision/);
-  assert.match(landing,/What we offer/);
-  assert.match(landing,/Technology should/);
+test('company copy is minimal, professional, without invented founders or AI punctuation',()=>{
+  const body=html.slice(html.indexOf('  function home(){'),html.indexOf('  // CV files never leave'));
+  assert.doesNotMatch(body,/Youssef|Yasser|Built for Youssef/i);
+  for(const term of ['OUR STORY','OUR MISSION','VISION','WHAT WE OFFER',
+      'Job Hunter','Software built for real life.'])assert.ok(body.includes(term),term);
+  assert.doesNotMatch(body,/\u2014|\u2013|--/);
 });
-test('header displays login/signup guests and profile/admin when signed in',()=>{
+test('existing light and dark modes use only neutral palettes with Manrope',()=>{
+  const css=fs.readFileSync('dist/assets/secretj-home.css','utf8');
+  assert.match(css,/--purple:#202020/);
+  assert.match(css,/html\[data-theme="dark"\]/);
+  assert.match(css,/--bg:#0c0c0c/);
+  assert.match(css,/font-family:"Manrope"/);
+  assert.match(html,/fonts\.googleapis\.com\/css2\?family=Manrope/);
+  assert.doesNotMatch(css,/#(?:6757eb|80c4b6|245f61|cbff87|6652db)/i);
+  assert.match(account,/--btn-bg:#111/);
+  assert.match(account,/html\[data-theme="dark"\]/);
+});
+test('top-right login/signup guests and role-protected profile/admin for members',()=>{
   assert.match(html,/id="sj-guest-actions"/);
-  assert.match(html,/href="\/account\.html\?mode=register&amp;after=home"/);
+  assert.match(html,/href="\/account\.html\?mode=register"/);
   assert.match(html,/id="sj-member-actions" hidden/);
   assert.match(html,/id="sj-profile-menu"/);
-  assert.match(html,/id="sj-admin-link" hidden/);
+  assert.match(html,/id="sj-admin-link"[^>]*hidden/);
   assert.match(homeJS,/\/api\/secretj-auth\?action=session/);
-  assert.match(homeJS,/data\.user\.role !== 'admin'/);
+  assert.match(homeJS,/data\.user\.role!=='admin'/);
   assert.match(homeJS,/\/api\/secretj-auth\?action=logout/);
   assert.doesNotMatch(homeJS,/DATABASE_URL|npg_|password_hash|neondb_owner/);
 });

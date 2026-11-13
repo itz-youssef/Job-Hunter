@@ -213,145 +213,16 @@ a:hover{color:var(--ink)}
 .monitoring-freshness{display:flex;align-items:center;flex-wrap:wrap;gap:9px;font-size:12px;margin:14px 0}
 @media(max-width:640px){.monitoring-run{align-items:flex-start;flex-direction:column}.monitoring-run-action{width:100%;justify-content:space-between}}
   </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/secretj-home.css">
   <script src="/assets/secretj-home.js" defer></script>
 </head>
 <body>
-  <div id="sj-public-home">
-    <header class="sj-header">
-      <div class="sj-shell sj-topbar">
-        <a href="#home" class="sj-identity" aria-label="Secret J homepage" data-sj-home>
-          <img src="/assets/secretj-mark.svg" alt="Secret J logo" width="44" height="44">
-          <span>SECRET J<span class="sj-period">.</span></span>
-        </a>
-        <nav class="sj-navigation" aria-label="Secret J navigation">
-          <a href="#about" data-sj-scroll="about">About us</a>
-          <a href="#offerings" data-sj-scroll="offerings">What we offer</a>
-          <a href="#product" data-sj-scroll="product">Our product</a>
-          <a href="https://www.linkedin.com/company/secretj/home/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
-        </nav>
-        <div class="sj-auth" id="sj-guest-actions">
-          <a class="sj-auth-link" href="/account.html?mode=login&amp;after=home">Log in</a>
-          <a class="sj-btn sj-btn-primary" href="/account.html?mode=register&amp;after=home">Sign up <span aria-hidden="true">↗</span></a>
-        </div>
-        <div class="sj-auth" id="sj-member-actions" hidden>
-          <details class="sj-user-menu" id="sj-profile-menu">
-            <summary aria-label="Open profile and account menu">
-              <span class="sj-initial" id="sj-profile-initial">SJ</span>
-              <span>Profile <span aria-hidden="true">⌄</span></span>
-            </summary>
-            <div class="sj-menu">
-              <span class="sj-menu-caption" id="sj-member-email"></span>
-              <a href="/account.html?view=overview">My dashboard</a>
-              <a href="/account.html?view=profile">My profile</a>
-              <a href="/account.html?view=documents">CV &amp; photo</a>
-              <a href="/account.html?view=saved">Saved jobs</a>
-              <a href="/account.html?view=applications">Applications</a>
-              <a href="/account.html?view=preferences">Alerts &amp; preferences</a>
-              <a href="/account.html?view=admin" id="sj-admin-link" hidden>Admin console</a>
-              <button type="button" id="sj-header-logout">Sign out</button>
-            </div>
-          </details>
-        </div>
-      </div>
-    </header>
-    <main id="sj-public-main">
-      <section class="sj-shell sj-hero" aria-label="Welcome to Secret J">
-        <div>
-          <span class="sj-overline">Technology · Intelligence · Opportunity</span>
-          <h1>Discover<br>what's <span>next.</span></h1>
-          <p>We build intelligent digital products that transform complex challenges into simpler experiences — creating new possibilities through technology, artificial intelligence, and thoughtful engineering.</p>
-          <div class="sj-hero-actions">
-            <a class="sj-btn sj-btn-primary" href="#radar">Explore Job Hunter <span aria-hidden="true">↗</span></a>
-            <a class="sj-btn sj-btn-outline" href="#about" data-sj-scroll="about">Discover Secret J <span aria-hidden="true">↓</span></a>
-          </div>
-          <div class="sj-hero-note"><span aria-hidden="true"></span> Independent technology venture · Building with purpose</div>
-        </div>
-        <div class="sj-art" aria-label="Secret J technology illustration">
-          <div class="sj-orbit one"></div><div class="sj-orbit two"></div><div class="sj-orbit three"></div>
-          <div class="sj-hero-logo"><img src="/assets/secretj-mark.svg" alt="" width="230" height="230"></div>
-          <div class="sj-art-label top"><b>✦</b><span>Built for what's next<br><strong>Human-centered technology</strong></span></div>
-          <div class="sj-art-label bottom"><b>↗</b><span>Our first product<br><strong>Job Hunter</strong></span></div>
-        </div>
-      </section>
-
-      <div class="sj-shell"><div class="sj-divider"></div></div>
-      <section class="sj-shell sj-section" id="sj-about">
-        <div class="sj-section-top">
-          <div><span class="sj-overline">01 — About us</span><h2>Technology should<br>open doors, not add complexity.</h2></div>
-          <p>Secret J is an emerging technology brand focused on practical innovation: turning real-world friction into useful, accessible digital experiences.</p>
-        </div>
-        <div class="sj-story">
-          <article class="sj-story-card featured">
-            <span class="sj-card-kicker">OUR STORY</span>
-            <h3>Built from a simple idea. Driven by bigger possibilities.</h3>
-            <p>Secret J began with a clear conviction: the best technology solves problems people actually face. We start by identifying everyday challenges, understanding the people behind them, and building products that make a measurable difference.</p>
-          </article>
-          <article class="sj-story-card">
-            <span class="sj-card-kicker">OUR MISSION</span>
-            <h3>Make powerful technology feel effortless.</h3>
-            <p>To design intelligent, secure, and useful software that helps people make better decisions, access opportunities, and spend less time on repetitive work.</p>
-          </article>
-        </div>
-        <div class="sj-values">
-          <article class="sj-mini"><b>↗</b><h4>Our vision</h4><p>A world where intelligent digital tools make growth and opportunity more accessible to everyone.</p></article>
-          <article class="sj-mini"><b>◎</b><h4>Our approach</h4><p>Start with the problem. Engineer for clarity. Build carefully, improve continuously, and earn trust through useful results.</p></article>
-          <article class="sj-mini"><b>✳</b><h4>Our commitment</h4><p>Responsible innovation, practical accessibility, privacy-conscious product design, and lasting value.</p></article>
-        </div>
-      </section>
-      <div class="sj-shell"><div class="sj-divider"></div></div>
-
-      <section class="sj-shell sj-section" id="sj-offerings">
-        <div class="sj-section-top">
-          <div><span class="sj-overline">02 — What we offer</span><h2>Solutions that turn<br>ambition into action.</h2></div>
-          <p>Our focus is building digital experiences around real needs, with a growing product vision across career technology, artificial intelligence, and automation.</p>
-        </div>
-        <div class="sj-offerings">
-          <article class="sj-offer"><span class="sj-offer-icon" aria-hidden="true">◈</span><h3>Intelligent job discovery</h3><p>Explore relevant software and AI opportunities with structured job feeds and employer monitoring.</p><span class="sj-offer-status">Job Hunter · Available</span></article>
-          <article class="sj-offer"><span class="sj-offer-icon" aria-hidden="true">▧</span><h3>Your career workspace</h3><p>Keep your profile, saved opportunities, applications, and CV organized in one personal account.</p><span class="sj-offer-status">Job Hunter · Account features</span></article>
-          <article class="sj-offer"><span class="sj-offer-icon" aria-hidden="true">✳</span><h3>AI-assisted experiences</h3><p>Exploring thoughtful applications of AI to simplify research, career preparation, and repetitive workflows.</p><span class="sj-offer-status">Product direction</span></article>
-          <article class="sj-offer"><span class="sj-offer-icon" aria-hidden="true">⌁</span><h3>Purpose-built automation</h3><p>Engineering systems that connect information, surface useful updates, and reduce unnecessary manual work.</p><span class="sj-offer-status">Core capability</span></article>
-        </div>
-      </section>
-
-      <section class="sj-shell sj-section" id="sj-product">
-        <div class="sj-product">
-          <div>
-            <span class="sj-overline">03 — Our first product</span>
-            <h2>Meet Job Hunter<span style="color:#cbff87">.</span></h2>
-            <p>Your next opportunity shouldn't get lost across dozens of career portals. Job Hunter brings role discovery, company monitoring, and a personal career workspace into one focused experience.</p>
-            <div class="sj-hero-actions">
-              <a class="sj-btn sj-btn-primary" href="#radar">Launch Job Hunter ↗</a>
-              <a class="sj-btn sj-btn-outline" href="/account.html?mode=register&amp;after=home">Create your account</a>
-            </div>
-          </div>
-          <div class="sj-product-visual" aria-label="Simplified Job Hunter dashboard illustration">
-            <div class="sj-visual-head"><strong>jobhunter<span style="color:#cbff87">.</span></strong><span class="sj-visual-pulse">● Finding opportunities</span></div>
-            <div class="sj-visual-line"><span></span><div><b>Discover relevant roles</b><small>AI &amp; software engineering</small></div><i>↗</i></div>
-            <div class="sj-visual-line"><span></span><div><b>Monitor companies</b><small>Structured career sources</small></div><i>◎</i></div>
-            <div class="sj-visual-line"><span></span><div><b>Track your journey</b><small>Saved jobs &amp; applications</small></div><i>✓</i></div>
-          </div>
-        </div>
-      </section>
-
-      <div class="sj-shell"><div class="sj-divider"></div></div>
-      <section class="sj-shell sj-cta">
-        <span class="sj-overline">THE NEXT CHAPTER</span>
-        <h2>Ideas are the beginning.<br>Impact is the destination.</h2>
-        <p>We're building for a future where technology creates opportunities, unlocks potential, and makes meaningful progress easier.</p>
-        <a class="sj-btn sj-btn-primary" href="https://www.linkedin.com/company/secretj/home/" target="_blank" rel="noopener noreferrer">Connect with us on LinkedIn ↗</a>
-      </section>
-    </main>
-    <footer class="sj-footer">
-      <div class="sj-shell sj-footer-inner">
-        <div><a class="sj-identity" href="#home" data-sj-home><img src="/assets/secretj-mark.svg" alt="Secret J" width="36" height="36"><span>SECRET J<span class="sj-period">.</span></span></a><p>Technology, artificial intelligence &amp; software innovation.</p><p>© <span id="sj-year">2026</span> Secret J. All rights reserved.</p></div>
-        <div class="sj-footer-links"><a href="#about" data-sj-scroll="about">About</a><a href="#offerings" data-sj-scroll="offerings">What we offer</a><a href="#radar">Job Hunter</a><a href="https://www.linkedin.com/company/secretj/home/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a></div>
-      </div>
-    </footer>
-  </div>
   <div class="layout">
     <aside class="sidebar" aria-label="Main navigation">
-      <a class="brand" href="#home" aria-label="Job Hunter home"><span class="brand-icon">↗</span><span>jobhunter<span class="brand-dot">.</span></span></a>
+      <a class="brand" href="#home" aria-label="Secret J home"><img src="/assets/secretj-mark.svg" width="30" height="30" style="border-radius:7px" alt=""><span>Secret J<span class="brand-dot">.</span></span></a>
       <div class="profile"><span class="profile-avatar">SJ</span><span><b>Secret J workspace</b><small>Career tools &amp; opportunities</small></span><span class="profile-live" title="Your workspace">✦</span></div>
       <p class="nav-title">WORKSPACE</p>
       <nav id="navigation">
@@ -375,7 +246,22 @@ a:hover{color:var(--ink)}
       <div class="sidebar-bottom"><div class="sidebar-tip"><span>✦ CAREER COMPANION</span><strong>Better opportunities.<br>Less searching.</strong><p>Focused on your next career move in Egypt.</p></div><div class="sidebar-foot">A Secret J product <span>✳</span></div></div>
     </aside>
     <div class="workspace-shell">
-      <header class="topbar"><div class="breadcrumb">YOUR WORKSPACE <span>/</span> <b id="page-label">Home</b></div><div class="top-actions"><span class="region-tag">◉ Egypt only</span><button class="icon-button theme-toggle" id="theme-toggle" type="button" title="Switch appearance" aria-label="Toggle dark mode" aria-pressed="false"><span id="theme-icon" aria-hidden="true">◐</span><span id="theme-label">Dark</span></button><button class="icon-button" id="refresh-button" type="button" title="Refresh data" aria-label="Refresh data">↻</button><span class="top-avatar">SJ</span></div></header>
+      <header class="topbar"><div class="breadcrumb">SECRET J <span>/</span> <b id="page-label">Home</b></div><div class="top-actions"><span class="region-tag">◉ Egypt only</span><div class="sj-header-auth" id="sj-guest-actions">
+<a href="/account.html?mode=login" class="btn secondary sj-login">Log in</a>
+<a href="/account.html?mode=register" class="btn primary sj-sign-up">Sign up</a>
+</div>
+<div class="sj-header-auth" id="sj-member-actions" hidden>
+<details id="sj-profile-menu"><summary><span class="sj-avatar" id="sj-profile-initial">SJ</span><span>Profile</span> <span aria-hidden="true">⌄</span></summary>
+<div class="sj-account-menu"><small id="sj-member-email"></small>
+<a href="/account.html?view=overview">Account overview</a>
+<a href="/account.html?view=profile">Profile</a>
+<a href="/account.html?view=documents">CV and photo</a>
+<a href="/account.html?view=saved">Saved jobs</a>
+<a href="/account.html?view=applications">Applications</a>
+<a href="/account.html?view=preferences">Alerts and settings</a>
+<a id="sj-admin-link" href="/account.html?view=admin" hidden>Admin console</a>
+<div class="sj-menu-divider"></div>
+<button type="button" id="sj-header-logout">Sign out</button></div></details></div><button class="icon-button theme-toggle" id="theme-toggle" type="button" title="Switch appearance" aria-label="Toggle dark mode" aria-pressed="false"><span id="theme-icon" aria-hidden="true">◐</span><span id="theme-label">Dark</span></button><button class="icon-button" id="refresh-button" type="button" title="Refresh data" aria-label="Refresh data">↻</button></div></header>
       <main id="main-content" class="main-content" tabindex="-1"><p class="loading">Loading your workspace…</p></main>
       <footer class="footer">JOB HUNTER <span>Your next move starts here.</span></footer>
     </div>
@@ -573,7 +459,7 @@ a:hover{color:var(--ink)}
     render();
     if(!silent)toast(res[0].status==='fulfilled'?'Workspace updated':'Could not load job snapshot',res[0].status!=='fulfilled');
   }
-  function go(page){state.page=names[page]?page:'home';document.body.classList.toggle('sj-show-app',state.page!=='home');location.hash=state.page;el('#page-label').textContent=names[state.page];document.querySelectorAll('nav button[data-page]').forEach(b=>{b.classList.toggle('active',b.dataset.page===state.page);b.setAttribute('aria-current',b.dataset.page===state.page?'page':'false');});render();}
+  function go(page){state.page=names[page]?page:'home';location.hash=state.page;el('#page-label').textContent=names[state.page];document.querySelectorAll('nav button[data-page]').forEach(b=>{b.classList.toggle('active',b.dataset.page===state.page);b.setAttribute('aria-current',b.dataset.page===state.page?'page':'false');});render();}
   function top(eyebrow,title,desc,action=''){return `<div class="section-top"><div><span class="eyebrow">${esc(eyebrow)}</span><h1>${esc(title)}</h1><p class="subtitle">${esc(desc)}</p></div>${action}</div>`;}
   const stat=(label,note,value)=>`<article class="stat"><span>${esc(label)}</span><strong>${esc(value)}</strong><small>${esc(note)}</small></article>`;
   const empty=(title,desc)=>`<div class="empty"><strong>${esc(title)}</strong><p>${esc(desc)}</p></div>`;
@@ -612,15 +498,57 @@ a:hover{color:var(--ink)}
   }
 
   function home(){
-    const sources=monitoredSources(), matched=validJobs().filter(j=>scoreOf(j)>0).length;
-    return top('JOB HUNTER / WORKSPACE','Your career toolkit','One place for your career workflows. Choose a feature to get started.')+
-      `<p class="tiny">${state.member?'Signed in to Secret J · cloud saved jobs enabled':'Save jobs locally, or <a href="https://www.jobsnow.tech/account.html">create an account</a> to sync across devices.'}</p>`+
-      '<section class="feature-grid" aria-label="Workspace features">'+
-      '<button type="button" class="feature-card" data-navigate="radar"><span class="feature-mark">↗</span><span class="feature-meta">AVAILABLE NOW</span><strong>Job Hunter</strong><span class="feature-description">Discover internships and early-career engineering roles, monitor employers, and save opportunities.</span><span class="feature-foot">Open Job Hunter <span aria-hidden="true">↗</span></span></button>'+
-      '<div class="feature-card feature-upcoming"><span class="feature-mark">▤</span><span class="feature-meta">COMING SOON</span><strong>Resume Updater</strong><span class="feature-description">A dedicated space to tailor and improve your resume for each opportunity. Development is planned.</span><span class="feature-foot">Not available yet</span></div>'+
-      '</section>'+
-      monitoringPanel()+
-      '<section class="workspace-brief"><span class="eyebrow">AT A GLANCE</span><div class="brief-values"><span><strong>'+matched+'</strong> matching opportunities</span><span><strong>'+sources.length+'</strong> tracked sources</span></div></section>';
+    const sources=monitoredSources(),matched=validJobs().filter(j=>scoreOf(j)>0).length;
+    return `<div class="sj-home">
+      <section class="sj-home-hero">
+        <img src="/assets/secretj-mark.svg" class="sj-home-logo" alt="Secret J logo" width="60" height="60">
+        <div class="sj-home-hero-content">
+          <span class="eyebrow">SECRET J</span>
+          <h1>Software built for real life.</h1>
+          <p>Secret J is an independent technology venture building practical software that helps people find opportunities, make decisions and work with less friction.</p>
+          <div class="sj-home-actions">
+            <button type="button" class="btn primary" data-navigate="radar">Open Job Hunter</button>
+            <a class="btn secondary" href="https://www.linkedin.com/company/secretj/home/" target="_blank" rel="noopener noreferrer">Secret J on LinkedIn</a>
+          </div>
+        </div>
+      </section>
+      <section aria-labelledby="sj-about-title">
+        <div class="sj-section-heading"><div><span class="eyebrow">ABOUT US</span><h2 id="sj-about-title">A clear idea, built with purpose</h2></div></div>
+        <div class="sj-panel-grid">
+          <article class="sj-about-card"><span class="eyebrow">OUR STORY</span><h3>Why we started</h3>
+          <p>Secret J began with Job Hunter. Looking for relevant roles across different company websites takes time and effort. We set out to make that process simpler, and to build useful products around problems like it.</p></article>
+          <article class="sj-about-card"><span class="eyebrow">OUR MISSION</span><h3>Make the useful simple</h3>
+          <p>We create thoughtful digital products that reduce repetitive work, put important information in reach and give people more control over their next step.</p></article>
+        </div>
+        <div class="sj-panel-grid three" style="margin-top:12px">
+          <article class="sj-about-card"><span class="eyebrow">VISION</span><h3>Better access</h3><p>Technology that makes meaningful opportunities easier to discover and act on.</p></article>
+          <article class="sj-about-card"><span class="eyebrow">APPROACH</span><h3>Build with care</h3><p>Start with a real need. Keep the experience clear. Improve the details that matter.</p></article>
+          <article class="sj-about-card"><span class="eyebrow">VALUES</span><h3>Practical by design</h3><p>Useful features, responsible engineering and respect for user privacy.</p></article>
+        </div>
+      </section>
+      <section aria-labelledby="sj-offer-title">
+        <div class="sj-section-heading"><div><span class="eyebrow">WHAT WE OFFER</span><h2 id="sj-offer-title">Focused tools for better work</h2></div></div>
+        <div class="sj-panel-grid">
+          <article class="sj-service-card"><span class="eyebrow">01</span><h3>Job discovery</h3><p>Explore software and AI roles from monitored company career pages in one place.</p><span class="sj-service-label">Available in Job Hunter</span></article>
+          <article class="sj-service-card"><span class="eyebrow">02</span><h3>Career management</h3><p>Keep a personal profile, save openings and track applications from your account.</p><span class="sj-service-label">Job Hunter accounts</span></article>
+          <article class="sj-service-card"><span class="eyebrow">03</span><h3>Applied AI</h3><p>We are exploring practical ways to make information easier to understand and use.</p><span class="sj-service-label">In development</span></article>
+          <article class="sj-service-card"><span class="eyebrow">04</span><h3>Automation</h3><p>We build workflows that monitor relevant sources and bring updates together.</p><span class="sj-service-label">Core capability</span></article>
+        </div>
+      </section>
+      <section aria-labelledby="sj-product-title">
+        <div class="sj-section-heading"><div><span class="eyebrow">OUR FIRST PRODUCT</span><h2 id="sj-product-title">Job Hunter</h2></div></div>
+        <div class="sj-product-card">
+          <div><span class="eyebrow">CAREER TECHNOLOGY</span><h3>A simpler way to find your next role</h3>
+          <p>Discover opportunities, monitor employers and stay organized throughout your job search.</p></div>
+          <button type="button" class="btn primary" data-navigate="radar">Explore product</button>
+        </div>
+      </section>
+      <section class="sj-home-monitor" aria-label="Platform activity">
+        <div class="sj-section-heading"><div><span class="eyebrow">JOB HUNTER</span><h2>Platform activity</h2></div></div>
+      </section>
+    </div>`+
+    monitoringPanel()+
+    '<section class="workspace-brief"><span class="eyebrow">AT A GLANCE</span><div class="brief-values"><span><strong>'+matched+'</strong> matching opportunities</span><span><strong>'+sources.length+'</strong> monitored sources</span></div></section>';
   }
 
   // CV files never leave the current device. IndexedDB stores the original file Blob.
