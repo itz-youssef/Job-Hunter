@@ -195,8 +195,6 @@ def _ats(url: str):
         return "talabat_egypt", None
     if host in ("iaziqy.fa.ocs.oraclecloud.com", "jobs.uber.com") and p.path.startswith(("/hcmUI/CandidateExperience", "/en")):
         return "uber_egypt", None
-    if host == "finaira.ai" and p.path.startswith(("/work-at-finaira", "/job/")):
-        return "finaira_egypt", None
     if host == "careers.ey.com" and p.path.startswith(("/ey/search", "/viewalljobs")):
         return "ey_egypt", None
     if host in ("blink22.com", "www.blink22.com") and p.path.startswith("/careers"):
@@ -547,8 +545,6 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     if kind == "uber_egypt":
         from app.egypt_expansion_feeds import uber_egypt_partial
         return _dedupe(uber_egypt_partial(name,_bytes,_job))
-    if kind == "finaira_egypt":
-        return _dedupe(_structured_jobs(name,url,_bytes(url).decode("utf-8","replace")))
     if kind == "ey_egypt":
         from app.egypt_expansion_feeds import ey_egypt
         return _dedupe(ey_egypt(name,_bytes,_job))
