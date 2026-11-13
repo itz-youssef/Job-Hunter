@@ -126,7 +126,7 @@ async function extractDOCX(file){
   const result=await mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});
   return result.value||'';
 }
-async function extract(file){
+async function extractText(file){
   if(file.size>786432)throw Error('CV limit: 768 KB');
   const name=String(file.name||'').toLowerCase();
   let text='';
@@ -134,7 +134,8 @@ async function extract(file){
   else if(name.endsWith('.docx')||file.type==='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
     text=await extractDOCX(file);
   else throw Error('Only PDF or DOCX files are supported');
-  return parseText(text);
+  return text;
 }
-return{parseText,extract,normalizeText,sectionOf,fields:FIELDS};
+async function extract(file){return parseText(await extractText(file));}
+return{parseText,extract,extractText,normalizeText,sectionOf,fields:FIELDS};
 });
