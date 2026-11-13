@@ -21,11 +21,14 @@ test('CV Holder in navigation and content routing',()=>{
   assert.match(script,/data-cv-remove/);
   assert.match(script,/data-cv-download/);
 });
-test('CV not uploaded to external services',()=>{
-  const cv=script.slice(script.indexOf('// CV files never leave'),script.indexOf('  function resumePage()'));
-  assert.ok(!cv.includes('fetch('));
-  assert.ok(!cv.includes('XMLHttpRequest'));
-  assert.match(cv,/10\*1024\*1024/);
+test('local CV handling stays browser-local unless private backup is explicitly requested',()=>{
+  const local=script.slice(script.indexOf('// CV files never leave'),script.indexOf('  function profilePage()'));
+  assert.ok(!local.includes('fetch('),'Local CV storage must not send data over the network');
+  assert.ok(!local.includes('XMLHttpRequest'));
+  const save=script.slice(script.indexOf('async function acceptCV(file)'),script.indexOf('  function resumePage()'));
+  assert.match(save,/10\*1024\*1024/);
+  assert.match(save,/cvAction\('save',item\)/);
+  assert.match(script,/async function profileCloud\(method,kind,payload,token\)/);
 });
 test('email test has an actual workflow',()=>{
   const workflow=fs.readFileSync('.github/workflows/test-email.yml','utf8');

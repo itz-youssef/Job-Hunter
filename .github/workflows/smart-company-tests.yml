@@ -15,6 +15,8 @@ on:
       - "app/filters.py"
       - "api/companies.js"
       - "api/email-destination.js"
+      - "api/test-email.js"
+      - "api/profile.js"
       - "dist/index.html"
       - "tests/test_smart_careers.py"
       - "tests/test_requested_employers.py"
@@ -27,6 +29,7 @@ on:
       - "tests/test_management_api.cjs"
       - "tests/test_feed_ui.cjs"
       - "tests/test_workspace_features.cjs"
+      - "tests/test_profile_cloud_email.cjs"
       - ".github/workflows/test-email.yml"
       - "tests/test_workday_posted_date.py"
       - "tests/test_posting_date_backfill.py"
@@ -63,4 +66,4 @@ jobs:
         with:
           node-version: '20'
       - name: Test management API and browser scripts
-        run: node --test tests/test_management_api.cjs tests/test_feed_ui.cjs tests/test_workspace_features.cjs tests/test_mobile_job_features.cjs tests/test_next_company_check.cjs
+        run: node --test tests/test_management_api.cjs tests/test_feed_ui.cjs tests/test_workspace_features.cjs tests/test_mobile_job_features.cjs tests/test_next_company_check.cjs tests/test_profile_cloud_email.cjs
