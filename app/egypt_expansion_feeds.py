@@ -34,7 +34,7 @@ def ey_egypt(name, get_bytes, make_job, max_pages=8):
             if not anchor:continue
             link=urljoin(url,anchor.get("href") or "")
             parsed=urlsplit(link)
-            if parsed.hostname!="careers.ey.com" or not re.fullmatch(r"/ey/job/[^?#]+/\d+/?",parsed.path,re.I):
+            if parsed.hostname!="careers.ey.com" or not re.fullmatch(r"/(?:ey/)?job/[^?#]+/\d+/?",parsed.path,re.I):
                 continue
             title=anchor.get_text(" ",strip=True)
             cells=[cell.get_text(" ",strip=True) for cell in row.select("td")]
@@ -160,3 +160,71 @@ def amazon_egypt(name,get_json,make_job,aws_only=False):
             results[path]=job
         if (page+1)*size>=expected:return list(results.values())
     raise ValueError("Amazon jobs exceed safe pagination limit")
+
+
+def breadfast_egypt(name,get_bytes,make_job,tech_only=False):
+    """Investor portfolio board: employer-tagged Breadfast posts; partial coverage."""
+    base="https://careers.4dxventures.com/companies/breadfast"
+    html=get_bytes(base).decode("utf-8","replace")
+    doc=BeautifulSoup(html,"html.parser")
+    jobs={}
+    for a in doc.select("a[href]"):
+        link=urljoin(base,a.get("href")or"").split("#",1)[0].split("?",1)[0]
+        parsed=urlsplit(link)
+        if parsed.hostname!="careers.4dxventures.com" or not re.fullmatch(r"/companies/breadfast/jobs/\d+-[a-z0-9-]+/?",parsed.path,re.I):
+            continue
+        title=a.get_text(" ",strip=True)
+        if not title or len(title)>180:continue
+        if tech_only and not re.search(r"\b(?:software|tech|data|ai|ml|engineer|developer|backend|frontend|product|automation|quality assurance)\b",title,re.I):
+            continue
+        if link in jobs:continue
+        # Portfolio careers board explicitly tags the hiring company as Breadfast.
+        # Egypt/Cairo for Breadfast is validated by the official employer scope,
+        # but no per-role location is asserted unless listed in the title.
+        place="Alexandria, Egypt" if re.search("Alexandria",title,re.I) else "Egypt (company board)"
+        jobs[link]=make_job(name,title,place,link,"","","")
+    if not jobs and not tech_only:
+        raise ValueError("Breadfast investor careers page has no job-detail links")
+    return list(jobs.values())
+
+
+def successfactors_egypt(name,get_bytes,make_job,base,max_pages=8):
+    """Generic SuccessFactors jobs with verified city in page table."""
+    jobs={}
+    total=None
+    for page in range(max_pages):
+        url=base+("&" if "?" in base else "?")+"startrow="+str(page*25)
+        doc=BeautifulSoup(get_bytes(url).decode("utf-8","replace"),"html.parser")
+        text=doc.get_text(" ",strip=True)
+        totals=re.search(r"Results\s+\d+\s*[-–]\s*\d+\s+of\s+([\d,]+)",text,re.I)
+        if totals:
+            count=int(totals.group(1).replace(",",""))
+            if total is None:total=count
+            elif count!=total:raise ValueError("SuccessFactors jobs changed while scanning")
+        current={}
+        for tr in doc.select("tr"):
+            a=tr.select_one("a.jobTitle-link")
+            if not a:continue
+            link=urljoin(url,a.get("href")or"")
+            parsed=urlsplit(link)
+            if parsed.hostname!=urlsplit(base).hostname or not re.fullmatch(r"/(?:[a-z]{2}/)?job/[^?#]+/\d+/?",parsed.path,re.I):
+                continue
+            cells=[td.get_text(" ",strip=True) for td in tr.select("td")]
+            egypt=next((x for x in cells if re.search(r"(?:Cairo|Giza|Alexandria),?\s*EG\b|\bEgypt\b",x,re.I)),"")
+            if not egypt:continue
+            title=a.get_text(" ",strip=True)
+            if title:current[link]=(title,egypt)
+        if not current:
+            if page==0 and total!=0:raise ValueError("No verified Egyptian job rows")
+            if total is not None and len(jobs)<total:raise ValueError("Missing SuccessFactors job pages")
+            return list(jobs.values())
+        before=len(jobs)
+        for link,(title,where) in current.items():
+            if link not in jobs:
+                jobs[link]=make_job(name,title,where+", Egypt" if "egypt" not in where.lower() else where,link,"","","")
+        if len(jobs)==before and (total is None or len(jobs)<total):
+            raise ValueError("SuccessFactors pagination repeated or incomplete")
+        if total is not None and len(jobs)>=total:return list(jobs.values())
+        if len(current)<25 and total is None:return list(jobs.values())
+    if total is not None and len(jobs)>=total:return list(jobs.values())
+    raise ValueError("SuccessFactors page safety limit reached")
