@@ -4,7 +4,7 @@
  * Personal data API. Every query is scoped by the verified server-side user id.
  * The DATABASE_URL credential must never be available to frontend code.
  */
-const core=require('./_secretj/core');
+const core=require('../lib/secretj/core');
 const {Buffer}=require('node:buffer');
 
 function jsonText(value){ return JSON.stringify(value); }
