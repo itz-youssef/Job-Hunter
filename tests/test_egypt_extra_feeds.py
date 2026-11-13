@@ -36,3 +36,11 @@ def test_missing_live_board_is_error_not_success():
         assert "did not expose" in str(exc)
     else:
         raise AssertionError("Dynamic boards must not be marked healthy")
+
+def test_blnk_location_and_date_read_from_listing_row():
+    index=b'''<table><tr><td><a href="https://app.zenats.com/en/public_job/abc">Junior Backend Engineer</a></td><td>Cairo</td><td>Nov 12, 2026</td></tr></table>'''
+    detail=b'<h1>Junior Backend Engineer</h1><p>Python, Django and REST APIs</p>'
+    rows=blnk_zenats("blnk Egypt",lambda url:index if "careers_page" in url else detail,_job)
+    assert len(rows)==1
+    assert rows[0]["location"]=="Cairo, Egypt"
+    assert rows[0]["published_at"]=="2026-11-12"
