@@ -189,6 +189,10 @@ def _ats(url: str):
     host = (p.hostname or "").lower()
     seg = [s for s in p.path.split("/") if s]
 
+    if host == "cibeg.taleo.net" and p.path.startswith("/careersection/cib_ex/"):
+        return "cib_egypt", None
+    if host == "adibegypt.taleo.net" and p.path.startswith("/careersection/ex/"):
+        return "adib_egypt", None
     if host == "careers.pwc.com" and p.path.startswith(("/search", "/job")):
         return "pwc_egypt", None
     if host == "careers.deliveryhero.com" and p.path.startswith(("/jobs", "/talabat-jobs", "/talabat")):
@@ -536,6 +540,9 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     p = urllib.parse.urlsplit(url)
     jobs = []
 
+    if kind in ("cib_egypt","adib_egypt"):
+        from app.egypt_expansion_feeds import taleo_bank_partial
+        return _dedupe(taleo_bank_partial(name,url,_bytes,_job))
     if kind == "pwc_egypt":
         from app.egypt_expansion_feeds import successfactors_egypt
         return _dedupe(successfactors_egypt(name,_bytes,_job,"https://careers.pwc.com/search/?q=&locationsearch=Egypt"))
@@ -1269,7 +1276,7 @@ def scan_company(company: dict):
             name, url
         )
 
-        if kind in ("etisalat_egypt", "indrive_egypt", "blink22_egypt", "uber_egypt"):
+        if kind in ("etisalat_egypt", "indrive_egypt", "blink22_egypt", "uber_egypt", "cib_egypt", "adib_egypt"):
             return (
                 jobs, "partial",
                 f"{len(jobs)} official public vacancies; location or full coverage not verified",
