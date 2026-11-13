@@ -63,6 +63,7 @@ test('Neon connection failure is reported without leaking driver error details',
     const r=await invoke(request());
     assert.equal(r.status,503);
     assert.equal(r.data.database,'connection_failed');
+    assert.equal(r.data.reason,'query_failed');
     assert.doesNotMatch(JSON.stringify(r.data),/sensitive|example\.invalid/);
   });
 });
@@ -70,4 +71,30 @@ test('non-GET health probes are rejected',async()=>{
   const r=await invoke(request('POST'));
   assert.equal(r.status,405);
   assert.equal(r.data.ok,false);
+});
+
+test('incorrect connection URL and masked password produce safe actionable diagnostics',async()=>{
+  assert.equal(health.inspectConnectionString('postgresql://user:secret@host.test/neondb'),'valid');
+  assert.equal(health.inspectConnectionString('psql postgresql://user:secret@host.test/neondb'),'invalid_format');
+  assert.equal(health.inspectConnectionString('postgresql://user:***@host.test/neondb'),'redacted_password');
+  assert.equal(health.inspectConnectionString('postgresql://user@host.test/neondb'),'invalid_credentials_format');
+  await withEnv({url:'DATABASE_URL=postgresql://user:secret@host.test/neondb',enabled:'true'},async()=>{
+    const r=await invoke(request());
+    assert.equal(r.status,503);
+    assert.equal(r.data.database,'invalid_connection_string');
+    assert.equal(r.data.reason,'invalid_format');
+    assert.doesNotMatch(JSON.stringify(r.data),/postgresql:\/\//);
+  });
+});
+test('driver errors are sanitized without reflecting secrets or hostnames',()=>{
+  assert.equal(health.classifyConnectionFailure(Object.assign(Error('password authentication failed for user foo'),{code:'28P01'})),'invalid_credentials');
+  assert.equal(health.classifyConnectionFailure(Object.assign(Error('database "neondb" does not exist'),{code:'3D000'})),'database_not_found');
+  assert.equal(health.classifyConnectionFailure(new TypeError('fetch failed')),'network_error');
+  assert.equal(health.classifyConnectionFailure(new Error('malformed template query')),'query_failed');
+});
+test('Neon driver uses the correct query(sql, params) API for SQL strings',()=>{
+  const fs=require('node:fs');
+  const code=fs.readFileSync('lib/secretj/core.js','utf8');
+  assert.match(code,/return \(text, values\) => sql\.query\(text, values\)/);
+  assert.doesNotMatch(code,/return neon\(url\);/);
 });
