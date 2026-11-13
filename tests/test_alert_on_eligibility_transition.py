@@ -5,10 +5,7 @@ def test_reclassified_siemens_job_queues_one_email_and_preserves_identity(tmp_pa
     monkeypatch.setenv("DB_PATH",str(tmp_path/"jobs.db"))
     database.init()
     with database.db() as conn:
-        conn.execute(
-           "INSERT INTO sources(name,url,kind,enabled,approved,baseline) VALUES (?,?,?,?,?,?)",
-           ("Siemens","https://jobs.siemens.com/en_US/externaljobs","avature",1,1,1),
-        )
+        conn.execute("UPDATE sources SET enabled=1,approved=1,baseline=1 WHERE name=? AND kind=?",("Siemens","avature"))
         source=dict(conn.execute("SELECT * FROM sources WHERE name='Siemens'").fetchone())
     job={"external_id":"527985","title":"Software Development Engineer",
          "location":"Cairo, Egypt","description":"C++ programming",
