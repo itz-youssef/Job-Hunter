@@ -34,6 +34,67 @@ textarea{min-height:94px;resize:vertical}.btn{padding:12px 18px;background:var(-
 .cards{display:grid;gap:10px}.item{padding:17px;border:1px solid var(--border);border-radius:12px;display:flex;justify-content:space-between;gap:16px;align-items:center}.item strong{display:block}.item small{display:block;color:var(--muted)}.item-actions{display:flex;gap:7px;flex-wrap:wrap;align-items:center}.item-actions button,.item-actions a{font-size:12px;padding:8px 11px}.avatar{width:72px;height:72px;object-fit:cover;border-radius:50%;background:var(--soft);border:1px solid var(--border);display:block}
 .provider-row{display:flex;align-items:center;gap:15px;flex-wrap:wrap;padding:17px;background:var(--bg);border-radius:13px;border:1px solid var(--border);margin-bottom:16px}.provider-row p{margin:0}.provider-row .btn{min-height:42px}.linkedin-photo{width:54px;height:54px;border-radius:50%;object-fit:cover}.provider-row .spacer{flex:1}.provider-row .tiny{font-size:11px;color:var(--muted)}.filebox{border:1px dashed var(--border);border-radius:12px;padding:20px;margin-top:14px;background:var(--soft)}.filebox input{width:100%;background:transparent}.small{font-size:12px}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
 [hidden]{display:none!important}@media(max-width:670px){main{margin-top:25px}header{padding:15px 16px}.panel{padding:18px}.grid{grid-template-columns:1fr}.wide{grid-column:auto}.summary{grid-template-columns:1fr}.item{align-items:flex-start;flex-direction:column}}
+
+/* Inverse account cards match the main Job Hunter theme.
+   Dark canvas: white form cards, black text. Light canvas: black cards, white text. */
+:root{
+  --account-card-bg:#111;
+  --account-card-ink:#fff;
+  --account-card-muted:#cacaca;
+  --account-card-soft:#252525;
+  --account-card-border:#393939;
+}
+html[data-theme="dark"]{
+  --account-card-bg:#fff;
+  --account-card-ink:#111;
+  --account-card-muted:#555;
+  --account-card-soft:#eee;
+  --account-card-border:#d4d4d4;
+}
+.panel{
+  background:var(--account-card-bg);
+  color:var(--account-card-ink);
+  border-color:var(--account-card-border);
+}
+.panel :is(h1,h2,h3,h4,strong,b){color:var(--account-card-ink)}
+.panel :is(p,.muted,.small,label,.eyebrow,.tiny,.spacer){color:var(--account-card-muted)}
+.panel :is(input,select,textarea){
+  background:var(--account-card-soft);
+  color:var(--account-card-ink);
+  border-color:var(--account-card-border);
+}
+.panel :is(input,textarea)::placeholder{color:var(--account-card-muted);opacity:1}
+.panel .btn:not([disabled]){
+  background:var(--account-card-ink);
+  color:var(--account-card-bg);
+  border:1px solid var(--account-card-ink);
+}
+.panel .btn.secondary,.panel .btn.subtle,.panel .btn.danger{
+  background:var(--account-card-soft);
+  color:var(--account-card-ink);
+  border:1px solid var(--account-card-border);
+}
+.panel .tabs{background:var(--account-card-soft)}
+.panel .tabs button{color:var(--account-card-muted)}
+.panel .tabs button.active{
+  background:var(--account-card-bg);
+  color:var(--account-card-ink);
+  border:1px solid var(--account-card-border);
+}
+.panel .notice,.panel .filebox,.panel .provider-row,.panel .stat{
+  background:var(--account-card-soft);
+  border-color:var(--account-card-border);
+  color:var(--account-card-ink);
+}
+.panel .notice :is(p,strong),.panel .stat :is(strong,b),
+.panel .provider-row :is(strong,b),.panel .item strong{color:var(--account-card-ink)}
+.panel :is(.item,.cards,.filebox,.notice){border-color:var(--account-card-border)}
+.panel .item :is(small,p),.panel .stat small{color:var(--account-card-muted)}
+.panel a:not(.btn){color:var(--account-card-ink);text-decoration:underline}
+.panel .avatar{background:var(--account-card-soft);border-color:var(--account-card-border)}
+.panel .nav button.active{color:var(--account-card-bg)}
+@media (prefers-reduced-motion:reduce){.btn{transition:none}}
+
 </style>
 <script src="/assets/secretj-account.js" defer></script>
 </head>
