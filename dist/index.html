@@ -218,7 +218,7 @@ a:hover{color:var(--ink)}
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/secretj-home.css">
   <link rel="stylesheet" href="/assets/secretj-global-theme.css?v=20261113-uniform-2">
-  <script src="/assets/secretj-home.js" defer></script>
+  <script src="/assets/secretj-home.js?v=account-sync-1" defer></script>
 </head>
 <body>
   <div class="layout">
@@ -325,19 +325,62 @@ a:hover{color:var(--ink)}
   function persistSaved(){try{localStorage.setItem('jh-saved-v2',JSON.stringify([...state.saved]));}catch{/* Storage can be disabled by privacy settings. */}}
   // On Vercel, authenticated members use Neon; guests retain legacy local
   // bookmarks. Never merge a shared browser's guest data into another account.
+  let memberSequence=0;
+  async function memberRequest(scope,method='GET',body){
+    const url=scope.startsWith('/api/')?scope:'/api/secretj-data?scope='+scope;
+    const response=await fetch(url,{method,credentials:'same-origin',cache:'no-store',
+      headers:{'Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw Error(data.error||'Account request failed. Please try again.');
+    return data;
+  }
+  function accountChanged(){
+    window.dispatchEvent(new Event('secretj-account-changed'));
+    try{localStorage.setItem('sj-account-change',Date.now()+':'+Math.random());}catch{}
+  }
   async function hydrateMember(){
-    // The Cloudflare website now hosts the same authenticated Neon APIs.
+    const sequence=++memberSequence;
+    state.memberLoading=true;
     try{
-      const result=await json('/api/secretj-auth?action=session');
-      if(!result.user){state.member=null;render();return;}
-      state.member=result.user;
-      // A private saved-job request can fail without removing the authenticated state.
-      try{
-        const cloud=await json('/api/secretj-data?scope=saved');
-        state.saved=new Set((cloud.jobs||[]).map(x=>String(x.job_key)));
-      }catch{}
-      render();
-    }catch{/* The public feed stays functional while Neon is offline. */}
+      const result=await memberRequest('/api/secretj-auth?action=session');
+      if(sequence!==memberSequence)return;
+      const changed=state.member?.id!==result.user?.id;
+      state.member=result.user||null;
+      if(changed || !state.member){
+        profile={...blankProfile(),photo:''};cvEntry=null;
+        state.memberEmail=null;state.saved=new Set();state.savedRecords=[];
+        render();
+      }
+      if(!state.member){readSaved();state.memberError='';return;}
+      const userId=state.member.id;
+      const resources=['profile','avatar','cv','saved','/api/secretj-email?action=status'];
+      const results=await Promise.allSettled(resources.map(scope=>memberRequest(scope)));
+      if(sequence!==memberSequence || state.member?.id!==userId)return;
+      const value=i=>results[i].status==='fulfilled'?results[i].value:null;
+      const data=value(0),avatar=value(1),cv=value(2),saved=value(3);
+      profile={...blankProfile(),...(data?.profile||{}),name:data?.profile?.display_name||'',email:state.member.email,photo:''};
+      const photo=avatar?.file;
+      if(avatar?.found && ['image/jpeg','image/png','image/webp'].includes(photo?.mime_type)){
+        const encoded=String(photo.base64||'').replace(/\s/g,'');
+        if(encoded.length<=150000 && /^[A-Za-z0-9+/]+={0,2}$/.test(encoded))profile.photo='data:'+photo.mime_type+';base64,'+encoded;
+      }
+      cvEntry=null;
+      if(cv?.found && cv.file){
+        cvEntry={name:cv.file.original_name,blob:base64Blob(cv.file.base64,cv.file.mime_type),savedAt:cv.file.updated_at||''};
+      }
+      state.savedRecords=saved?.jobs||[];
+      state.saved=new Set(state.savedRecords.map(x=>String(x.job_key)));
+      state.memberEmail=value(4);
+      state.memberErrors=Object.fromEntries(resources.map((key,i)=>[key,results[i].status==='rejected'?results[i].reason.message:'']));
+      state.memberError='';
+    }catch(e){
+      if(sequence!==memberSequence)return;
+      state.member=null;profile={...blankProfile(),photo:''};cvEntry=null;
+      state.memberEmail=null;state.saved=new Set();state.savedRecords=[];
+      state.memberError=e.message;
+    }finally{
+      if(sequence===memberSequence){state.memberLoading=false;render();}
+    }
   }
   async function cloudSave(key,remove){
     const j=jobs().find(x=>jobKey(x)===key);
@@ -504,12 +547,12 @@ a:hover{color:var(--ink)}
     const list=validJobs(), sources=monitoredSources(), active=sources.filter(s=>s.active).length, matching=list.filter(j=>scoreOf(j)>0).length;
     const recent = list.slice().sort((a,b)=>(getDate(b.discovered_at||b.detected_at||b.published_at)||0)-(getDate(a.discovered_at||a.detected_at||a.published_at)||0)).slice(0,4);
     const statuses=sources.slice(0,5);
-    return top('YOUR PERSONAL CAREER ASSISTANT','Your career dashboard','Here’s what your job radar is finding for you.',IS_CLOUDFLARE?'':`<button class="btn primary" data-action="open-company">+ Add company</button>`)+
+    return top('YOUR PERSONAL CAREER ASSISTANT','Your career dashboard','Here’s what your job radar is finding for you.',IS_CLOUDFLARE||state.member?.role!=='admin'?'':`<button class="btn primary" data-action="open-company">+ Add company</button>`)+
     `<section class="hero"><div><span class="eyebrow">✦ YOUR JOB RADAR</span><h2>Your next move<br>starts here.</h2><p>Junior, entry-level and internship opportunities in software engineering, AI and computer vision — with Egypt in focus.</p><button class="btn secondary" data-navigate="jobs">Explore opportunities ↗</button></div><div class="hero-graphic" aria-hidden="true"><span class="hero-arrow">↗</span></div></section>`+
-    `<section class="stats">${stat('Matching opportunities','Matched in current snapshot',matching)}${stat('Monitored companies','Successful source checks',active)}${stat('Discovered jobs','Current published snapshot',list.length)}${stat('Saved jobs','Stored on this device',state.saved.size)}</section>`+
+    `<section class="stats">${stat('Matching opportunities','Matched in current snapshot',matching)}${stat('Monitored companies','Successful source checks',active)}${stat('Discovered jobs','Current published snapshot',list.length)}${stat('Saved jobs',state.member?'Saved to your account':'Stored on this device',state.saved.size)}</section>`+
     monitoringPanel()+
     `<div class="grid-two"><section class="panel"><div class="panel-head"><h2>✦ Your latest opportunities</h2><button class="link-button" data-navigate="jobs">View all ↗</button></div>${recent.length?recent.map(jobMini).join(''):empty('No jobs yet','Run the monitoring workflow to populate your feed.')}</section><section class="panel"><div class="panel-head"><h2>Monitoring status</h2><button class="link-button" data-navigate="companies">Manage ↗</button></div><div class="table-list">${statuses.length?statuses.map(s=>`<div class="source-line"><span class="job-logo">${icon(s.name)}</span><div class="source-name">${esc(s.name)}<small>${esc(s.message||s.status)}</small></div>${badge(s.active?'Active':s.status==='pending'?'Pending':s.status,s.active?'green':s.status==='pending'?'orange':'grey')}</div>`).join(''):empty('No companies yet','Add a career page to start building your watchlist.')}</div></section></div>`+
-    `<section class="panel"><div class="panel-head"><h2>Alerts destination</h2><button class="link-button" data-navigate="alerts">Email settings ↗</button></div><p class="muted" style="margin:0">${(state.fullEmail||state.alerts?.recipient_masked)?`New job alerts target <strong>${esc(state.fullEmail||state.alerts.recipient_masked)}</strong>.`:'The alert email is not yet published to your dashboard.'} <span class="tiny">${esc(state.alerts?.configured?'SMTP configuration detected. Delivery not independently verified.':'See Email Alerts for setup and test links.')}</span></p></section>`;
+    `<section class="panel"><div class="panel-head"><h2>Alerts destination</h2><button class="link-button" data-navigate="alerts">Email settings ↗</button></div><p class="muted" style="margin:0">${state.member?`Your alerts destination: <strong>${esc(state.memberEmail?.recipient||state.member.email)}</strong>.`:'Sign in to set up your personal alerts.'} <span class="tiny">Manage your preferences and send a test from Email Alerts.</span></p></section>`;
   }
 
   function home(){
@@ -611,7 +654,7 @@ a:hover{color:var(--ink)}
       if(state.page==='profile')render();
     }catch(e){if(state.page==='profile')toast(e.message,true);}
   }
-  function profilePage(){
+  function legacyProfilePage(){
     const field=(name,label,placeholder='')=>'<label class="profile-field">'+esc(label)+
       '<input type="text" name="'+name+'" value="'+esc(profile[name]||'')+
       '" placeholder="'+esc(placeholder)+'" maxlength="500"></label>';
@@ -802,7 +845,7 @@ a:hover{color:var(--ink)}
     profileMessage='CV restored from private GitHub storage';
     render();
   }
-  async function sendEmailTest(){
+  async function sendAdminEmailTest(){
     if(IS_CLOUDFLARE)throw Error('Use the GitHub Actions test link on Cloudflare.');
     const token=window.prompt('Enter your admin token to send one SMTP test email:');
     if(!token)return;
@@ -813,7 +856,7 @@ a:hover{color:var(--ink)}
     if(!response.ok)throw Error(data.error||'Could not request an email test');
     toast('Email test queued. Open GitHub Actions or check the run status shortly.');
   }
-  async function emailTestStatus(){
+  async function adminEmailTestStatus(){
     if(IS_CLOUDFLARE)throw Error('Email test run status is available on Vercel.');
     const token=window.prompt('Admin token to check latest test email run:');
     if(!token)return;
@@ -824,7 +867,7 @@ a:hover{color:var(--ink)}
     if(!latest){toast('No email delivery tests have run yet');return;}
     toast('Email test: '+(latest.conclusion||latest.status)+' — check the inbox for actual delivery.');
   }
-  function cvPage(){
+  function legacyCvPage(){
     const file=cvEntry;
     return top('CAREER DOCUMENTS','CV Holder','Keep your primary CV ready for the future Resume Updater.')+
       '<section class="panel cv-vault">'+
@@ -935,9 +978,20 @@ a:hover{color:var(--ink)}
       profileMessage='CV saved, but automatic extraction was unavailable: '+error.message+'. You can complete your profile manually.';
     }
   }
+  function resumeText(){
+    const parts=[profile.name||'',profile.headline||'',state.member?.email||'',profile.location||''];
+    for(const [key,title] of [['summary','SUMMARY'],['skills','SKILLS'],['experience','EXPERIENCE'],['education','EDUCATION']]){
+      if(profile[key])parts.push('\n'+title,profile[key]);
+    }
+    for(const key of ['linkedin','github','portfolio'])if(link(profile[key])!=='#')parts.push(profile[key]);
+    return parts.filter(Boolean).join('\n');
+  }
   function resumePage(){
-    return top('WORKSPACE / UPCOMING','Resume Updater','Planned feature — not yet available.')+
-      '<section class="upcoming-panel"><span class="feature-mark">▤</span><h2>Resume Updater</h2><p>In the future, this workspace will help tailor your CV to specific roles and track improvements. No resume is uploaded or processed here yet.</p><button class="btn secondary" data-navigate="home">Back to Home</button></section>';
+    if(!state.member||state.memberLoading)return accountGate('Resume Updater');
+    return top('YOUR ACCOUNT','Resume Updater','Build a text resume draft from the information you saved.')+
+      '<section class="panel">'+accountError('profile')+'<p>Edit your account profile to update this draft. Your original CV stays unchanged. This is a factual text export, not AI tailoring.</p>'+
+      '<a class="btn primary" href="/account.html?view=profile">Edit resume details</a> <button class="btn secondary" data-resume-download>Download text draft</button> <a class="btn secondary" href="/account.html?view=documents">Upload revised CV</a>'+
+      '<pre style="white-space:pre-wrap">'+esc(resumeText())+'</pre></section>';
   }
   function jobCard(j){
     const id=jobKey(j), saved=state.saved.has(id), url=jobURL(j), score=scoreOf(j);
@@ -969,11 +1023,11 @@ a:hover{color:var(--ink)}
     });
   }
   function jobsPage(saved=false){
-    const all=validJobs(), whole=saved?all.filter(j=>state.saved.has(jobKey(j))):all;
+    const all=validJobs(), whole=saved?(state.member?(state.savedRecords||[]).map(row=>({...(row.job_snapshot||{}),id:row.job_key})):all.filter(j=>state.saved.has(jobKey(j)))):all;
     const list=filterJobs(whole);
     const companies=[...new Set(whole.map(companyOf))].sort((a,b)=>a.localeCompare(b));
     const option=(v,text,current)=>`<option value="${esc(v)}" ${current===v?'selected':''}>${esc(text)}</option>`;
-    const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':'Your job feed',saved?'Jobs you’ve bookmarked on this device.':'Eligible early-career jobs, with filters for role, employer, and dates.');
+    const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':'Your job feed',saved?(state.member?'Jobs saved to your account.':'Jobs you’ve bookmarked on this device.'):'Eligible early-career jobs, with filters for role, employer, and dates.');
     return h+
       `<section class="job-filter-panel" aria-label="Job search filters">
         <div class="job-filter-row"><label class="filter-field filter-search">Search<input class="search-box" id="job-search" type="search" placeholder="Title, company or skills" value="${esc(state.query)}" aria-label="Search jobs"></label>
@@ -1121,37 +1175,78 @@ a:hover{color:var(--ink)}
     const [label,color]=mapping[status]||[status,status==='ok'?'green':'grey'];
     const url=link(c.url||'');
     const pin=c.pinned===true;
-    const actions=c.managed&&!IS_CLOUDFLARE?(
+    const actions=c.managed&&state.member?.role==='admin'&&!IS_CLOUDFLARE?(
       `<button class="btn secondary" title="${pin?'Unpin':'Pin'} company" data-pin="${esc(c.url)}" data-pinned="${pin?'true':'false'}">${pin?'📌 Pinned':'📍 Pin'}</button>`+
       `<button class="btn secondary" data-edit-name="${esc(c.url)}">✎ Edit name</button>`+
       `<button class="btn danger" data-remove="${esc(c.url)}">Remove</button>`
     ):'';
-    return `<div class="company-card">${companyBrand(c)}<div class="company-name"><strong>${pin?'📌 ':''}${esc(c.name)}</strong><small>${esc(c.message || (c.managed?'Added to your watchlist':'Built-in monitored source'))}</small>${c.last?`<small>Last check: ${esc(prettyDate(c.last))}</small>`:''}${expectedCheckLabel(c)}${c.managed&&Number.isInteger(c.matched_jobs)?`<small>Eligible jobs: ${c.matched_jobs}</small>`:''}</div><div class="company-actions"><button class="btn secondary logo-edit-button" data-edit-logo="${esc(logoKey(c))}" aria-label="Change ${esc(c.name)} logo">Edit logo</button>${badge(label,color)}${url!=='#'?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="btn secondary">Careers ↗</a>`:''}${actions}</div></div>`;
+    return `<div class="company-card">${companyBrand(c)}<div class="company-name"><strong>${pin?'📌 ':''}${esc(c.name)}</strong><small>${esc(c.message || (c.managed?'Added to your watchlist':'Built-in monitored source'))}</small>${c.last?`<small>Last check: ${esc(prettyDate(c.last))}</small>`:''}${expectedCheckLabel(c)}${c.managed&&Number.isInteger(c.matched_jobs)?`<small>Eligible jobs: ${c.matched_jobs}</small>`:''}</div><div class="company-actions">${state.member?.role==='admin'?`<button class="btn secondary logo-edit-button" data-edit-logo="${esc(logoKey(c))}" aria-label="Change ${esc(c.name)} logo">Edit logo</button>`:''}${badge(label,color)}${url!=='#'?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="btn secondary">Careers ↗</a>`:''}${actions}</div></div>`;
   }
   function companiesPage(){
     const all=monitoredSources(), active=all.filter(c=>c.active).length, pending=all.filter(c=>c.status==='pending').length;
-    return top('YOUR WATCHLIST','My companies','Every company and its actual monitoring status, together.',IS_CLOUDFLARE?'':`<button class="btn primary" data-action="open-company">+ Add company</button>`)+
+    return top('YOUR WATCHLIST','My companies','Every company and its actual monitoring status, together.',IS_CLOUDFLARE||state.member?.role!=='admin'?'':`<button class="btn primary" data-action="open-company">+ Add company</button>`)+
       `<section class="stats">${stat('Tracked companies','Built-in + manually added',all.length)}${stat('Monitoring','Last scan succeeded',active)}${stat('Waiting for scan','Not checked yet',pending)}${stat('Custom career pages','Managed from this site',state.companies.length)}</section>`+
       monitoringPanel()+
       `${IS_CLOUDFLARE?'<p class="tiny">Live monitoring data from GitHub. Company editing is available from the Vercel dashboard.</p>':''}`+
       `${state.companyApiError?`<p class="inline-error">${esc(state.companyApiError)}</p>`:''}${state.statusError?`<p class="tiny">${esc(state.statusError)}</p>`:''}`+
       `<div class="cards">${all.length?all.map(companyCard).join(''):empty('Build your company watchlist','Add a careers page to start checking for eligible roles.')}</div>`+
-      `<div class="panel" style="margin-top:19px"><div class="panel-head"><h2>How monitoring works</h2></div><p class="muted">Adding a company saves it in GitHub. GitHub Actions then scans the source. <strong>Monitoring</strong> only means the last extraction succeeded — not that matching jobs were found. Workday and protected sites may need an adapter.</p><a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/actions/workflows/custom-companies.yml">Check scanner runs ↗</a></div>`;
+      (state.member?.role==='admin'?`<div class="panel" style="margin-top:19px"><div class="panel-head"><h2>How monitoring works</h2></div><p class="muted">Adding a company saves it in GitHub. GitHub Actions then scans the source. <strong>Monitoring</strong> only means the last extraction succeeded — not that matching jobs were found. Workday and protected sites may need an adapter.</p><a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/actions/workflows/custom-companies.yml">Check scanner runs ↗</a></div>`:'');
   }
-  function memberEmailAlertsPage(){
-    const signedIn=Boolean(state.member?.email);
-    return top('YOUR NOTIFICATIONS','Email alerts',
-      'Manage your personal email alerts and delivery tests.')+
-      '<section class="panel"><div class="panel-head"><h2>Personal alerts</h2></div>'+
-      (signedIn?
-        '<p>Destination: <strong>'+esc(state.member.email)+'</strong></p>'+
-        '<p>Choose your preferred job types, confirm your account email and send a test message from your account settings.</p>'+
-        '<a class="btn primary" href="/account.html?view=preferences">Manage my alerts</a>':
-        '<p>Sign in to enable alerts to your own email address.</p>'+
-        '<a class="btn primary" href="/account.html?mode=login">Sign in</a>')+
+  function accountGate(title){
+    return top('YOUR ACCOUNT',title,'Your account is the source for your profile, files and preferences.')+
+      '<section class="panel">'+(state.memberLoading?'Loading your account…':
+        '<p>'+esc(state.memberError||'Sign in to access your private account data.')+'</p><a class="btn primary" href="/account.html?mode=login">Sign in</a> <a class="btn secondary" href="/account.html?mode=register">Create account</a>')+'</section>';
+  }
+  function accountError(scope){
+    const message=state.memberErrors?.[scope];
+    return message?'<p role="alert">'+esc(message)+'</p><button class="btn secondary" data-account-refresh>Retry account sync</button>':'';
+  }
+  function profilePage(){
+    if(!state.member || state.memberLoading)return accountGate('My Profile');
+    const fields=[['headline','Headline'],['location','Location'],['summary','About me'],['skills','Skills'],['experience','Experience'],['education','Education']];
+    return top('YOUR ACCOUNT','My Profile','The same profile you save in your account.',
+      '<a class="btn primary" href="/account.html?view=profile">Edit my profile</a>')+
+      '<section class="panel profile-panel">'+accountError('profile')+accountError('avatar')+
+      '<div class="profile-photo-row">'+(profile.photo?'<img class="avatar" width="72" height="72" style="border-radius:50%;object-fit:cover" alt="Your profile photo" src="'+esc(profile.photo)+'">':'')+
+      '<div><h2>'+esc(profile.name||'Complete your profile')+'</h2><p>'+esc(state.member.email)+'</p><a class="btn secondary" href="/account.html?view=documents">Change photo or upload CV</a></div></div>'+
+      fields.map(([key,label])=>'<h3>'+label+'</h3><p style="white-space:pre-wrap">'+esc(profile[key]||'Not added yet')+'</p>').join('')+
+      ['linkedin','github','portfolio'].filter(key=>link(profile[key])!=='#').map(key=>'<a class="btn secondary" target="_blank" rel="noopener noreferrer" href="'+esc(link(profile[key]))+'">'+esc(key)+'</a>').join(' ')+
       '</section>';
   }
-  function alertsPage(){
+  function cvPage(){
+    if(!state.member || state.memberLoading)return accountGate('CV Holder');
+    return top('YOUR ACCOUNT','CV Holder','Your saved account CV, available across your devices.')+
+      '<section class="panel cv-vault">'+accountError('cv')+'<h2>Your primary CV</h2>'+
+      (cvEntry?'<p><strong>'+esc(cvEntry.name)+'</strong> · '+Math.round(cvEntry.blob.size/1024)+' KB</p><button class="btn secondary" data-cv-preview>View CV</button> <button class="btn secondary" data-cv-download>Download CV</button> <button class="btn secondary" data-cv-remove>Delete CV</button>':'<p>No CV saved to your account yet.</p>')+
+      ' <a class="btn primary" href="/account.html?view=documents">'+(cvEntry?'Replace CV':'Upload CV')+'</a><p>Upload once in your account. Readable CV fields fill empty profile fields automatically; you can review and save your details there.</p></section>';
+  }
+  function memberEmailAlertsPage(){
+    if(!state.member || state.memberLoading)return accountGate('Email alerts');
+    const mail=state.memberEmail;
+    return top('YOUR NOTIFICATIONS','Email alerts','Test delivery to your own email and manage your preferences.')+
+      '<section class="panel">'+accountError('/api/secretj-email?action=status')+
+      '<h2>Personal alerts</h2><p>Destination: <strong>'+esc(mail?.recipient||state.member.email)+'</strong></p>'+
+      '<p>'+(!mail?'Email status could not be loaded.':mail.configured?(mail.verified?'Your email is verified.':'Send a test, then enter the verification code below.'):'Email delivery is not configured yet. The site administrator must connect the email service.')+'</p>'+
+      '<button class="btn primary" data-email-test '+(state.emailBusy||!mail?.configured?'disabled':'')+'>'+(state.emailBusy?'Sending…':'Check email — send test')+'</button> '+
+      '<button class="btn secondary" data-email-status>Refresh email status</button> <a class="btn secondary" href="/account.html?view=preferences">Manage email &amp; preferences</a>'+
+      (mail?.configured&&!mail.verified?'<form id="workspace-email-verify"><label>Verification code <input name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required></label><button class="btn secondary" type="submit">Verify email</button></form>':'')+
+      '<p class="tiny">One test every 15 minutes. Provider acceptance is confirmed; inbox delivery can take a moment. Check spam too.</p></section>';
+  }
+  function alertsPage(){return memberEmailAlertsPage();}
+  async function sendEmailTest(){
+    if(!state.member)throw Error('Sign in to test your email.');
+    if(state.emailBusy)return;
+    state.emailBusy=true;render();
+    try{
+      const result=await memberRequest('/api/secretj-email?action=test','POST',{
+        recipient_email:state.memberEmail?.recipient||state.member.email
+      });
+      await hydrateMember();
+      toast('Test accepted for '+result.delivered_to+(result.needs_verification?'. Enter the code from your inbox.':'. Check your inbox.'));
+    }finally{state.emailBusy=false;render();}
+  }
+  async function emailTestStatus(){await hydrateMember();toast('Email status refreshed.');}
+  function adminAlertsPage(){
     // SMTP administration and GitHub Actions belong to verified admins only.
     if(state.member?.role!=='admin')return memberEmailAlertsPage();
     const a=state.alerts, good=Boolean(a?.configured), email=state.fullEmail||a?.recipient_masked||'Not published yet', updated=a?.checked_at;
@@ -1262,11 +1357,24 @@ a:hover{color:var(--ink)}
       el('#cv-preview-content').replaceChildren();
       if(cvPreviewBlobUrl){URL.revokeObjectURL(cvPreviewBlobUrl);cvPreviewBlobUrl=null;}
     });
-    readSaved();refreshCv();refreshProfile();
+    readSaved();
+    let syncTimer;
+    const scheduleMemberSync=()=>{clearTimeout(syncTimer);syncTimer=setTimeout(()=>hydrateMember(),100);};
+    window.addEventListener('secretj-account-changed',scheduleMemberSync);
+    window.addEventListener('storage',event=>{if(event.key==='sj-account-change')scheduleMemberSync();});
+    window.addEventListener('pageshow',scheduleMemberSync);
+    window.addEventListener('focus',scheduleMemberSync);
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')scheduleMemberSync();});
     document.querySelectorAll('nav button[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
     window.addEventListener('hashchange',()=>go(location.hash.replace('#','')));
-    el('#refresh-button').addEventListener('click',()=>refresh());
+    el('#refresh-button').addEventListener('click',()=>Promise.all([refresh(),hydrateMember()]));
     document.addEventListener('click',event=>{
+      if(event.target.closest('[data-account-refresh]')){hydrateMember();return;}
+      if(event.target.closest('[data-resume-download]')){
+        if(!state.member)return;
+        const url=URL.createObjectURL(new Blob([resumeText()],{type:'text/plain;charset=utf-8'}));
+        const a=document.createElement('a');a.href=url;a.download='resume-draft.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);return;
+      }
       const navigation=event.target.closest('[data-navigate]');if(navigation){go(navigation.dataset.navigate);return;}
       if(event.target.closest('[data-action="open-company"]')){el('#company-dialog').showModal();return;}
       const close=event.target.closest('[data-close-dialog]');if(close){el('#company-dialog').close();return;}
@@ -1282,7 +1390,7 @@ a:hover{color:var(--ink)}
           cloudSave(key,wasSaved)
             .then(()=>{
               wasSaved?state.saved.delete(key):state.saved.add(key);
-              render();
+              hydrateMember();
               toast(wasSaved?'Removed from your cloud account':'Saved to your Secret J account');
             })
             .catch(error=>{saved.disabled=false;toast(error.message,true);});
@@ -1329,8 +1437,8 @@ a:hover{color:var(--ink)}
         return;
       }
       if(event.target.closest('[data-cv-remove]')){
-        if(!confirm('Remove the locally saved CV from this browser?'))return;
-        cvAction('delete').then(()=>{cvEntry=null;render();toast('CV removed from this browser');}).catch(e=>toast(e.message,true));
+        if(!state.member || !confirm('Delete the CV saved to your account?'))return;
+        memberRequest('cv','DELETE').then(async()=>{cvEntry=null;accountChanged();await hydrateMember();toast('CV deleted from your account');}).catch(e=>toast(e.message,true));
         return;
       }
       if(event.target.closest('[data-reset-filters]')){
@@ -1353,6 +1461,11 @@ a:hover{color:var(--ink)}
     });
     document.addEventListener('input',event=>{if(event.target.id==='job-search'){state.query=event.target.value;const at=event.target.selectionStart;render();const field=el('#job-search');field?.focus();try{field?.setSelectionRange(at,at);}catch{}}});
     document.addEventListener('submit',async event=>{
+      if(event.target.id==='workspace-email-verify'){
+        event.preventDefault();const button=event.target.querySelector('button');button.disabled=true;
+        try{await memberRequest('/api/secretj-email?action=verify','POST',{code:new FormData(event.target).get('code')});await hydrateMember();toast('Email verified. Manage preferences to enable job alerts.');}
+        catch(e){toast(e.message,true);button.disabled=false;}return;
+      }
       if(event.target.id!=='profile-form')return;
       event.preventDefault();
       const form=event.target;
@@ -1412,7 +1525,8 @@ a:hover{color:var(--ink)}
     });
     el('#account-link').href='/account.html';
     go(location.hash.replace('#','')||'home');
-    refresh(true).then(()=>hydrateMember());
+    hydrateMember();
+    refresh(true);
     setInterval(()=>refresh(true),60000);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();

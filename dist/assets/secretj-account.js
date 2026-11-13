@@ -24,6 +24,10 @@ async function api(endpoint,method='GET',body) {
   });
   const data=await response.json().catch(()=>({}));
   if(!response.ok)throw Error(data.error || 'Request failed ('+response.status+')');
+  if(method!=='GET' && endpoint.startsWith('/api/secretj-')) {
+    window.dispatchEvent(new Event('secretj-account-changed'));
+    try{localStorage.setItem('sj-account-change',Date.now()+':'+Math.random());}catch{}
+  }
   return data;
 }
 const authUrl=action=>'/api/secretj-auth?action='+encodeURIComponent(action);
@@ -44,6 +48,7 @@ async function syncHeaderPhoto() {
   try{
     const data=await api(dataUrl('avatar'));
     const f=data.file;
+    if(f && typeof f.base64==='string')f.base64=f.base64.replace(/\s/g,'');
     if(data.found&&['image/webp','image/png','image/jpeg'].includes(f?.mime_type)&&
        typeof f?.base64==='string'&&f.base64.length>0&&f.base64.length<=150000&&
        /^[a-zA-Z0-9+/]+={0,2}$/.test(f.base64)){
@@ -137,7 +142,7 @@ async function profile(root) {
     `<button class="btn danger" type="button" data-linkedin-disconnect>Disconnect LinkedIn</button>`:
     linked.configured?
       '<a class="btn secondary" href="/api/secretj-linkedin?action=start">Connect LinkedIn ↗</a>':
-      '<button type="button" class="btn secondary" disabled title="LinkedIn app approval is required">Connect LinkedIn · Coming soon</button>';
+      '';
   root.innerHTML=`<h2>Professional profile</h2>
     <p class="muted">Describe your experience, education, and skills. Your information is stored in Neon, not locally.</p>
     <div class="provider-row">
@@ -255,7 +260,7 @@ async function documents(root){
       '<div class="avatar" aria-label="No profile photo"></div>'}
     <div class="filebox"><h3>Profile photo</h3>
       <p class="small muted">Upload a JPG, PNG or WebP. Drag the image to center your face, then use the Zoom control. Preview before saving.</p>
-      <input id="avatar-upload" type="file" accept="image/jpeg,image/png,image/webp"></div>
+      <input id="avatar-upload" type="file" accept="image/jpeg,image/png,image/webp">${avatar.found?'<button type="button" class="btn secondary" data-delete-avatar>Remove photo</button>':''}</div>
     <div class="filebox"><h3>My CV</h3>
       <p>${cv.found?`Saved: <strong>${esc(cv.file.original_name)}</strong> (${Math.round(cv.file.size_bytes/1024)} KB)`:'No CV uploaded yet.'}</p>
       <p class="small muted">PDF or DOCX up to 768 KB. After uploading, readable sections are automatically imported into empty profile fields; existing information is never overwritten.</p>
@@ -368,7 +373,7 @@ $('#account-content').addEventListener('submit',async event=>{
       banner('Email verified. You can now opt in to job alerts.');
       return;
     }
-    if(form.id==='profile-form')await api(dataUrl('profile'),'PUT',values);
+    if(form.id==='profile-form'){await api(dataUrl('profile'),'PUT',values);state.profile=values;$('#welcome-name').textContent=values.display_name?', '+values.display_name.split(' ')[0]:'';}
     else if(form.id==='preferences-form'){
       await api(dataUrl('preferences'),'PUT',{
         egypt_only:Boolean(form.elements.egypt_only.checked),
@@ -397,7 +402,7 @@ $('#account-content').addEventListener('click',async event=>{
         const result=await api('/api/secretj-email?action=test','POST',{recipient_email:recipientEmail});
         await showView('preferences');
         banner(result.needs_verification?
-          'Test email sent to your account email. Enter the code to verify it.':
+          'Test email accepted for '+result.delivered_to+'. Enter the code to verify it.':
           'Test message accepted by the mail provider. Check your inbox.');
       }finally{b.disabled=false;}
       return;
@@ -427,6 +432,10 @@ $('#account-content').addEventListener('click',async event=>{
       return showView('applications');
     }else if(b.hasAttribute('data-remove-application')){
       await api(dataUrl('applications')+'&key='+encodeURIComponent(b.dataset.removeApplication),'DELETE');
+    }else if(b.hasAttribute('data-delete-avatar')){
+      if(!confirm('Remove your account photo?'))return;
+      await api(dataUrl('avatar'),'DELETE');
+      await syncHeaderPhoto();
     }else if(b.hasAttribute('data-delete-cv')){
       if(!confirm('Delete your saved CV?'))return;
       await api(dataUrl('cv'),'DELETE');

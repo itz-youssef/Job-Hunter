@@ -16,7 +16,7 @@
   // Never claim login from localStorage or from a different deployment domain.
   let lastUserId = null;
   let requestSequence = 0;
-  async function loadAvatar() {
+  async function loadAvatar(sequence, userId) {
     if (!photo || !initial) return;
     try {
       const response = await fetch('/api/secretj-data?scope=avatar', {
@@ -28,7 +28,9 @@
       const data = await response.json();
       const item = data?.file;
       const mime = item?.mime_type;
-      const base64 = item?.base64;
+      const base64 = typeof item?.base64 === 'string' ? item.base64.replace(/\s/g, '') : '';
+      if(sequence !== requestSequence || userId !== lastUserId) return;
+      resetAvatar();
       if (data?.found === true &&
           ['image/jpeg', 'image/png', 'image/webp'].includes(mime) &&
           typeof base64 === 'string' &&
@@ -80,7 +82,7 @@
         resetAvatar();
       }
       // Re-read the private avatar when the tab is revisited after editing it.
-      await loadAvatar();
+      await loadAvatar(sequence, lastUserId);
     } catch {
       if (sequence !== requestSequence) return;
       lastUserId = null;
@@ -118,6 +120,9 @@
   });
 
   refreshAccount();
+  window.addEventListener('secretj-account-changed', () => refreshAccount());
+  window.addEventListener('storage', event => { if(event.key === 'sj-account-change') refreshAccount(); });
+  window.addEventListener('focus', () => refreshAccount());
   window.addEventListener('pageshow', () => refreshAccount());
   window.addEventListener('hashchange', () => refreshAccount());
   document.addEventListener('visibilitychange', () => {

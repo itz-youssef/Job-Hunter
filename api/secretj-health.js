@@ -62,7 +62,9 @@ module.exports=async function handler(req,res) {
       return core.reply(res,503,{ok:false,database:'migration_required',
         registration_enabled:false});
     return core.reply(res,200,{ok:true,database:'ready',
-      registration_enabled:process.env.SECRETJ_REGISTRATION_ENABLED==='true'});
+      registration_enabled:process.env.SECRETJ_REGISTRATION_ENABLED==='true',
+      email:{configured:require('./secretj-email').configured(),
+        alerts_enabled:process.env.SECRETJ_ALERTS_ENABLED==='true'}});
   }catch(error){
     const reason=classifyConnectionFailure(error);
     console.warn('Secret J Neon health query failed', {reason});
