@@ -1,27 +1,26 @@
-"""Talabat Delivery Hero and Uber official job APIs read-only verification."""
-import json,re
+"""Uber current Oracle Cloud recruiting and DeliveryHero Talabat SSR structured cards."""
 from app.custom_sources import _bytes
 from bs4 import BeautifulSoup
-URLS={
-"Talabat":"https://careers.deliveryhero.com/jobs?options=845%2C243&page=1",
-"Talabat Egypt":"https://careers.deliveryhero.com/jobs?options=845%2C243&page=2",
-"Talabat API":"https://careers.deliveryhero.com/api/jobs?options=845%2C243&page=1",
-"Talabat GH":"https://boards-api.greenhouse.io/v1/boards/talabat/jobs?content=true",
-"Uber":"https://jobs.uber.com/en/",
-"Uber Cairo":"https://jobs.uber.com/en/search/?location=Egypt",
-"Uber API":"https://jobs.uber.com/api/en/search/?location=Egypt",
-"Uber Egypt":"https://jobs.uber.com/en/search/?query=&location=Cairo",
-"Uber board":"https://jobs.innovationendeavors.com/companies/uber",
-}
-for name,u in URLS.items():
+import re
+URLS=[
+ "https://iaziqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/UberCareers/jobs",
+ "https://iaziqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/UberCareers",
+ "https://iaziqy.fa.ocs.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&limit=10",
+ "https://careers.deliveryhero.com/jobs?options=252%2C845&page=1",
+ "https://careers.deliveryhero.com/jobs?options=252%2C845&page=2",
+ "https://careers.deliveryhero.com/job/staff-software-engineer-in-maadi-egypt-jid-10904"
+]
+for u in URLS:
  try:
-  data=_bytes(u).decode("utf-8","replace")
-  print("CHECK",name,u,len(data),flush=True)
-  if data.lstrip()[:1] in ("{","["):
-   obj=json.loads(data)
-   print("JSON",name,str(obj)[:3500],flush=True)
-  else:
-   doc=BeautifulSoup(data,"html.parser")
-   print("LINKS",name,[(a.get("href"),a.get_text(" ",strip=True)[:100])for a in doc.select("a[href]") if re.search(r"/job/|/jobs/|search|careers|vacanc",a.get("href",""),re.I)][:18],flush=True)
-   print("MARKERS",name,[(m.group(0)[:240])for m in list(re.finditer(r'.{0,65}(?:__NEXT_DATA__|__NUXT__|jobListings|jobResults|jobId|jobs-api|workday|api/jobs|search.json|graphql).{0,100}',data,re.I))[:12]],flush=True)
- except Exception as e:print("ERROR",name,type(e).__name__,str(e)[:200],flush=True)
+  h=_bytes(u).decode("utf-8","replace")
+  s=BeautifulSoup(h,"html.parser")
+  print("SITE",u,"bytes",len(h),"text",s.get_text(" ",strip=True)[:330],flush=True)
+  if "deliveryhero" in u:
+   for card in s.select("[data-jobid]")[:8]:
+    print("TALABAT_CARD",card.get("data-jobid"),card.get("class"),card.get_text(" ",strip=True)[:700],flush=True)
+    a=card.select_one("a[href*='/job/']")
+    print("TALABAT_LINK",a.get("href") if a else "",flush=True)
+   print("TALABAT_RESULTS",re.findall(r'(\d+)\s+result\(s\)',s.get_text(" ",strip=True),re.I)[:4],flush=True)
+  if "oraclecloud" in u:
+   print("ORACLE_MARK",[h[max(0,m.start()-90):m.start()+180] for m in list(re.finditer(r"jobRequisitions|JobRequisition|job-list|JobId|jobs|siteNumber|talent-community",h,re.I))[:9]],flush=True)
+ except Exception as e:print("SITE_ERROR",u,type(e).__name__,str(e)[:180],flush=True)
