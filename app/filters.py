@@ -45,7 +45,8 @@ EARLY_TITLE = re.compile(
     r"associate(?:\s+software\s+engineer)?)\b", re.I,
 )
 EARLY_DESCRIPTION = re.compile(
-    r"\b(?:fresh(?:\s+graduate|er)?s?|recent graduates?|no (?:prior )?experience|"
+    r"\b(?:(?:employer\s+career\s+level|experience\s+level)\s*:\s*early\s+professional|"
+    r"fresh(?:\s+graduate|er)?s?|recent graduates?|no (?:prior )?experience|"
     r"0\s*(?:-|–|to)\s*[012]\s*years?|"
     r"[01]\s*(?:-|–|to)\s*2\s*years?|"
     r"(?:up to|maximum(?: of)?|max\.?)\s*2\s*years?|"
@@ -146,6 +147,7 @@ def relevance(job: dict, config: dict) -> tuple[int, list[str]]:
         internship
         or         EARLY_TITLE.search(title)
         or EARLY_TITLE.search(seniority)
+        or re.search(r"\b(?:early professional|early career|entry professional|entry[- ]level professional)\b",seniority,re.I)
         or EARLY_TITLE.search(employment)
         or re.search(r"\b(?:internship|traineeship|apprenticeship)\b", employment, re.I)
         or EARLY_DESCRIPTION.search(description)

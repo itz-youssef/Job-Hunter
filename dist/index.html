@@ -138,6 +138,46 @@ a:hover{color:var(--ink)}
 .cv-current{display:flex;gap:12px;align-items:center;padding:12px 0}
 .cv-current strong{color:var(--ink);word-break:break-word}
 .cv-privacy{margin-top:22px;line-height:1.8;max-width:580px}
+ 
+.job-filter-panel{border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:18px;background:var(--panel)}
+.job-filter-row{display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin-bottom:12px}
+.job-filter-row:last-of-type{margin-bottom:0}
+.filter-field{display:flex;flex-direction:column;gap:5px;flex:1 1 158px;min-width:0;font-size:11px;font-weight:650;color:var(--muted)}
+.filter-field.filter-search{flex:2 1 250px}
+.filter-field input,.filter-field select{width:100%;min-width:0;margin:0;padding:10px 11px;height:42px;font-size:13px}
+.clear-job-filters{height:42px;white-space:nowrap}
+.job-card-top .company-brand,.mini-job .company-brand,.source-line .company-brand{flex:0 0 42px}
+@media(max-width:760px){.job-filter-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.filter-field.filter-search{grid-column:1/-1}.clear-job-filters{width:100%}}
+@media(max-width:430px){.job-filter-row{grid-template-columns:1fr}.filter-field.filter-search{grid-column:auto}}
+
+.cv-preview-dialog{width:min(980px,calc(100vw - 24px));height:min(92vh,940px);max-height:92vh;padding:0;border:1px solid var(--border);border-radius:14px;background:var(--panel);color:var(--ink);box-shadow:0 20px 90px #0005;overflow:hidden}
+.cv-preview-dialog::backdrop{background:rgba(0,0,0,.78)}
+.cv-preview-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border)}
+.cv-preview-top h2{margin:4px 0 0;font-size:17px;max-width:70vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cv-preview-content{height:calc(100% - 75px);min-height:0;padding:12px;overflow:auto}
+.cv-preview-frame{width:100%;height:calc(100% - 34px);min-height:300px;border:0;background:white;border-radius:4px}
+.cv-preview-text{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.75 ui-sans-serif,system-ui,sans-serif;color:var(--ink);padding:18px;background:var(--soft);border-radius:8px}
+.eye-icon{height:16px;width:16px;vertical-align:middle;margin-right:4px}
+@media(max-width:750px){.cv-preview-dialog{width:100vw;height:100dvh;max-height:100dvh;max-width:100vw;border-radius:0;margin:0}.cv-preview-content{height:calc(100% - 75px)}}
+@media(max-width:590px){
+  .layout,.workspace-shell,.main-content{min-width:0;width:100%}
+  .topbar{padding:0 12px;gap:8px}.breadcrumb{letter-spacing:0;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .top-actions{gap:7px}.region-tag{display:none}.top-avatar{display:none}
+  .sidebar{padding:10px 12px 8px}.sidebar nav{margin-top:8px;padding-bottom:7px}
+  nav button{flex:0 0 auto;font-size:12px;padding:9px 11px}
+  .section-top{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+  .section-top h1{font-size:25px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .stat{padding:12px}.stat strong{font-size:22px}
+  .job-card,.company-card{padding:15px}
+  .job-card-top{gap:8px}.job-details{min-width:0;flex:1}.job-details h3{font-size:15px;overflow-wrap:anywhere}
+  .job-actions{flex-wrap:wrap;gap:12px}.job-actions .right{width:100%}.job-actions .right .btn{width:100%;justify-content:center}
+  .company-card{gap:12px}.company-name{min-width:0;flex:1;overflow-wrap:anywhere}
+  .company-actions{display:flex;flex-wrap:wrap;gap:7px}.company-actions .btn{font-size:12px}
+  .feature-grid{grid-template-columns:1fr}.feature-card{min-height:240px;padding:20px}
+  .cv-vault .btn,.cv-upload-label{max-width:100%;margin:6px 6px 6px 0}
+}
+@media(max-width:370px){.main-content{padding:16px 10px}.stats{grid-template-columns:1fr}.theme-toggle{min-width:0}.topbar{height:50px}}
   </style>
 </head>
 <body>
@@ -182,6 +222,10 @@ a:hover{color:var(--ink)}
       <div class="modal-footer"><button type="button" class="btn secondary" id="logo-reset">Use default</button><button type="button" class="btn secondary" data-close-logo>Cancel</button><button type="submit" class="btn primary" id="logo-save">Save logo</button></div>
     </form>
   </dialog>
+  <dialog id="cv-preview-dialog" class="cv-preview-dialog" aria-labelledby="cv-preview-title">
+    <div class="cv-preview-top"><div><span class="eyebrow">PRIVATE DOCUMENT PREVIEW</span><h2 id="cv-preview-title">Your CV</h2></div><button type="button" class="btn secondary" data-cv-close aria-label="Close CV preview">Close ×</button></div>
+    <div id="cv-preview-content" class="cv-preview-content" aria-live="polite"></div>
+  </dialog>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   <script>
 (() => {
@@ -193,7 +237,7 @@ a:hover{color:var(--ink)}
   const liveFile = name => RAW + name + '?v=' + Date.now();
   const el = (selector) => document.querySelector(selector);
   const esc = (x) => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const state = { snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'' };
+  const state = { snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'score', jobType:'all', companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'' };
   const names = {home:'Home',radar:'Job Hunter',resume:'Resume Updater',cv:'CV Holder', jobs:'Job Feed', saved:'Saved Jobs', companies:'My Companies', alerts:'Email Alerts'};
   const where = (value) => String(value || '').toLowerCase().trim();
   const getDate = (s) => {const d=new Date(s); return Number.isNaN(+d)?null:d;};
@@ -296,7 +340,28 @@ a:hover{color:var(--ink)}
   function top(eyebrow,title,desc,action=''){return `<div class="section-top"><div><span class="eyebrow">${esc(eyebrow)}</span><h1>${esc(title)}</h1><p class="subtitle">${esc(desc)}</p></div>${action}</div>`;}
   const stat=(label,note,value)=>`<article class="stat"><span>${esc(label)}</span><strong>${esc(value)}</strong><small>${esc(note)}</small></article>`;
   const empty=(title,desc)=>`<div class="empty"><strong>${esc(title)}</strong><p>${esc(desc)}</p></div>`;
-  function jobMini(j){return `<div class="mini-job"><span class="job-logo">${icon(companyOf(j))}</span><div class="mini-job-content"><strong>${esc(titleOf(j))}</strong><small>${esc(companyOf(j))} · ${esc(locationOf(j))}</small></div><span class="score">${scoreOf(j)} pts</span></div>`;}
+  // Resolve the employer company (not the ATS hostname) for a job.
+  // This shares the user's editable logo override with the company card.
+  const JOB_COMPANY_ALIASES = Object.freeze({
+    'siemens software':'siemens','siemens industry software':'siemens',
+    'siemens digital industries software':'siemens',
+    'vodafone / vois':'vois','vodafone':'vois',
+    'blackstone eit':'blackstone eit',
+    'e& egypt':'e& / etisalat',
+  });
+  function brandForJob(j){
+    const name=String(companyOf(j)||'').trim();
+    const normalize=x=>String(x||'').trim().toLowerCase();
+    const key=JOB_COMPANY_ALIASES[normalize(name)]||normalize(name);
+    const source=monitoredSources().find(c=>{
+      const original=normalize(c.name);
+      return original===key || original===normalize(name)
+        || (key==='siemens' && original.startsWith('siemens'));
+    });
+    const brand=source || {name: key==='siemens'?'Siemens':name};
+    return companyBrand(brand);
+  }
+  function jobMini(j){return `<div class="mini-job">${brandForJob(j)}<div class="mini-job-content"><strong>${esc(titleOf(j))}</strong><small>${esc(companyOf(j))} · ${esc(locationOf(j))}</small></div><span class="score">${scoreOf(j)} pts</span></div>`;}
   function radarHome(){
     const list=validJobs(), sources=monitoredSources(), active=sources.filter(s=>s.active).length, matching=list.filter(j=>scoreOf(j)>0).length;
     const recent = list.slice().sort((a,b)=>(getDate(b.discovered_at||b.detected_at||b.published_at)||0)-(getDate(a.discovered_at||a.detected_at||a.published_at)||0)).slice(0,4);
@@ -351,9 +416,87 @@ a:hover{color:var(--ink)}
          '<p class="muted">No CV saved yet. Upload your current PDF or Word document.</p>')+
         '<label for="cv-upload" class="btn primary cv-upload-label">'+(file?'Replace CV':'Upload CV')+'</label>'+
         '<input type="file" id="cv-upload" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>'+
-        (file?'<button type="button" class="btn secondary" data-cv-download>Download CV</button><button type="button" class="btn secondary" data-cv-remove>Remove CV</button>':'')+
+        (file?'<button type="button" class="btn secondary" data-cv-preview><svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg> View CV</button><button type="button" class="btn secondary" data-cv-download>Download CV</button><button type="button" class="btn secondary" data-cv-remove>Remove CV</button>':'')+
         '<p class="tiny cv-privacy">Your document stays in this browser using IndexedDB. It is not uploaded to GitHub, Cloudflare, or Vercel, and is not synced across devices. Keep a backup. Limit: 10 MB.</p>'+
       '</section>';
+  }
+
+  let cvPreviewBlobUrl=null;
+  function closeCvPreview(){
+    const dialog=el('#cv-preview-dialog');
+    if(dialog.open)dialog.close();
+    el('#cv-preview-content').replaceChildren();
+    if(cvPreviewBlobUrl){URL.revokeObjectURL(cvPreviewBlobUrl);cvPreviewBlobUrl=null;}
+  }
+  async function extractDocxText(blob){
+    // Local ZIP central directory parsing: no document bytes sent to a service.
+    const bytes=new Uint8Array(await blob.arrayBuffer()), view=new DataView(bytes.buffer);
+    let end=-1;
+    for(let i=bytes.length-22;i>=Math.max(0,bytes.length-65557);i--){
+      if(view.getUint32(i,true)===0x06054b50){end=i;break;}
+    }
+    if(end<0)throw Error('Invalid DOCX archive');
+    const count=view.getUint16(end+10,true);
+    if(count>3000)throw Error('DOCX contains too many parts');
+    let off=view.getUint32(end+16,true),entry=null;
+    const decoder=new TextDecoder('utf-8');
+    for(let i=0;i<count;i++){
+      if(off+46>bytes.length||view.getUint32(off,true)!==0x02014b50)throw Error('Invalid DOCX directory');
+      const n=view.getUint16(off+28,true),x=view.getUint16(off+30,true),c=view.getUint16(off+32,true);
+      const name=decoder.decode(bytes.slice(off+46,off+46+n));
+      if(name==='word/document.xml'){
+        entry={method:view.getUint16(off+10,true),size:view.getUint32(off+20,true),
+          uncompressed:view.getUint32(off+24,true),local:view.getUint32(off+42,true)};
+        break;
+      }
+      off+=46+n+x+c;
+    }
+    if(!entry||entry.uncompressed>5*1024*1024)throw Error('DOCX preview unavailable for this document');
+    const start=entry.local;
+    if(start+30>bytes.length||view.getUint32(start,true)!==0x04034b50)throw Error('Invalid document section');
+    const dataStart=start+30+view.getUint16(start+26,true)+view.getUint16(start+28,true);
+    if(dataStart+entry.size>bytes.length)throw Error('Incomplete DOCX content');
+    const compressed=bytes.slice(dataStart,dataStart+entry.size);
+    let xmlBytes;
+    if(entry.method===0)xmlBytes=compressed;
+    else if(entry.method===8&&typeof DecompressionStream==='function'){
+      xmlBytes=new Uint8Array(await new Response(new Blob([compressed]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+    }else throw Error('This browser cannot preview this DOCX compression format');
+    if(xmlBytes.length>5*1024*1024)throw Error('DOCX preview too large');
+    const xml=new DOMParser().parseFromString(decoder.decode(xmlBytes),'application/xml');
+    if(xml.querySelector('parsererror'))throw Error('DOCX text could not be parsed');
+    const ns='http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+    const paras=[...xml.getElementsByTagNameNS(ns,'p')];
+    const text=paras.map(p=>[...p.getElementsByTagNameNS(ns,'t')].map(t=>t.textContent).join('')).join('\n').trim();
+    return text.slice(0,170000)||'The CV has no extractable text.';
+  }
+  async function openCvPreview(){
+    if(!cvEntry?.blob)return;
+    const dialog=el('#cv-preview-dialog');
+    const content=el('#cv-preview-content');
+    el('#cv-preview-title').textContent=cvEntry.name;
+    content.replaceChildren();
+    dialog.showModal();
+    if(/\.pdf$/i.test(cvEntry.name)){
+      cvPreviewBlobUrl=URL.createObjectURL(cvEntry.blob);
+      const frame=document.createElement('iframe');
+      frame.className='cv-preview-frame';
+      frame.title='CV PDF preview';
+      frame.src=cvPreviewBlobUrl;
+      content.append(frame);
+      const note=document.createElement('p');
+      note.className='tiny';note.textContent='If your browser does not support inline PDFs, use Download CV.';
+      content.append(note);
+    }else{
+      const note=document.createElement('p');
+      note.className='tiny';note.textContent='Text-only DOCX preview; formatting may differ from Microsoft Word. Your document remains on this device.';
+      content.append(note);
+      const pre=document.createElement('pre');
+      pre.className='cv-preview-text';pre.textContent='Reading document...';
+      content.append(pre);
+      try{pre.textContent=await extractDocxText(cvEntry.blob);}
+      catch(e){pre.textContent='Preview unavailable: '+e.message+'. Your original DOCX is preserved; use Download CV.';}
+    }
   }
   async function refreshCv(){
     try{cvEntry=await cvAction('get');if(state.page==='cv')render();}
@@ -377,14 +520,53 @@ a:hover{color:var(--ink)}
   function jobCard(j){
     const id=jobKey(j), saved=state.saved.has(id), url=jobURL(j), score=scoreOf(j);
     const reasons = textOf(j.match_reasons || j.reasons || []);
-    return `<article class="job-card"><div class="job-card-top"><span class="job-logo">${icon(companyOf(j))}</span><div class="job-details"><h3>${esc(titleOf(j))}</h3><p>${esc(companyOf(j))} · ${esc(locationOf(j))}</p></div><span class="score">${score} pts</span></div><div class="job-info">${badge(j.employment||j.job_type||'Role')}${badge('Egypt focus','green')}${postedDate(j)?badge('Posted: '+prettyDate(postedDate(j))):badge(firstSeenDate(j)?'First seen: '+prettyDate(firstSeenDate(j)):'Posting date unavailable','grey')}</div>${snippet(j)?`<p class="job-desc">${esc(snippet(j))}</p>`:''}${reasons?`<p class="tiny" style="margin-bottom:14px">${esc(reasons)}</p>`:''}<div class="job-actions"><button class="plain-button ${saved?'saved':''}" data-save="${esc(id)}">${saved?'♥ Saved':'♡ Save job'}</button><div class="right">${url==='#'?badge('No application link','grey'):`<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View job ↗</a>`}</div></div></article>`;
+    return `<article class="job-card"><div class="job-card-top">${brandForJob(j)}<div class="job-details"><h3>${esc(titleOf(j))}</h3><p>${esc(companyOf(j))} · ${esc(locationOf(j))}</p></div><span class="score">${score} pts</span></div><div class="job-info">${badge(j.employment||j.job_type||'Role')}${badge('Egypt focus','green')}${postedDate(j)?badge('Posted: '+prettyDate(postedDate(j))):badge(firstSeenDate(j)?'First seen: '+prettyDate(firstSeenDate(j)):'Posting date unavailable','grey')}</div>${snippet(j)?`<p class="job-desc">${esc(snippet(j))}</p>`:''}${reasons?`<p class="tiny" style="margin-bottom:14px">${esc(reasons)}</p>`:''}<div class="job-actions"><button class="plain-button ${saved?'saved':''}" data-save="${esc(id)}">${saved?'♥ Saved':'♡ Save job'}</button><div class="right">${url==='#'?badge('No application link','grey'):`<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View job ↗</a>`}</div></div></article>`;
+  }
+  function jobDateForFilter(j){
+    return state.dateBasis==='firstseen'?firstSeenDate(j):postedDate(j);
+  }
+  function filterJobs(list){
+    const q=where(state.query);
+    const now=Date.now();
+    return list.filter(j=>{
+      if(q && !where([titleOf(j),companyOf(j),locationOf(j),snippet(j)].join(' ')).includes(q))return false;
+      if(!matchesRole(j,state.role))return false;
+      if(state.companyFilter!=='all' && companyOf(j)!==state.companyFilter)return false;
+      if(state.jobType==='internship'&&!/\b(intern(?:ship)?s?|trainee|graduate program(?:me)?|work experience)\b/i.test(titleOf(j)+' '+(j.employment||'')))return false;
+      if(state.jobType==='junior' && /\b(intern(?:ship)?s?|trainee)\b/i.test(titleOf(j)))return false;
+      if(state.dateFilter!=='all'){
+        const days=Number(state.dateFilter);
+        const d=getDate(jobDateForFilter(j));
+        if(!d||d.getTime()>now+86400000||now-d.getTime()>days*86400000)return false;
+      }
+      return true;
+    }).sort((a,b)=>{
+      if(state.sortBy==='recent')return (getDate(jobDateForFilter(b))||0)-(getDate(jobDateForFilter(a))||0)||scoreOf(b)-scoreOf(a);
+      if(state.sortBy==='company')return companyOf(a).localeCompare(companyOf(b))||scoreOf(b)-scoreOf(a);
+      return scoreOf(b)-scoreOf(a)||(getDate(jobDateForFilter(b))||0)-(getDate(jobDateForFilter(a))||0);
+    });
   }
   function jobsPage(saved=false){
-    const whole=validJobs();let list=saved?whole.filter(j=>state.saved.has(jobKey(j))):whole;
-    if(state.query){const q=where(state.query);list=list.filter(j=>where([titleOf(j),companyOf(j),locationOf(j),snippet(j)].join(' ')).includes(q));}
-    list=list.filter(j=>matchesRole(j,state.role)).sort((a,b)=>scoreOf(b)-scoreOf(a));
-    const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':'Your job feed',saved?'Jobs you’ve bookmarked on this device.':'Jobs published by your monitoring workflows, with fit scores.');
-    return h+`<div class="filters"><input class="search-box" id="job-search" type="search" placeholder="Search job title, company, skills…" value="${esc(state.query)}" aria-label="Search jobs"><select class="filter-select" id="role-filter" aria-label="Filter job family"><option value="all">All role families</option><option value="software" ${state.role==='software'?'selected':''}>Software</option><option value="ai" ${state.role==='ai'?'selected':''}>AI / ML</option><option value="cv" ${state.role==='cv'?'selected':''}>Computer Vision</option><option value="mlops" ${state.role==='mlops'?'selected':''}>MLOps</option></select></div><div class="cards" id="jobs-list">${list.length?list.map(jobCard).join(''):empty('No matching jobs','Try another search or refresh your monitoring results.')}</div><p class="tiny">${list.length} job(s) shown. Scores come from the backend filter — they are not acceptance probabilities.</p>`;
+    const all=validJobs(), whole=saved?all.filter(j=>state.saved.has(jobKey(j))):all;
+    const list=filterJobs(whole);
+    const companies=[...new Set(whole.map(companyOf))].sort((a,b)=>a.localeCompare(b));
+    const option=(v,text,current)=>`<option value="${esc(v)}" ${current===v?'selected':''}>${esc(text)}</option>`;
+    const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':'Your job feed',saved?'Jobs you’ve bookmarked on this device.':'Eligible early-career jobs, with filters for role, employer, and dates.');
+    return h+
+      `<section class="job-filter-panel" aria-label="Job search filters">
+        <div class="job-filter-row"><label class="filter-field filter-search">Search<input class="search-box" id="job-search" type="search" placeholder="Title, company or skills" value="${esc(state.query)}" aria-label="Search jobs"></label>
+        <label class="filter-field">Role family<select class="filter-select" id="role-filter">${option('all','All roles',state.role)}${option('software','Software',state.role)}${option('ai','AI / ML',state.role)}${option('cv','Computer Vision',state.role)}${option('mlops','MLOps',state.role)}</select></label>
+        <label class="filter-field">Company<select class="filter-select" id="company-filter">${option('all','All companies',state.companyFilter)}${companies.map(c=>option(c,c,state.companyFilter)).join('')}</select></label></div>
+        <div class="job-filter-row">
+        <label class="filter-field">Job type<select class="filter-select" id="type-filter">${option('all','Internships + junior',state.jobType)}${option('internship','Internships / training',state.jobType)}${option('junior','Junior / full-time',state.jobType)}</select></label>
+        <label class="filter-field">Date based on<select class="filter-select" id="date-basis">${option('posted','Employer posted date',state.dateBasis)}${option('firstseen','First seen by Job Hunter',state.dateBasis)}</select></label>
+        <label class="filter-field">Date range<select class="filter-select" id="date-filter">${option('all','Any date',state.dateFilter)}${option('1','Past 24 hours',state.dateFilter)}${option('3','Past 3 days',state.dateFilter)}${option('7','Past 7 days',state.dateFilter)}${option('14','Past 14 days',state.dateFilter)}${option('30','Past 30 days',state.dateFilter)}${option('90','Past 90 days',state.dateFilter)}</select></label>
+        <label class="filter-field">Sort<select class="filter-select" id="sort-filter">${option('score','Best match',state.sortBy)}${option('recent','Most recent',state.sortBy)}${option('company','Company A–Z',state.sortBy)}</select></label>
+        <button class="btn secondary clear-job-filters" data-reset-filters type="button">Reset filters</button></div>
+        <p class="tiny">Date filters exclude jobs without the selected date. First seen means when Job Hunter detected it—not necessarily when the employer posted it.</p>
+      </section>
+      <div class="cards" id="jobs-list">${list.length?list.map(jobCard).join(''):empty('No jobs match these filters','Change the date range or reset filters to see available opportunities.')}</div>
+      <p class="tiny">${list.length} of ${whole.length} eligible jobs shown. Scores measure fit with your job filters, not hiring probability.</p>`;
   }
   // Brand-domain allowlist: ATS hosting domains (Lever/Workable/Ashby) are not company logos.
   // Uses company website favicons; unknown domains retain a clean monogram.
@@ -568,6 +750,10 @@ a:hover{color:var(--ink)}
       setTheme(isDark);
       try { localStorage.setItem('jh-theme',isDark?'dark':'light'); } catch {}
     });
+    el('#cv-preview-dialog').addEventListener('close',()=>{
+      el('#cv-preview-content').replaceChildren();
+      if(cvPreviewBlobUrl){URL.revokeObjectURL(cvPreviewBlobUrl);cvPreviewBlobUrl=null;}
+    });
     readSaved();refreshCv();
     document.querySelectorAll('nav button[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
     window.addEventListener('hashchange',()=>go(location.hash.replace('#','')));
@@ -580,6 +766,8 @@ a:hover{color:var(--ink)}
       if(logo){editLogoDialog(logo.dataset.editLogo);return;}
       if(event.target.closest('[data-close-logo]')){el('#logo-dialog').close();return;}
       const saved=event.target.closest('[data-save]');if(saved){const key=saved.dataset.save;state.saved.has(key)?state.saved.delete(key):state.saved.add(key);persistSaved();render();return;}
+      if(event.target.closest('[data-cv-preview]')){openCvPreview().catch(e=>toast(e.message,true));return;}
+      if(event.target.closest('[data-cv-close]')){closeCvPreview();return;}
       if(event.target.closest('[data-cv-download]')){
         if(cvEntry?.blob){
           const download=URL.createObjectURL(cvEntry.blob);
@@ -593,6 +781,10 @@ a:hover{color:var(--ink)}
         if(!confirm('Remove the locally saved CV from this browser?'))return;
         cvAction('delete').then(()=>{cvEntry=null;render();toast('CV removed from this browser');}).catch(e=>toast(e.message,true));
         return;
+      }
+      if(event.target.closest('[data-reset-filters]')){
+        Object.assign(state,{query:'',role:'all',companyFilter:'all',dateFilter:'all',dateBasis:'posted',sortBy:'score',jobType:'all'});
+        render();return;
       }
       if(event.target.closest('[data-action="reveal-email"]')){showFullEmail();return;}
       const edit=event.target.closest('[data-edit-name]');
@@ -610,7 +802,8 @@ a:hover{color:var(--ink)}
     });
     document.addEventListener('input',event=>{if(event.target.id==='job-search'){state.query=event.target.value;const at=event.target.selectionStart;render();const field=el('#job-search');field?.focus();try{field?.setSelectionRange(at,at);}catch{}}});
     document.addEventListener('change',async event=>{
-      if(event.target.id==='role-filter'){state.role=event.target.value;render();}
+      const fields={'role-filter':'role','company-filter':'companyFilter','date-filter':'dateFilter','date-basis':'dateBasis','sort-filter':'sortBy','type-filter':'jobType'};
+      if(fields[event.target.id]){state[fields[event.target.id]]=event.target.value;render();}
       if(event.target.id==='cv-upload'){
         try{await acceptCV(event.target.files?.[0]);toast('CV securely stored on this device');}
         catch(e){toast(e.message||'CV upload failed',true);}
