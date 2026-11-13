@@ -1,0 +1,88 @@
+name: Cloudflare Scheduler
+
+on:
+  pull_request:
+    paths:
+      - "cloudflare/scheduler/**"
+      - ".github/workflows/cloudflare-scheduler.yml"
+      - ".github/workflows/monitor.yml"
+      - ".github/workflows/custom-companies.yml"
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: "Deploy the separate Cloudflare Cron Worker"
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Verify scheduler safety
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check ESM syntax
+        run: node --check cloudflare/scheduler/worker.mjs
+      - name: Test dispatch, queue guarding, authentication failures
+        run: node --test cloudflare/scheduler/worker.test.mjs
+
+  deploy:
+    name: Deploy scheduled Worker (manual only)
+    needs: test
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check required secrets without printing their values
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GH_SCHEDULER_PAT: ${{ secrets.GH_SCHEDULER_PAT }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::Missing CLOUDFLARE_API_TOKEN repository secret"
+            exit 1
+          fi
+          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::Missing CLOUDFLARE_ACCOUNT_ID repository secret"
+            exit 1
+          fi
+          if [ -z "$GH_SCHEDULER_PAT" ]; then
+            echo "::error::Missing GH_SCHEDULER_PAT repository secret"
+            exit 1
+          fi
+      - name: Deploy isolated Cron Worker (not the website)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx --yes wrangler@4 deploy --config cloudflare/scheduler/wrangler.toml
+      - name: Set GitHub dispatch token as private Worker secret
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GH_SCHEDULER_PAT: ${{ secrets.GH_SCHEDULER_PAT }}
+        run: |
+          test -n "$GH_SCHEDULER_PAT"
+          printf '%s' "$GH_SCHEDULER_PAT" |
+            npx --yes wrangler@4 secret put GH_DISPATCH_TOKEN --config cloudflare/scheduler/wrangler.toml
+      - name: Verify expected Cloudflare secret exists (not its value)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx --yes wrangler@4 secret list --config cloudflare/scheduler/wrangler.toml |
+            grep -q 'GH_DISPATCH_TOKEN'
+          echo "Worker deployed; allow up to 15 minutes for cron propagation."
+          echo "After GitHub Actions workflow_dispatch runs appear, set repository variable CLOUDFLARE_SCHEDULER_ACTIVE=true to disable legacy scheduled jobs."
