@@ -179,3 +179,43 @@ def fab_minds_egypt(name, get_bytes, make_job, max_details=40):
         # scope is Egypt-specific, but don't invent a city or posting date.
         found[href] = make_job(name, title, "Egypt (company careers)", href, body[:15000], _date(body), "")
     return list(found.values())
+
+
+def coca_cola_hbc_egypt(name, get_bytes, make_job, max_details=35):
+    """Follow verified Coca-Cola HBC employer-linked project details only.
+
+    The country site's careers page can include jobs outside Egypt, so the
+    specific requisition page must itself confirm an Egypt location.
+    """
+    base = "https://eg.coca-colahellenic.com/en/working-with-us"
+    document = _text(get_bytes(base))
+    urls = []
+    for anchor in document.select("a[href]"):
+        href = urljoin(base, anchor.get("href") or "")
+        parts = urlsplit(href)
+        if parts.hostname != "careers.coca-colahellenic.com":
+            continue
+        if not re.fullmatch(r"/en_US/careers/ProjectDetail/[^/?#]+/\d+/?", parts.path, re.I):
+            continue
+        if href not in urls:
+            urls.append(href)
+    if not urls:
+        raise ValueError("Coca-Cola HBC careers page has no public requisition detail links")
+    if len(urls) > max_details:
+        raise ValueError("Coca-Cola HBC has more job links than the configured safety limit")
+    jobs = []
+    for href in urls:
+        detail = _text(get_bytes(href))
+        text = detail.get_text(" ", strip=True)
+        heading = detail.select_one("h1")
+        title = heading.get_text(" ", strip=True) if heading else ""
+        if not title:
+            title = urlsplit(href).path.strip("/").split("/")[-2].replace("-", " ")
+        place = re.search(r"(?:Location|Job\s+Location|Country)\s*[:\-]?\s*"
+                          r"(Cairo|Alexandria|Egypt|Giza)\b", text, re.I)
+        if not place:
+            continue
+        city = place.group(1)
+        location = city if city.lower() == "egypt" else city + ", Egypt"
+        jobs.append(make_job(name, title, location, href, text[:15000], _date(text), ""))
+    return jobs
