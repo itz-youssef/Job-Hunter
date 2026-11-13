@@ -9,13 +9,16 @@ import dataHandler from '../../api/secretj-data.js';
 import adminHandler from '../../api/secretj-admin.js';
 import healthHandler from '../../api/secretj-health.js';
 import linkedinHandler from '../../api/secretj-linkedin.js';
+import emailHandler from '../../api/secretj-email.js';
+import memberAlerts from '../../lib/secretj/member-alerts.js';
 
 const handlers = new Map([
   ['/api/secretj-auth',authHandler],
   ['/api/secretj-data',dataHandler],
   ['/api/secretj-admin',adminHandler],
   ['/api/secretj-health',healthHandler],
-  ['/api/secretj-linkedin',linkedinHandler]
+  ['/api/secretj-linkedin',linkedinHandler],
+  ['/api/secretj-email',emailHandler]
 ]);
 const maxBody = 1_250_000;
 const jsonHeaders={
@@ -88,4 +91,14 @@ export async function handleRequest(request,env){
   }
   return response;
 }
-export default {fetch:handleRequest};
+export async function scheduled(controller,env){
+  try{
+    const result=await memberAlerts.deliver(env);
+    console.log('secretj-member-alerts',{status:result.status,
+      delivered:result.delivered||0,failed:result.failed||0});
+  }catch{
+    // Avoid logging email address, provider secrets, or CV/user profile data.
+    console.warn('secretj-member-alerts',{status:'failed'});
+  }
+}
+export default {fetch:handleRequest,scheduled};
