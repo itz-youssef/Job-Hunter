@@ -1,86 +1,53 @@
 'use strict';
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
 
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-
-const sql = fs.readFileSync(
-  'database/migrations/001_secret_j_multitenant.sql', 'utf8',
-);
-
-const privateTables = [
-  'secret_j_profiles',
-  'secret_j_user_roles',
-  'secret_j_job_preferences',
-  'secret_j_saved_jobs',
-  'secret_j_applications',
-  'secret_j_cv_documents',
-  'secret_j_admin_audit',
-];
-
-test('schema only introduces isolated Secret J tables', () => {
-  const created = [...sql.matchAll(/CREATE TABLE public\.([a-z_]+)/g)].map(m => m[1]);
-  assert.deepEqual(created.sort(), [...privateTables].sort());
-  assert.doesNotMatch(sql, /(?:DROP|TRUNCATE)\s+TABLE/i);
-  assert.doesNotMatch(sql, /ALTER\s+TABLE\s+(?:public\.)?(?:jobs|sources|outbox|companies)\b/i);
-  assert.match(sql, /^BEGIN;/m);
-  assert.match(sql, /^COMMIT;/m);
+const migration=fs.readFileSync('database/migrations/001_secret_j_multitenant.sql','utf8');
+const tables=['sj_users','sj_sessions','sj_auth_attempts','sj_profiles','sj_preferences','sj_saved_jobs','sj_applications','sj_cv_files','sj_avatars','sj_admin_audit'];
+test('migration creates only isolated Secret J tables; never edits scanner tables',()=>{
+  const made=[...migration.matchAll(/CREATE TABLE IF NOT EXISTS public\.(\w+)/g)].map(m=>m[1]);
+  assert.deepEqual(made.sort(),tables.slice().sort());
+  assert.doesNotMatch(migration,/\b(?:DROP|TRUNCATE)\s+TABLE/i);
+  assert.doesNotMatch(migration,/\bALTER TABLE (?:public\.)?(?:jobs|sources|outbox|companies|history)\b/i);
+  assert.doesNotMatch(migration,/REVOKE ALL ON ALL TABLES IN SCHEMA public/i);
+  assert.match(migration,/^BEGIN;/m);
+  assert.match(migration,/^COMMIT;/m);
 });
-
-test('every table has RLS enabled and every member row policy is owner-scoped', () => {
-  for(const table of privateTables) {
-    assert.match(sql, new RegExp(
-      'ALTER TABLE public\\.' + table + ' ENABLE ROW LEVEL SECURITY;'
-    ));
-  }
-  for(const table of privateTables.filter(t => !t.includes('audit'))) {
-    assert.match(sql, new RegExp(
-      'ON public\\.' + table + '[\\s\\S]{0,160}user_id = \\(SELECT auth\\.user_id\\(\\)\\)'
-    ));
-  }
-  assert.doesNotMatch(sql, /TO\s+(?:PUBLIC|anonymous)\s+USING/i);
+test('no public Neon Data API grants or browser access to password/session tables',()=>{
+  for(const name of tables)assert.match(migration,new RegExp('ALTER TABLE public\\.'+name+' ENABLE ROW LEVEL SECURITY'));
+  assert.match(migration,/REVOKE ALL ON TABLE public\.sj_users/);
+  assert.doesNotMatch(migration,/GRANT\s+(?:ALL|SELECT|INSERT|UPDATE|DELETE)[^;]*\bTO PUBLIC\b/i);
+  assert.doesNotMatch(migration,/CREATE POLICY/i);
 });
-
-test('admin role is read only to authenticated browser clients', () => {
-  assert.match(sql, /secret_j_roles_read_self[\s\S]*?FOR SELECT TO authenticated/);
-  assert.match(sql, /GRANT SELECT ON TABLE public\.secret_j_user_roles TO authenticated/);
-  assert.doesNotMatch(sql, /GRANT (?:ALL|INSERT|UPDATE|DELETE)[^;]*secret_j_user_roles TO authenticated/i);
-  assert.match(sql, /No grants on secret_j_admin_audit/);
+test('users have unique email, safe server-only password hashes, roles and sessions',()=>{
+  assert.match(migration,/email TEXT NOT NULL UNIQUE/);
+  assert.match(migration,/password_hash TEXT NOT NULL/);
+  assert.match(migration,/CHECK \(role IN \('member','admin'\)\)/);
+  assert.match(migration,/token_hash CHAR\(64\) PRIMARY KEY/);
+  assert.match(migration,/expires_at TIMESTAMPTZ NOT NULL/);
+  assert.doesNotMatch(migration,/password_plain|password TEXT/i);
 });
-
-test('CVs are referenced only as object keys in a private bucket', () => {
-  assert.match(sql, /CREATE TABLE public\.secret_j_cv_documents/);
-  assert.match(sql, /object_key TEXT NOT NULL UNIQUE/);
-  assert.match(sql, /is_primary BOOLEAN NOT NULL/);
-  assert.doesNotMatch(sql, /(?:pdf_blob|cv_blob|password_hash|password TEXT)/i);
-  assert.match(sql, /mime_type TEXT NOT NULL CHECK/);
-  assert.match(sql, /size_bytes INTEGER NOT NULL CHECK/);
+test('every personal data table belongs to a user',()=>{
+  for(const table of ['sj_profiles','sj_preferences','sj_saved_jobs','sj_applications','sj_cv_files','sj_avatars'])
+    assert.match(migration,new RegExp('CREATE TABLE IF NOT EXISTS public\\.'+table+' \\([\\s\\S]*?user_id UUID[^\\n]*REFERENCES public\\.sj_users'));
 });
-
-test('new schema cannot start without Neon Data API and managed authentication', () => {
-  assert.match(sql, /to_regprocedure\('auth\.user_id\(\)'\)/);
-  assert.match(sql, /rolname = 'authenticated'/);
-  assert.match(sql, /No browser mutation grants on user_roles/);
+test('CV/avatar content is private and size bounded, no public file urls',()=>{
+  assert.match(migration,/content BYTEA NOT NULL/);
+  assert.match(migration,/size_bytes INTEGER NOT NULL CHECK \(size_bytes BETWEEN 1 AND 786432\)/);
+  assert.match(migration,/size_bytes INTEGER NOT NULL CHECK \(size_bytes BETWEEN 1 AND 102400\)/);
+  assert.doesNotMatch(migration,/public_url|bucket_public/i);
 });
-
-test('private member data is restricted to the authenticated identity', () => {
-  for(const table of [
-    'secret_j_profiles',
-    'secret_j_job_preferences',
-    'secret_j_saved_jobs',
-    'secret_j_applications',
-    'secret_j_cv_documents',
-  ]) {
-    assert.match(sql, new RegExp(
-      'CREATE POLICY secret_j_\\w+_owner\\s+ON public\\.' + table +
-      ' FOR ALL TO authenticated\\s+USING \\(user_id = \\(SELECT auth\\.user_id\\(\\)\\)\\)' +
-      '\\s+WITH CHECK \\(user_id = \\(SELECT auth\\.user_id\\(\\)\\)\\)',
-      'i'
-    ));
-  }
+test('application and saved job ownership is part of unique key',()=>{
+  assert.match(migration,/PRIMARY KEY \(user_id,job_key\)/);
+  assert.match(migration,/UNIQUE\(user_id,job_key\)/);
+  assert.match(migration,/CREATE TABLE IF NOT EXISTS public\.sj_admin_audit/);
 });
-
-test('auth provider owns identities, not a duplicate insecure users table', () => {
-  assert.doesNotMatch(sql, /CREATE TABLE public\.(?:users|sessions|accounts)\b/i);
-  assert.match(sql, /Neon-managed neon_auth\.\* tables/);
+test('Neon URI only read in server-side code and from environment',()=>{
+  const core=fs.readFileSync('api/_secretj/core.js','utf8');
+  assert.match(core,/process\.env\.DATABASE_URL/);
+  assert.doesNotMatch(core,/postgresql:\/\/[^"']+@ep-/);
+  assert.match(core,/@neondatabase\/serverless/);
+  const frontend=fs.readFileSync('dist/assets/secretj-account.js','utf8');
+  assert.doesNotMatch(frontend,/DATABASE_URL|password_hash|sj_sessions|neondb_owner/);
 });
