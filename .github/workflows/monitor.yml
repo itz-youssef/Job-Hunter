@@ -14,6 +14,9 @@ concurrency:
 
 jobs:
   monitor:
+    # Keep GitHub cron as fallback until Cloudflare cron is deployed and verified.
+    # Manually dispatched runs are never disabled by this variable.
+    if: github.event_name != 'schedule' || vars.CLOUDFLARE_SCHEDULER_ACTIVE != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -35,6 +38,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
 
       - name: Install dependencies
         run: pip install -r requirements.txt
