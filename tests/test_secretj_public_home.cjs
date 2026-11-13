@@ -75,11 +75,12 @@ test('account profile menu honors account ownership and linked services',()=>{
   assert.match(accountJS,/\/api\/secretj-linkedin\?action=disconnect/);
 });
 test('alert email comes from authenticated signup identity; preferences saved to Neon',()=>{
-  assert.match(accountJS,/Alert destination:/);
-  assert.match(accountJS,/esc\(state\.user\.email\)/);
+  assert.match(accountJS,/Your alert email/);
+  assert.match(accountJS,/recipient=emailState\.recipient\|\|state\.user\.email/);
   assert.match(accountJS,/api\(dataUrl\('preferences'\),'PUT'/);
   assert.match(accountJS,/email_alerts_enabled|email_alerts/);
-  assert.match(accountJS,/Personalized email delivery is still being developed/);
+  assert.match(accountJS,/\/api\/secretj-email\?action=test/);
+  assert.match(accountJS,/\/api\/secretj-email\?action=verify/);
 });
 test('new LinkedIn migration preserves existing tables and restricts public grants',()=>{
   assert.match(sql,/CREATE TABLE IF NOT EXISTS public\.sj_linkedin_connections/);
