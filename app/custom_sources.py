@@ -189,6 +189,10 @@ def _ats(url: str):
     host = (p.hostname or "").lower()
     seg = [s for s in p.path.split("/") if s]
 
+    if host in ("www.adcb.com.eg", "adcb.com.eg") and p.path.startswith("/available-careers"):
+        return "adcb_egypt", None
+    if host in ("www.fab-minds.com", "fab-minds.com") and p.path.startswith("/careers"):
+        return "fab_minds_egypt", None
     if host == "blnk.zenats.com" and p.path.startswith("/en/careers_page"):
         return "blnk_zenats", None
     if host in ("henkel.com", "www.henkel.com") and p.path.startswith("/careers/find-your-job-apply"):
@@ -544,6 +548,11 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     kind, meta = _ats(url)
     p = urllib.parse.urlsplit(url)
     jobs = []
+
+    if kind in ("adcb_egypt", "fab_minds_egypt"):
+        from app.egypt_extra_feeds import adcb_egypt, fab_minds_egypt
+        reader = adcb_egypt if kind == "adcb_egypt" else fab_minds_egypt
+        return _dedupe(reader(name, _bytes, _job))
 
     if kind in ("blnk_zenats", "henkel_egypt"):
         from app.egypt_extra_feeds import blnk_zenats, henkel_egypt
@@ -1286,7 +1295,7 @@ def scan_company(company: dict):
             name, url
         )
 
-        if kind in ("blnk_zenats", "henkel_egypt"):
+        if kind in ("blnk_zenats", "henkel_egypt", "adcb_egypt", "fab_minds_egypt"):
             return jobs, "partial", f"{len(jobs)} detail-verified vacancies; listing coverage may be incomplete"
 
         if kind in ("etisalat_egypt", "indrive_egypt", "blink22_egypt", "uber_egypt", "cib_egypt", "adib_egypt"):
