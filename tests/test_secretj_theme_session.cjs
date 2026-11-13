@@ -144,3 +144,16 @@ test('guest sessions never show a private profile on either host',async()=>{
     assert.ok(!u.calls.some(x=>x.includes('scope=avatar')));
   }
 });
+
+test('PostgreSQL wrapped base64 renders in the header and deletion restores initials',async()=>{
+  const options={host:'jobhunter-youssef.yoyoyasso19.workers.dev',user:login,
+    avatar:{mime_type:'image/png',base64:'YWJj\nZA==\n'}};
+  const u=harness(options);
+  await flush();
+  assert.equal(u.get('sj-profile-photo').src,'data:image/png;base64,YWJjZA==');
+  assert.equal(u.get('sj-profile-initial').hidden,true);
+  options.avatar=null;
+  u.listeners.window.focus();await flush();
+  assert.equal(u.get('sj-profile-photo').hidden,true);
+  assert.equal(u.get('sj-profile-initial').hidden,false);
+});

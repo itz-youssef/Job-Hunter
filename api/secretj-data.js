@@ -182,7 +182,9 @@ module.exports=async function handler(req,res){
         'SELECT original_name,mime_type,size_bytes,encode(content,\'base64\') AS base64 FROM public.sj_cv_files WHERE user_id=$1':
         'SELECT mime_type,size_bytes,encode(content,\'base64\') AS base64 FROM public.sj_avatars WHERE user_id=$1';
       const rows=await core.query(select,[userId]);
-      return core.reply(res,200,{ok:true,found:Boolean(rows[0]),file:rows[0]||null});
+      // PostgreSQL encode(bytea, 'base64') inserts line breaks every 76 characters.
+      const file=rows[0]?{...rows[0],base64:String(rows[0].base64||'').replace(/\s/g,'')}:null;
+      return core.reply(res,200,{ok:true,found:Boolean(file),file});
     }
     if(req.method==='DELETE'){
       await core.query('DELETE FROM public.'+table+' WHERE user_id=$1',[userId]);

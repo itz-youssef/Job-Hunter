@@ -5,7 +5,7 @@
  */
 const {randomBytes,randomInt,timingSafeEqual}=require('node:crypto');
 const core=require('../lib/secretj/core');
-const RATE_MINUTES=15;
+
 function configured(){
   return Boolean(process.env.RESEND_API_KEY&&
     /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(process.env.SECRETJ_EMAIL_FROM||''));
@@ -84,7 +84,7 @@ module.exports=async function handler(req,res){
       const needsVerification=!record[0].verified_at;
       const subject=needsVerification?'Secret J: Confirm alert destination':'Secret J: Test alert delivered';
       const text=needsVerification?
-        'Your Secret J confirmation code: '+code+
+        'Your Secret J email test is successful.\n\nYour confirmation code: '+code+
         '\n\nEnter this code in your account within 10 minutes to enable alerts at this address. Ignore this email if you did not request it.':
         'Your Secret J test email was accepted by the mail provider.\n\n'+
         'You will only receive job alerts when you opt in.';
@@ -129,3 +129,5 @@ module.exports=async function handler(req,res){
   }catch(error){return core.safeError(res,error);}
 };
 module.exports.send=send;
+
+module.exports.configured=configured;

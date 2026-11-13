@@ -22,7 +22,7 @@ test('CV Holder in navigation and content routing',()=>{
   assert.match(script,/data-cv-download/);
 });
 test('local CV handling stays browser-local unless private backup is explicitly requested',()=>{
-  const local=script.slice(script.indexOf('// CV files never leave'),script.indexOf('  function profilePage()'));
+  const local=script.slice(script.indexOf('// CV files never leave'),script.indexOf('  function legacyProfilePage()'));
   assert.ok(!local.includes('fetch('),'Local CV storage must not send data over the network');
   assert.ok(!local.includes('XMLHttpRequest'));
   const save=script.slice(script.indexOf('async function acceptCV(file)'),script.indexOf('  function resumePage()'));

@@ -27,7 +27,7 @@ test('Secret J lives within the original Job Hunter sidebar and toolbar',()=>{
   assert.match(html,/data-page="jobs"/);
   assert.match(html,/data-page="companies"/);
   assert.match(html,/src="\/assets\/secretj-mark\.svg"/);
-  assert.match(html,/src="\/assets\/secretj-home\.js"/);
+  assert.match(html,/src="\/assets\/secretj-home\.js(?:\?[^"\s]+)?"/);
   assert.match(html,/https:\/\/www\.linkedin\.com\/company\/secretj\/home\//);
 });
 test('company copy is minimal, professional, without invented founders or AI punctuation',()=>{
@@ -59,11 +59,9 @@ test('top-right login/signup guests and role-protected profile/admin for members
   assert.match(homeJS,/\/api\/secretj-auth\?action=logout/);
   assert.doesNotMatch(homeJS,/DATABASE_URL|npg_|password_hash|neondb_owner/);
 });
-test('Google is clearly disabled and not connected to an imaginary provider',()=>{
-  assert.match(account,/Continue with Google/);
-  assert.match(account,/Coming soon/);
-  assert.match(account,/disabled title="Google authentication is planned/);
-  assert.doesNotMatch(accountJS,/accounts\.google\.com\/o\/oauth2/);
+test('unconfigured Google sign-in is explained without a dead button',()=>{
+  assert.match(account,/Google sign-in is not connected/);
+  assert.doesNotMatch(account,/<button[^>]*>G&nbsp; Continue with Google/);
 });
 test('account profile menu honors account ownership and linked services',()=>{
   assert.match(account,/id="account-profile-menu" class="top-profile" hidden/);

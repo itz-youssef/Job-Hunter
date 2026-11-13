@@ -209,3 +209,17 @@ test('account page includes complete forms but no database credentials',()=>{
   assert.ok(js.includes("'/api/secretj-admin"));
   assert.doesNotMatch(h+js,/DATABASE_URL|npg_|postgresql:\/\/|neondb_owner/);
 });
+
+test('binary account files strip PostgreSQL base64 line breaks before returning to browsers',async()=>{
+  core.setQueryForTests(async(sql,args)=>{
+    if(sql.includes('FROM public.sj_sessions'))return [fakeUser()];
+    assert.deepEqual(args,[ID]);
+    return [{mime_type:'image/png',size_bytes:4,base64:'YWJj\nZA==\n'}];
+  });
+  try{
+    const result=await call(data,req('GET',{},{scope:'avatar'},{cookie:COOKIE}));
+    assert.equal(result.status,200);
+    assert.equal(result.body.file.base64,'YWJjZA==');
+    assert.match(result.headers['Cache-Control'],/no-store/);
+  }finally{core.setQueryForTests(null);}
+});
