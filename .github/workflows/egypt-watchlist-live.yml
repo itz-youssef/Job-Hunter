@@ -6,6 +6,7 @@ on:
       - "app/custom_sources.py"
       - "app/egypt_expansion_feeds.py"
       - "scripts/validate_egypt_watchlist.py"
+      - "scripts/probe_new_employer_sources.py"
       - "tests/test_new_employer_matching.py"
       - ".github/workflows/egypt-watchlist-live.yml"
   workflow_dispatch:
@@ -34,4 +35,15 @@ jobs:
         with:
           name: egypt-watchlist-live-results
           path: watchlist-live-results.json
+          if-no-files-found: ignore
+
+      - name: Diagnose employer ATS integrations (read only)
+        if: always()
+        run: python -m scripts.probe_new_employer_sources
+      - name: Upload ATS diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: egypt-new-employer-ats-diagnostics
+          path: new-employer-source-diagnostics.json
           if-no-files-found: ignore
