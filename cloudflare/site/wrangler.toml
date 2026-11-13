@@ -16,6 +16,8 @@ NODE_ENV = "production"
 # Pilot switch: signup only works when a private DATABASE_URL secret has
 # also been provisioned on this website Worker.
 SECRETJ_REGISTRATION_ENABLED = "true"
+# The sender and API key must still be set privately. No mail is sent otherwise.
+SECRETJ_ALERTS_ENABLED = "true"
 
 # Separate from the existing scanner scheduler. The site worker only handles
 # opted-in, email-confirmed members. Disabled until mail provider is configured.
