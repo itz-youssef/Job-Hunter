@@ -1,17 +1,53 @@
 'use strict';
 
 /**
- * Public operational check with no connection strings, emails or user data.
- * An empty guest session does not prove Neon is configured.
+ * Production-safe Cloudflare/Neon diagnostics.
+ * Never return the connection string, host, username, passwords, SQL text,
+ * database driver error messages or the underlying exception.
  */
 const core=require('../lib/secretj/core');
+
+function inspectConnectionString(value) {
+  if(typeof value!=='string'||value.trim()==='')return 'not_configured';
+  const trimmed=value.trim();
+  if(!/^postgres(?:ql)?:\/\//i.test(trimmed))return 'invalid_format';
+  try{
+    const url=new URL(trimmed);
+    if(!url.hostname||!url.username||!url.password)return 'invalid_credentials_format';
+    if(/\*{3,}|%2a(?:%2a){2,}/i.test(url.password))return 'redacted_password';
+    if(!url.pathname||url.pathname==='/')return 'missing_database_name';
+    return 'valid';
+  }catch{return 'invalid_format';}
+}
+function classifyConnectionFailure(error) {
+  const code=String(error?.code||'').toUpperCase();
+  const name=String(error?.name||'');
+  // Inspect exception messages only internally, never return the message.
+  const message=String(error?.message||'').toLowerCase();
+  if(code==='28P01'||/password authentication failed|invalid password|authentication failed/.test(message))
+    return 'invalid_credentials';
+  if(code==='3D000'||/database .* does not exist/.test(message))return 'database_not_found';
+  if(code==='42501'||/permission denied|insufficient privilege/.test(message))return 'permission_denied';
+  if(code==='ENOTFOUND'||code==='EAI_AGAIN'||/dns|name resolution/.test(message))
+    return 'dns_error';
+  if(code==='ETIMEDOUT'||code==='ESOCKETTIMEDOUT'||/timed? ?out/.test(message))
+    return 'timeout';
+  if(/fetch failed|network|connect econn|connection refused|websocket/.test(message))
+    return 'network_error';
+  if(/cannot find module|require is not defined|module not found|unsupported|node:/.test(message))
+    return 'runtime_incompatible';
+  if(name==='NeonDbError'||/neon\/v2|neon-http/.test(message))
+    return 'neon_query_error';
+  return 'query_failed';
+}
 
 module.exports=async function handler(req,res) {
   if(req.method!=='GET')
     return core.reply(res,405,{ok:false,status:'method_not_allowed'});
-  if(!process.env.DATABASE_URL)
-    return core.reply(res,503,{ok:false,database:'not_configured',
-      registration_enabled:false});
+  const format=inspectConnectionString(process.env.DATABASE_URL);
+  if(format!=='valid')
+    return core.reply(res,503,{ok:false,database:format==='not_configured'?'not_configured':'invalid_connection_string',
+      reason:format,registration_enabled:false});
   try{
     const rows=await core.query(
       `SELECT COUNT(*)::int AS ready_tables
@@ -27,8 +63,13 @@ module.exports=async function handler(req,res) {
         registration_enabled:false});
     return core.reply(res,200,{ok:true,database:'ready',
       registration_enabled:process.env.SECRETJ_REGISTRATION_ENABLED==='true'});
-  }catch{
+  }catch(error){
+    const reason=classifyConnectionFailure(error);
+    console.warn('Secret J Neon health query failed', {reason});
     return core.reply(res,503,{ok:false,database:'connection_failed',
-      registration_enabled:false});
+      reason,registration_enabled:false});
   }
 };
+
+module.exports.inspectConnectionString=inspectConnectionString;
+module.exports.classifyConnectionFailure=classifyConnectionFailure;
