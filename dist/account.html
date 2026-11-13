@@ -125,7 +125,45 @@ html[data-theme="dark"]{
 .account-back:hover{text-decoration:underline}
 @media (prefers-reduced-motion:reduce){.btn{transition:none}}
 
+
+/* Inline CV preview and drag-to-center photo editor, matching selected theme. */
+#sj-cv-preview{width:min(960px,96vw);height:min(85vh,850px);max-width:96vw;max-height:90vh;
+  padding:0;border:1px solid var(--border);border-radius:12px;background:var(--paper);color:var(--ink)}
+#sj-cv-preview::backdrop{background:rgba(0,0,0,.7)}
+.sj-preview-head{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:13px 18px;border-bottom:1px solid var(--border)}
+.sj-preview-head h2{margin:0}
+.sj-preview-body{height:calc(100% - 58px);overflow:auto;background:var(--paper)}
+#sj-preview-pdf{border:0;width:100%;height:100%}
+#sj-preview-text{padding:25px;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ink);font:13px/1.7 Manrope,system-ui}
+.sj-preview-close{background:var(--paper);color:var(--ink);border:1px solid var(--border);
+  border-radius:8px;padding:8px 12px;cursor:pointer}
+.sj-crop-backdrop{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;
+  padding:15px;background:rgba(0,0,0,.8)}
+.sj-crop-modal{width:min(410px,100%);background:var(--paper);color:var(--ink);
+  border:1px solid var(--border);border-radius:15px;padding:23px;box-shadow:0 25px 75px rgba(0,0,0,.25)}
+.sj-crop-modal p{font-size:12px;line-height:1.65;margin:6px 0 18px}
+.sj-crop-heading{display:flex;align-items:center;justify-content:space-between}
+.sj-crop-heading h2{margin:0}
+.sj-crop-heading button{background:transparent;color:var(--ink);font-size:28px}
+.sj-crop-modal canvas{display:block;aspect-ratio:1;width:min(256px,100%);height:auto;
+  border-radius:50%;margin:auto;border:1px solid var(--border);touch-action:none;cursor:grab}
+.sj-crop-modal canvas:active{cursor:grabbing}
+.sj-crop-slider{margin:19px 0;display:flex;align-items:center;gap:12px}
+.sj-crop-slider label{font-size:12px}
+.sj-crop-slider button{background:var(--paper);color:var(--ink);border:1px solid var(--border);
+  border-radius:8px;width:32px;height:32px;flex:none}
+.sj-crop-slider input{flex:1;min-width:0;accent-color:var(--ink)}
+.sj-crop-buttons{display:flex;justify-content:flex-end;gap:10px}
+.sj-crop-buttons button{background:var(--paper);color:var(--ink);padding:10px 14px;
+  border:1px solid var(--border);border-radius:8px}
+.sj-crop-buttons [data-save]{font-weight:800}
+.sj-eye-icon{height:17px;width:17px;fill:none;stroke:currentColor;stroke-width:1.8;
+  vertical-align:-3px;margin-right:5px}
+
 </style>
+<script src="/assets/secretj-cv-parser.js" defer></script>
+<script src="/assets/secretj-avatar-crop.js" defer></script>
 <script src="/assets/secretj-account.js" defer></script>
 </head>
 <body>
@@ -167,4 +205,11 @@ html[data-theme="dark"]{
 <button type="button" data-view="admin" id="admin-nav" hidden>Admin</button></div>
 <div id="account-content" class="panel"></div>
 </section>
-</main></body></html>
+</main>
+<dialog id="sj-cv-preview" aria-labelledby="sj-preview-title">
+  <div class="sj-preview-head"><h2 id="sj-preview-title">CV preview</h2>
+    <button class="sj-preview-close" type="button" id="sj-preview-close">Close</button></div>
+  <div class="sj-preview-body"><iframe id="sj-preview-pdf" title="Private PDF CV preview" hidden></iframe>
+    <pre id="sj-preview-text" hidden></pre></div>
+</dialog>
+</body></html>
