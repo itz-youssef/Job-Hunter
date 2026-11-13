@@ -29,10 +29,32 @@ async function api(endpoint,method='GET',body) {
 const authUrl=action=>'/api/secretj-auth?action='+encodeURIComponent(action);
 const dataUrl=scope=>'/api/secretj-data?scope='+encodeURIComponent(scope);
 function showAuth() {
+  $('#account-profile-photo')?.removeAttribute('src');
+  if($('#account-profile-photo'))$('#account-profile-photo').hidden=true;
+  if($('#account-profile-initial'))$('#account-profile-initial').hidden=false;
   $('#account-profile-menu').hidden=true;
   $('#auth-panel').hidden=false;
   $('#member-panel').hidden=true;
   $('#logout').hidden=true;
+}
+async function syncHeaderPhoto() {
+  const photo=$('#account-profile-photo');
+  const initials=$('#account-profile-initial');
+  if(!photo||!initials||!state.user)return;
+  try{
+    const data=await api(dataUrl('avatar'));
+    const f=data.file;
+    if(data.found&&['image/webp','image/png','image/jpeg'].includes(f?.mime_type)&&
+       typeof f?.base64==='string'&&f.base64.length>0&&f.base64.length<=150000&&
+       /^[a-zA-Z0-9+/]+={0,2}$/.test(f.base64)){
+      photo.src='data:'+f.mime_type+';base64,'+f.base64;
+      photo.hidden=false;initials.hidden=true;
+      return;
+    }
+  }catch{}
+  photo.hidden=true;
+  photo.removeAttribute('src');
+  initials.hidden=false;
 }
 async function signedIn(user) {
   state.user=user;
@@ -44,6 +66,7 @@ async function signedIn(user) {
   $('#account-admin-profile-link').hidden=user.role!=='admin';
   $('#account-profile-menu').hidden=false;
   $('#account-profile-initial').textContent=(user.email.split('@')[0].slice(0,2)||'SJ').toUpperCase();
+  await syncHeaderPhoto();
   const target=new URLSearchParams(location.search).get('view');
   await showView(['overview','profile','saved','applications','preferences','documents','admin'].includes(target)?target:'overview');
   if(new URLSearchParams(location.search).get('after')==='home')location.assign('/');
@@ -413,6 +436,7 @@ $('#account-content').addEventListener('change',async event=>{
       const file=await window.SecretJAvatarCrop.open(input.files[0]);
       if(!file)return; // Cancel leaves the stored avatar untouched.
       await api(dataUrl('avatar'),'POST',{mime:'image/webp',content:await readBase64(file)});
+      await syncHeaderPhoto();
       await showView('documents');
       banner('Your centered profile photo was saved to Neon.');
     }
