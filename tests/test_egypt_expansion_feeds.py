@@ -83,3 +83,37 @@ def test_amazon_api_eg_country_guard():
     jobs=amazon_egypt("Amazon Egypt",api,_job)
     assert len(jobs)==1
     assert jobs[0]["title"]=="Junior Software Engineer"
+
+
+def test_cib_taleo_job_titles_location_dates_not_requisition_codes():
+    from app.egypt_expansion_feeds import taleo_bank_partial
+    page="""<html><input type="hidden" name="initialHistory"
+    value="ftlx0!|!jobsearch_processSearchInitialHistory!%24!requisitionListInterface!|!listRequisition!|!rlPager!|!
+    121071!|!AI ENGINEER!|!121071!|!AI ENGINEER!|!121071!|!121071!|!121071!|!121071!|!2600028W!|!Egypt-Cairo-MERRYLAND!|!false!|!!|!Nov 12, 2026!|!Apply!|!Submission for the position%5C: AI ENGINEER - (Job Number%5C: 2600028W)"></html>"""
+    jobs=taleo_bank_partial("CIB Egypt","https://cibeg.taleo.net/careersection/cib_ex/moresearch.ftl",
+                            lambda _:page.encode(),_job)
+    assert len(jobs)==1
+    assert jobs[0]["title"]=="AI ENGINEER"
+    assert jobs[0]["location"]=="Egypt, Cairo, MERRYLAND"
+    assert jobs[0]["published_at"]=="2026-11-12"
+    assert jobs[0]["url"].endswith("jobdetail.ftl?job=2600028W&lang=en")
+
+
+def test_ey_foreign_row_in_results_not_misreported_as_incomplete():
+    foreign='<tr><td><a class="jobTitle-link" href="/ey/job/Karachi-Director/999/">Director</a></td><td>Karachi, PK</td></tr>'
+    egypt='<tr><td><a class="jobTitle-link" href="/ey/job/Cairo-Intern/888/">Software Engineering Intern</a></td><td>Cairo, EG</td></tr>'
+    html=f"<html>Results 1-2 of 2<table>{egypt}{foreign}</table></html>"
+    jobs=ey_egypt("EY Egypt",lambda _:html.encode(),_job)
+    assert len(jobs)==1
+    assert jobs[0]["title"]=="Software Engineering Intern"
+    assert "Cairo" in jobs[0]["location"]
+
+
+def test_expansion_registry_no_duplicates():
+    from pathlib import Path
+    registry=json.loads(Path("companies.json").read_text())
+    names=[x["name"].lower() for x in registry]
+    assert len(names)==len(set(names))
+    assert len(registry)>=55
+    for name in ("EY Egypt","PwC Egypt","Blink22","Talabat Egypt","Uber Egypt","Amazon Egypt","AWS Egypt","CIB Egypt"):
+        assert name.lower() in names
