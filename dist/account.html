@@ -119,6 +119,30 @@ html[data-theme="dark"]{
 .panel .btn:hover,.panel .btn:focus-visible{outline:2px solid var(--account-card-ink);outline-offset:2px}
 .nav button:not(.active){color:var(--ink)}
 .nav button.active{background:var(--paper);color:var(--ink);border:2px solid var(--ink)}
+/* Selected item: reverse its text/icon only when its background reverses.
+   Non-selected buttons retain their base theme foreground. */
+.nav button.active,.nav button.active *,
+.nav button.active svg,.nav button.active svg *{
+  background:var(--ink)!important;color:var(--bg)!important;stroke:currentColor!important;
+}
+html[data-theme="dark"] .nav button.active,
+html[data-theme="dark"] .nav button.active *{
+  background:#fff!important;color:#111!important;
+}
+html[data-theme="light"] .nav button.active,
+html[data-theme="light"] .nav button.active *{
+  background:#111!important;color:#fff!important;
+}
+.top-profile summary{border:none!important;background:transparent!important;
+  padding:4px 2px 4px 4px!important;gap:8px!important;border-radius:9px!important}
+.top-profile summary:hover{background:var(--soft)!important}
+.top-profile summary:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.profile-avatar-icon{width:34px;height:34px;min-width:34px;border-radius:50%}
+.account-menu-label{line-height:1.2;font-size:12px;font-weight:750}
+.account-menu-chevron{height:15px;width:15px;display:block;align-self:center;
+  position:relative;top:-2px;flex:none;transition:transform .16s}
+.top-profile[open] .account-menu-chevron{transform:rotate(180deg)}
+
 /* Consistent 16px line icons and an understated back navigation link. */
 .account-back{display:inline-flex;gap:8px;align-items:center}
 .account-back svg,.account-nav-icon,.account-btn-icon{width:16px;height:16px;stroke:currentColor;stroke-width:1.9;fill:none;flex:none}
@@ -169,7 +193,7 @@ html[data-theme="dark"]{
 <body>
 <header><a class="brand" href="/"><img src="/assets/secretj-mark.svg" alt="" width="35" height="35" style="vertical-align:middle;border-radius:9px;margin-right:9px">SECRET <span>J.</span> <span style="font-size:12px;color:var(--muted)">/ JOB HUNTER</span></a><div class="top-links"><a class="account-back" href="/" aria-label="Back to Secret J"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m14 6-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Back to Secret J</span></a>
 <details id="account-profile-menu" class="top-profile" hidden>
-<summary><span class="profile-avatar-icon" id="account-profile-initial">SJ</span><span>Profile⌄</span></summary>
+<summary aria-label="Open profile menu"><span class="profile-avatar-icon" id="account-profile-initial">SJ</span><span class="account-menu-label">Profile</span><svg class="account-menu-chevron" aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
 <div class="profile-dropdown">
 <a href="/account.html?view=overview">Dashboard</a><a href="/account.html?view=profile">My profile</a>
 <a href="/account.html?view=documents">CV &amp; photo</a><a href="/account.html?view=saved">Saved jobs</a>
