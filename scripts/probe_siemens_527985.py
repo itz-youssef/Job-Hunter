@@ -29,7 +29,20 @@ def direct_avature():
   print("DIRECT_TITLE",soup.title.get_text(" ",strip=True) if soup.title else None,flush=True)
   print("DIRECT_FIELDS",[(x.get_text(" ",strip=True)[:170]) for x in soup.select(".article__content__view__field")][:18],flush=True)
  except Exception as exc:print("DIRECT_ERROR",type(exc).__name__,str(exc)[:180],flush=True)
+def first_avature_page():
+ import requests,re
+ from bs4 import BeautifulSoup
+ url="https://jobs.siemens.com/en_US/externaljobs/SearchJobs/Egypt?folderRecordsPerPage=100"
+ try:
+  r=requests.get(url,timeout=14,headers={"User-Agent":"Mozilla/5.0"})
+  print("FIRST_PAGE",r.status_code,r.url,len(r.content),flush=True)
+  soup=BeautifulSoup(r.text,"html.parser")
+  anchors=[(a.get_text(" ",strip=True)[:65],a.get("href")) for a in soup.select('a[href]') if re.search(r'/JobDetail/\d+',a.get("href",""))]
+  print("FIRST_LINKS",len(anchors),"MATCH527985",any("527985" in str(x) for x in anchors),"SAMPLE",anchors[:15],flush=True)
+  print("FIRST_NEXT",[(a.get_text(" ",strip=True),a.get("href")) for a in soup.select('a[href]') if a.get_text(" ",strip=True).lower().startswith("next")][:3],flush=True)
+ except Exception as e:print("FIRST_PAGE_ERROR",type(e).__name__,str(e)[:150],flush=True)
 if __name__=="__main__":
  direct_avature()
+ first_avature_page()
  main()
 
