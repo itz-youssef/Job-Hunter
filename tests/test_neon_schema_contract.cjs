@@ -44,7 +44,7 @@ test('application and saved job ownership is part of unique key',()=>{
   assert.match(migration,/CREATE TABLE IF NOT EXISTS public\.sj_admin_audit/);
 });
 test('Neon URI only read in server-side code and from environment',()=>{
-  const core=fs.readFileSync('api/_secretj/core.js','utf8');
+  const core=fs.readFileSync('lib/secretj/core.js','utf8');
   assert.match(core,/process\.env\.DATABASE_URL/);
   assert.doesNotMatch(core,/postgresql:\/\/[^"']+@ep-/);
   assert.match(core,/@neondatabase\/serverless/);
