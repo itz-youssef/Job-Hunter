@@ -50,7 +50,7 @@ test('existing light and dark modes use only neutral palettes with Manrope',()=>
 });
 test('top-right login/signup guests and role-protected profile/admin for members',()=>{
   assert.match(html,/id="sj-guest-actions"/);
-  assert.match(html,/href="\/account\.html\?mode=register"/);
+  assert.match(html,/href="\/account\.html\?mode=register&after=home"/);
   assert.match(html,/id="sj-member-actions" hidden/);
   assert.match(html,/id="sj-profile-menu"/);
   assert.match(html,/id="sj-admin-link"[^>]*hidden/);
