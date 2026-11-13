@@ -241,8 +241,10 @@ a:hover{color:var(--ink)}
       <p class="nav-title nav-title-second">TOOLS</p>
       <div class="secondary-links">
         <a href="/account.html" id="account-link" class="account-sidebar-link"><svg class="account-sidebar-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4.5 20c0-4 3.3-6 7.5-6s7.5 2 7.5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>My Account</span><svg class="account-sidebar-chevron" aria-hidden="true" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <div id="sj-admin-tools" hidden aria-label="Administrator tools">
         <a href="https://github.com/itz-youssef/Job-Hunter/actions" target="_blank" rel="noopener noreferrer">◷ <span>Monitoring Runs</span> ↗</a>
         <a href="https://github.com/itz-youssef/Job-Hunter" target="_blank" rel="noopener noreferrer">⌘ <span>Source Code</span> ↗</a>
+        </div>
       </div>
       <div class="sidebar-bottom"><div class="sidebar-tip"><span>✦ CAREER COMPANION</span><strong>Better opportunities.<br>Less searching.</strong><p>Focused on your next career move in Egypt.</p></div><div class="sidebar-foot">A Secret J product <span>✳</span></div></div>
     </aside>
@@ -327,10 +329,13 @@ a:hover{color:var(--ink)}
     // The Cloudflare website now hosts the same authenticated Neon APIs.
     try{
       const result=await json('/api/secretj-auth?action=session');
-      if(!result.user)return;
-      const cloud=await json('/api/secretj-data?scope=saved');
+      if(!result.user){state.member=null;render();return;}
       state.member=result.user;
-      state.saved=new Set((cloud.jobs||[]).map(x=>String(x.job_key)));
+      // A private saved-job request can fail without removing the authenticated state.
+      try{
+        const cloud=await json('/api/secretj-data?scope=saved');
+        state.saved=new Set((cloud.jobs||[]).map(x=>String(x.job_key)));
+      }catch{}
       render();
     }catch{/* The public feed stays functional while Neon is offline. */}
   }
@@ -499,7 +504,7 @@ a:hover{color:var(--ink)}
     const list=validJobs(), sources=monitoredSources(), active=sources.filter(s=>s.active).length, matching=list.filter(j=>scoreOf(j)>0).length;
     const recent = list.slice().sort((a,b)=>(getDate(b.discovered_at||b.detected_at||b.published_at)||0)-(getDate(a.discovered_at||a.detected_at||a.published_at)||0)).slice(0,4);
     const statuses=sources.slice(0,5);
-    return top('YOUR PERSONAL CAREER ASSISTANT','Hello, Youssef 👋','Here’s what your job radar is finding for you.',IS_CLOUDFLARE?'':`<button class="btn primary" data-action="open-company">+ Add company</button>`)+
+    return top('YOUR PERSONAL CAREER ASSISTANT','Your career dashboard','Here’s what your job radar is finding for you.',IS_CLOUDFLARE?'':`<button class="btn primary" data-action="open-company">+ Add company</button>`)+
     `<section class="hero"><div><span class="eyebrow">✦ YOUR JOB RADAR</span><h2>Your next move<br>starts here.</h2><p>Junior, entry-level and internship opportunities in software engineering, AI and computer vision — with Egypt in focus.</p><button class="btn secondary" data-navigate="jobs">Explore opportunities ↗</button></div><div class="hero-graphic" aria-hidden="true"><span class="hero-arrow">↗</span></div></section>`+
     `<section class="stats">${stat('Matching opportunities','Matched in current snapshot',matching)}${stat('Monitored companies','Successful source checks',active)}${stat('Discovered jobs','Current published snapshot',list.length)}${stat('Saved jobs','Stored on this device',state.saved.size)}</section>`+
     monitoringPanel()+
@@ -1096,6 +1101,7 @@ a:hover{color:var(--ink)}
     </div>`;
   }
   function monitoringPanel(){
+    if(state.member?.role!=='admin')return '';
     const stamp=state.scanReport?.checked_at||'';
     const scanTime=stamp?new Date(stamp):null;
     const overdue=!scanTime||!Number.isFinite(+scanTime)||Date.now()-scanTime.getTime()>15*60000;
@@ -1134,7 +1140,22 @@ a:hover{color:var(--ink)}
       `<div class="cards">${all.length?all.map(companyCard).join(''):empty('Build your company watchlist','Add a careers page to start checking for eligible roles.')}</div>`+
       `<div class="panel" style="margin-top:19px"><div class="panel-head"><h2>How monitoring works</h2></div><p class="muted">Adding a company saves it in GitHub. GitHub Actions then scans the source. <strong>Monitoring</strong> only means the last extraction succeeded — not that matching jobs were found. Workday and protected sites may need an adapter.</p><a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/actions/workflows/custom-companies.yml">Check scanner runs ↗</a></div>`;
   }
+  function memberEmailAlertsPage(){
+    const signedIn=Boolean(state.member?.email);
+    return top('YOUR NOTIFICATIONS','Email alerts',
+      'Manage your personal email alerts and delivery tests.')+
+      '<section class="panel"><div class="panel-head"><h2>Personal alerts</h2></div>'+
+      (signedIn?
+        '<p>Destination: <strong>'+esc(state.member.email)+'</strong></p>'+
+        '<p>Choose your preferred job types, confirm your account email and send a test message from your account settings.</p>'+
+        '<a class="btn primary" href="/account.html?view=preferences">Manage my alerts</a>':
+        '<p>Sign in to enable alerts to your own email address.</p>'+
+        '<a class="btn primary" href="/account.html?mode=login">Sign in</a>')+
+      '</section>';
+  }
   function alertsPage(){
+    // SMTP administration and GitHub Actions belong to verified admins only.
+    if(state.member?.role!=='admin')return memberEmailAlertsPage();
     const a=state.alerts, good=Boolean(a?.configured), email=state.fullEmail||a?.recipient_masked||'Not published yet', updated=a?.checked_at;
     return top('NOTIFICATIONS','Email alerts','See where job alerts are configured to go, and test delivery.')+
       `<div class="alert-card"><span class="alert-icon">✉</span><div class="alert-content"><strong>Notifications are addressed to</strong><p><code>${esc(email)}</code></p><p>${state.fullEmail?'Verified using your Vercel admin credentials.': 'Masked by default. To reveal the full address, add ALERT_EMAIL to Vercel and authenticate.'}</p></div>${badge(good?'Configured':'Not confirmed',good?'green':'orange')}</div>`+
