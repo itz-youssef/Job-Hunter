@@ -23,6 +23,8 @@ on:
       - "tests/test_early_career_matching.py"
       - "tests/test_management_api.cjs"
       - "tests/test_feed_ui.cjs"
+      - "tests/test_workspace_features.cjs"
+      - ".github/workflows/test-email.yml"
       - "tests/test_workday_posted_date.py"
       - "tests/test_posting_date_backfill.py"
       - ".github/workflows/smart-company-tests.yml"
@@ -56,4 +58,4 @@ jobs:
         with:
           node-version: '20'
       - name: Test management API and browser scripts
-        run: node --test tests/test_management_api.cjs tests/test_feed_ui.cjs
+        run: node --test tests/test_management_api.cjs tests/test_feed_ui.cjs tests/test_workspace_features.cjs
