@@ -302,12 +302,12 @@ a:hover{color:var(--ink)}
       if(!name)continue;
       const status=where(s.status || s.state || '');
       const active=Boolean(s.enabled===true || ['ok','healthy','monitoring','active','success','working'].includes(status));
-      map.set(where(name),{name,active,status:status||'configured',last:s.last_checked || s.checked_at || s.last_scan || ''});
+      map.set(where(name),{name,active,status:status||'configured',last:s.last_check || s.last_checked || s.checked_at || s.last_scan || ''});
     }
     for(const c of state.companies){
       const name=c.name || 'Custom company';
       const scan=state.scans.find(x=>x.url===c.url);
-      map.set(where(name),{name,active:scan?.status==='monitoring',status:scan?.status||'pending',last:scan?.checked_at||'',url:c.url,message:scan?.message||'',matched_jobs:scan?.matched_jobs??0,managed:true,pinned:c.pinned===true});
+      map.set(where(name),{name,active:scan?.status==='monitoring',status:scan?.status||'pending',last:scan?.checked_at||'',alsoMain:Boolean(map.get(where(name))?.active),url:c.url,message:scan?.message||'',matched_jobs:scan?.matched_jobs??0,managed:true,pinned:c.pinned===true});
     }
     return [...map.values()].sort((a,b)=>Number(Boolean(b.pinned))-Number(Boolean(a.pinned)) || a.name.localeCompare(b.name));
   }
@@ -627,7 +627,7 @@ a:hover{color:var(--ink)}
   }
   // Estimated UTC cron slots, not guaranteed actual GitHub start times.
   function nextExpectedCheck(company,now=Date.now()){
-    const slots=company.managed?[10,25,40,55]:[3,18,33,48];
+    const slots=company.managed?(company.alsoMain?[3,10,18,25,33,40,48,55]:[10,25,40,55]):[3,18,33,48];
     const moment=new Date(now);
     if(!Number.isFinite(+moment))return null;
     const value=slots.find(m=>m>moment.getUTCMinutes());
@@ -643,6 +643,7 @@ a:hover{color:var(--ink)}
     const clock=new Intl.DateTimeFormat(undefined,{hour:'numeric',minute:'2-digit',timeZoneName:'short'}).format(planned);
     const last=company.last?new Date(company.last):null;
     const overdue=last&&Number.isFinite(+last)&&Date.now()-last.getTime()>35*60000;
+    if(!company.managed&&!company.active)return '<small class="next-check">Not currently scheduled</small>';
     return `<small class="next-check">Next scheduled: ${esc(clock)} (approx.)${overdue?' · Last scan overdue':''}</small>`;
   }
   function companyCard(c){
