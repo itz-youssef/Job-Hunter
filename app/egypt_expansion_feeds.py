@@ -12,6 +12,14 @@ from bs4 import BeautifulSoup
 
 EGYPT = re.compile(r"\b(?:egypt|cairo|giza|alexandria|new cairo|nasr city)\b", re.I)
 
+def _explicit_sf_posted_date(row):
+    """Only date visible in the employer's job table, never scan time."""
+    stamp=re.search(r"\\b([A-Za-z]{3}\\s+\\d{1,2},\\s+\\d{4})\\b",row.get_text(" ",strip=True))
+    if not stamp:return ""
+    try:return datetime.strptime(stamp.group(1),"%b %d, %Y").date().isoformat()
+    except ValueError:return ""
+
+
 def ey_egypt(name, get_bytes, make_job, max_pages=8):
     """EY SuccessFactors's official *Egypt-filtered* job search pages."""
     root="https://careers.ey.com/ey/search/?q=&locationsearch=Egypt"
@@ -45,7 +53,7 @@ def ey_egypt(name, get_bytes, make_job, max_pages=8):
                 # URL city slug alone isn't enough if results mix global cities.
                 continue
             if not title:continue
-            current[link]=(title,city)
+            current[link]=(title,city,_explicit_sf_posted_date(row))
         signature=frozenset(current)
         if not current:
             if index==0 and expected_total!=0:
@@ -58,9 +66,9 @@ def ey_egypt(name, get_bytes, make_job, max_pages=8):
                 raise ValueError("EY pagination repeated before all source rows were read")
             return list(found.values())
         visited.add(signature)
-        for link,(title,city) in current.items():
+        for link,(title,city,published) in current.items():
             if link not in found:
-                job=make_job(name,title,city+", Egypt" if "egypt" not in city.lower() else city,link,"","","")
+                job=make_job(name,title,city+", Egypt" if "egypt" not in city.lower() else city,link,"",published,"")
                 found[link]=job
         if expected_total is not None and len(all_result_links)>=expected_total:return list(found.values())
         if len(current)<20 and expected_total is None:return list(found.values())
@@ -211,19 +219,19 @@ def successfactors_egypt(name,get_bytes,make_job,base,max_pages=8):
             parsed=urlsplit(link)
             if parsed.hostname!=urlsplit(base).hostname or not re.fullmatch(r"/(?:[a-z]{2}/)?job/[^?#]+/\d+/?",parsed.path,re.I):
                 continue
-            cells=[td.get_text(" ",strip=True) for td in tr.select("td")]
+            cells=sorted([td.get_text(" ",strip=True) for td in tr.select("td")],key=len)
             egypt=next((x for x in cells if re.search(r"(?:Cairo|Giza|Alexandria),?\s*EG\b|\bEgypt\b",x,re.I)),"")
             if not egypt:continue
             title=a.get_text(" ",strip=True)
-            if title:current[link]=(title,egypt)
+            if title:current[link]=(title,egypt,_explicit_sf_posted_date(tr))
         if not current:
             if page==0 and total!=0:raise ValueError("No verified Egyptian job rows")
             if total is not None and len(jobs)<total:raise ValueError("Missing SuccessFactors job pages")
             return list(jobs.values())
         before=len(jobs)
-        for link,(title,where) in current.items():
+        for link,(title,where,published) in current.items():
             if link not in jobs:
-                jobs[link]=make_job(name,title,where+", Egypt" if "egypt" not in where.lower() else where,link,"","","")
+                jobs[link]=make_job(name,title,where+", Egypt" if "egypt" not in where.lower() else where,link,"",published,"")
         if len(jobs)==before and (total is None or len(jobs)<total):
             raise ValueError("SuccessFactors pagination repeated or incomplete")
         if total is not None and len(jobs)>=total:return list(jobs.values())
