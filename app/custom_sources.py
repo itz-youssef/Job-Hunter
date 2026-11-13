@@ -548,7 +548,7 @@ def _board_jobs(name: str, url: str) -> list[dict]:
         from app.egypt_expansion_feeds import uber_egypt_partial
         return _dedupe(uber_egypt_partial(name,_bytes,_job))
     if kind == "finaira_egypt":
-        return _dedupe(_generic_structured(name,url))
+        return _dedupe(_structured_jobs(name,url))
     if kind == "ey_egypt":
         from app.egypt_expansion_feeds import ey_egypt
         return _dedupe(ey_egypt(name,_bytes,_job))
