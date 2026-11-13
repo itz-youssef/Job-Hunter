@@ -195,8 +195,24 @@ def siemens(source,client):
         url=urljoin(url,next_link['href']) if next_link else None
     if not links:raise SourceError('No Siemens job links found; cannot distinguish an empty result from changed markup')
     jobs=[]
+    refresh_budget=30
     for key,url in links.items():
-        if key in cached:jobs.append(cached[key]);continue
+        old=cached.get(key)
+        # Previously seen titles may have been rejected because the old
+        # database snapshot lacked Siemens' explicit career-level metadata.
+        title_hint=str((old or {}).get('title') or '')
+        needs_refresh=(
+            bool(old)
+            and (old.get('score') or 0)<=0
+            and refresh_budget>0
+            and re.search(r'\\b(?:software|developer|programmer|machine learning|artificial intelligence|\\bai\\b|data engineer)\\b',title_hint,re.I)
+            and not re.search(r'\\b(?:senior|manager|director|principal|lead|staff|architect)\\b',title_hint,re.I)
+            and 'Employer career level:' not in str(old.get('description') or '')
+        )
+        if old and not needs_refresh:
+            jobs.append(old)
+            continue
+        if needs_refresh:refresh_budget-=1
         soup=BeautifulSoup(client.get(url).text,'html.parser');fields={}
         for field in soup.select('.article__content__view__field'):
             label=field.select_one('.article__content__view__field__label');value=field.select_one('.article__content__view__field__value')
@@ -206,5 +222,14 @@ def siemens(source,client):
         published=None
         try:published=datetime.strptime(fields.get('Posted since',''),'%d-%b-%Y').date().isoformat()
         except ValueError:pass
-        jobs.append({'external_id':key,'title':title.get_text(' ',strip=True),'location':fields.get('Location(s)','Unknown'),'description':article.get_text(' ',strip=True),'published':published,'employment':fields.get('Job type','Not provided'),'url':url})
+        career_level=str(fields.get('Experience level') or '').strip()
+        description=article.get_text(' ',strip=True)
+        if career_level:
+            # Save verbatim, employer-stated metadata so cached rows retain
+            # evidence of early career eligibility on later monitoring runs.
+            description='Employer career level: '+career_level+'. '+description
+        jobs.append({'external_id':key,'title':title.get_text(' ',strip=True),
+          'location':fields.get('Location(s)','Unknown'),'description':description,
+          'seniority':career_level,'published':published,
+          'employment':fields.get('Job type','Not provided'),'url':url})
     return jobs
