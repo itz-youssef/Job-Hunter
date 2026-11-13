@@ -354,7 +354,7 @@ def taleo_bank_partial(name,base_url,get_bytes,make_job):
     match=re.search(r'<input[^>]*name="initialHistory"[^>]*value="([^"]+)"',doc,re.I)
     if not match:raise ValueError("Bank Taleo initialHistory field unavailable")
     text=html_lib.unescape(unquote(match.group(1)))
-    text=re.sub(r'!\\|!\\s+', '!|!', text)
+    text=re.sub(r'!\|!\s+', '!|!', text)
     rows=re.compile(r'!\|!(?P<id>\d{5,8})!\|!(?P<title>[^!|]{8,180})!\|!(?P=id)!\|!(?P=title)!',re.I)
     result={}
     for item in rows.finditer(text):
