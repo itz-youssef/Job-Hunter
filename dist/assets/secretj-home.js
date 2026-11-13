@@ -76,8 +76,9 @@
       if (String(user.id) !== lastUserId) {
         lastUserId = String(user.id);
         resetAvatar();
-        await loadAvatar();
       }
+      // Re-read the private avatar when the tab is revisited after editing it.
+      await loadAvatar();
     } catch {
       if (sequence !== requestSequence) return;
       lastUserId = null;
