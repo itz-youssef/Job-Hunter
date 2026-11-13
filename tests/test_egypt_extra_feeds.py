@@ -67,3 +67,12 @@ def test_adib_konecta_use_existing_supported_ats():
     assert _ats("https://adibegypt.taleo.net/careersection/ex/jobsearch.ftl?lang=en")[0]=="adib_egypt"
     kind, _ = _ats("https://konectagroup.wd3.myworkdayjobs.com/Konecta")
     assert kind=="workday"
+
+def test_coca_cola_hbc_egypt_requires_job_level_location():
+    from app.egypt_extra_feeds import coca_cola_hbc_egypt
+    listing=b'<a href="https://careers.coca-colahellenic.com/en_US/careers/ProjectDetail/Junior-Software-Engineer/16003">Junior Software Engineer</a><a href="https://careers.coca-colahellenic.com/en_US/careers/ProjectDetail/Other-Country/16004">Engineer</a>'
+    egypt=b'<h1>Junior Software Engineer</h1><p>Location: Cairo Egypt. Python and SQL</p>'
+    abroad=b'<h1>Engineer</h1><p>Location: Vienna, Austria</p>'
+    jobs=coca_cola_hbc_egypt("Coca-Cola HBC Egypt",lambda url:listing if url.endswith("working-with-us") else (egypt if "16003" in url else abroad),_job)
+    assert len(jobs)==1
+    assert jobs[0]["location"]=="Cairo, Egypt"
