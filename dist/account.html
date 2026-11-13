@@ -35,21 +35,21 @@ textarea{min-height:94px;resize:vertical}.btn{padding:12px 18px;background:var(-
 .provider-row{display:flex;align-items:center;gap:15px;flex-wrap:wrap;padding:17px;background:var(--bg);border-radius:13px;border:1px solid var(--border);margin-bottom:16px}.provider-row p{margin:0}.provider-row .btn{min-height:42px}.linkedin-photo{width:54px;height:54px;border-radius:50%;object-fit:cover}.provider-row .spacer{flex:1}.provider-row .tiny{font-size:11px;color:var(--muted)}.filebox{border:1px dashed var(--border);border-radius:12px;padding:20px;margin-top:14px;background:var(--soft)}.filebox input{width:100%;background:transparent}.small{font-size:12px}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
 [hidden]{display:none!important}@media(max-width:670px){main{margin-top:25px}header{padding:15px 16px}.panel{padding:18px}.grid{grid-template-columns:1fr}.wide{grid-column:auto}.summary{grid-template-columns:1fr}.item{align-items:flex-start;flex-direction:column}}
 
-/* Inverse account cards match the main Job Hunter theme.
-   Dark canvas: white form cards, black text. Light canvas: black cards, white text. */
+/* Every account surface follows its page theme.
+   Dark mode: black cards and white text. Light mode: white cards and black text. */
 :root{
-  --account-card-bg:#111;
-  --account-card-ink:#fff;
-  --account-card-muted:#cacaca;
-  --account-card-soft:#252525;
-  --account-card-border:#393939;
+  --account-card-bg:#ffffff;
+  --account-card-ink:#111111;
+  --account-card-muted:#555555;
+  --account-card-soft:#f1f1f1;
+  --account-card-border:#dedede;
 }
 html[data-theme="dark"]{
-  --account-card-bg:#fff;
-  --account-card-ink:#111;
-  --account-card-muted:#555;
-  --account-card-soft:#eee;
-  --account-card-border:#d4d4d4;
+  --account-card-bg:#111111;
+  --account-card-ink:#f5f5f5;
+  --account-card-muted:#b8b8b8;
+  --account-card-soft:#202020;
+  --account-card-border:#343434;
 }
 .panel{
   background:var(--account-card-bg);
@@ -92,7 +92,8 @@ html[data-theme="dark"]{
 .panel .item :is(small,p),.panel .stat small{color:var(--account-card-muted)}
 .panel a:not(.btn){color:var(--account-card-ink);text-decoration:underline}
 .panel .avatar{background:var(--account-card-soft);border-color:var(--account-card-border)}
-.panel .nav button.active{color:var(--account-card-bg)}
+.nav button.active{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.panel .nav button.active{background:var(--account-card-ink);border-color:var(--account-card-ink);color:var(--account-card-bg)}
 @media (prefers-reduced-motion:reduce){.btn{transition:none}}
 
 </style>
