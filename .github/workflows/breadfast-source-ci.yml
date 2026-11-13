@@ -1,0 +1,24 @@
+name: Breadfast Tech Source Discovery
+on:
+  pull_request:
+    paths:
+      - "scripts/probe_breadfast_board.py"
+      - ".github/workflows/breadfast-source-ci.yml"
+      - "app/breadfast_company_board.py"
+      - "app/custom_sources.py"
+      - "tests/test_breadfast_company_board.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  examine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -r requirements-dev.txt
+      - name: Inspect only publicly exposed Breadfast source
+        run: python -m scripts.probe_breadfast_board
