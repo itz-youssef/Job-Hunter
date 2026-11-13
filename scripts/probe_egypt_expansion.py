@@ -1,35 +1,47 @@
-"""Targeted Egypt employer source structure probing, read-only."""
-from app.custom_sources import _bytes
+"""Bank and global engineering employers: real Egypt job-source probes."""
+from app.custom_sources import _bytes,scan_company
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-import json,re
+import re
 URLS={
+"CIB Taleo":"https://cibeg.taleo.net/careersection/cib_ex/moresearch.ftl",
+"HSBC":"https://mycareer.hsbc.com/en_GB/external/SearchJobs/?3_56_3=Egypt",
+"HSBC search":"https://mycareer.hsbc.com/en_GB/external/SearchJobs/",
+"Banque Misr":"https://banquemisr.com/careers",
+"Banque du Caire":"https://www.bdc.com.eg/bdcwebsite/careers.html",
+"QNB Egypt":"https://www.qnb.com.eg/sites/qnb/qnbegypt/page/en/encareers.html",
+"NBE":"https://www.nbe.com.eg/NBE/E/#/EN/Careers",
+"FAB Egypt":"https://careers.bankfab.com/",
+"ADIB Egypt":"https://www.adib.eg/careers",
+"Konecta":"https://konecta.com/join-us",
+"Globant":"https://career.globant.com/",
+"System Limited SAP":"https://career55.sapsf.eu/career?company=systemvent&career_ns=job_listing_summary&navBarLevel=JOB_SEARCH",
 "PwC":"https://careers.pwc.com/search/?q=&locationsearch=Egypt",
-"PwC cairo":"https://careers.pwc.com/search/?q=&locationsearch=Cairo",
-"Systems":"https://www.systemsltd.com/careers/",
-"Finaira":"https://finaira.ai/work-at-finaira/",
+"Henkel":"https://www.henkel.com/careers/find-your-job-apply",
 "Octane":"https://www.octane-tech.io/",
 "blnk":"https://blnk.zenats.com/en/careers_page",
-"Henkel":"https://www.henkel.com/careers/find-your-job-apply",
-"Coca HBC":"https://careers.coca-colahellenic.com/en_US/careers/SearchJobs/?1293=%5B7423%5D&1293_format=2880&493=%5B7466%5D&493_format=2198&listFilterMode=1&projectRecordsPerPage=10",
-"Breadfast 4DX":"https://careers.4dxventures.com/jobs",
-"TP Egypt":"https://tpegyptcareers.teleperformance.com.eg/vacancies",
 }
-for name,u in URLS.items():
+for name,url in URLS.items():
  try:
-  html=_bytes(u).decode("utf-8","replace")
-  soup=BeautifulSoup(html,"html.parser")
-  links=[(urljoin(u,a.get("href","")),a.get_text(" ",strip=True)[:100]) for a in soup.select("a[href]")
-       if re.search(r"/job/|/jobs/|/ProjectDetail/|career|vacanc|/positions/|/details/",a.get("href","")+" "+a.get_text(" ",strip=True),re.I)]
-  print("PROBE",name,len(html),"LINKS",links[:17],flush=True)
-  if name in ("PwC","Coca HBC","blnk","Finaira","Systems","Henkel"):
-   print("STRUCT",name,[(x,len(soup.select(x))) for x in ['tr','a.jobTitle-link','a.jobTitle','[class*=job]','[class*=Job]','iframe','script[src]']],flush=True)
-   print("MARK",name,re.findall(r'.{0,75}(?:api/|[a-z]+_api|jobTitle-link|Job offers:|job-count|jobportal|requisition|open positions|vacancies|workday|successfactors).{0,180}',html,re.I)[:13],flush=True)
-  if name=="Breadfast 4DX":
-   j=json.loads(soup.select_one("script#__NEXT_DATA__").text)
-   pg=j.get("props",{}).get("pageProps",{})
-   print("GETRO_KEYS",list(pg.keys()),flush=True)
-   print("GETRO_LIST_KEYS",[(k,type(v).__name__,len(v) if isinstance(v,(list,dict)) else str(v)[:50])for k,v in pg.items() if re.search('job|page|filter|search',k,re.I)],flush=True)
-   print("GETRO_JOB",str(pg.get('jobs',None))[:1200],flush=True)
+  data=_bytes(url).decode("utf8","replace")
+  soup=BeautifulSoup(data,"html.parser")
+  anchors=[]
+  for a in soup.select("a[href]"):
+   h=urljoin(url,a.get("href")or"")
+   if re.search(r"/job/|jobid|JobDetail|vacanc|career|SearchJobs|taleo|apply|/jobs/",h,re.I):
+    anchors.append((h,a.get_text(" ",strip=True)[:75]))
+  print("BANK",name,"bytes",len(data),"links",len(anchors),"sample",anchors[:10],flush=True)
+  if name in ("CIB Taleo","HSBC","PwC","System Limited SAP"):
+   print("BANK_MARK",name,[(key,len(re.findall(key,data,re.I)))for key in ['requisitionListInterface','Job Number','jobTitle-link','Jobs - Page','ProjectDetail','Jobs Found','country']],flush=True)
  except Exception as exc:
-  print("PROBE_ERROR",name,type(exc).__name__,str(exc)[:160],flush=True)
+  print("BANK_ERROR",name,type(exc).__name__,str(exc)[:140],flush=True)
+for n,u in [
+ ("Globant","https://career.globant.com/"),
+ ("Konecta","https://konecta.com/join-us"),
+ ("Finaira","https://finaira.ai/work-at-finaira/"),
+ ("PwC","https://careers.pwc.com/search/?q=&locationsearch=Egypt")
+]:
+ try:
+  jobs,status,msg=scan_company({"name":n,"url":u})
+  print("SCAN",n,status,len(jobs),msg,[(x.get("title"),x.get("location"))for x in jobs[:3]],flush=True)
+ except Exception as e:print("SCAN_ERROR",n,str(e)[:160],flush=True)
