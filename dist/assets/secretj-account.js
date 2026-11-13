@@ -213,8 +213,10 @@ async function preferences(root){
   root.innerHTML=`<h2>Job preferences &amp; alerts</h2>
   <div class="notice">
     <strong>Your alert email</strong>
-    <p><code>${esc(recipient)}</code></p>
-    <p class="small">Alerts belong to your Secret J account and can never go to another user's email or the administrator's mailbox.</p>
+    <label>Choose where you receive alerts
+      <input type="email" id="sj-email-recipient" maxlength="254" required autocomplete="email" value="${esc(recipient)}">
+    </label>
+    <p class="small">Choose your own address. We'll email a confirmation code to prove you control it before any job alerts can be sent there. Your address is stored privately in Neon.</p>
     <p class="small"><strong>Email status:</strong> ${verified?'Verified':'Not verified yet'}.
       ${emailReady?'Email delivery is available.':'Email service is not configured by Secret J yet.'}</p>
     <div class="actions">
@@ -224,7 +226,7 @@ async function preferences(root){
       <label>6-digit code from your inbox<input name="code" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" required placeholder="000000"></label>
       <button class="btn secondary" type="submit" ${emailReady?'':'disabled'}>Verify my email</button>
     </form>`}
-    <p class="small">The test goes only to the email shown above. Sending is limited to once every 15 minutes. A successful request means the mail provider accepted it, not guaranteed inbox delivery.</p>
+    <p class="small">The test goes only to the address you entered above. Sending is limited to once every 15 minutes. A successful request means the mail provider accepted it, not guaranteed inbox delivery.</p>
   </div>
   <p class="muted">Choose the jobs you want alerts about. Preferences are stored privately in Neon; automatic emails require verification, opt-in and activated mail service.</p>
   <form id="preferences-form">
@@ -234,7 +236,7 @@ async function preferences(root){
   <h3>Role families</h3><div class="grid">
   ${[['software','Software Engineering'],['ai_ml','AI / ML'],['cv','Computer Vision'],['mlops','MLOps']].map(([v,label])=>
    `<label><span><input type="checkbox" style="width:auto" name="roles" value="${v}" ${p.role_families.includes(v)?'checked':''}> ${label}</span></label>`).join('')}</div>
-  <label><span><input type="checkbox" name="email_alerts" style="width:auto" ${p.email_alerts?'checked':''}> Enable job alerts to my verified account email</span></label>
+  <label><span><input type="checkbox" name="email_alerts" style="width:auto" ${p.email_alerts?'checked':''}> Enable job alerts to my verified email address</span></label>
   <button class="btn" type="submit">Save preferences</button></form>`;
 }
 function readBase64(file) {
@@ -390,7 +392,9 @@ $('#account-content').addEventListener('click',async event=>{
     if(b.hasAttribute('data-email-test')){
       b.disabled=true;
       try{
-        const result=await api('/api/secretj-email?action=test','POST',{});
+        const recipientEmail=$('#sj-email-recipient')?.value.trim();
+        if(!recipientEmail)throw Error('Enter the address where you want alerts.');
+        const result=await api('/api/secretj-email?action=test','POST',{recipient_email:recipientEmail});
         await showView('preferences');
         banner(result.needs_verification?
           'Test email sent to your account email. Enter the code to verify it.':

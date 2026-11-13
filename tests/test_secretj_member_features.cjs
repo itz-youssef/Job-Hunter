@@ -171,3 +171,71 @@ test('account settings expose opt-in, individual test, code verification and ima
   assert.match(html,/secretj-cv-parser\.js/);
   assert.match(html,/secretj-avatar-crop\.js/);
 });
+
+test('a member can choose an alternative address, but it is unverified until code confirmation',async()=>{
+  const oldFetch=global.fetch,oldKey=process.env.RESEND_API_KEY,oldFrom=process.env.SECRETJ_EMAIL_FROM;
+  const sent=[];
+  process.env.RESEND_API_KEY='dummy-test';process.env.SECRETJ_EMAIL_FROM='alerts@jobsnow.tech';
+  global.fetch=async (url,opts)=>{
+    sent.push(JSON.parse(opts.body));
+    return {ok:true};
+  };
+  try{
+    await withSQL((sql,args)=>{
+      if(sql.includes('INSERT INTO public.sj_email_verifications')){
+        assert.equal(args[0],ID);
+        assert.equal(args[3],'alternative@example.net');
+        assert.equal(args[4],USER_EMAIL);
+        return [{verified_at:null}];
+      }
+      return [];
+    },async()=>{
+      const result=await call(email,req('POST','test',{body:{
+        recipient_email:'Alternative@Example.Net'
+      }}));
+      assert.equal(result.status,200);
+      assert.equal(result.data.needs_verification,true);
+      assert.equal(result.data.delivered_to,'alternative@example.net');
+      assert.deepEqual(sent[0].to,['alternative@example.net']);
+      assert.match(sent[0].text,/confirmation code/i);
+    });
+    await withSQL((sql,args)=>{
+      if(sql.includes('SELECT verified_at,last_sent_at,recipient_email,verified_email')){
+        assert.deepEqual(args,[ID]);
+        return [{verified_at:null,recipient_email:'alternative@example.net',verified_email:null}];
+      }
+      return [];
+    },async()=>{
+      const status=await call(email,req('GET','status'));
+      assert.equal(status.status,200);
+      assert.equal(status.data.recipient,'alternative@example.net');
+      assert.equal(status.data.verified,false);
+    });
+    await withSQL((sql,args)=>{
+      if(sql.includes('SELECT verified_at,last_sent_at,recipient_email,verified_email')){
+        return [{verified_at:'2026-11-13T12:00:00Z',
+          recipient_email:'alternative@example.net',verified_email:'alternative@example.net'}];
+      }
+      return [];
+    },async()=>{
+      const status=await call(email,req('GET','status'));
+      assert.equal(status.data.verified,true);
+    });
+  }finally{
+    global.fetch=oldFetch;
+    if(oldKey===undefined)delete process.env.RESEND_API_KEY;else process.env.RESEND_API_KEY=oldKey;
+    if(oldFrom===undefined)delete process.env.SECRETJ_EMAIL_FROM;else process.env.SECRETJ_EMAIL_FROM=oldFrom;
+  }
+});
+test('scheduled mail selects only code-confirmed chosen recipient, never pending emails',()=>{
+  const code=fs.readFileSync('lib/secretj/member-alerts.js','utf8');
+  const sql=fs.readFileSync('database/migrations/003_secretj_member_email.sql','utf8');
+  const front=fs.readFileSync('dist/assets/secretj-account.js','utf8');
+  assert.match(code,/COALESCE\(v\.verified_email,u\.email\) AS email/);
+  assert.match(code,/v\.verified_at IS NOT NULL/);
+  assert.match(code,/v\.recipient_email=u\.email/);
+  assert.match(sql,/ADD COLUMN IF NOT EXISTS recipient_email TEXT/);
+  assert.match(sql,/ADD COLUMN IF NOT EXISTS verified_email TEXT/);
+  assert.match(front,/id="sj-email-recipient"/);
+  assert.match(front,/recipient_email:recipientEmail/);
+});
