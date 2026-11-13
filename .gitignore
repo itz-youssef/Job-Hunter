@@ -1,0 +1,9 @@
+# Local development only — never put Neon credentials in Git
+.env
+.env.*
+!.env.example
+node_modules/
+.vercel/
+*.log
+__pycache__/
+.pytest_cache/
