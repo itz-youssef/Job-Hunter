@@ -336,32 +336,35 @@ def uber_egypt_partial(name,get_bytes,make_job):
 
 
 def taleo_bank_partial(name,base_url,get_bytes,make_job):
-    """Public Taleo first-page requisitions for Egyptian banks; partial coverage."""
+    """Parse public Egyptian bank Taleo grid; first-page/partial only."""
     import html as html_lib
     from urllib.parse import unquote
     host=urlsplit(base_url).hostname
     if host not in ("cibeg.taleo.net","adibegypt.taleo.net"):
         raise ValueError("Unverified bank Taleo hostname")
-    page=get_bytes(base_url).decode("utf-8","replace")
-    if "requisitionListInterface" not in page:
-        raise ValueError("Bank Taleo public job-list markup unavailable")
-    content=page[page.find("var _ftl"):] if "var _ftl" in page else page
-    # Mirror Taleo's server-built requisition grid, not unrelated navigation.
-    pattern=re.compile(r"'(?P<id>\d{5,8})','(?P<title>[^']{8,180})'",re.I)
-    entries={}
-    for match in pattern.finditer(content):
-        title=html_lib.unescape(unquote(match.group("title"))).strip()
-        if not title or title.isdecimal() or len(title)>160:continue
-        tail=content[match.end():match.end()+1100]
-        job_number=re.search(r"Job Number:\s*([A-Z0-9]+)",tail,re.I)
-        if not job_number:continue
-        parsed=urlsplit(base_url)
-        section=parsed.path.split("/")[2]
-        link=f"https://{host}/careersection/{section}/jobdetail.ftl?job={job_number.group(1)}&lang=en"
-        posted=re.search(r"'([0-3]?\d/[A-Za-z]{3}/\d{4})'",tail)
-        job=make_job(name,title,"Egypt",link,"",posted.group(1) if posted else "","")
-        job["external_id"]=job_number.group(1)
-        entries[job_number.group(1)]=job
-    if not entries:
-        raise ValueError("No bank Taleo requisitions with verified public job numbers")
-    return list(entries.values())
+    doc=get_bytes(base_url).decode("utf-8","replace")
+    match=re.search(r'<input[^>]*name="initialHistory"[^>]*value="([^"]+)"',doc,re.I)
+    if not match:raise ValueError("Bank Taleo initialHistory field unavailable")
+    text=html_lib.unescape(unquote(match.group(1)))
+    rows=re.compile(r'!\|!(?P<id>\d{5,8})!\|!(?P<title>[^!|]{8,180})!\|!(?P=id)!\|!(?P=title)!',re.I)
+    result={}
+    for item in rows.finditer(text):
+        title=html_lib.unescape(item.group("title")).strip()
+        if not title or len(title)>160 or not re.search(r"[A-Za-z\u0600-\u06FF]{3}",title):continue
+        rest=text[item.end():item.end()+650]
+        req=re.search(r'!\|!(?P<number>[A-Z0-9]{6,12})!\|!(?P<place>Egypt-[^!|]+)',rest,re.I)
+        if not req:continue
+        number=req.group("number")
+        location=req.group("place").replace("-",", ")
+        rawdate=re.search(r'!\|!(?P<date>[A-Za-z]{3}\s+\d{1,2},\s+\d{4})!\|!',rest,re.I)
+        date=""
+        if rawdate:
+            try:date=datetime.strptime(rawdate.group("date"),"%b %d, %Y").date().isoformat()
+            except ValueError:pass
+        section=urlsplit(base_url).path.split("/")[2]
+        link=f"https://{host}/careersection/{section}/jobdetail.ftl?job={number}&lang=en"
+        job=make_job(name,title,location,link,"",date,"")
+        job["external_id"]=number
+        result[number]=job
+    if not result:raise ValueError("No verified bank Taleo public requisition titles")
+    return list(result.values())
