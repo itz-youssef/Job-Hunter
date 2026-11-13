@@ -17,6 +17,7 @@ def ey_egypt(name, get_bytes, make_job, max_pages=8):
     root="https://careers.ey.com/ey/search/?q=&locationsearch=Egypt"
     found={}
     visited=set()
+    all_result_links=set()
     expected_total=None
     for index in range(max_pages):
         url=root+"&startrow="+str(index*20)
@@ -36,8 +37,9 @@ def ey_egypt(name, get_bytes, make_job, max_pages=8):
             parsed=urlsplit(link)
             if parsed.hostname!="careers.ey.com" or not re.fullmatch(r"/(?:ey/)?job/[^?#]+/\d+/?",parsed.path,re.I):
                 continue
+            all_result_links.add(link)
             title=anchor.get_text(" ",strip=True)
-            cells=[cell.get_text(" ",strip=True) for cell in row.select("td")]
+            cells=sorted([cell.get_text(" ",strip=True) for cell in row.select("td")],key=len)
             city=next((x for x in cells if re.search(r"\b(?:Cairo|Giza|Alexandria),?\s*EG\b|\bEgypt\b",x,re.I)),"")
             if not city:
                 # URL city slug alone isn't enough if results mix global cities.
@@ -48,21 +50,21 @@ def ey_egypt(name, get_bytes, make_job, max_pages=8):
         if not current:
             if index==0 and expected_total!=0:
                 raise ValueError("EY returned no verified Egypt job rows")
-            if expected_total is not None and len(found)<expected_total:
-                raise ValueError(f"EY page ended early ({len(found)} of {expected_total})")
+            if expected_total is not None and len(all_result_links)<expected_total:
+                raise ValueError(f"EY page ended before all source rows ({len(all_result_links)} of {expected_total})")
             return list(found.values())
         if signature in visited:
-            if expected_total is not None and len(found)<expected_total:
-                raise ValueError("EY pagination repeated before completion")
+            if expected_total is not None and len(all_result_links)<expected_total:
+                raise ValueError("EY pagination repeated before all source rows were read")
             return list(found.values())
         visited.add(signature)
         for link,(title,city) in current.items():
             if link not in found:
                 job=make_job(name,title,city+", Egypt" if "egypt" not in city.lower() else city,link,"","","")
                 found[link]=job
-        if expected_total is not None and len(found)>=expected_total:return list(found.values())
+        if expected_total is not None and len(all_result_links)>=expected_total:return list(found.values())
         if len(current)<20 and expected_total is None:return list(found.values())
-    if expected_total is not None and len(found)>=expected_total:return list(found.values())
+    if expected_total is not None and len(all_result_links)>=expected_total:return list(found.values())
     raise ValueError("EY Egypt search exceeded page limit; incomplete results")
 
 
