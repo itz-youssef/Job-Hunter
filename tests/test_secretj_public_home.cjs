@@ -58,7 +58,7 @@ test('account profile menu honors account ownership and linked services',()=>{
   assert.match(account,/id="account-profile-menu" class="top-profile" hidden/);
   assert.match(account,/id="account-admin-profile-link" hidden/);
   assert.match(accountJS,/account-admin-profile-link'\)\.hidden=user\.role!=='admin'/);
-  assert.match(accountJS,/view=profile/);
+  assert.match(account,/view=profile/);
   assert.match(accountJS,/\/api\/secretj-linkedin\?action=status/);
   assert.match(accountJS,/\/api\/secretj-linkedin\?action=start/);
   assert.match(accountJS,/\/api\/secretj-linkedin\?action=disconnect/);
