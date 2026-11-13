@@ -1,0 +1,20 @@
+name: Probe Siemens job 527985
+on:
+  pull_request:
+    paths:
+      - scripts/probe_siemens_527985.py
+      - .github/workflows/probe-siemens-527985.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r requirements.txt
+      - run: python -m scripts.probe_siemens_527985
