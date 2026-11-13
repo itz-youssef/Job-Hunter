@@ -98,7 +98,7 @@ async function overview(root) {
     </div>
     <div class="notice"><strong>Keep discovering:</strong> the existing Job Hunter scanner checks official companies centrally.
       You can save matching jobs to this account from the main job feed.</div>
-    <div class="actions"><a class="btn" href="/#jobs">Explore latest jobs ↗</a>
+    <div class="actions"><a class="btn" href="/#jobs">Explore latest jobs <svg aria-hidden="true" class="account-btn-icon" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     <button class="btn secondary" data-go="profile">Complete profile</button></div>`;
 }
 async function profile(root) {
