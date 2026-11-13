@@ -1,0 +1,73 @@
+/* Shared layout fixes; colors stay owned by the monochrome theme. */
+*,*::before,*::after{box-sizing:border-box}
+body{overflow-wrap:break-word}
+.layout,.workspace-shell,.main-content,.panel,.cards,.grid,.grid-two,.stats,
+.top-links,.top-actions,.item>div,.source-name,.alert-content,.spacer{min-width:0}
+input,select,textarea{min-width:0;max-width:100%}
+img,video{max-width:100%}
+:is(.item,.notice,.filebox,.source-line,.company-card,.alert-card,.profile-dropdown,#account-email,#message){overflow-wrap:anywhere}
+:is(.btn,.actions,.item-actions,.company-actions,.modal-footer){max-width:100%}
+.btn{white-space:normal;text-align:center}
+:is(.panel-head,.source-line,.footer,.line){flex-wrap:wrap}
+.line>a{flex:1;min-width:0;overflow-wrap:anywhere}
+.line>button{flex-shrink:0}
+:is(dialog,.sj-crop-modal){max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain}
+.sj-crop-backdrop{overflow-y:auto}
+.sj-preview-head{flex-shrink:0}
+.sj-preview-head h2{min-width:0;overflow-wrap:anywhere}
+#sj-cv-preview[open]{display:flex;flex-direction:column}
+.sj-preview-body{flex:1;min-height:0;height:auto}
+.profile-dropdown,.sj-header-auth .sj-account-menu{max-width:calc(100vw - 32px)}
+@media(min-width:751px){
+ .sidebar{overflow-y:auto;overscroll-behavior:contain}
+}
+@media(max-width:900px){
+ body>header{flex-wrap:wrap;gap:12px}
+ body>header .top-links{flex-wrap:wrap;gap:12px}
+ .topbar{height:auto;min-height:64px;flex-wrap:wrap;gap:10px;padding-block:12px}
+ .top-actions{flex-wrap:wrap;gap:10px}
+}
+@media(max-width:750px){
+ .layout{grid-template-columns:minmax(0,1fr)}
+ .sidebar,.workspace-shell{min-width:0;max-width:100%}
+ .sidebar nav{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;scroll-padding:8px}
+ .sidebar nav button{flex:0 0 auto;min-height:44px}
+ .topbar .breadcrumb{flex:1;min-width:0}
+ .top-actions{margin-left:auto}
+ .search-box,.filter-select{min-width:0;max-width:100%}
+ .filters>*{flex:1 1 180px}
+ .section-top,.sj-home .sj-section-heading{flex-wrap:wrap}
+ input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:16px}
+ :is(.btn,.icon-button,.theme-toggle,.plain-button,.link-button,.modal-close,.sj-preview-close,
+ .nav button,.top-links a,.top-profile summary,.sj-header-auth details summary){min-height:44px}
+ .icon-button{min-width:44px;flex-shrink:0}
+ .sj-header-auth #sj-profile-menu summary{width:44px;height:44px;min-width:44px}
+ .profile-dropdown a,.sj-header-auth .sj-account-menu a,.sj-header-auth .sj-account-menu button{min-height:44px;display:flex;align-items:center}
+ .sj-crop-slider button{width:44px;height:44px}
+ .sj-crop-heading button{min-width:44px;min-height:44px}
+ .sj-crop-modal{padding:16px}
+ .sj-crop-modal canvas{width:min(256px,100%,40dvh)}
+ body>main{margin-block:24px 40px}
+}
+@media(max-width:480px){
+ body>header .brand{font-size:18px}
+ body>header .top-links{width:100%;justify-content:space-between;gap:8px}
+ .account-menu-label{display:none}
+ .panel,.filebox{padding:14px}
+ .actions>*{min-width:0}
+ #email-verify-form{align-items:stretch}
+ #email-verify-form>label,#email-verify-form>.btn{flex:1 1 100%}
+ .item-actions{width:100%}
+ .item-actions>.btn,.item-actions>select{flex:1 1 120px}
+ .provider-row .spacer{flex-basis:100%}
+ .job-actions .right{flex-wrap:wrap}
+ .job-actions .right>*{flex:1 1 120px}
+ .job-card-top .score{flex-shrink:0}
+ .sj-home .sj-home-actions>.btn{flex:1 1 140px}
+ .modal{padding:18px}
+ .modal-footer{flex-wrap:wrap}
+ .sj-preview-head{padding:12px;align-items:flex-start}
+ #sj-cv-preview{width:calc(100vw - 16px);max-width:calc(100vw - 16px);height:calc(100dvh - 16px);max-height:calc(100dvh - 16px)}
+ .footer{gap:8px;letter-spacing:.5px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
