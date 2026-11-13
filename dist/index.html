@@ -246,22 +246,31 @@ a:hover{color:var(--ink)}
       <div class="sidebar-bottom"><div class="sidebar-tip"><span>✦ CAREER COMPANION</span><strong>Better opportunities.<br>Less searching.</strong><p>Focused on your next career move in Egypt.</p></div><div class="sidebar-foot">A Secret J product <span>✳</span></div></div>
     </aside>
     <div class="workspace-shell">
-      <header class="topbar"><div class="breadcrumb">SECRET J <span>/</span> <b id="page-label">Home</b></div><div class="top-actions"><span class="region-tag">◉ Egypt only</span><div class="sj-header-auth" id="sj-guest-actions">
-<a href="/account.html?mode=login" class="btn secondary sj-login">Log in</a>
-<a href="/account.html?mode=register" class="btn primary sj-sign-up">Sign up</a>
+      <header class="topbar"><div class="breadcrumb">SECRET J <span>/</span> <b id="page-label">Home</b></div><div class="top-actions"><span class="region-tag">◉ Egypt only</span><button class="icon-button theme-toggle" id="theme-toggle" type="button" title="Switch appearance" aria-label="Toggle dark mode" aria-pressed="false"><span id="theme-icon" aria-hidden="true">◐</span><span id="theme-label">Dark</span></button><button class="icon-button" id="refresh-button" type="button" title="Refresh data" aria-label="Refresh data">↻</button><div class="sj-header-auth" id="sj-guest-actions">
+  <a href="/account.html?mode=login&after=home" class="btn secondary sj-login">Log in</a>
+  <a href="/account.html?mode=register&after=home" class="btn primary sj-sign-up">Sign up</a>
 </div>
 <div class="sj-header-auth" id="sj-member-actions" hidden>
-<details id="sj-profile-menu"><summary><span class="sj-avatar" id="sj-profile-initial">SJ</span><span>Profile</span> <span aria-hidden="true">⌄</span></summary>
-<div class="sj-account-menu"><small id="sj-member-email"></small>
-<a href="/account.html?view=overview">Account overview</a>
-<a href="/account.html?view=profile">Profile</a>
-<a href="/account.html?view=documents">CV and photo</a>
-<a href="/account.html?view=saved">Saved jobs</a>
-<a href="/account.html?view=applications">Applications</a>
-<a href="/account.html?view=preferences">Alerts and settings</a>
-<a id="sj-admin-link" href="/account.html?view=admin" hidden>Admin console</a>
-<div class="sj-menu-divider"></div>
-<button type="button" id="sj-header-logout">Sign out</button></div></details></div><button class="icon-button theme-toggle" id="theme-toggle" type="button" title="Switch appearance" aria-label="Toggle dark mode" aria-pressed="false"><span id="theme-icon" aria-hidden="true">◐</span><span id="theme-label">Dark</span></button><button class="icon-button" id="refresh-button" type="button" title="Refresh data" aria-label="Refresh data">↻</button></div></header>
+  <details id="sj-profile-menu">
+    <summary aria-label="Open your profile and account settings" title="My account">
+      <span class="sj-avatar sj-avatar-circle" id="sj-profile-initial">SJ</span>
+      <img class="sj-avatar-image" id="sj-profile-photo" alt="" hidden>
+      <span class="sr-only">My account</span>
+    </summary>
+    <div class="sj-account-menu">
+      <small id="sj-member-email"></small>
+      <a href="/account.html?view=overview">Account overview</a>
+      <a href="/account.html?view=profile">My profile</a>
+      <a href="/account.html?view=documents">CV and photo</a>
+      <a href="/account.html?view=saved">Saved jobs</a>
+      <a href="/account.html?view=applications">Applications</a>
+      <a href="/account.html?view=preferences">Alerts and settings</a>
+      <a id="sj-admin-link" href="/account.html?view=admin" hidden>Admin console</a>
+      <div class="sj-menu-divider"></div>
+      <button type="button" id="sj-header-logout">Sign out</button>
+    </div>
+  </details>
+</div></div></header>
       <main id="main-content" class="main-content" tabindex="-1"><p class="loading">Loading your workspace…</p></main>
       <footer class="footer">JOB HUNTER <span>Your next move starts here.</span></footer>
     </div>
