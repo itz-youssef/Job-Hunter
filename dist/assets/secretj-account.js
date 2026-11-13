@@ -112,7 +112,9 @@ async function profile(root) {
      `<img class="linkedin-photo" src="${esc(connection.picture_url)}" alt="LinkedIn photo" referrerpolicy="no-referrer">`:'';
   const connect=linked.connected?
     `<button class="btn danger" type="button" data-linkedin-disconnect>Disconnect LinkedIn</button>`:
-    `<a class="btn secondary" href="/api/secretj-linkedin?action=start" ${linked.configured?'':'aria-disabled="true" data-linkedin-disabled="true"'}>Connect LinkedIn ↗</a>`;
+    linked.configured?
+      '<a class="btn secondary" href="/api/secretj-linkedin?action=start">Connect LinkedIn ↗</a>':
+      '<button type="button" class="btn secondary" disabled title="LinkedIn app approval is required">Connect LinkedIn · Coming soon</button>';
   root.innerHTML=`<h2>Professional profile</h2>
     <p class="muted">Describe your experience, education, and skills. Your information is stored in Neon, not locally.</p>
     <div class="provider-row">
