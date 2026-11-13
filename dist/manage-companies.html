@@ -53,6 +53,10 @@ li { padding:15px 0;border-bottom:1px solid #eee; }
 .small { color:var(--muted);font-size:13px; }
 #message { margin-top:15px;white-space:pre-wrap; }
 </style>
+<script>
+try{const theme=localStorage.getItem('jh-theme');document.documentElement.dataset.theme=theme==='dark'?'dark':theme==='light'?'light':matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}catch{}
+</script>
+<link rel="stylesheet" href="/assets/secretj-global-theme.css?v=20261113-uniform">
 </head>
 <body>
 <main>
