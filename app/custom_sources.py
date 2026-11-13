@@ -189,6 +189,8 @@ def _ats(url: str):
     host = (p.hostname or "").lower()
     seg = [s for s in p.path.split("/") if s]
 
+    if host == "eg.coca-colahellenic.com" and p.path.startswith("/en/working-with-us"):
+        return "coca_cola_hbc_egypt", None
     if host in ("www.adcb.com.eg", "adcb.com.eg") and p.path.startswith("/available-careers"):
         return "adcb_egypt", None
     if host in ("www.fab-minds.com", "fab-minds.com") and p.path.startswith("/careers"):
@@ -548,6 +550,10 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     kind, meta = _ats(url)
     p = urllib.parse.urlsplit(url)
     jobs = []
+
+    if kind == "coca_cola_hbc_egypt":
+        from app.egypt_extra_feeds import coca_cola_hbc_egypt
+        return _dedupe(coca_cola_hbc_egypt(name, _bytes, _job))
 
     if kind in ("adcb_egypt", "fab_minds_egypt"):
         from app.egypt_extra_feeds import adcb_egypt, fab_minds_egypt
@@ -1295,7 +1301,7 @@ def scan_company(company: dict):
             name, url
         )
 
-        if kind in ("blnk_zenats", "henkel_egypt", "adcb_egypt", "fab_minds_egypt"):
+        if kind in ("blnk_zenats", "henkel_egypt", "adcb_egypt", "fab_minds_egypt", "coca_cola_hbc_egypt"):
             return jobs, "partial", f"{len(jobs)} detail-verified vacancies; listing coverage may be incomplete"
 
         if kind in ("etisalat_egypt", "indrive_egypt", "blink22_egypt", "uber_egypt", "cib_egypt", "adib_egypt"):
