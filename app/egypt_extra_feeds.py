@@ -27,38 +27,60 @@ def _date(text):
     return ""
 
 def blnk_zenats(name, get_bytes, make_job, max_details=50):
-    """Follow actual blnk vacancy identities on Zenats, including post dates."""
+    """Use official Zenats listing metadata plus verified individual job pages.
+
+    The listing table exposes Egypt locations and creation dates that may be
+    absent from the detail page. Never infer a location from blnk headquarters.
+    """
     base = "https://blnk.zenats.com/en/careers_page"
     document = _text(get_bytes(base))
     targets = {}
-    for link in document.select("a[href]"):
-        href = urljoin(base, link.get("href") or "")
+    for anchor in document.select("a[href]"):
+        href = urljoin(base, anchor.get("href") or "")
         parts = urlsplit(href)
         if parts.hostname not in ("app.zenats.com", "blnk.zenats.com"):
             continue
-        if not re.fullmatch(r"/en/public_job/[A-Za-z0-9_-]+/?", parts.path):
+        if not re.fullmatch(r"/(?:en/)?public_job/[A-Za-z0-9_-]+/?", parts.path):
             continue
-        targets[href.split("?")[0]] = link.get_text(" ", strip=True)
+        key = href.split("?", 1)[0].split("#", 1)[0]
+        row = anchor.find_parent("tr")
+        row_text = row.get_text(" ", strip=True) if row else ""
+        location = re.search(
+            r"\b(Cairo|Giza|Alexandria|Egypt)(?:\s*,\s*Egypt)?\b",
+            row_text, re.I
+        )
+        posted = re.search(r"\b([A-Z][a-z]{2}\s+\d{1,2},\s+20\d{2})\b", row_text)
+        date = ""
+        if posted:
+            try:
+                date = datetime.strptime(posted.group(1), "%b %d, %Y").date().isoformat()
+            except ValueError:
+                pass
+        targets[key] = (anchor.get_text(" ", strip=True),
+                        location.group(1) if location else "", date)
     if not targets:
         raise ValueError("blnk Zenats did not expose verifiable job-detail links")
     if len(targets) > max_details:
         raise ValueError("blnk postings exceed safe detail cap")
     found = []
-    for href, label in targets.items():
-        doc = _text(get_bytes(href))
-        heading = doc.select_one("h1")
+    for href, (label, row_location, row_date) in targets.items():
+        detail = _text(get_bytes(href))
+        heading = detail.select_one("h1")
         title = (heading.get_text(" ", strip=True) if heading else label).strip()
-        text = doc.get_text(" ", strip=True)
+        text = detail.get_text(" ", strip=True)
         if not title or len(title) > 180:
             continue
-        match = re.search(r"(?:Job\s+Location|Location|Based\s+in)\s*[:\-]?\s*(Cairo|Egypt|Giza|Alexandria)\b", text, re.I)
-        if not match:
-            # Don't infer job country merely from employer headquarters.
+        match = re.search(
+            r"(?:Job\s+Location|Location|Based\s+in)\s*[:\-]?\s*"
+            r"(Cairo|Egypt|Giza|Alexandria)\b", text, re.I
+        )
+        place = row_location or (match.group(1) if match else "")
+        if not place:
             continue
-        location = match.group(1)
-        if location.lower() != "egypt":
-            location += ", Egypt"
-        found.append(make_job(name, title, location, href, text[:15000], _date(text), ""))
+        if place.casefold() != "egypt":
+            place += ", Egypt"
+        found.append(make_job(name, title, place, href, text[:15000],
+                              _date(text) or row_date, ""))
     return found
 
 def henkel_egypt(name, get_bytes, make_job, max_details=80):
