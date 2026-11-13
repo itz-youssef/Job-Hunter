@@ -15,7 +15,7 @@ const ctx = {
   badge: label => String(label),
   prettyDate: value => new Date(value).toISOString(),
   REPO: 'https://github.com/itz-youssef/Job-Hunter',
-  state: { runs: {}, scanReport: null, runsError: '' },
+  state: { member: {id:'admin',role:'admin'}, runs: {}, scanReport: null, runsError: '' },
 };
 vm.createContext(ctx);
 vm.runInContext(
@@ -78,6 +78,14 @@ test('monitor panel reports stale data as stale, not as a successful scan', () =
   assert.match(output, /Unknown/);
   assert.match(output, /Live GitHub runs unavailable/);
   assert.doesNotMatch(output, /Snapshot published/);
+});
+
+test('normal members never see operational GitHub monitoring', () => {
+  ctx.state.member={id:'member',role:'member'};
+  assert.equal(monitoringPanel(),'');
+  ctx.state.member=null;
+  assert.equal(monitoringPanel(),'');
+  ctx.state.member={id:'admin',role:'admin'};
 });
 
 test('run links use validated numeric IDs only', () => {
