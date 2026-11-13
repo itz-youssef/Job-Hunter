@@ -23,7 +23,7 @@ jobs:
 
     env:
       DB_PATH: data/jobs.db
-      MONITOR_COMPANIES: Valeo,Microsoft,Siemens
+      MONITOR_COMPANIES: Valeo,Microsoft
 
     steps:
       - name: Download project
