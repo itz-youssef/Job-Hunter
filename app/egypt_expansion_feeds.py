@@ -19,7 +19,7 @@ def ey_egypt(name, get_bytes, make_job, max_pages=8):
     visited=set()
     expected_total=None
     for index in range(max_pages):
-        url=root+"&startrow="+str(index*25)
+        url=root+"&startrow="+str(index*20)
         html=get_bytes(url).decode("utf-8","replace")
         doc=BeautifulSoup(html,"html.parser")
         heading=doc.get_text(" ",strip=True)
@@ -61,7 +61,7 @@ def ey_egypt(name, get_bytes, make_job, max_pages=8):
                 job=make_job(name,title,city+", Egypt" if "egypt" not in city.lower() else city,link,"","","")
                 found[link]=job
         if expected_total is not None and len(found)>=expected_total:return list(found.values())
-        if len(current)<25 and expected_total is None:return list(found.values())
+        if len(current)<20 and expected_total is None:return list(found.values())
     if expected_total is not None and len(found)>=expected_total:return list(found.values())
     raise ValueError("EY Egypt search exceeded page limit; incomplete results")
 
@@ -164,7 +164,7 @@ def amazon_egypt(name,get_json,make_job,aws_only=False):
 
 def breadfast_egypt(name,get_bytes,make_job,tech_only=False):
     """Investor portfolio board: employer-tagged Breadfast posts; partial coverage."""
-    base="https://careers.4dxventures.com/companies/breadfast"
+    base="https://careers.4dxventures.com/jobs"
     html=get_bytes(base).decode("utf-8","replace")
     doc=BeautifulSoup(html,"html.parser")
     jobs={}
@@ -184,7 +184,7 @@ def breadfast_egypt(name,get_bytes,make_job,tech_only=False):
         place="Alexandria, Egypt" if re.search("Alexandria",title,re.I) else "Egypt (company board)"
         jobs[link]=make_job(name,title,place,link,"","","")
     if not jobs and not tech_only:
-        raise ValueError("Breadfast investor careers page has no job-detail links")
+        raise ValueError("Breadfast 4DX portfolio board has no job-detail links on currently visible page")
     return list(jobs.values())
 
 
@@ -193,7 +193,7 @@ def successfactors_egypt(name,get_bytes,make_job,base,max_pages=8):
     jobs={}
     total=None
     for page in range(max_pages):
-        url=base+("&" if "?" in base else "?")+"startrow="+str(page*25)
+        url=base+("&" if "?" in base else "?")+"startrow="+str(page*20)
         doc=BeautifulSoup(get_bytes(url).decode("utf-8","replace"),"html.parser")
         text=doc.get_text(" ",strip=True)
         totals=re.search(r"Results\s+\d+\s*[-–]\s*\d+\s+of\s+([\d,]+)",text,re.I)
@@ -225,7 +225,7 @@ def successfactors_egypt(name,get_bytes,make_job,base,max_pages=8):
         if len(jobs)==before and (total is None or len(jobs)<total):
             raise ValueError("SuccessFactors pagination repeated or incomplete")
         if total is not None and len(jobs)>=total:return list(jobs.values())
-        if len(current)<25 and total is None:return list(jobs.values())
+        if len(current)<20 and total is None:return list(jobs.values())
     if total is not None and len(jobs)>=total:return list(jobs.values())
     raise ValueError("SuccessFactors page safety limit reached")
 
