@@ -17,4 +17,19 @@ def main():
      if match:print("ATS_DETAIL",marker,repr(html[max(0,match.start()-160):match.start()+200]),flush=True)
    except Exception as exc:print("ATS_ERROR",type(exc).__name__,str(exc)[:120],flush=True)
 
-if __name__=="__main__":main()
+
+def direct_avature():
+ import requests
+ from bs4 import BeautifulSoup
+ url="https://jobs.siemens.com/en_US/externaljobs/JobDetail/527985"
+ try:
+  response=requests.get(url,timeout=12,headers={"User-Agent":"Mozilla/5.0"})
+  print("DIRECT",response.status_code,response.url,len(response.content),flush=True)
+  soup=BeautifulSoup(response.text,"html.parser")
+  print("DIRECT_TITLE",soup.title.get_text(" ",strip=True) if soup.title else None,flush=True)
+  print("DIRECT_FIELDS",[(x.get_text(" ",strip=True)[:170]) for x in soup.select(".article__content__view__field")][:18],flush=True)
+ except Exception as exc:print("DIRECT_ERROR",type(exc).__name__,str(exc)[:180],flush=True)
+if __name__=="__main__":
+ direct_avature()
+ main()
+
