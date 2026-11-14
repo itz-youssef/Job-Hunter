@@ -219,7 +219,7 @@ a:hover{color:var(--ink)}
   <link rel="stylesheet" href="/assets/secretj-home.css">
   <link rel="stylesheet" href="/assets/secretj-global-theme.css?v=20261113-uniform-2">
   <script src="/assets/secretj-home.js?v=account-sync-1" defer></script>
-  <script src="/assets/secretj-job-preferences.js?v=principal-years-6" defer></script>
+  <script src="/assets/secretj-job-preferences.js?v=evidence-engine-7" defer></script>
 <link rel="stylesheet" href="/assets/responsive.css?v=20261113-mobile-1">
 </head>
 <body>
@@ -1020,7 +1020,7 @@ a:hover{color:var(--ink)}
     const id=jobKey(j), saved=state.saved.has(id), url=jobURL(j), score=scoreOf(j);
     const reasons = j.matched===true ? textOf((j.match_reasons || j.reasons || []).filter(x=>!/^excluded:|^uncertain:/i.test(String(x)))) : '';
     const evidence=state.reviewExcluded&&state.memberPrefsConfigured?window.SecretJJobPreferences?.explain?.(j,state.memberPrefs):null;
-    const reviewMessage=evidence&&!evidence.match?`<p class="tiny">Outside preferences: ${esc(evidence.reasons.join(' · '))}</p>`:evidence?.status==='experience-unverified'?'<p class="tiny">Experience requirement not verified in source snapshot.</p>':'';
+    const reviewMessage=evidence&&!evidence.match?`<p class="tiny">Outside preferences: ${esc(evidence.reasons.join(' · '))}${evidence.evidence?.length?' · Evidence: '+esc(evidence.evidence.join(' · ')):''}</p>`:evidence?.status==='experience-unverified'?`<p class="tiny">Needs review: experience level is not fully verified. ${esc((evidence.evidence||[]).join(' · '))}</p>`:'';
     return `<article class="job-card"><div class="job-card-top">${brandForJob(j)}<div class="job-details"><h3>${esc(titleOf(j))}</h3><p>${esc(companyOf(j))} · ${esc(locationOf(j))}</p></div>${score>=8?`<span class="score">${score} pts</span>`:''}</div><div class="job-info">${badge(j.employment||j.job_type||'Role')}${/egypt|cairo|giza|alexandria/i.test(locationOf(j))?badge('Egypt','green'):badge(locationOf(j),'grey')}${postedDate(j)?badge('Posted: '+prettyDate(postedDate(j))):badge(firstSeenDate(j)?'First seen: '+prettyDate(firstSeenDate(j)):'Posting date unavailable','grey')}</div>${snippet(j)?`<p class="job-desc">${esc(snippet(j))}</p>`:''}${reasons?`<p class="tiny" style="margin-bottom:14px">${esc(reasons)}</p>`:''}${reviewMessage}<div class="job-actions"><button class="plain-button ${saved?'saved':''}" data-save="${esc(id)}">${saved?'♥ Saved':'♡ Save job'}</button><div class="right">${url==='#'?badge('No application link','grey'):`<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View job ↗</a>`}</div></div></article>`;
   }
   function jobDateForFilter(j){
