@@ -153,3 +153,10 @@ test('experience parser respects company history and 8 years total experience',(
  assert.equal(preferences.yearsRequired({description:'Qualifications & Requirements Experience 8+ years of total experience in software development.'}),8);
  assert.equal(preferences.yearsRequired({description:'Requirements: 3+ years of direct people management or technical team leadership experience.'}),3);
 });
+
+test('home and account request the updated matcher URL to avoid stale cached eligibility code',()=>{
+ const account=fs.readFileSync('dist/account.html','utf8');
+ const home=fs.readFileSync('dist/index.html','utf8');
+ for(const page of [account,home])
+  assert.match(page,/secretj-job-preferences\.js\?v=experience-valeo-3/);
+});
