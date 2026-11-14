@@ -76,3 +76,16 @@ img,video{max-width:100%}
 .profile-photo-row>div{min-width:0;overflow-wrap:anywhere}
 .profile-photo-row>.avatar{flex-shrink:0}
 @media(max-width:480px){.profile-photo-row{flex-wrap:wrap}.profile-photo-row>div{flex:1 1 100%}}
+
+/* Public homepage includes full-length vacancy names, not just short matches.
+   These cards must shrink on narrow phones without horizontal scrolling. */
+.sj-home .cards,.sj-home .mini-job{min-width:0;max-width:100%}
+.sj-home .mini-job{width:100%;display:flex;flex-wrap:wrap;gap:10px;overflow:hidden}
+.sj-home .mini-job-content{min-width:0;flex:1 1 155px;overflow:hidden}
+.sj-home .mini-job-content strong{display:block;white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+.sj-home .mini-job-content small{display:block;white-space:normal;overflow-wrap:anywhere}
+.sj-home .mini-job>.score{flex:0 0 auto;max-width:100%}
+@media(max-width:480px){
+ .sj-home .mini-job{align-items:flex-start}
+ .sj-home .mini-job>.score{margin-left:auto}
+}

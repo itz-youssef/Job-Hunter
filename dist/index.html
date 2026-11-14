@@ -219,6 +219,7 @@ a:hover{color:var(--ink)}
   <link rel="stylesheet" href="/assets/secretj-home.css">
   <link rel="stylesheet" href="/assets/secretj-global-theme.css?v=20261113-uniform-2">
   <script src="/assets/secretj-home.js?v=account-sync-1" defer></script>
+  <script src="/assets/secretj-job-preferences.js?v=20261114" defer></script>
 <link rel="stylesheet" href="/assets/responsive.css?v=20261113-mobile-1">
 </head>
 <body>
@@ -306,7 +307,7 @@ a:hover{color:var(--ink)}
   const liveFile = name => RAW + name + '?v=' + Date.now();
   const el = (selector) => document.querySelector(selector);
   const esc = (x) => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const state = { member:null, snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'score', jobType:'all', companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
+  const state = { member:null, memberPrefs:null, memberPrefsConfigured:false, snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'score', jobType:'all', companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
   const names = {home:'Home',radar:'Job Hunter',resume:'Resume Updater',cv:'CV Holder',profile:'My Profile', jobs:'Job Feed', saved:'Saved Jobs', companies:'My Companies', alerts:'Email Alerts'};
   const where = (value) => String(value || '').toLowerCase().trim();
   const getDate = (s) => {const d=new Date(s); return Number.isNaN(+d)?null:d;};
@@ -349,12 +350,12 @@ a:hover{color:var(--ink)}
       state.member=result.user||null;
       if(changed || !state.member){
         profile={...blankProfile(),photo:''};cvEntry=null;
-        state.memberEmail=null;state.saved=new Set();state.savedRecords=[];
+        state.memberEmail=null;state.memberPrefs=null;state.memberPrefsConfigured=false;state.saved=new Set();state.savedRecords=[];
         render();
       }
       if(!state.member){readSaved();state.memberError='';return;}
       const userId=state.member.id;
-      const resources=['profile','avatar','cv','saved','/api/secretj-email?action=status'];
+      const resources=['profile','avatar','cv','saved','/api/secretj-email?action=status','preferences'];
       const results=await Promise.allSettled(resources.map(scope=>memberRequest(scope)));
       if(sequence!==memberSequence || state.member?.id!==userId)return;
       const value=i=>results[i].status==='fulfilled'?results[i].value:null;
@@ -372,12 +373,14 @@ a:hover{color:var(--ink)}
       state.savedRecords=saved?.jobs||[];
       state.saved=new Set(state.savedRecords.map(x=>String(x.job_key)));
       state.memberEmail=value(4);
+      state.memberPrefsConfigured=value(5)?.configured===true;
+      state.memberPrefs=state.memberPrefsConfigured?value(5)?.preferences:null;
       state.memberErrors=Object.fromEntries(resources.map((key,i)=>[key,results[i].status==='rejected'?results[i].reason.message:'']));
       state.memberError='';
     }catch(e){
       if(sequence!==memberSequence)return;
       state.member=null;profile={...blankProfile(),photo:''};cvEntry=null;
-      state.memberEmail=null;state.saved=new Set();state.savedRecords=[];
+      state.memberEmail=null;state.memberPrefs=null;state.memberPrefsConfigured=false;state.saved=new Set();state.savedRecords=[];
       state.memberError=e.message;
     }finally{
       if(sequence===memberSequence){state.memberLoading=false;render();}
@@ -400,26 +403,27 @@ a:hover{color:var(--ink)}
     }
   }
   function jobs(){const list=state.snapshot.jobs || state.snapshot.job_feed || [];return Array.isArray(list)?list.filter(j=>j && typeof j==='object'):[];}
-  // Scanners retain rejected jobs for diagnostics. They must never appear as recommendations.
-  const SENIOR_ROLE = /\b(?:senior|sr\.?|lead|principal|staff|manager|management|director|head\s+of|architect|expert|mid[\s-]level|mid[\s-]senior|team\s+lead|tech\s+lead)\b/i;
-  function eligibleJob(job){
-    const n=scoreOf(job);
-    const reasons=textOf(job.match_reasons||job.reasons||[]);
-    const title=String(titleOf(job));
-    if(!Number.isFinite(n)||n<8||job.matched===false)return false;
-    if(/\bexcluded:|\bno technical match\b/i.test(reasons))return false;
-    if(SENIOR_ROLE.test(title))return false;
-    return true;
+  // A discoverable public vacancy is not necessarily a personal match.
+  // Scores belong exclusively to personalization and email alerts.
+  function publicJob(job){
+    return String(titleOf(job)).trim()!=='' && jobURL(job)!=='#';
   }
-  function validJobs(){
+  function allPublicJobs(){
     const seen=new Set();
     return jobs().filter(j=>{
-      if(!eligibleJob(j))return false;
-      const id=jobKey(j);
-      if(seen.has(id))return false;
-      seen.add(id);
-      return true;
+      if(!publicJob(j))return false;
+      const key=jobURL(j)==='#'?jobKey(j):jobURL(j);
+      if(seen.has(key))return false;
+      seen.add(key);return true;
     });
+  }
+  function validJobs(){
+    const all=allPublicJobs();
+    if(!state.member || !state.memberPrefsConfigured)return all;
+    const match=window.SecretJJobPreferences?.isMatch;
+    // Fail open for browsing when the preference bundle has not loaded.
+    if(typeof match!=='function')return all;
+    return all.filter(j=>match(j,state.memberPrefs));
   }
   // Only employer-published dates are described as posting dates.
   // Workday sometimes includes one explicitly in its description.
@@ -543,9 +547,9 @@ a:hover{color:var(--ink)}
     const brand=source || {name: key==='siemens'?'Siemens':name};
     return companyBrand(brand);
   }
-  function jobMini(j){return `<div class="mini-job">${brandForJob(j)}<div class="mini-job-content"><strong>${esc(titleOf(j))}</strong><small>${esc(companyOf(j))} · ${esc(locationOf(j))}</small></div><span class="score">${scoreOf(j)} pts</span></div>`;}
+  function jobMini(j){return `<div class="mini-job">${brandForJob(j)}<div class="mini-job-content"><strong>${esc(titleOf(j))}</strong><small>${esc(companyOf(j))} · ${esc(locationOf(j))}</small></div>${scoreOf(j)>=8?`<span class="score">${scoreOf(j)} pts</span>`:""}</div>`;}
   function radarHome(){
-    const list=validJobs(), sources=monitoredSources(), active=sources.filter(s=>s.active).length, matching=list.filter(j=>scoreOf(j)>0).length;
+    const list=validJobs(), sources=monitoredSources(), active=sources.filter(s=>s.active).length, matching=list.length;
     const recent = list.slice().sort((a,b)=>(getDate(b.discovered_at||b.detected_at||b.published_at)||0)-(getDate(a.discovered_at||a.detected_at||a.published_at)||0)).slice(0,4);
     const statuses=sources.slice(0,5);
     return top('YOUR PERSONAL CAREER ASSISTANT','Your career dashboard','Here’s what your job radar is finding for you.',IS_CLOUDFLARE||state.member?.role!=='admin'?'':`<button class="btn primary" data-action="open-company">+ Add company</button>`)+
@@ -557,7 +561,8 @@ a:hover{color:var(--ink)}
   }
 
   function home(){
-    const sources=monitoredSources(),matched=validJobs().filter(j=>scoreOf(j)>0).length;
+    const sources=monitoredSources(),matched=validJobs().length;
+    const latest=validJobs().slice().sort((a,b)=>(getDate(firstSeenDate(b))||0)-(getDate(firstSeenDate(a))||0)).slice(0,6);
     return `<div class="sj-home">
       <section class="sj-home-hero">
         <img src="/assets/secretj-mark.svg" class="sj-home-logo" alt="Secret J logo" width="60" height="60">
@@ -602,7 +607,10 @@ a:hover{color:var(--ink)}
           <button type="button" class="btn primary" data-navigate="radar">Explore product</button>
         </div>
       </section>
-
+      <section aria-labelledby="sj-public-jobs-heading">
+        <div class="sj-section-heading"><div><span class="eyebrow">DISCOVERED OPPORTUNITIES</span><h2 id="sj-public-jobs-heading">${state.memberPrefsConfigured&&state.member?'Your matched opportunities':'Explore all available jobs'}</h2></div><button type="button" class="btn secondary" data-navigate="jobs">View all ${validJobs().length} jobs</button></div>
+        <div class="cards">${latest.length?latest.map(jobMini).join(''):empty('No jobs yet','New vacancies will appear after the next scan.')}</div>
+      </section>
     </div>`+
     monitoringPanel()+
     '<section class="workspace-brief"><span class="eyebrow">AT A GLANCE</span><div class="brief-values"><span><strong>'+matched+'</strong> matching opportunities</span><span><strong>'+sources.length+'</strong> monitored sources</span></div></section>';
@@ -997,7 +1005,7 @@ a:hover{color:var(--ink)}
   function jobCard(j){
     const id=jobKey(j), saved=state.saved.has(id), url=jobURL(j), score=scoreOf(j);
     const reasons = textOf(j.match_reasons || j.reasons || []);
-    return `<article class="job-card"><div class="job-card-top">${brandForJob(j)}<div class="job-details"><h3>${esc(titleOf(j))}</h3><p>${esc(companyOf(j))} · ${esc(locationOf(j))}</p></div><span class="score">${score} pts</span></div><div class="job-info">${badge(j.employment||j.job_type||'Role')}${badge('Egypt focus','green')}${postedDate(j)?badge('Posted: '+prettyDate(postedDate(j))):badge(firstSeenDate(j)?'First seen: '+prettyDate(firstSeenDate(j)):'Posting date unavailable','grey')}</div>${snippet(j)?`<p class="job-desc">${esc(snippet(j))}</p>`:''}${reasons?`<p class="tiny" style="margin-bottom:14px">${esc(reasons)}</p>`:''}<div class="job-actions"><button class="plain-button ${saved?'saved':''}" data-save="${esc(id)}">${saved?'♥ Saved':'♡ Save job'}</button><div class="right">${url==='#'?badge('No application link','grey'):`<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View job ↗</a>`}</div></div></article>`;
+    return `<article class="job-card"><div class="job-card-top">${brandForJob(j)}<div class="job-details"><h3>${esc(titleOf(j))}</h3><p>${esc(companyOf(j))} · ${esc(locationOf(j))}</p></div>${score>=8?`<span class="score">${score} pts</span>`:''}</div><div class="job-info">${badge(j.employment||j.job_type||'Role')}${/egypt|cairo|giza|alexandria/i.test(locationOf(j))?badge('Egypt','green'):badge(locationOf(j),'grey')}${postedDate(j)?badge('Posted: '+prettyDate(postedDate(j))):badge(firstSeenDate(j)?'First seen: '+prettyDate(firstSeenDate(j)):'Posting date unavailable','grey')}</div>${snippet(j)?`<p class="job-desc">${esc(snippet(j))}</p>`:''}${reasons?`<p class="tiny" style="margin-bottom:14px">${esc(reasons)}</p>`:''}<div class="job-actions"><button class="plain-button ${saved?'saved':''}" data-save="${esc(id)}">${saved?'♥ Saved':'♡ Save job'}</button><div class="right">${url==='#'?badge('No application link','grey'):`<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View job ↗</a>`}</div></div></article>`;
   }
   function jobDateForFilter(j){
     return state.dateBasis==='firstseen'?firstSeenDate(j):postedDate(j);
@@ -1028,14 +1036,15 @@ a:hover{color:var(--ink)}
     const list=filterJobs(whole);
     const companies=[...new Set(whole.map(companyOf))].sort((a,b)=>a.localeCompare(b));
     const option=(v,text,current)=>`<option value="${esc(v)}" ${current===v?'selected':''}>${esc(text)}</option>`;
-    const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':'Your job feed',saved?(state.member?'Jobs saved to your account.':'Jobs you’ve bookmarked on this device.'):'Eligible early-career jobs, with filters for role, employer, and dates.');
+    const personalized=Boolean(state.member&&state.memberPrefsConfigured);
+    const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':personalized?'Your personalized job feed':'All detected opportunities',saved?(state.member?'Jobs saved to your account.':'Jobs you’ve bookmarked on this device.'):personalized?'Jobs matching your saved preferences. Update them in Account > Preferences.':'Explore every discovered opening with a valid application link. Sign in and save preferences to personalize your feed and alerts.');
     return h+
       `<section class="job-filter-panel" aria-label="Job search filters">
         <div class="job-filter-row"><label class="filter-field filter-search">Search<input class="search-box" id="job-search" type="search" placeholder="Title, company or skills" value="${esc(state.query)}" aria-label="Search jobs"></label>
         <label class="filter-field">Role family<select class="filter-select" id="role-filter">${option('all','All roles',state.role)}${option('software','Software',state.role)}${option('ai','AI / ML',state.role)}${option('cv','Computer Vision',state.role)}${option('mlops','MLOps',state.role)}</select></label>
         <label class="filter-field">Company<select class="filter-select" id="company-filter">${option('all','All companies',state.companyFilter)}${companies.map(c=>option(c,c,state.companyFilter)).join('')}</select></label></div>
         <div class="job-filter-row">
-        <label class="filter-field">Job type<select class="filter-select" id="type-filter">${option('all','Internships + junior',state.jobType)}${option('internship','Internships / training',state.jobType)}${option('junior','Junior / full-time',state.jobType)}</select></label>
+        <label class="filter-field">Job type<select class="filter-select" id="type-filter">${option('all','All job types',state.jobType)}${option('internship','Internships / training',state.jobType)}${option('junior','Junior / full-time',state.jobType)}</select></label>
         <label class="filter-field">Date based on<select class="filter-select" id="date-basis">${option('posted','Employer posted date',state.dateBasis)}${option('firstseen','First seen by Job Hunter',state.dateBasis)}</select></label>
         <label class="filter-field">Date range<select class="filter-select" id="date-filter">${option('all','Any date',state.dateFilter)}${option('1','Past 24 hours',state.dateFilter)}${option('3','Past 3 days',state.dateFilter)}${option('7','Past 7 days',state.dateFilter)}${option('14','Past 14 days',state.dateFilter)}${option('30','Past 30 days',state.dateFilter)}${option('90','Past 90 days',state.dateFilter)}</select></label>
         <label class="filter-field">Sort<select class="filter-select" id="sort-filter">${option('score','Best match',state.sortBy)}${option('recent','Most recent',state.sortBy)}${option('company','Company A–Z',state.sortBy)}</select></label>
@@ -1043,7 +1052,7 @@ a:hover{color:var(--ink)}
         <p class="tiny">Date filters exclude jobs without the selected date. First seen means when Job Hunter detected it—not necessarily when the employer posted it.</p>
       </section>
       <div class="cards" id="jobs-list">${list.length?list.map(jobCard).join(''):empty('No jobs match these filters','Change the date range or reset filters to see available opportunities.')}</div>
-      <p class="tiny">${list.length} of ${whole.length} eligible jobs shown. Scores measure fit with your job filters, not hiring probability.</p>`;
+      <p class="tiny">${list.length} of ${whole.length} ${personalized?'preference-matched':'detected'} jobs shown. A matching score is not a hiring probability; other roles may have no score.</p>`;
   }
   // Brand-domain allowlist: ATS hosting domains (Lever/Workable/Ashby) are not company logos.
   // Uses company website favicons; unknown domains retain a clean monogram.

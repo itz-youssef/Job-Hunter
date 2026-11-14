@@ -86,22 +86,27 @@ def _id(job):
 
 def _enrich(job):
 
-    # Existing filters.py controls Egypt,
-    # targeted roles and junior eligibility.
-    score, reasons = relevance(
-        job, {}
-    )
-
-    if score <= 0:
+    # The public directory is a discovery catalog, NOT the owner's
+    # early-career alert shortlist. Preserve all genuinely detected jobs
+    # with usable public application URLs, including non-tech/senior roles.
+    # Store eligibility separately for opt-in personal notifications.
+    raw_url = str(
+        job.get("url") or job.get("apply_url") or job.get("link") or ""
+    ).strip()
+    from urllib.parse import urlsplit
+    parsed = urlsplit(raw_url)
+    if (not str(job.get("title") or "").strip()
+            or parsed.scheme != "https" or not parsed.hostname
+            or parsed.username or parsed.password):
         return None
-
+    score, reasons = relevance(job, {})
     result = dict(job)
 
     result.update({
         "score": score,
         "match_score": score,
         "relevance_score": score,
-        "matched": True,
+        "matched": score > 0,
         "reasons": reasons,
         "match_reasons": reasons,
         "url": (
@@ -353,14 +358,20 @@ def run(
 
         matches = []
         exclusions = {}
+        eligible_count = 0
         for raw in jobs:
             enriched = _enrich(raw)
             if enriched is not None:
                 matches.append(enriched)
+                if enriched["matched"]:
+                    eligible_count += 1
+                else:
+                    reason = enriched["reasons"][0] if enriched["reasons"] else "Outside personalized alert rules"
+                    exclusions[reason] = exclusions.get(reason, 0) + 1
             else:
-                _, reasons = relevance(raw, {})
-                reason = reasons[0] if reasons else "Other eligibility criteria"
-                exclusions[reason] = exclusions.get(reason, 0) + 1
+                exclusions["Missing valid title or HTTPS application link"] = (
+                    exclusions.get("Missing valid title or HTTPS application link", 0) + 1
+                )
 
         statuses.append({
             "name": name,
@@ -368,8 +379,9 @@ def run(
             "status": status,
             "message": message,
             "parsed_jobs": len(jobs),
-            "matched_jobs": len(matches),
-            "excluded_jobs": len(jobs) - len(matches),
+            "matched_jobs": eligible_count,
+            "public_jobs": len(matches),
+            "excluded_jobs": len(jobs) - eligible_count,
             "exclusion_reasons": exclusions,
             "checked_at": _now(),
         })
@@ -432,6 +444,7 @@ def run(
                 os.getenv("LEGACY_SMTP_DISABLED") != "true"
                 and not first_success
                 and key not in previous_ids
+                and job["matched"]
             ):
                 state["pending"][key] = job
 
