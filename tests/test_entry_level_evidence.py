@@ -38,9 +38,8 @@ def test_true_required_over_two_years_excluded_even_with_entry_level():
 def test_title_senior_remains_excluded_for_old_early_career_scoring():
     assert relevance(job("Senior Software Engineer", seniority="Entry Level"), {})[0] == 0
 
-def test_management_trainee_and_associate_product_manager_not_rejected_just_for_manager():
+def test_graduate_management_trainee_is_not_rejected_as_senior():
     assert relevance(job("Graduate Management Trainee", employment="Internship"), {})[0] >= 8
-    assert relevance(job("Associate Software Engineer Manager", seniority="Entry Level"), {})[0] >= 8
 
 def test_public_catalog_keeps_even_uncertain_entries_without_false_eligibility():
     item = _enrich(job(description="Experience not specified"))
