@@ -84,6 +84,8 @@ function authMode(register) {
   $('#tab-register').classList.toggle('active',register);
   $('#tab-login').classList.toggle('active',!register);
   $('#name-label').hidden=!register;
+  $('#registration-consent').hidden=!register;
+  $('#auth-form').elements.accept_terms.required=register;
   $('#auth-submit').textContent=register?'Create my account':'Sign in';
   $('#auth-form').elements.password.autocomplete=register?'new-password':'current-password';
 }
@@ -331,6 +333,12 @@ $('#tab-register').addEventListener('click',()=>authMode(true));
 $('#auth-form').addEventListener('submit',async event=>{
   event.preventDefault();const form=event.currentTarget;const button=$('#auth-submit');
   const values=Object.fromEntries(new FormData(form));
+  if(isRegistration){
+    if(!form.elements.accept_terms.checked){banner('You must accept the Terms & Conditions and acknowledge the Privacy Policy.',true);return;}
+    values.accept_terms=true;
+    values.terms_version='2026-11-14';
+    values.privacy_version='2026-11-14';
+  }
   button.disabled=true;
   try{
     const result=await api(authUrl(isRegistration?'register':'login'),'POST',values);
