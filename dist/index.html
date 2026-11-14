@@ -220,6 +220,7 @@ a:hover{color:var(--ink)}
   <link rel="stylesheet" href="/assets/secretj-global-theme.css?v=20261113-uniform-2">
   <script src="/assets/secretj-home.js?v=account-sync-1" defer></script>
   <script src="/assets/secretj-job-preferences.js?v=evidence-engine-7" defer></script>
+  <script src="/assets/secretj-job-search.js?v=catalog-search-1" defer></script>
 <link rel="stylesheet" href="/assets/responsive.css?v=20261113-mobile-1">
 </head>
 <body>
@@ -419,7 +420,9 @@ a:hover{color:var(--ink)}
   }
   function validJobs(){
     const all=allPublicJobs();
-    if(state.reviewExcluded || !state.member || !state.memberPrefsConfigured)return all;
+    // Explicit manual search searches the entire public catalog. Personal
+    // preferences only control the default feed and email notifications.
+    if(state.reviewExcluded || state.query.trim() || !state.member || !state.memberPrefsConfigured)return all;
     const match=window.SecretJJobPreferences?.isMatch;
     // Fail open for browsing when the preference bundle has not loaded.
     if(typeof match!=='function')return all;
@@ -1030,10 +1033,10 @@ a:hover{color:var(--ink)}
     const q=where(state.query);
     const now=Date.now();
     return list.filter(j=>{
-      if(q && !where([titleOf(j),companyOf(j),locationOf(j),snippet(j),...(window.SecretJJobPreferences?.classify(j)||[])].join(' ')).includes(q))return false;
+      if(q && !(window.SecretJJobSearch?.matches(j,q,window.SecretJJobPreferences?.classify)))return false;
       if(!matchesRole(j,state.role))return false;
       if(state.companyFilter!=='all' && companyOf(j)!==state.companyFilter)return false;
-      if(state.jobType==='internship'&&!/\b(intern(?:ship)?s?|trainee|graduate program(?:me)?|work experience)\b/i.test(titleOf(j)+' '+(j.employment||'')))return false;
+      if(state.jobType==='internship'&&!window.SecretJJobSearch?.isInternship(j))return false;
       if(state.jobType==='junior' && /\b(intern(?:ship)?s?|trainee)\b/i.test(titleOf(j)))return false;
       if(state.dateFilter!=='all'){
         const duration=/h$/.test(state.dateFilter)?Number(state.dateFilter.slice(0,-1))*3600000:Number(state.dateFilter)*86400000;
@@ -1042,6 +1045,11 @@ a:hover{color:var(--ink)}
       }
       return true;
     }).sort((a,b)=>{
+      if(q && state.sortBy!=='company'){
+        const relevance=(j)=>window.SecretJJobSearch?.score(j,q,window.SecretJJobPreferences?.classify)||0;
+        return relevance(b)-relevance(a) ||
+          (getDate(jobDateForFilter(b))||0)-(getDate(jobDateForFilter(a))||0);
+      }
       if(state.sortBy==='recent')return (getDate(jobDateForFilter(b))||0)-(getDate(jobDateForFilter(a))||0)||scoreOf(b)-scoreOf(a);
       if(state.sortBy==='company')return companyOf(a).localeCompare(companyOf(b))||scoreOf(b)-scoreOf(a);
       return scoreOf(b)-scoreOf(a)||(getDate(jobDateForFilter(b))||0)-(getDate(jobDateForFilter(a))||0);
@@ -1057,8 +1065,9 @@ a:hover{color:var(--ink)}
     const roleOptions=availableRoleOptions();
     if(state.role!=='all'&&!roleOptions.some(c=>c.key===state.role))state.role='all';
     const personalized=Boolean(state.member&&state.memberPrefsConfigured);
+    const globalSearch=Boolean(state.query.trim());
     const hiddenCount=personalized?allPublicJobs().length-allPublicJobs().filter(j=>window.SecretJJobPreferences?.isMatch?.(j,state.memberPrefs)).length:0;
-    const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':personalized?'Your personalized job feed':'All detected opportunities',saved?(state.member?'Jobs saved to your account.':'Jobs you’ve bookmarked on this device.'):personalized?'Jobs matching your saved preferences. Update them in Account > Preferences.':'Explore every discovered opening with a valid application link. Sign in and save preferences to personalize your feed and alerts.');
+    const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':globalSearch?'Search all detected opportunities':personalized?'Your personalized job feed':'All detected opportunities',saved?(state.member?'Jobs saved to your account.':'Jobs you’ve bookmarked on this device.'):globalSearch?'Searching all published listings, including those outside your saved preferences. Email alerts remain personalized.':personalized?'Jobs matching your saved preferences. Update them in Account > Preferences.':'Explore every discovered opening with a valid application link. Sign in and save preferences to personalize your feed and alerts.');
     return h+
       `${personalized&&!saved?`<section class="job-filter-panel" aria-label="Matching transparency"><p class="tiny">${hiddenCount} detected jobs are outside your saved preferences. They are not deleted. Review them to catch missing or incorrectly classified opportunities; email alerts still use your saved preferences.</p><button class="btn secondary" type="button" data-review-excluded aria-pressed="${state.reviewExcluded}">${state.reviewExcluded?'Return to personalized feed':'Review all detected jobs ('+allPublicJobs().length+')'}</button></section>`:''}
       <section class="job-filter-panel" aria-label="Job search filters">
