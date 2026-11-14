@@ -158,7 +158,7 @@ test('home and account request the updated matcher URL to avoid stale cached eli
  const account=fs.readFileSync('dist/account.html','utf8');
  const home=fs.readFileSync('dist/index.html','utf8');
  for(const page of [account,home])
-  assert.match(page,/secretj-job-preferences\.js\?v=experience-valeo-3/);
+  assert.match(page,/secretj-job-preferences\.js\?v=lead-consultant-4/);
 });
 
 test('Lead and Consultant titles are hidden at 0 to 2 years, including Deloitte tech leads',()=>{
