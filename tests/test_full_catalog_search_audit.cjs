@@ -56,3 +56,22 @@ test('search ranking prefers title internship match over incidental description 
  const fromDescription={title:'Software Engineer',description:'Our company runs a winter internship program.'};
  assert.ok(search.score(fromTitle,'internship')>search.score(fromDescription,'internship'));
 });
+
+test('Internships / Training filter matches the exact global search for intern across the published catalog',()=>{
+ const fromFilter=jobs.filter(job=>search.matches(job,'intern',prefs.classify));
+ const fromSearch=jobs.filter(job=>search.matches(job,'intern',prefs.classify));
+ assert.deepEqual(fromFilter.map(job=>job.id),fromSearch.map(job=>job.id));
+ const html=fs.readFileSync('dist/index.html','utf8');
+ assert.match(html,/state\.jobType==='internship'\s*\|\|\s*!state\.member/);
+ assert.match(html,/state\.jobType==='internship'&&!window\.SecretJJobSearch\?\.matches\(j,'intern',window\.SecretJJobPreferences\?\.classify\)/);
+});
+test('intern search aliases capture training pathways even without an intern title',()=>{
+ const examples=[
+  {title:'Graduate Training Program',company:'Example',description:'Graduate training placement'},
+  {title:'Software Engineering Trainee',company:'Example'},
+  {title:'Co-op Software Engineer',company:'Example'},
+  {title:'Junior Engineer',company:'Example',description:'Join our internship training programme.'}
+ ];
+ for(const job of examples)assert.equal(search.matches(job,'intern',prefs.classify),true,job.title);
+ assert.equal(search.matches({title:'Senior Software Engineer',description:'Build production applications'},'intern',prefs.classify),false);
+});
