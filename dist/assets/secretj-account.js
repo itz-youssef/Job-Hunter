@@ -73,7 +73,7 @@ async function signedIn(user) {
   $('#account-profile-initial').textContent=(user.email.split('@')[0].slice(0,2)||'SJ').toUpperCase();
   await syncHeaderPhoto();
   const target=new URLSearchParams(location.search).get('view');
-  await showView(['overview','profile','saved','applications','preferences','documents','admin'].includes(target)?target:'overview');
+  await showView(['overview','profile','saved','applications','preferences','documents','admin'].includes(target)?target:(user.role==='admin'?'admin':'overview'));
   if(new URLSearchParams(location.search).get('after')==='home')location.assign('/');
 }
 let isRegistration=false;
@@ -312,29 +312,11 @@ async function importCVProfile(file){
   return count;
 }
 async function admin(root){
-  const [data,stats]=await Promise.all([
-    api('/api/secretj-admin?action=users'),
-    api('/api/secretj-admin?action=summary')
-  ]);
-  const s=stats.summary;
-  root.innerHTML=`<h2>Secret J · Administration</h2>
-  <p class="muted">Visible only to accounts with the server-verified admin role.</p>
-  <div class="summary">
-    <div class="stat"><strong>${s.users}</strong><small>Total accounts</small></div>
-    <div class="stat"><strong>${s.active_users}</strong><small>Active users</small></div>
-    <div class="stat"><strong>${s.applications}</strong><small>Tracked applications</small></div>
-  </div><h3>User management</h3><div class="cards">
-  ${data.users.map(u=>`<div class="item"><div>
-    <strong>${esc(u.display_name||u.email)}</strong><small>${esc(u.email)} · ${esc(u.role)}</small>
-    <small>${u.is_active?'Active':'Suspended'}</small></div>
-    ${u.id===state.user.id?'<small>Your admin account</small>':
-       `<div class="item-actions">
-        <button class="btn secondary" data-admin-id="${esc(u.id)}" data-admin-field="role" data-admin-value="${u.role==='admin'?'member':'admin'}">${u.role==='admin'?'Remove admin':'Make admin'}</button>
-        <button class="btn ${u.is_active?'danger':'secondary'}" data-admin-id="${esc(u.id)}" data-admin-field="is_active" data-admin-value="${u.is_active?'false':'true'}">${u.is_active?'Suspend':'Activate'}</button>
-       </div>`}</div>`).join('')}</div>
-  <h3>Latest administrative activity</h3><div class="cards">
-  ${stats.activity.map(a=>`<div class="item"><span>${esc(a.action)}</span><small>${esc(a.actor_email||'Admin')} · ${esc(a.created_at)}</small></div>`).join('')||'<p>No changes yet.</p>'}</div>`;
+  if(state.user?.role!=='admin')throw Error('Administrator access required');
+  if(!window.SecretJAdmin)throw Error('Administrator console unavailable');
+  return window.SecretJAdmin.render(root,api,state);
 }
+
 $('#sj-preview-close')?.addEventListener('click',()=>$('#sj-cv-preview').close());
 $('#sj-cv-preview')?.addEventListener('close',()=>{
   $('#sj-preview-pdf').removeAttribute('src');
