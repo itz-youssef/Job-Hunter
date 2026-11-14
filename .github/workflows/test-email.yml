@@ -14,5 +14,5 @@ jobs:
     steps:
       - name: Explain the unified account-based mail route
         run: |
-          echo "Legacy GitHub SMTP email tests are disabled."
-          echo "Use Account > Preferences on jobsnow.tech to send a Resend email test."
+          echo "::error::Legacy GitHub SMTP email tests are disabled. Use Account > Preferences on jobsnow.tech for a real Resend test."
+          exit 1
