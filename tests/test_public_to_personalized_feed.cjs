@@ -70,3 +70,24 @@ test('optional experience differs from zero and rejects explicitly over-budget e
  assert.equal(preferences.isMatch(job,{role_families:['backend'],max_experience_years:0}),false);
  assert.equal(preferences.isMatch({...job,description:'Build APIs'},{role_families:['backend'],max_experience_years:0}),true);
 });
+
+test('Senior and Sr titles are excluded at 0–2 years in feed and member alert matcher',()=>{
+ for(const limit of [0,1,2]){
+  const p={role_families:['software','backend'],max_experience_years:limit,egypt_only:false,internships:false};
+  for(const title of ['Senior Software Engineer','Sr. Backend Developer','Sr Software Engineer','SENIOR API Engineer']){
+   assert.equal(preferences.isMatch({title,description:'No years specified',location:'Cairo'},p),false,title+' at '+limit);
+  }
+  assert.equal(preferences.isMatch({title:'Junior Software Engineer',location:'Cairo'},p),true);
+ }
+});
+test('senior title rule does not override empty or higher experience preferences',()=>{
+ const job={title:'Senior Software Engineer',description:'No experience requirements given',location:'Cairo'};
+ for(const years of [null,3,5]){
+  const p={role_families:['software'],max_experience_years:years,egypt_only:false,internships:false};
+  assert.equal(preferences.isMatch(job,p),true,String(years));
+ }
+ assert.equal(preferences.isMatch(job,{role_families:[],max_experience_years:null,egypt_only:false,internships:false}),true);
+ assert.equal(preferences.isMatch({title:'Senior Talent Acquisition Specialist',location:'Cairo'},{
+  role_families:['talent_acquisition'],max_experience_years:2,egypt_only:false,internships:false
+ }),false);
+});
