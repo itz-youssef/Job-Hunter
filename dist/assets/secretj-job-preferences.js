@@ -142,9 +142,9 @@
   if(p.max_experience_years!==null&&p.max_experience_years!==undefined&&p.max_experience_years!==''){
    const years=Number(p.max_experience_years);
    if(Number.isFinite(years)){
-    // The title is a stronger seniority signal than an omitted years requirement.
+    // Exclude explicit Senior, Lead, or Consultant titles with a 0–2 year cap,\n    // even when the job description omits mandatory years.
     // Apply only when a member sets a concrete maximum of 0, 1 or 2 years.
-    if(years<=2 && /\b(?:senior|sr\.?)\b/i.test(title))return false;
+    if(years<=2 && /\b(?:senior|sr\.?|lead|consultant)\b/i.test(title))return false;
     // A hands-on AI Team Manager / Engineering Manager is still a
     // management vacancy even when years are absent from the snapshot.
     // Do not blanket-reject entry-level Product Manager or Assistant Manager.
