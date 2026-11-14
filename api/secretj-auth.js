@@ -34,14 +34,20 @@ module.exports = async function handler(req,res) {
     await core.allowAuthAttempt(req,email);
 
     if (action==='register') {
+      // Consent must be explicit and verified by the server, not just a UI checkbox.
+      if (body.accept_terms !== true ||
+          body.terms_version !== '2026-11-14' ||
+          body.privacy_version !== '2026-11-14') {
+        throw core.fail(400,'Please accept the current Terms and Privacy Policy to create an account');
+      }
       const name=core.validateText(body.name||'',120,'Name');
       const id=core.randomUUID();
       const passhash=await core.hashPassword(password);
       // Atomic CTE: an account cannot exist without its initial profile.
       const rows=await core.query(
         `WITH created AS (
-           INSERT INTO public.sj_users(id,email,password_hash)
-           VALUES($1,$2,$3)
+           INSERT INTO public.sj_users(id,email,password_hash,terms_accepted_at,terms_version,privacy_version)
+           VALUES($1,$2,$3,now(),$5,$6)
            RETURNING id,email,role
          ), profile AS (
            INSERT INTO public.sj_profiles(user_id,display_name)
@@ -49,7 +55,7 @@ module.exports = async function handler(req,res) {
          )
          SELECT created.id,created.email,created.role FROM created
          JOIN profile ON profile.user_id=created.id`,
-        [id,email,passhash,name]
+        [id,email,passhash,name,'2026-11-14','2026-11-14']
       );
       await core.issueSession(res,id);
       return core.reply(res,201,{ok:true,user:core.publicUser(rows[0])});
