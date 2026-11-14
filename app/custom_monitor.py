@@ -429,7 +429,8 @@ def run(
             # First successful scan only
             # creates the notification baseline.
             if (
-                not first_success
+                os.getenv("LEGACY_SMTP_DISABLED") != "true"
+                and not first_success
                 and key not in previous_ids
             ):
                 state["pending"][key] = job
@@ -502,7 +503,11 @@ def run(
     # Email only new matching jobs.
     sent = 0
 
-    if _smtp_ready():
+    if os.getenv("LEGACY_SMTP_DISABLED") == "true":
+        # Preserve existing pending state without dispatching old Gmail alerts.
+        # Account-specific Resend delivery is handled by Cloudflare Cron.
+        pass
+    elif _smtp_ready():
 
         for key, job in list(
             state["pending"].items()
