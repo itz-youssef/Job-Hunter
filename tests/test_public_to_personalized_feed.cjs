@@ -210,7 +210,7 @@ test('unlimited or higher experience preserves Staff opportunities',()=>{
 });
 test('review-all mode makes excluded vacancies inspectable without altering email matching',()=>{
  const home=fs.readFileSync('dist/index.html','utf8');
- assert.match(home,/state\.reviewExcluded \|\| !state\.member \|\| !state\.memberPrefsConfigured/);
+ assert.match(home,/state\.reviewExcluded \|\| String\(state\.query\|\|''\)\.trim\(\) \|\| !state\.member \|\| !state\.memberPrefsConfigured/);
  assert.match(home,/data-review-excluded/);
  assert.match(home,/Outside preferences:/);
  assert.match(home,/Needs review: experience level is not fully verified/);
