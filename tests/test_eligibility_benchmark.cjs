@@ -74,3 +74,39 @@ test('experience marked preferred is not an automatic exclusion',()=>{
   description:'Practical maintenance experience of 3 to 5 years in traction power supply or comparable electrical infrastructure is preferred.'});
  assert.notEqual(x.decision,'exclude',JSON.stringify(x));
 });
+
+test('production preference matcher uses the exact winning evidence decision for every reviewed job',()=>{
+ const prefs=require('../dist/assets/secretj-job-preferences');
+ const p={role_families:[],max_experience_years:2,egypt_only:false,internships:false};
+ for(const job of frozen.jobs){
+   const selected=lab.methods.F_constraint_aware(job);
+   const live=prefs.assess(job,p);
+   assert.equal(live.match,selected.decision!=='exclude',job.title);
+   assert.equal(live.status,selected.decision==='exclude'?'excluded':
+     selected.decision==='review'?'experience-unverified':'matched',job.title);
+ }
+});
+test('real-world company history and preferred years never become proven hard requirements',()=>{
+ const prefs=require('../dist/assets/secretj-job-preferences');
+ const p={role_families:[],max_experience_years:2};
+ for(const caseJob of [
+  {title:'Maintenance Technician',description:'Experience of 3 to 5 years in infrastructure is preferred.'},
+  {title:'Finance Analyst',description:'Our company has over 27 years of experience in offering consumer financing.'},
+  {title:'Full Stack Engineer',description:'Requirements: 2-5 years of professional software engineering experience.'}
+ ])assert.equal(prefs.assess(caseJob,p).match,true,caseJob.title);
+});
+test('browser and verified member emails both load the same selected core',()=>{
+ const home=fs.readFileSync('dist/index.html','utf8');
+ const account=fs.readFileSync('dist/account.html','utf8');
+ const alerts=fs.readFileSync('lib/secretj/member-alerts.js','utf8');
+ const core=require('../dist/assets/secretj-eligibility-core');
+ assert.ok(typeof core.evaluate==='function');
+ for(const page of [home,account]){
+  const a=page.indexOf('/assets/secretj-eligibility-core.js?v=constraint-aware-f-1');
+  const b=page.indexOf('/assets/secretj-job-preferences.js?v=constraint-aware-f-1');
+  assert.ok(a>=0&&b>a,'core must execute before preferences');
+ }
+ assert.match(alerts,/const \{isMatch,hasFilters,assess\}=require/);
+ assert.match(alerts,/POTENTIAL MATCH/);
+ assert.match(home,/Needs review · experience not verified/);
+});
