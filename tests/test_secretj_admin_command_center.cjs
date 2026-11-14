@@ -64,7 +64,8 @@ test('account signup cannot self-promote, admin page only loads on trusted sessi
  const auth=fs.readFileSync('api/secretj-auth.js','utf8');
  const page=fs.readFileSync('dist/assets/secretj-account.js','utf8');
  const ui=fs.readFileSync('dist/assets/secretj-admin-console.js','utf8');
- assert.match(auth,/VALUES\(\$1,\$2,\$3\)/);
+ assert.match(auth,/VALUES\(\$1,\$2,\$3,now\(\),\$5,\$6\)/);
+ assert.doesNotMatch(auth,/INSERT INTO public\.sj_users\([^)]*\brole\b/);
  assert.match(page,/user\.role==='admin'\?'admin':'overview'/);
  assert.match(ui,/state\.user\?\.role!=='admin'/);
  assert.doesNotMatch(ui,/DATABASE_URL|password_hash|token_hash|npg_/);

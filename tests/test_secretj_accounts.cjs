@@ -88,7 +88,7 @@ test('signup always creates a normal member and a cookie with HttpOnly SameSite'
     try{
       const r=await call(auth,req('POST',{
         email:'member@example.com',password:'correct horse battery staple',
-        name:'Test User',role:'admin'
+        name:'Test User',role:'admin',accept_terms:true,terms_version:'2026-11-14',privacy_version:'2026-11-14'
       },{action:'register'}));
       assert.equal(r.status,201);
       assert.equal(r.body.user.role,'member');
@@ -99,6 +99,8 @@ test('signup always creates a normal member and a cookie with HttpOnly SameSite'
       assert.ok(saved);
       assert.ok(saved.args[2].startsWith('scrypt$'));
       assert.ok(!saved.sql.includes('role,'));
+      assert.match(saved.sql,/terms_accepted_at/);
+      assert.deepEqual(saved.args.slice(4),['2026-11-14','2026-11-14']);
     }finally{
       if(prev===undefined)delete process.env.SECRETJ_REGISTRATION_ENABLED;
       else process.env.SECRETJ_REGISTRATION_ENABLED=prev;
@@ -222,4 +224,27 @@ test('binary account files strip PostgreSQL base64 line breaks before returning 
     assert.equal(result.body.file.base64,'YWJjZA==');
     assert.match(result.headers['Cache-Control'],/no-store/);
   }finally{core.setQueryForTests(null);}
+});
+
+test('registration rejects missing, unchecked or outdated legal consent before creating a user',async()=>{
+ await fixture(async calls=>{
+   const previous=process.env.SECRETJ_REGISTRATION_ENABLED;
+   process.env.SECRETJ_REGISTRATION_ENABLED='true';
+   try{
+     const standard={email:'new@example.com',password:'correct horse battery staple',name:'New Member'};
+     for(const body of [
+       standard,
+       {...standard,accept_terms:false,terms_version:'2026-11-14',privacy_version:'2026-11-14'},
+       {...standard,accept_terms:true,terms_version:'2020-01-01',privacy_version:'2026-11-14'}
+     ]){
+       const r=await call(auth,req('POST',body,{action:'register'}));
+       assert.equal(r.status,400);
+       assert.match(r.body.error,/Terms and Privacy/);
+     }
+     assert.ok(!calls.some(x=>x.sql.includes('WITH created AS')));
+   }finally{
+     if(previous===undefined)delete process.env.SECRETJ_REGISTRATION_ENABLED;
+     else process.env.SECRETJ_REGISTRATION_ENABLED=previous;
+   }
+ });
 });
