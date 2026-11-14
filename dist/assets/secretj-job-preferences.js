@@ -113,7 +113,8 @@
     /\b(\d{1,2})\s*[-–]\s*\d{1,2}\s*(?:years?|yrs?)\s+(?:of\s+)?(?:(?:relevant|professional)\s+)?experience\b/gi,
     /\bexperience\s*:?\s*(\d{1,2})\s*\+?\s*(?:years?|yrs?)\b/gi,
     /\b(\d{1,2})\s*\+?\s*(?:years?|yrs?)\s+(?:of\s+)?(?:total|direct|hands[- ]on|overall|prior)\s+(?:(?:relevant|professional|software|technical|people|team|engineering|management|leadership|work|industry|development)\s+){0,5}experience\b/gi,
-    /\b(\d{1,2})\s*\+?\s*(?:years?|yrs?)\s+(?:of\s+)?(?:total|direct)\s+(?:experience|(?:people|team|technical)\s+management)\b/gi
+    /\b(\d{1,2})\s*\+?\s*(?:years?|yrs?)\s+(?:of\s+)?(?:total|direct)\s+(?:experience|(?:people|team|technical)\s+management)\b/gi,
+    /\b(\d{1,2})\s*\+?\s*(?:years?|yrs?)\s+of\s+(?:building|developing|designing|shipping|delivering|implementing|architecting|managing|leading|working)\b/gi
   ];
   const numbers=[];
   for(const pattern of patterns){
@@ -144,7 +145,7 @@
    if(Number.isFinite(years)){
     // Exclude explicit Senior, Lead, or Consultant titles with a 0–2 year cap,\n    // even when the job description omits mandatory years.
     // Apply only when a member sets a concrete maximum of 0, 1 or 2 years.
-    if(years<=2 && /\b(?:senior|sr\.?|lead|consultant|staff)\b/i.test(title))return false;
+    if(years<=2 && /\b(?:senior|sr\.?|lead|consultant|staff|principal)\b/i.test(title))return false;
     // A hands-on AI Team Manager / Engineering Manager is still a
     // management vacancy even when years are absent from the snapshot.
     // Do not blanket-reject entry-level Product Manager or Assistant Manager.
@@ -170,7 +171,7 @@
    if(p.internships===true&&!internships.test(title+' '+String(job.employment||'')))reasons.push('Not an internship');
    if(chosen.length&&!category.some(key=>chosen.includes(key)))reasons.push(category.includes('other')?'Unclassified career field':'Outside selected career fields');
    if(limit!==null&&Number.isFinite(limit)){
-     if(limit<=2&&/\b(?:senior|sr\.?|lead|consultant|staff)\b/i.test(title))reasons.push('Senior/Lead/Consultant/Staff title');
+     if(limit<=2&&/\b(?:senior|sr\.?|lead|consultant|staff|principal)\b/i.test(title))reasons.push('Senior/Lead/Consultant/Staff/Principal title');
      else if(limit<=2&&/\b(?:team manager|engineering manager|software manager|development manager|technical manager|head of|director|principal engineer|staff engineer|team lead|tech lead)\b/i.test(title))reasons.push('Leadership title');
      if(years!==null&&years>limit)reasons.push('Requires '+years+' years; maximum '+limit);
    }
