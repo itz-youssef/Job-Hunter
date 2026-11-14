@@ -53,10 +53,47 @@
  ];
  const egypt=/egypt|cairo|giza|alexandria|mansoura|tanta|suez|ismailia|october|sheikh zayed|maadi|helwan|nasr city|aswan|luxor|damietta|sohag|port said|hurghada|sharm el sheikh|assiut|new capital|qalyubia|\begy\b/i;
  const internships=/\b(?:intern(?:ship)?s?|trainee|traineeship|apprentice(?:ship)?|graduate\s+program(?:me)?|work experience)\b/i;
+ // Known employer naming variants. Generic "engineer" and "analyst"
+ // need corroborating details rather than inheriting an unrelated discipline.
+ const titleAliases=[
+  ['software',/application (?:development|engineer)|(?:software|platform|product) development|associate developer|programming (?:specialist|associate)|technology development/i],
+  ['backend',/api (?:engineer|developer)|server (?:engineer|developer)|microservice(?:s)? (?:engineer|developer)/i],
+  ['frontend',/web interface|ui engineer|client[ -]?side developer/i],
+  ['fullstack',/full[ -]?stack|end[ -]?to[ -]?end developer/i],
+  ['cybersecurity',/security operations|blue team|red team|security engineer|information assurance|vulnerability analyst/i],
+  ['data_analytics',/reporting analyst|insights analyst|decision scientist|analytics consultant/i],
+  ['data_engineering',/etl developer|data platform engineer|big data developer/i],
+  ['talent_acquisition',/talent sourc(?:er|ing)|recruitment coordinator|hiring specialist|people sourcer/i],
+  ['qa',/test engineer|test specialist|verification engineer|validation engineer/i],
+  ['it_support',/technical assistance|end user support|service desk|customer technical engineer/i],
+  ['ai_ml',/applied (?:scientist|researcher)|intelligent systems|language model engineer/i],
+  ['devops',/release engineer|build engineer|continuous delivery engineer/i],
+  ['cloud',/cloud operations|cloud platform|cloud services engineer/i]
+ ];
+ const genericTitle=/^(?:(?:junior|senior|associate|graduate|entry[ -]?level)\\s+)?(?:technology|technical|it|digital|engineering|application|solutions?|platform|systems?|product|research|development|associate|graduate|intern|trainee|specialist|analyst|engineer|consultant)(?:[ \\/-]+(?:engineer|developer|analyst|intern|trainee|associate|specialist|consultant|graduate|technology|technical|solutions?|systems?|research|engineering|development|platform|program))*(?:\\s*[-–].*)?$/i;
+ const descriptorSignals=[
+  ['software',/develop(?:ment|ing)? (?:software|applications)|software engineering|coding and programming|design(?:ing)? and build(?:ing)? applications/i],
+  ['backend',/backend|back[ -]?end|rest(?:ful)? apis?|microservices|server[ -]?side/i],
+  ['frontend',/front[ -]?end|user interfaces|react\\.js|angular|vue\\.js/i],
+  ['cybersecurity',/cyber.?security|security monitoring|siem|incident response|penetration testing/i],
+  ['ai_ml',/machine learning|deep learning|generative ai|natural language processing|large language models/i],
+  ['cv',/computer vision|object detection|image processing/i],
+  ['data_engineering',/data pipeline|etl process|data warehouse engineering/i],
+  ['talent_acquisition',/talent acquisition|candidate sourcing|recruitment lifecycle|interview coordination/i],
+  ['qa',/test automation|quality assurance|test plans|functional testing/i],
+  ['cloud',/cloud infrastructure|aws cloud|azure cloud|cloud computing/i]
+ ];
  function classify(job){
-  const title=String(job.title||job.position||job.job_title||'');
-  const values=categories.slice(0,-1).filter(([, ,re])=>re.test(title)).map(([key])=>key);
-  return values.length?values:['other'];
+  const title=String(job.title||job.position||job.job_title||'').trim();
+  const values=new Set(categories.slice(0,-1).filter(([, ,re])=>re.test(title)).map(([key])=>key));
+  for(const [key,re] of titleAliases)if(re.test(title))values.add(key);
+  // Description helps only for genuinely ambiguous titles; never infer that
+  // an HR manager is an AI engineer merely because an HR posting mentions AI.
+  if(!values.size && genericTitle.test(title)){
+    const desc=String(job.description||job.summary||'').slice(0,1600);
+    for(const [key,re] of descriptorSignals)if(re.test(desc))values.add(key);
+  }
+  return values.size?[...values]:['other'];
  }
  function hasFilters(p){
   return !!p&&(Array.isArray(p.role_families)&&p.role_families.length>0||
