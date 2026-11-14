@@ -102,17 +102,18 @@ module.exports=async function handler(req,res){
       if(req.method==='GET'){
         const rows=await core.query('SELECT egypt_only,internships,max_experience_years,role_families,email_alerts FROM public.sj_preferences WHERE user_id=$1',[userId]);
         return core.reply(res,200,{ok:true,configured:rows.length>0,preferences:rows[0]||{
-          egypt_only:true,internships:true,max_experience_years:2,
-          role_families:['software','ai_ml','cv','mlops'],email_alerts:false
+          egypt_only:false,internships:false,max_experience_years:null,
+          role_families:[],email_alerts:false
         }});
       }
       if(req.method!=='PUT')throw core.fail(405,'Method not allowed');
-      const years=Number(body.max_experience_years);
-      if(!Number.isInteger(years)||years<0||years>10||
+      const years=body.max_experience_years===null||body.max_experience_years===''?null:Number(body.max_experience_years);
+      if((years!==null&&(!Number.isInteger(years)||years<0||years>30))||
          typeof body.egypt_only!=='boolean'||typeof body.internships!=='boolean'||
          typeof body.email_alerts!=='boolean'||!Array.isArray(body.role_families)||
-         body.role_families.length>8||
-         !body.role_families.every(x=>['software','ai_ml','cv','mlops'].includes(x)))throw core.fail(400,'Invalid preferences');
+         body.role_families.length>45||
+         new Set(body.role_families).size!==body.role_families.length||
+         !body.role_families.every(x=>require('../dist/assets/secretj-job-preferences').categories.some(c=>c.key===x)))throw core.fail(400,'Invalid preferences');
       await core.query(
         `INSERT INTO public.sj_preferences(user_id,egypt_only,internships,max_experience_years,role_families,email_alerts)
          VALUES($1,$2,$3,$4,$5,$6)
