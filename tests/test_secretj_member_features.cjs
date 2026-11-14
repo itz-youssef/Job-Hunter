@@ -231,9 +231,9 @@ test('scheduled mail selects only code-confirmed chosen recipient, never pending
   const code=fs.readFileSync('lib/secretj/member-alerts.js','utf8');
   const sql=fs.readFileSync('database/migrations/003_secretj_member_email.sql','utf8');
   const front=fs.readFileSync('dist/assets/secretj-account.js','utf8');
-  assert.match(code,/COALESCE\(v\.verified_email,u\.email\) AS email/);
+  assert.match(code,/u\.email AS email/);
   assert.match(code,/v\.verified_at IS NOT NULL/);
-  assert.match(code,/v\.recipient_email=u\.email/);
+  assert.match(code,/lower\(COALESCE\(v\.verified_email,v\.recipient_email,u\.email\)\)=lower\(u\.email\)/);
   assert.match(sql,/ADD COLUMN IF NOT EXISTS recipient_email TEXT/);
   assert.match(sql,/ADD COLUMN IF NOT EXISTS verified_email TEXT/);
   assert.match(front,/id="sj-email-recipient"/);
