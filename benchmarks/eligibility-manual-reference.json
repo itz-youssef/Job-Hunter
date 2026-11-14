@@ -1,0 +1,484 @@
+{
+  "metadata": {
+    "basis": "Independent assistant adjudication from actual public snapshot fields inspected on 2026-11-14; not an employer-verified human ground truth. Only unambiguous cases are scored. Unknown cases are excluded from precision/recall.",
+    "label": "eligible means clearly compatible with a maximum of two years in the *seniority/experience* dimension, irrespective of professional specialization or geographic fit."
+  },
+  "include": [
+    [
+      0,
+      "Explicit Intern title"
+    ],
+    [
+      1,
+      "Explicit Internship title"
+    ],
+    [
+      22,
+      "Employer ATS Early Professional"
+    ],
+    [
+      27,
+      "Employer ATS Early Professional"
+    ],
+    [
+      29,
+      "Employer ATS Early Professional"
+    ],
+    [
+      35,
+      "Employer ATS Early Professional"
+    ],
+    [
+      71,
+      "Minimum two years of experience"
+    ],
+    [
+      92,
+      "Experience 0-2 years"
+    ],
+    [
+      99,
+      "Graduate trainee program and recent graduates"
+    ],
+    [
+      107,
+      "0-2 years relevant experience"
+    ],
+    [
+      111,
+      "Junior title and 0-2 years"
+    ],
+    [
+      127,
+      "Work experience programme"
+    ],
+    [
+      313,
+      "Minimum one year; associate title"
+    ],
+    [
+      386,
+      "One-plus years explicitly in qualifications despite Experienced Professionals metadata"
+    ],
+    [
+      389,
+      "One year minimum relevant professional experience"
+    ],
+    [
+      395,
+      "One year experience"
+    ],
+    [
+      415,
+      "Recent graduate Young Professionals Program"
+    ],
+    [
+      416,
+      "Recent graduate Young Professionals Program"
+    ],
+    [
+      417,
+      "Recent graduate Young Professionals Program"
+    ],
+    [
+      423,
+      "0-2 years relevant role"
+    ],
+    [
+      428,
+      "0-2 years relevant role"
+    ],
+    [
+      557,
+      "Junior Accountant title"
+    ],
+    [
+      644,
+      "Intern and no previous work required"
+    ],
+    [
+      758,
+      "Junior AI Engineer with 2+ years of experience"
+    ],
+    [
+      916,
+      "Junior QA Engineer title"
+    ],
+    [
+      968,
+      "Junior Bridge Engineer title"
+    ],
+    [
+      969,
+      "Junior R&D Engineer title"
+    ],
+    [
+      970,
+      "Junior Structural Engineer title"
+    ],
+    [
+      971,
+      "Junior Structural Engineer Intern title"
+    ],
+    [
+      992,
+      "Fresh grads and up to two years welcome"
+    ],
+    [
+      995,
+      "2+ years QA experience: possible minimum of two"
+    ],
+    [
+      1069,
+      "UI/UX Design Intern title"
+    ],
+    [
+      1070,
+      "HR Intern title"
+    ],
+    [
+      1119,
+      "Graduate Area Manager: graduate hiring, not senior engineering title"
+    ],
+    [
+      752,
+      "Mustaqbaly graduate-targeted audit program"
+    ],
+    [
+      13,
+      "Alternative educational pathways include master’s with two years (conditional applicant fit)"
+    ]
+  ],
+  "exclude": [
+    [
+      5,
+      "Senior Software Engineer"
+    ],
+    [
+      17,
+      "Senior title and minimum five years"
+    ],
+    [
+      42,
+      "Minimum three to five years"
+    ],
+    [
+      54,
+      "Seven to ten years required"
+    ],
+    [
+      86,
+      "Six-plus years of technical consulting"
+    ],
+    [
+      120,
+      "Three to five years relevant operational experience"
+    ],
+    [
+      136,
+      "DevOps Solution Architect, specialist senior-level role (title only low certainty)"
+    ],
+    [
+      144,
+      "Sr Infrastructure Security Specialist"
+    ],
+    [
+      168,
+      "FP&A Manager title (not proven entry-level)"
+    ],
+    [
+      189,
+      "Senior coordinator"
+    ],
+    [
+      205,
+      "Senior hub coordinator"
+    ],
+    [
+      227,
+      "Senior communications associate"
+    ],
+    [
+      247,
+      "Senior Backend Engineer"
+    ],
+    [
+      268,
+      "Must have three to five years in investing"
+    ],
+    [
+      274,
+      "Two to four years as must-have: exceeds two upper bound (ambiguous minimum)"
+    ],
+    [
+      282,
+      "Engineering Manager + eight years"
+    ],
+    [
+      295,
+      "Four years SaaS closing"
+    ],
+    [
+      327,
+      "Senior Engineer II"
+    ],
+    [
+      338,
+      "Five-plus years tender management"
+    ],
+    [
+      345,
+      "Billing Solutions Architect seniority unclear (exclude is weak)"
+    ],
+    [
+      356,
+      "ICT Program Director"
+    ],
+    [
+      381,
+      "Senior Embedded Software Test Engineer"
+    ],
+    [
+      414,
+      "Principal Architect and ten-to-fourteen years"
+    ],
+    [
+      451,
+      "Senior ServiceNow Developer"
+    ],
+    [
+      466,
+      "Seven-plus years IT automation"
+    ],
+    [
+      475,
+      "Senior and four-plus years"
+    ],
+    [
+      499,
+      "Senior Consultant"
+    ],
+    [
+      536,
+      "Senior specialist"
+    ],
+    [
+      559,
+      "Senior AR Specialist"
+    ],
+    [
+      593,
+      "Regional Acquisition Team Lead"
+    ],
+    [
+      626,
+      "Logistics Team Lead"
+    ],
+    [
+      634,
+      "Mid-senior + eight years"
+    ],
+    [
+      656,
+      "Presales Technical Consultant; title-based conservative exclusion"
+    ],
+    [
+      702,
+      "Cybersecurity Senior Engineer"
+    ],
+    [
+      720,
+      "Senior Fullstack Engineer"
+    ],
+    [
+      736,
+      "Incident Response Senior Engineer"
+    ],
+    [
+      756,
+      "Assistant Director role"
+    ],
+    [
+      782,
+      "Five-plus years building backend systems"
+    ],
+    [
+      862,
+      "Senior Java Engineer"
+    ],
+    [
+      878,
+      "Senior Product Manager"
+    ],
+    [
+      899,
+      "Principal Data Scientist and seven-plus years"
+    ],
+    [
+      918,
+      "Senior Backend Engineer"
+    ],
+    [
+      976,
+      "Senior Software Engineer"
+    ],
+    [
+      982,
+      "Five-plus years construction supervision"
+    ],
+    [
+      1008,
+      "Senior Java Engineer and five years"
+    ],
+    [
+      1029,
+      "Senior iOS Engineer + five years"
+    ],
+    [
+      1045,
+      "Consultant 3 Technology Risk"
+    ],
+    [
+      1078,
+      "Sr PM and five-plus years"
+    ],
+    [
+      1120,
+      "Three-plus years analysis experience"
+    ],
+    [
+      1179,
+      "Retail Media Manager title (managerial ambiguity)"
+    ]
+  ],
+  "uncertain": [
+    [
+      243,
+      "Strategy Associate without specified experience"
+    ],
+    [
+      255,
+      "One-to-four years mixed range; might accept two"
+    ],
+    [
+      274,
+      "Two-to-four range possible entry (exclude label is contested)"
+    ],
+    [
+      298,
+      "IBM Data Engineer professional without quantified requirement"
+    ],
+    [
+      354,
+      "People Ops Specialist, no description"
+    ],
+    [
+      387,
+      "Associate Quality Engineer with generic Experienced Professionals ATS"
+    ],
+    [
+      397,
+      "Two-to-four years plus minimum one year O2C"
+    ],
+    [
+      437,
+      "Customer Service Turkish Speaker no seniority evidence"
+    ],
+    [
+      513,
+      "Demand Associate six-month contract no detailed requirements"
+    ],
+    [
+      582,
+      "Reconciliation Specialist no requirements"
+    ],
+    [
+      601,
+      "Sales Development Representative, unspecified"
+    ],
+    [
+      673,
+      "QA Test Engineer no decisive age"
+    ],
+    [
+      687,
+      "Analog QA Engineer no clear years"
+    ],
+    [
+      697,
+      "Deloitte GIU Fair Automation Tester without internship explicitly in specific listing"
+    ],
+    [
+      751,
+      "Experienced Associate legal advisor"
+    ],
+    [
+      785,
+      "Category Manager without requirements"
+    ],
+    [
+      810,
+      "Global HRIS Coordinator without requirements"
+    ],
+    [
+      833,
+      "Product Manager ambiguous seniority"
+    ],
+    [
+      838,
+      "Sales Executive unclear"
+    ],
+    [
+      888,
+      "Store Ops Supervisor unclear"
+    ],
+    [
+      944,
+      "DevOps Engineer without years"
+    ],
+    [
+      945,
+      "Finance Ops Associate without requirements"
+    ],
+    [
+      1055,
+      "Tech Consulting Red Team, no detailed requirements"
+    ],
+    [
+      1058,
+      "Receptionist Associate without experience evidence"
+    ],
+    [
+      1081,
+      "One-plus customer support OR four-plus account management"
+    ],
+    [
+      1142,
+      "Fulfillment Center Supervisor unknown years"
+    ],
+    [
+      1159,
+      "Facilities Supervisor unclear years"
+    ],
+    [
+      1228,
+      "Bank premises officer no description"
+    ],
+    [
+      1237,
+      "Bank GCR officer no description"
+    ],
+    [
+      1249,
+      "Bank quality officer no description"
+    ],
+    [
+      1256,
+      "French alternance programme no details"
+    ],
+    [
+      1262,
+      "French client relations no details"
+    ]
+  ]
+}
