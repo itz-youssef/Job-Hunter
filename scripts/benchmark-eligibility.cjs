@@ -93,6 +93,8 @@ if(require.main===module){
   JSON.stringify({meta:result.meta,winner:result.winner,methods:result.methods,missing:result.missing},null,2)+'\n');
  fs.writeFileSync(path.join(dest,'all-jobs-method-comparison.csv'),csv(result.allRows));
  console.log('WINNER_MISCLASSIFICATIONS '+JSON.stringify(result.methods[0].errors));
+ const changed=result.allRows.filter(j=>j.A_baseline!==j.F_constraint_aware);
+ console.log('BASELINE_TO_F_CONFLICTS '+JSON.stringify({total:changed.length,fromIncludedToExcluded:changed.filter(j=>j.A_baseline==='include'&&j.F_constraint_aware==='exclude').slice(0,75),fromExcludedToIncluded:changed.filter(j=>j.A_baseline==='exclude'&&j.F_constraint_aware==='include').slice(0,40)}));
  console.log(JSON.stringify({meta:result.meta,winner:result.winner,
   methods:result.methods.map(({name,precision,recallHard,recallSafe,specificity,review,catalogCounts,risk,utilityScore,confusion,unknownDecisions})=>
    ({name,precision,recallHard,recallSafe,specificity,review,catalogCounts,risk,utilityScore,confusion,unknownDecisions}))},null,2));
