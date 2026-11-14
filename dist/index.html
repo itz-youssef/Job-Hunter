@@ -441,7 +441,7 @@ a:hover{color:var(--ink)}
     const all=allPublicJobs();
     // Explicit manual search searches the entire public catalog. Personal
     // preferences only control the default feed and email notifications.
-    if(state.reviewExcluded || String(state.query||'').trim() || !state.member || !state.memberPrefsConfigured)return all;
+    if(state.reviewExcluded || String(state.query||'').trim() || state.jobType==='internship' || !state.member || !state.memberPrefsConfigured)return all;
     const match=window.SecretJJobPreferences?.isMatch;
     // Fail open for browsing when the preference bundle has not loaded.
     if(typeof match!=='function')return all;
@@ -1058,7 +1058,8 @@ a:hover{color:var(--ink)}
       if(q && !(window.SecretJJobSearch?.matches(j,q,window.SecretJJobPreferences?.classify)))return false;
       if(!matchesRole(j,state.role))return false;
       if(state.companyFilter!=='all' && companyOf(j)!==state.companyFilter)return false;
-      if(state.jobType==='internship'&&!window.SecretJJobSearch?.isInternship(j))return false;
+      // Use precisely the same matching semantics as entering 'intern' in Search.
+      if(state.jobType==='internship'&&!window.SecretJJobSearch?.matches(j,'intern',window.SecretJJobPreferences?.classify))return false;
       if(state.jobType==='junior' && /\b(intern(?:ship)?s?|trainee)\b/i.test(titleOf(j)))return false;
       if(state.dateFilter!=='all'){
         const duration=/h$/.test(state.dateFilter)?Number(state.dateFilter.slice(0,-1))*3600000:Number(state.dateFilter)*86400000;
