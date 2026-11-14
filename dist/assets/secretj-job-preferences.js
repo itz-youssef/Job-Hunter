@@ -8,6 +8,7 @@
  if(root)root.SecretJJobPreferences=api;
 })(typeof window!=='undefined'?window:null,function(){
  'use strict';
+ const eligibilityCore=typeof require==='function'?require('./secretj-eligibility-core'):typeof window!=='undefined'?window.SecretJEligibilityCore:null;
  const categories=[
  ['software','Software Engineering',/software (?:engineer|developer|development)|application (?:developer|engineer)|\bprogrammer\b|\bswe\b|\bsde\b/i],
  ['backend','Backend Development',/back[ -]?end|server[ -]?side|(?:python|java|node\.?js|golang|go|php|ruby|\.net) developer/i],
@@ -150,50 +151,26 @@
    const location=String(job.location||job.job_location||'');
    const selected=Array.isArray(p.role_families)?p.role_families:[];
    const fields=classify(job);
-   const reasons=[];
-   const evidence=[];
-   let review=false;
+   const reasons=[],evidence=[];
+   let review=false,required=null;
    if(p.egypt_only===true&&!egypt.test(location))reasons.push('Outside selected location');
    if(p.internships===true&&!internships.test(title+' '+String(job.employment||'')))reasons.push('Not an internship');
    if(selected.length&&!fields.some(key=>selected.includes(key)))
      reasons.push(fields.includes('other')?'Unclassified career field':'Outside selected career fields');
    const limit=p.max_experience_years===null||p.max_experience_years===undefined||p.max_experience_years===''?null:Number(p.max_experience_years);
-   let required=null;
    if(limit!==null&&Number.isFinite(limit)){
-     required=yearsRequired(job);
-     if(required!==null) {
-       evidence.push('Experience requirement detected: '+required+' years');
-       if(required>limit)reasons.push('Requires '+required+' years; maximum '+limit);
-     } else {
-       review=true;
-       evidence.push('No verified minimum years in stored description');
-     }
-     if(limit<=2){
-       const level=String(job.seniority||job.career_level||job.experience_level||job.level||'');
-       const titleIsHigh=highTitle.test(title);
-       const titleIsJunior=juniorTitle.test(title);
-       const levelIsHigh=higherATS.test(level);
-       const levelIsJunior=juniorATS.test(level);
-       if(titleIsHigh){
-         reasons.push('Senior/Lead/Consultant/Staff/Principal or management title');
-         evidence.push('Advanced title: '+title.slice(0,110));
-       }
-       if(levelIsHigh){
-         evidence.push('Employer career level: '+level.slice(0,100));
-         if(titleIsJunior&&!titleIsHigh){
-           review=true;
-           evidence.push('Conflicting employer seniority and junior title; manual review');
-         } else reasons.push('Employer labels the vacancy as advanced level');
-       }
-       if(titleIsJunior||levelIsJunior)evidence.push('Entry/graduate signal from title or employer level');
-       const text=String(job.requirements||'')+' '+String(job.description||'');
-       const heading=text.search(/\b(?:responsibilities|what you will do|about the role)\b/i);
-       const responsibility=heading<0?'':text.slice(heading,heading+5000).replace(/<[^>]*>/g,' ');
-       const signals=ownershipSignals.filter(re=>re.test(responsibility));
-       if(signals.length>=2&&!titleIsHigh&&!levelIsHigh){
-         review=true;
-         evidence.push('Several people/department leadership responsibilities; verify seniority');
-       }
+     if(limit<=2&&eligibilityCore){
+       // Selected on a frozen, independently labeled comparison of six models.
+       // REVIEW stays visible; it is never called a confirmed match.
+       const result=eligibilityCore.evaluate(job,limit);
+       required=result.requiredYears;
+       evidence.push(...result.evidence,...result.sourceSpans.slice(0,2));
+       if(result.decision==='exclude')reasons.push(...result.reasons);
+       if(result.decision==='review')review=true;
+     }else{
+       required=yearsRequired(job);
+       if(required!==null&&required>limit)reasons.push('Requires '+required+' years; maximum '+limit);
+       if(required===null)review=true;
      }
    }
    const unique=[...new Set(reasons)];

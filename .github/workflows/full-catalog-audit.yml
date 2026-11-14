@@ -10,6 +10,8 @@ on:
       - 'tests/test_full_catalog_search_audit.cjs'
       - '.github/workflows/full-catalog-audit.yml'
   workflow_dispatch:
+  schedule:
+    - cron: '17 5 * * *'
 permissions:
   contents: read
 jobs:

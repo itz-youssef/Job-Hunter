@@ -158,7 +158,7 @@ test('home and account request the updated matcher URL to avoid stale cached eli
  const account=fs.readFileSync('dist/account.html','utf8');
  const home=fs.readFileSync('dist/index.html','utf8');
  for(const page of [account,home])
-  assert.match(page,/secretj-job-preferences\.js\?v=evidence-engine-7/);
+  assert.match(page,/secretj-job-preferences\.js\?v=constraint-aware-f-1/);
 });
 
 test('Lead and Consultant titles are hidden at 0 to 2 years, including Deloitte tech leads',()=>{
@@ -294,8 +294,8 @@ test('hard rejection is based on actual minimum and excludes Valeo, mylo, Deloit
 
 test('anonymous home shows zero matching jobs and generic latest opportunities',()=>{
  const html=fs.readFileSync('dist/index.html','utf8');
- assert.match(html,/matching=state\.member&&state\.memberPrefsConfigured\?list\.length:0/);
- assert.match(html,/matched=state\.member&&state\.memberPrefsConfigured\?validJobs\(\)\.length:0/);
+ assert.match(html,/matching=state\.member&&state\.memberPrefsConfigured\?list\.filter\(/);
+ assert.match(html,/matched=state\.member&&state\.memberPrefsConfigured\?validJobs\(\)\.filter\(/);
  assert.match(html,/state\.member\?'Your latest opportunities':'Latest opportunities'/);
  assert.match(html,/state\.member&&state\.memberPrefsConfigured&&scoreOf\(j\)>=8\?/);
 });

@@ -1,0 +1,950 @@
+{
+  "metadata": {
+    "basis": "Independent assistant adjudication from actual public snapshot fields inspected on 2026-11-14; not an employer-verified human ground truth. Only unambiguous cases are scored. Unknown cases are excluded from precision/recall. Disputable titles and alternative qualification routes are assigned unknown, never used as binary truth.",
+    "label": "eligible means clearly compatible with a maximum of two years in the *seniority/experience* dimension, irrespective of professional specialization or geographic fit.",
+    "snapshotBlob": "7a3ea7510c60869f3a13f12b4185de8d29327d96",
+    "snapshotCount": 1295
+  },
+  "include": [
+    {
+      "id": 121,
+      "title": "Technical Support Engineer Intern for People with Disabilities (Ignite Program)",
+      "company": "Microsoft",
+      "expected": "include",
+      "reason": "Explicit Intern title",
+      "originalIndex": 0
+    },
+    {
+      "id": 120,
+      "title": "Software Engineer: Internship Opportunities - Ignite Program for People with Disabilities",
+      "company": "Microsoft",
+      "expected": "include",
+      "reason": "Explicit Internship title",
+      "originalIndex": 1
+    },
+    {
+      "id": 99,
+      "title": "QA Test Engineer",
+      "company": "Siemens",
+      "expected": "include",
+      "reason": "Employer ATS Early Professional",
+      "originalIndex": 22
+    },
+    {
+      "id": 94,
+      "title": "SW QA Engineer Associate - Simcenter X (AltairOne Apps)",
+      "company": "Siemens",
+      "expected": "include",
+      "reason": "Employer ATS Early Professional",
+      "originalIndex": 27
+    },
+    {
+      "id": 92,
+      "title": "Software QA Engineer",
+      "company": "Siemens",
+      "expected": "include",
+      "reason": "Employer ATS Early Professional",
+      "originalIndex": 29
+    },
+    {
+      "id": 86,
+      "title": "Software Development Engineer",
+      "company": "Siemens",
+      "expected": "include",
+      "reason": "Employer ATS Early Professional",
+      "originalIndex": 35
+    },
+    {
+      "id": 50,
+      "title": "Tax Accountant | Siemens Egypt",
+      "company": "Siemens",
+      "expected": "include",
+      "reason": "Minimum two years of experience",
+      "originalIndex": 71
+    },
+    {
+      "id": 29,
+      "title": "Software Engineer, POWER",
+      "company": "Valeo",
+      "expected": "include",
+      "reason": "Experience 0-2 years",
+      "originalIndex": 92
+    },
+    {
+      "id": 22,
+      "title": "Graduate In Training Program (GIT),  Embedded Software",
+      "company": "Valeo",
+      "expected": "include",
+      "reason": "Graduate trainee program and recent graduates",
+      "originalIndex": 99
+    },
+    {
+      "id": 14,
+      "title": "System Validation Engineer, POWER",
+      "company": "Valeo",
+      "expected": "include",
+      "reason": "0-2 years relevant experience",
+      "originalIndex": 107
+    },
+    {
+      "id": 10,
+      "title": "Junior Software Engineer, BRAIN",
+      "company": "Valeo",
+      "expected": "include",
+      "reason": "Junior title and 0-2 years",
+      "originalIndex": 111
+    },
+    {
+      "id": "custom-vois-563018698313140",
+      "title": "VOIS EG Work Experience Programme 2027 - HR Operations - Turkish Speaker",
+      "company": "VOIS",
+      "expected": "include",
+      "reason": "Work experience programme",
+      "originalIndex": 127
+    },
+    {
+      "id": "custom-schneider-133864",
+      "title": "Associate, Customer Project Document Management",
+      "company": "Schneider Electric",
+      "expected": "include",
+      "reason": "Minimum one year; associate title",
+      "originalIndex": 313
+    },
+    {
+      "id": "custom-e5e73b4f8ff4ca57f045fc1b",
+      "title": "AI & Automation Engineer",
+      "company": "Capgemini Egypt",
+      "expected": "include",
+      "reason": "One-plus years explicitly in qualifications despite Experienced Professionals metadata",
+      "originalIndex": 386
+    },
+    {
+      "id": "custom-4baa89ba0d4a9e3cc1ec4677",
+      "title": "Associate Business Advisor (French Speaking Role)",
+      "company": "Capgemini Egypt",
+      "expected": "include",
+      "reason": "One year minimum relevant professional experience",
+      "originalIndex": 389
+    },
+    {
+      "id": "custom-658dbb728a17e4b0767f70a2",
+      "title": "Associate Global HR Services (German Speaking Role)",
+      "company": "Capgemini Egypt",
+      "expected": "include",
+      "reason": "One year experience",
+      "originalIndex": 395
+    },
+    {
+      "id": "custom-ed30c6b7db71338f03afbefc",
+      "title": "YPP - F&A Associate (German/Turkish Speaking)",
+      "company": "Capgemini Egypt",
+      "expected": "include",
+      "reason": "Recent graduate Young Professionals Program",
+      "originalIndex": 415
+    },
+    {
+      "id": "custom-0cd22224cf6e090df4fe344b",
+      "title": "YPP - F&A Associate (French/Spanish Speaking)",
+      "company": "Capgemini Egypt",
+      "expected": "include",
+      "reason": "Recent graduate Young Professionals Program",
+      "originalIndex": 416
+    },
+    {
+      "id": "custom-84512b6cee62fc74aae8209d",
+      "title": "YPP - CX Associate (German/Turkish)",
+      "company": "Capgemini Egypt",
+      "expected": "include",
+      "reason": "Recent graduate Young Professionals Program",
+      "originalIndex": 417
+    },
+    {
+      "id": "custom-218d27739d7c47138232db3b",
+      "title": "Associate Service Desk Analyst (French Speaking)",
+      "company": "Capgemini Egypt",
+      "expected": "include",
+      "reason": "0-2 years relevant role",
+      "originalIndex": 423
+    },
+    {
+      "id": "custom-82fd65113acce362e6398cee",
+      "title": "Associate Service Desk Analyst (German Speaking)",
+      "company": "Capgemini Egypt",
+      "expected": "include",
+      "reason": "0-2 years relevant role",
+      "originalIndex": 428
+    },
+    {
+      "id": "custom-paymob-01a0dbfc-b5cc-7120-ac78-707c8fa7ddb3",
+      "title": "Junior Accountant",
+      "company": "Paymob",
+      "expected": "include",
+      "reason": "Junior Accountant title",
+      "originalIndex": 557
+    },
+    {
+      "id": "custom-071964162a8a1c82bd069ba1",
+      "title": "Information Technology Intern",
+      "company": "Breadfast Technology",
+      "expected": "include",
+      "reason": "Intern and no previous work required",
+      "originalIndex": 644
+    },
+    {
+      "id": "custom-27d7ce7bf378b0484eb08f87",
+      "title": "Junior AI Engineer",
+      "company": "BlackStone eIT",
+      "expected": "include",
+      "reason": "Junior AI Engineer with 2+ years of experience",
+      "originalIndex": 758
+    },
+    {
+      "id": "custom-29a3c0cefc69a478caf19e81",
+      "title": "Junior QA Engineer",
+      "company": "inDrive",
+      "expected": "include",
+      "reason": "Junior QA Engineer title",
+      "originalIndex": 916
+    },
+    {
+      "id": "custom-c85ae3fb3f915a62d8b6e194",
+      "title": "Junior Bridge Engineer",
+      "company": "econstruct",
+      "expected": "include",
+      "reason": "Junior Bridge Engineer title",
+      "originalIndex": 968
+    },
+    {
+      "id": "custom-28ed8b135100ab496dc6674e",
+      "title": "Junior R&D Engineer",
+      "company": "econstruct",
+      "expected": "include",
+      "reason": "Junior R&D Engineer title",
+      "originalIndex": 969
+    },
+    {
+      "id": "custom-4827042697cef394279a76c3",
+      "title": "Junior Structural Engineer",
+      "company": "econstruct",
+      "expected": "include",
+      "reason": "Junior Structural Engineer title",
+      "originalIndex": 970
+    },
+    {
+      "id": "custom-7ff2039b5312e4896476080f",
+      "title": "Junior Structural Engineer Intern",
+      "company": "econstruct",
+      "expected": "include",
+      "reason": "Junior Structural Engineer Intern title",
+      "originalIndex": 971
+    },
+    {
+      "id": "custom-53bcca59d5bd700342227c52",
+      "title": "Junior Civil & Mechanical Engineer",
+      "company": "SSC HR Solutions",
+      "expected": "include",
+      "reason": "Fresh grads and up to two years welcome",
+      "originalIndex": 992
+    },
+    {
+      "id": "custom-b11f387a1ddcf18d7ef70338",
+      "title": "QA & UX Engineer - Mobile QA / Arabic RTL / Figma",
+      "company": "SSC HR Solutions",
+      "expected": "include",
+      "reason": "2+ years QA experience: possible minimum of two",
+      "originalIndex": 995
+    },
+    {
+      "id": "custom-e28ca571cfc2eb08b3a6ae54",
+      "title": "UI/UX Design Intern",
+      "company": "Blink22",
+      "expected": "include",
+      "reason": "UI/UX Design Intern title",
+      "originalIndex": 1069
+    },
+    {
+      "id": "custom-4230711ba2314d3cdd322b46",
+      "title": "HR Intern",
+      "company": "Blink22",
+      "expected": "include",
+      "reason": "HR Intern title",
+      "originalIndex": 1070
+    },
+    {
+      "id": "custom-a9941380426cbc4a6de86283",
+      "title": "Graduate Area Manager",
+      "company": "Amazon Egypt",
+      "expected": "include",
+      "reason": "Graduate Area Manager: graduate hiring, not senior engineering title",
+      "originalIndex": 1119
+    }
+  ],
+  "exclude": [
+    {
+      "id": 116,
+      "title": "Senior Software Engineer",
+      "company": "Siemens",
+      "expected": "exclude",
+      "reason": "Senior Software Engineer",
+      "originalIndex": 5
+    },
+    {
+      "id": 104,
+      "title": "Senior Channel Partners Sales Engineer | Electrification & Automation",
+      "company": "Siemens",
+      "expected": "exclude",
+      "reason": "Senior title and minimum five years",
+      "originalIndex": 17
+    },
+    {
+      "id": 79,
+      "title": "Application Engineer - Low Voltage Switchgear",
+      "company": "Siemens",
+      "expected": "exclude",
+      "reason": "Minimum three to five years",
+      "originalIndex": 42
+    },
+    {
+      "id": 67,
+      "title": "OCS Maintenance Engineer @Siemens Mobility Egypt",
+      "company": "Siemens",
+      "expected": "exclude",
+      "reason": "Seven to ten years required",
+      "originalIndex": 54
+    },
+    {
+      "id": 35,
+      "title": "Partner Success Manager",
+      "company": "Microsoft",
+      "expected": "exclude",
+      "reason": "Six-plus years of technical consulting",
+      "originalIndex": 86
+    },
+    {
+      "id": 1,
+      "title": "Logistics Coordinator, Facility & Administration",
+      "company": "Valeo",
+      "expected": "exclude",
+      "reason": "Three to five years relevant operational experience",
+      "originalIndex": 120
+    },
+    {
+      "id": "custom-vois-563018698121432",
+      "title": "Sr. Infrastructure Security Specialist (VOIS)",
+      "company": "VOIS",
+      "expected": "exclude",
+      "reason": "Sr Infrastructure Security Specialist",
+      "originalIndex": 144
+    },
+    {
+      "id": "custom-cd09abe4fcd920fa35feffb2",
+      "title": "Last Mile Hub Senior Coordinator (Mahalla)",
+      "company": "Bosta",
+      "expected": "exclude",
+      "reason": "Senior coordinator",
+      "originalIndex": 189
+    },
+    {
+      "id": "custom-58e19eacabd0782c74dc7ec6",
+      "title": "Last Mile - Senior Hub Coordinator ( Zahraa El Maadi )",
+      "company": "Bosta",
+      "expected": "exclude",
+      "reason": "Senior hub coordinator",
+      "originalIndex": 205
+    },
+    {
+      "id": "custom-403b8827d1020e708fb64473",
+      "title": "Senior Hub Communications Associate ( Aborawash )",
+      "company": "Bosta",
+      "expected": "exclude",
+      "reason": "Senior communications associate",
+      "originalIndex": 227
+    },
+    {
+      "id": "custom-b566112b66fb7d06ee54bd86",
+      "title": "Senior Backend Engineer - Feed Squad",
+      "company": "Thndr",
+      "expected": "exclude",
+      "reason": "Senior Backend Engineer",
+      "originalIndex": 247
+    },
+    {
+      "id": "custom-8f27d0dbba0d76ba4ca52e50",
+      "title": "Investment Associate",
+      "company": "Emergence",
+      "expected": "exclude",
+      "reason": "Must have three to five years in investing",
+      "originalIndex": 268
+    },
+    {
+      "id": "custom-6ba59d8f1bf00dabfcbadd1c",
+      "title": "Software Engineering Manager",
+      "company": "Lean Technologies",
+      "expected": "exclude",
+      "reason": "Engineering Manager + eight years",
+      "originalIndex": 282
+    },
+    {
+      "id": "custom-d4c055bc791da28319cb331f",
+      "title": "Account Executive, Europe",
+      "company": "Chatbase",
+      "expected": "exclude",
+      "reason": "Four years SaaS closing",
+      "originalIndex": 295
+    },
+    {
+      "id": "custom-schneider-127894",
+      "title": "Customer Project Technical Senior Engineer II",
+      "company": "Schneider Electric",
+      "expected": "exclude",
+      "reason": "Senior Engineer II",
+      "originalIndex": 327
+    },
+    {
+      "id": "custom-schneider-136017",
+      "title": "Tender Management Expert",
+      "company": "Schneider Electric",
+      "expected": "exclude",
+      "reason": "Five-plus years tender management",
+      "originalIndex": 338
+    },
+    {
+      "id": "custom-ericsson-563121777205651",
+      "title": "ICT Program Director",
+      "company": "Ericsson",
+      "expected": "exclude",
+      "reason": "ICT Program Director",
+      "originalIndex": 356
+    },
+    {
+      "id": "custom-6e2d2d3783b4ae781b525cc8",
+      "title": "Senior Embedded Software Test Engineer",
+      "company": "Capgemini Egypt",
+      "expected": "exclude",
+      "reason": "Senior Embedded Software Test Engineer",
+      "originalIndex": 381
+    },
+    {
+      "id": "custom-62857216b486c49a1ced9270",
+      "title": "Principal Solution Architect",
+      "company": "Capgemini Egypt",
+      "expected": "exclude",
+      "reason": "Principal Architect and ten-to-fourteen years",
+      "originalIndex": 414
+    },
+    {
+      "id": "custom-6b2affb9ad179a86f7b64b9d",
+      "title": "Senior ServiceNow Developer",
+      "company": "Capgemini Egypt",
+      "expected": "exclude",
+      "reason": "Senior ServiceNow Developer",
+      "originalIndex": 451
+    },
+    {
+      "id": "custom-3b9625296c7da9ffd7a77a5a",
+      "title": "L3 Automation Engineer",
+      "company": "DXC Technology",
+      "expected": "exclude",
+      "reason": "Seven-plus years IT automation",
+      "originalIndex": 466
+    },
+    {
+      "id": "custom-8e3161f0ea2e73f426000cc5",
+      "title": "Senior Software Engineer - IBM BAW",
+      "company": "DXC Technology",
+      "expected": "exclude",
+      "reason": "Senior and four-plus years",
+      "originalIndex": 475
+    },
+    {
+      "id": "custom-eebe227a91f0c4be76b2f17b",
+      "title": "Senior Technical Support Consultant - Finastra Trade Innovation Other Vendor specific (Quantum, Coremont etc.)",
+      "company": "Luxoft Egypt",
+      "expected": "exclude",
+      "reason": "Senior Consultant",
+      "originalIndex": 499
+    },
+    {
+      "id": "custom-etisalat-258358",
+      "title": "Mobile Commerce Operations Senior Specialist.Digital Banking & Insurance Services",
+      "company": "e& / Etisalat",
+      "expected": "exclude",
+      "reason": "Senior specialist",
+      "originalIndex": 536
+    },
+    {
+      "id": "custom-paymob-01a0dbfc-b5cb-777c-8c26-4dd1368bdfd4",
+      "title": "Accounts Receivable Senior Specialist",
+      "company": "Paymob",
+      "expected": "exclude",
+      "reason": "Senior AR Specialist",
+      "originalIndex": 559
+    },
+    {
+      "id": "custom-paymob-01a0dbfc-b5be-71dc-8fcc-8c7118e63493",
+      "title": "Regional Acquisition Team Lead",
+      "company": "Paymob",
+      "expected": "exclude",
+      "reason": "Regional Acquisition Team Lead",
+      "originalIndex": 593
+    },
+    {
+      "id": "custom-02f8db96b284a86bb9ef204b",
+      "title": "Logistics Team Lead - Food (Alexandria)",
+      "company": "Breadfast",
+      "expected": "exclude",
+      "reason": "Logistics Team Lead",
+      "originalIndex": 626
+    },
+    {
+      "id": "custom-f9b211601ccefa6a6667d98f",
+      "title": "Software Solution Architect",
+      "company": "Sumerge",
+      "expected": "exclude",
+      "reason": "Mid-senior + eight years",
+      "originalIndex": 634
+    },
+    {
+      "id": "custom-3b41f7a35a08d905e10bea5a",
+      "title": "Deloitte Innovation Hub I Cyber Security I OT Cybersecurity Senior Engineer, Cairo, Egypt.",
+      "company": "Deloitte",
+      "expected": "exclude",
+      "reason": "Cybersecurity Senior Engineer",
+      "originalIndex": 702
+    },
+    {
+      "id": "custom-5caf5c6aeae76ff3b1e8392a",
+      "title": "Deloitte Innovation Hub I Senior Full Stack Engineer (Node.js, ReactJS, NextJS, AWS) – Cairo, Egypt",
+      "company": "Deloitte",
+      "expected": "exclude",
+      "reason": "Senior Fullstack Engineer",
+      "originalIndex": 720
+    },
+    {
+      "id": "custom-f1aed5eb8bda3881f698e644",
+      "title": "Deloitte Innovation Hub I Cyber Security I Digital Forensics Incident Response Senior Engineer, Cairo, Egypt.",
+      "company": "Deloitte",
+      "expected": "exclude",
+      "reason": "Incident Response Senior Engineer",
+      "originalIndex": 736
+    },
+    {
+      "id": "custom-5e9ba7cdbcc0986a4a2dccf3",
+      "title": "Corporate finance |Government & Infrastructure |Assistant Director | Egypt",
+      "company": "Deloitte",
+      "expected": "exclude",
+      "reason": "Assistant Director role",
+      "originalIndex": 756
+    },
+    {
+      "id": "custom-7c0c527c554cf584f8a08160",
+      "title": "Backend Engineer - Ad Serving & Integrations L05",
+      "company": "Yassir",
+      "expected": "exclude",
+      "reason": "Five-plus years building backend systems",
+      "originalIndex": 782
+    },
+    {
+      "id": "custom-8f7d850a7961024029c5d45e",
+      "title": "Senior Java Engineer \"Financial Service\"",
+      "company": "Yassir",
+      "expected": "exclude",
+      "reason": "Senior Java Engineer",
+      "originalIndex": 862
+    },
+    {
+      "id": "custom-fbcb81c8ab6b20ef80651754",
+      "title": "Senior Product Manager - Machine Learning",
+      "company": "Yassir",
+      "expected": "exclude",
+      "reason": "Senior Product Manager",
+      "originalIndex": 878
+    },
+    {
+      "id": "custom-74f087166d9abdd29cd74f08",
+      "title": "Principal Data Scientist - AI & Machine Learning (Databricks)",
+      "company": "Integrant",
+      "expected": "exclude",
+      "reason": "Principal Data Scientist and seven-plus years",
+      "originalIndex": 899
+    },
+    {
+      "id": "custom-81e25cb07672356e976a3960",
+      "title": "Senior Backend Engineer",
+      "company": "inDrive",
+      "expected": "exclude",
+      "reason": "Senior Backend Engineer",
+      "originalIndex": 918
+    },
+    {
+      "id": "custom-f15ac9ccc4839c70fdc8cd76",
+      "title": "Senior Software Engineer",
+      "company": "econstruct",
+      "expected": "exclude",
+      "reason": "Senior Software Engineer",
+      "originalIndex": 976
+    },
+    {
+      "id": "custom-587c7c0f1fd067d74950f498",
+      "title": "Civil Engineer",
+      "company": "SSC HR Solutions",
+      "expected": "exclude",
+      "reason": "Five-plus years construction supervision",
+      "originalIndex": 982
+    },
+    {
+      "id": "custom-9cdbbd3e6729770182d83678",
+      "title": "Senior Java Backend Engineer | Spring Boot | Microservices | Kafka",
+      "company": "SSC HR Solutions",
+      "expected": "exclude",
+      "reason": "Senior Java Engineer and five years",
+      "originalIndex": 1008
+    },
+    {
+      "id": "custom-72a35f93f49d7f235f475b44",
+      "title": "Senior iOS Engineer",
+      "company": "mylo by B.TECH",
+      "expected": "exclude",
+      "reason": "Senior iOS Engineer + five years",
+      "originalIndex": 1029
+    },
+    {
+      "id": "custom-cafe8462861f4016527a5e7a",
+      "title": "Consultant 3, Technology Risk, Cairo",
+      "company": "EY Egypt",
+      "expected": "exclude",
+      "reason": "Consultant 3 Technology Risk",
+      "originalIndex": 1045
+    },
+    {
+      "id": "custom-eadb12e8204781e231b51081",
+      "title": "Sr. PM S&OP Trans Planning , Supply Chain",
+      "company": "Amazon Egypt",
+      "expected": "exclude",
+      "reason": "Sr PM and five-plus years",
+      "originalIndex": 1078
+    },
+    {
+      "id": "custom-fc7c0ea999634e15426f03f9",
+      "title": "Supply Chain Analyst, Supply Chain Execution",
+      "company": "Amazon Egypt",
+      "expected": "exclude",
+      "reason": "Three-plus years analysis experience",
+      "originalIndex": 1120
+    }
+  ],
+  "uncertain": [
+    {
+      "id": "custom-48f07670958506b2c20168c1",
+      "title": "Strategy Associate",
+      "company": "Bosta",
+      "expected": "uncertain",
+      "reason": "Strategy Associate without specified experience",
+      "originalIndex": 243
+    },
+    {
+      "id": "custom-d9a5696cb0b45bffedbcbdaa",
+      "title": "Fixed Income Associate",
+      "company": "Thndr",
+      "expected": "uncertain",
+      "reason": "One-to-four years mixed range; might accept two",
+      "originalIndex": 255
+    },
+    {
+      "id": "custom-e082b366f1b46aef4f95a366",
+      "title": "M&A Associate",
+      "company": "Emergence",
+      "expected": "uncertain",
+      "reason": "Two-to-four range possible entry (exclude label is contested)",
+      "originalIndex": 274
+    },
+    {
+      "id": "custom-ibm-140847",
+      "title": "Data Engineer-Data Integration",
+      "company": "IBM",
+      "expected": "uncertain",
+      "reason": "IBM Data Engineer professional without quantified requirement",
+      "originalIndex": 298
+    },
+    {
+      "id": "custom-ericsson-563121777531583",
+      "title": "People Operations Specialist",
+      "company": "Ericsson",
+      "expected": "uncertain",
+      "reason": "People Ops Specialist, no description",
+      "originalIndex": 354
+    },
+    {
+      "id": "custom-cff155aa7923fd8e2873af3a",
+      "title": "Associate Quality Engineer - German Speaking",
+      "company": "Capgemini Egypt",
+      "expected": "uncertain",
+      "reason": "Associate Quality Engineer with generic Experienced Professionals ATS",
+      "originalIndex": 387
+    },
+    {
+      "id": "custom-cbf15391cd1106dd5e17b77c",
+      "title": "Associate C2C Collections Process Expert (Dutch Speaking Role)",
+      "company": "Capgemini Egypt",
+      "expected": "uncertain",
+      "reason": "Two-to-four years plus minimum one year O2C",
+      "originalIndex": 397
+    },
+    {
+      "id": "custom-a721374d318bc44f1d7e3831",
+      "title": "Customer Service (Turkish Speaker)",
+      "company": "Capgemini Egypt",
+      "expected": "uncertain",
+      "reason": "Customer Service Turkish Speaker no seniority evidence",
+      "originalIndex": 437
+    },
+    {
+      "id": "custom-224fad48e39d63a55071b5ac",
+      "title": "Digital Demand Associate (DDA), Cairo (6 months' contract)",
+      "company": "SAP",
+      "expected": "uncertain",
+      "reason": "Demand Associate six-month contract no detailed requirements",
+      "originalIndex": 513
+    },
+    {
+      "id": "custom-paymob-01a0dbfc-b5c9-7c68-9bd2-9ff9b7b65139",
+      "title": "Reconciliation Specialist",
+      "company": "Paymob",
+      "expected": "uncertain",
+      "reason": "Reconciliation Specialist no requirements",
+      "originalIndex": 582
+    },
+    {
+      "id": "custom-paymob-01a0dbfc-b5d6-7b18-8696-a673615e67cf",
+      "title": "Sales Development Representative",
+      "company": "Paymob",
+      "expected": "uncertain",
+      "reason": "Sales Development Representative, unspecified",
+      "originalIndex": 601
+    },
+    {
+      "id": "custom-siemens-60D405D19D6448C084990544511BC189",
+      "title": "QA Test Engineer",
+      "company": "Siemens",
+      "expected": "uncertain",
+      "reason": "QA Test Engineer no decisive age",
+      "originalIndex": 673
+    },
+    {
+      "id": "custom-siemens-9965A8D510A34FF1A49883AD74205E92",
+      "title": "Analog Circuit Simulation QA Engineer",
+      "company": "Siemens",
+      "expected": "uncertain",
+      "reason": "Analog QA Engineer no clear years",
+      "originalIndex": 687
+    },
+    {
+      "id": "custom-c41c8808abf1687d481f6395",
+      "title": "Deloitte Innovation Hub I GIU Career Fair 2026 I Automation Tester, Cairo, Egypt",
+      "company": "Deloitte",
+      "expected": "uncertain",
+      "reason": "Deloitte GIU Fair Automation Tester without internship explicitly in specific listing",
+      "originalIndex": 697
+    },
+    {
+      "id": "custom-1dd47dd5ea6e13f5fc047175",
+      "title": "Experienced Associate | Contentious Matters Legal Advisor | Jordan/Lebanon/Egypt",
+      "company": "Deloitte",
+      "expected": "uncertain",
+      "reason": "Experienced Associate legal advisor",
+      "originalIndex": 751
+    },
+    {
+      "id": "custom-16d3a9289969731bc102a687",
+      "title": "Category Manager -West -",
+      "company": "Yassir",
+      "expected": "uncertain",
+      "reason": "Category Manager without requirements",
+      "originalIndex": 785
+    },
+    {
+      "id": "custom-421d09b7ab17eba6450529a3",
+      "title": "Global HRIS Coordinator",
+      "company": "Yassir",
+      "expected": "uncertain",
+      "reason": "Global HRIS Coordinator without requirements",
+      "originalIndex": 810
+    },
+    {
+      "id": "custom-9e24df0840035d6c265b5b76",
+      "title": "Product Manager",
+      "company": "Yassir",
+      "expected": "uncertain",
+      "reason": "Product Manager ambiguous seniority",
+      "originalIndex": 833
+    },
+    {
+      "id": "custom-ba3a55162ffa0bea63542d4a",
+      "title": "Sales Executive",
+      "company": "Yassir",
+      "expected": "uncertain",
+      "reason": "Sales Executive unclear",
+      "originalIndex": 838
+    },
+    {
+      "id": "custom-b0f93cf365a1721722ae5b1b",
+      "title": "Store Operations Supervisor - Midrand",
+      "company": "Yassir",
+      "expected": "uncertain",
+      "reason": "Store Ops Supervisor unclear",
+      "originalIndex": 888
+    },
+    {
+      "id": "custom-17f0b307066426ae4132bf20",
+      "title": "DevOps Engineer",
+      "company": "SOUM",
+      "expected": "uncertain",
+      "reason": "DevOps Engineer without years",
+      "originalIndex": 944
+    },
+    {
+      "id": "custom-f41a57b6dedeafb5276961b4",
+      "title": "Finance Operations Associate / Accountant",
+      "company": "SOUM",
+      "expected": "uncertain",
+      "reason": "Finance Ops Associate without requirements",
+      "originalIndex": 945
+    },
+    {
+      "id": "custom-8b4a5473be9bd36af9106fc1",
+      "title": "Tech Consulting - Red Team/Penetration Testing - Cybersecurity - Cairo",
+      "company": "EY Egypt",
+      "expected": "uncertain",
+      "reason": "Tech Consulting Red Team, no detailed requirements",
+      "originalIndex": 1055
+    },
+    {
+      "id": "custom-d7a8c571264e41408796e365",
+      "title": "Receptionist - Associate",
+      "company": "PwC Egypt",
+      "expected": "uncertain",
+      "reason": "Receptionist Associate without experience evidence",
+      "originalIndex": 1058
+    },
+    {
+      "id": "custom-5c1666163cd0762158bede2e",
+      "title": "Brand Specialist, AVS (Amazon Vendor Services)",
+      "company": "Amazon Egypt",
+      "expected": "uncertain",
+      "reason": "One-plus customer support OR four-plus account management",
+      "originalIndex": 1081
+    },
+    {
+      "id": "custom-afa4e69339e20e4392369be3",
+      "title": "Fulfillment Center Supervisor, Fulfillment Center Supervisor",
+      "company": "Amazon Egypt",
+      "expected": "uncertain",
+      "reason": "Fulfillment Center Supervisor unknown years",
+      "originalIndex": 1142
+    },
+    {
+      "id": "custom-a3ea6d7b57e3b5fc1e9f1047",
+      "title": "Facilities Supervisor, RME",
+      "company": "Amazon Egypt",
+      "expected": "uncertain",
+      "reason": "Facilities Supervisor unclear years",
+      "originalIndex": 1159
+    },
+    {
+      "id": "custom-ab2ef81ec7aa5dbcc735a501",
+      "title": "PREMISES MODIFICATIONS OFFICER",
+      "company": "CIB Egypt",
+      "expected": "uncertain",
+      "reason": "Bank premises officer no description",
+      "originalIndex": 1228
+    },
+    {
+      "id": "custom-324f383ab7c1d39529a21d88",
+      "title": "GCR OFFICER",
+      "company": "CIB Egypt",
+      "expected": "uncertain",
+      "reason": "Bank GCR officer no description",
+      "originalIndex": 1237
+    },
+    {
+      "id": "custom-f6f03ac88419f552ebfb4a10",
+      "title": "CREDIT INVESTMENT QUALITY ASSURANCE OFFICER",
+      "company": "CIB Egypt",
+      "expected": "uncertain",
+      "reason": "Bank quality officer no description",
+      "originalIndex": 1249
+    },
+    {
+      "id": "custom-dc7ffc9b56667826f34cf0e6",
+      "title": "ALTERNANCE - CONSEILLER_E RELATION CLIENT - F/H",
+      "company": "Konecta Egypt",
+      "expected": "uncertain",
+      "reason": "French alternance programme no details",
+      "originalIndex": 1256
+    },
+    {
+      "id": "custom-15714a5a35fb179e01813e91",
+      "title": "Chargé(e) de la relation client F/H",
+      "company": "Konecta Egypt",
+      "expected": "uncertain",
+      "reason": "French client relations no details",
+      "originalIndex": 1262
+    },
+    {
+      "id": 108,
+      "title": "Product Engineer",
+      "company": "Siemens",
+      "expected": "uncertain",
+      "reason": "Insufficient unambiguous employer evidence: Alternative educational pathways include master’s with two years (conditional applicant fit)",
+      "originalIndex": 13
+    },
+    {
+      "id": "custom-vois-563018698220852",
+      "title": "DevOps Solution Architect - VOIS",
+      "company": "VOIS",
+      "expected": "uncertain",
+      "reason": "Insufficient unambiguous employer evidence: DevOps Solution Architect, specialist senior-level role (title only low certainty)",
+      "originalIndex": 136
+    },
+    {
+      "id": "custom-ac57552c07ddb6bb8d138fb1",
+      "title": "FP&A Manager",
+      "company": "Bosta",
+      "expected": "uncertain",
+      "reason": "Insufficient unambiguous employer evidence: FP&A Manager title (not proven entry-level)",
+      "originalIndex": 168
+    },
+    {
+      "id": "custom-ericsson-563121777561607",
+      "title": "Billing Solutions Architect",
+      "company": "Ericsson",
+      "expected": "uncertain",
+      "reason": "Insufficient unambiguous employer evidence: Billing Solutions Architect seniority unclear (exclude is weak)",
+      "originalIndex": 345
+    },
+    {
+      "id": "custom-2a85150e488910861547d976",
+      "title": "Presales Technical Consultant – Egypt",
+      "company": "Link Development",
+      "expected": "uncertain",
+      "reason": "Insufficient unambiguous employer evidence: Presales Technical Consultant; title-based conservative exclusion",
+      "originalIndex": 656
+    },
+    {
+      "id": "custom-84d17cf2c947d17d9817e401",
+      "title": "Associate | Audit & Assurance | Audit | Egypt - Mustaqbaly Program",
+      "company": "Deloitte",
+      "expected": "uncertain",
+      "reason": "Insufficient unambiguous employer evidence: Mustaqbaly graduate-targeted audit program",
+      "originalIndex": 752
+    },
+    {
+      "id": "custom-86c2a946fce46f083c9f8043",
+      "title": "Manager Retail Media & Campaigns",
+      "company": "Talabat Egypt",
+      "expected": "uncertain",
+      "reason": "Insufficient unambiguous employer evidence: Retail Media Manager title (managerial ambiguity)",
+      "originalIndex": 1179
+    }
+  ]
+}
