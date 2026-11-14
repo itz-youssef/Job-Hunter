@@ -103,13 +103,8 @@ jobs:
             git push origin HEAD:main
           fi
 
-      - name: Send new job alerts
-        env:
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          SMTP_FROM: ${{ secrets.SMTP_FROM }}
-          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
-        run: python -m app.notify_once
+      # All user-facing email alerts are delivered by the Cloudflare
+      # website's verified-account Resend cron, never from GitHub SMTP.
 
       - name: Export website data
         run: python -m app.export_site
