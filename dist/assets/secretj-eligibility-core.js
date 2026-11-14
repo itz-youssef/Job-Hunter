@@ -13,7 +13,7 @@
  const highTitle=/\b(?:senior|sr\.?|staff|principal|lead|consultant|head of|director|team manager|engineering manager|software manager|development manager|technical manager|tech manager)\b/i;
  const earlyTitle=/\b(?:junior|jr\.?|entry[ -]?level|intern(?:ship)?|trainee|apprentice|graduate|fresh\s*graduate|new\s*grad|fresher)\b/i;
  const earlyCareer=/\b(?:early professional|entry[ -]?level|students?\/graduates?|graduate|junior|trainee|intern|apprentice)\b/i;
- const advancedCareer=/\b(?:senior|principal|staff|mid[ -]?senior|director|executive|leadership)\b/i;
+ const advancedCareer=/\b(?:senior|principal|staff|mid[ -]?senior|director|executive|leadership|management)\b/i;
  const numeric=/(\d{1,2})/;
  const wordNumber={zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10};
  function extractExperience(job){
