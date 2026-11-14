@@ -410,13 +410,29 @@ a:hover{color:var(--ink)}
   function publicJob(job){
     return String(titleOf(job)).trim()!=='' && jobURL(job)!=='#';
   }
+  // Deduplicate by both application URL and advertisement identity. Different
+  // tracking URLs/IDs for the same fully described vacancy are not new jobs.
+  // A shared title alone is NOT enough: employers can advertise multiple
+  // distinct openings with the same title, location and company.
+  function vacancyFingerprint(j){
+    const normalize=v=>String(v||'').normalize('NFKC').toLowerCase()
+      .replace(/[^\\p{L}\\p{N}]+/gu,' ').trim().replace(/\\s+/g,' ');
+    const description=normalize(j.description||j.content||'');
+    if(description.length<80)return '';
+    return [normalize(companyOf(j)),normalize(titleOf(j)),
+      normalize(locationOf(j)),description].join('|');
+  }
   function allPublicJobs(){
-    const seen=new Set();
+    const seenUrls=new Set(),seenVacancies=new Set();
     return jobs().filter(j=>{
       if(!publicJob(j))return false;
-      const key=jobURL(j)==='#'?jobKey(j):jobURL(j);
-      if(seen.has(key))return false;
-      seen.add(key);return true;
+      const url=jobURL(j).trim();
+      if(seenUrls.has(url))return false;
+      const fingerprint=vacancyFingerprint(j);
+      if(fingerprint && seenVacancies.has(fingerprint))return false;
+      seenUrls.add(url);
+      if(fingerprint)seenVacancies.add(fingerprint);
+      return true;
     });
   }
   function validJobs(){
