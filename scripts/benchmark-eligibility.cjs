@@ -8,8 +8,9 @@ const fs=require('node:fs'),path=require('node:path');
 const lab=require('../dist/assets/secretj-eligibility-lab');
 const pref=require('../dist/assets/secretj-job-preferences');
 const root=path.join(__dirname,'..');
-function evaluate(jobs,reference){
- const lookup=new Map(jobs.map((j,i)=>[String(j.id||j.url),{job:j,index:i}]));
+function evaluate(jobs,reference,frozenJobs){
+ const source=frozenJobs||jobs;
+ const lookup=new Map(source.map((j,i)=>[String(j.id||j.url),{job:j,index:i}]));
  const labeled=[...reference.include,...reference.exclude];
  const unknown=reference.uncertain;
  const missing=labeled.filter(r=>!lookup.has(String(r.id)));
@@ -69,7 +70,7 @@ function evaluate(jobs,reference){
  }).length;
  return {
   meta:{totalJobs:n,referenceBinary:labeled.length,referenceFound:present.length,
-    referenceUnknown:unknown.length,referenceMissing:missing.length,
+    referenceUnknown:unknown.length,referenceMissing:missing.length,referenceFrozen:Boolean(frozenJobs),
     descriptionMissing:descMissing,disagreementJobs:disagreement,
     contradictoryEvidenceJobs:suspicious,
     selectionRule:'Lowest cost = 12*false-exclusion + 5*false-confirmed-inclusion + 0.75*review; tie favors safe recall'},
@@ -84,7 +85,8 @@ function csv(rows){
 if(require.main===module){
  const data=JSON.parse(fs.readFileSync(path.join(root,'dist/data.json'),'utf8'));
  const reference=JSON.parse(fs.readFileSync(path.join(root,'benchmarks/eligibility-manual-reference.json'),'utf8'));
- const result=evaluate(data.jobs||[],reference);
+ const frozen=JSON.parse(fs.readFileSync(path.join(root,'benchmarks/eligibility-reviewed-snapshot.json'),'utf8'));
+ const result=evaluate(data.jobs||[],reference,frozen.jobs||[]);
  const dest=path.join(root,'reports','eligibility-benchmark');
  fs.mkdirSync(dest,{recursive:true});
  fs.writeFileSync(path.join(dest,'method-comparison.json'),
