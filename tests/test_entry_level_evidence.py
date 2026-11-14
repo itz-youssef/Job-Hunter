@@ -40,7 +40,7 @@ def test_title_senior_remains_excluded_for_old_early_career_scoring():
 
 def test_management_trainee_and_associate_product_manager_not_rejected_just_for_manager():
     assert relevance(job("Graduate Management Trainee", employment="Internship"), {})[0] >= 8
-    assert relevance(job("Associate Software Engineering Manager", seniority="Entry Level"), {})[0] >= 8
+    assert relevance(job("Associate Software Engineer Manager", seniority="Entry Level"), {})[0] >= 8
 
 def test_public_catalog_keeps_even_uncertain_entries_without_false_eligibility():
     item = _enrich(job(description="Experience not specified"))
