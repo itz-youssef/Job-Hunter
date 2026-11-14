@@ -239,3 +239,55 @@ test('nine-plus years building and shipping products is a candidate requirement'
  assert.equal(preferences.isMatch(job,{role_families:[],max_experience_years:9}),true);
  assert.equal(preferences.yearsRequired({description:'The company has 27 years of experience in offering financial products.'}),null);
 });
+
+test('one evidence decision powers matching and review explanation',()=>{
+ const p={role_families:['ai_ml'],egypt_only:true,internships:false,max_experience_years:2};
+ const cases=[
+  {title:'Senior AI Engineer',location:'Cairo, Egypt'},
+  {title:'AI Engineer',location:'Cairo, Egypt',seniority:'Senior'},
+  {title:'AI Engineer',location:'Cairo, Egypt',description:'Requirements: 8+ years of total experience in machine learning'},
+  {title:'Junior AI Engineer',location:'Cairo, Egypt',seniority:'Senior'},
+  {title:'Junior AI Engineer',location:'Cairo, Egypt',description:'Experience building NLP systems'}
+ ];
+ for(const job of cases){
+  const result=preferences.assess(job,p);
+  assert.equal(preferences.isMatch(job,p),result.match);
+  assert.deepEqual(preferences.explain(job,p),result);
+ }
+});
+test('explicit structured ATS seniority excludes advanced jobs even without years in description',()=>{
+ const p={role_families:[],max_experience_years:2,egypt_only:false,internships:false};
+ for(const value of ['Senior','Mid-Senior level','Principal','Management']){
+  const job={title:'Software Engineer',seniority:value};
+  const result=preferences.assess(job,p);
+  assert.equal(result.match,false,value);
+  assert.match(result.reasons.join(' '),/Employer labels/);
+ }
+});
+test('contradictory junior title and senior ATS label remains reviewable, not invisible',()=>{
+ const job={title:'Junior AI Engineer',seniority:'Senior',location:'Cairo, Egypt'};
+ const p={role_families:['ai_ml'],max_experience_years:2};
+ const result=preferences.assess(job,p);
+ assert.equal(result.match,true);
+ assert.equal(result.status,'experience-unverified');
+ assert.match(result.evidence.join(' '),/Conflicting employer seniority/);
+});
+test('strong leadership duties alone trigger investigation rather than silently hiding a role',()=>{
+ const job={title:'Software Engineer',location:'Egypt',
+  description:'Responsibilities: Manage a team of engineers and conduct performance reviews. Requirements: Knowledge of Python.'};
+ const result=preferences.assess(job,{role_families:['software'],max_experience_years:2});
+ assert.equal(result.match,true);
+ assert.equal(result.status,'experience-unverified');
+ assert.match(result.evidence.join(' '),/leadership responsibilities/);
+});
+test('hard rejection is based on actual minimum and excludes Valeo, mylo, Deloitte, principal',()=>{
+ const p={role_families:[],max_experience_years:2};
+ for(const job of [
+  {title:'AI Team Manager, AI4ALL',description:'Requirements: 8+ years of total experience'},
+  {title:'Full-Stack Engineer',description:'Requirements: 7+ years of professional experience'},
+  {title:'Java Backend Development Tech Lead'},
+  {title:'Staff Engineer'}, {title:'Principal Scientist'}
+ ]){
+  assert.equal(preferences.assess(job,p).match,false,job.title);
+ }
+});
