@@ -88,6 +88,7 @@
       lastUserId = null;
       guest.hidden = false;
       member.hidden = true;
+      if (admin) admin.hidden = true;
       const ops = document.getElementById('sj-admin-tools');
       if (ops) ops.hidden = true;
       resetAvatar();
