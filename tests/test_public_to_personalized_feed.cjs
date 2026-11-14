@@ -127,3 +127,29 @@ test('same shared experience rules are used by the email notifier',()=>{
  assert.match(code,/require\('\.\.\/\.\.\/dist\/assets\/secretj-job-preferences'\)/);
  assert.match(code,/function matches\(job,p\)\{return isMatch\(job,p\);\}/);
 });
+
+test('Valeo AI Team Manager with 8+ years total is excluded at 2 years',()=>{
+ const valeo={
+  title:'AI Team Manager , AI4ALL',
+  company:'Valeo',
+  location:'Cairo, Egypt',
+  description:'Job Description: Engineering Manager (Hands-On) – AI & Cloud Platform. About the Role: The AI4ALL team is looking for an experienced, hands-on Engineering Manager. Qualifications & Requirements Experience 8+ years of total experience in software development, cloud engineering, DevOps, platform engineering, or solution architecture. 3+ years of direct people management or technical team leadership experience, managing software or cloud engineering teams.'
+ };
+ assert.equal(preferences.yearsRequired(valeo),8);
+ const selected={role_families:['ai_ml'],egypt_only:true,internships:false,max_experience_years:2};
+ assert.equal(preferences.isMatch(valeo,selected),false);
+ assert.equal(preferences.isMatch(valeo,{...selected,max_experience_years:null}),true);
+});
+test('explicit hands-on leadership title exclusion works without a description',()=>{
+ const p={role_families:[],max_experience_years:2};
+ for(const title of ['AI Team Manager, AI4ALL','Engineering Manager (Hands-On)','Software Team Lead','Technical Manager']){
+   assert.equal(preferences.isMatch({title},p),false,title);
+ }
+ assert.equal(preferences.isMatch({title:'Associate Product Manager'},
+   {role_families:['product'],max_experience_years:2}),true);
+});
+test('experience parser respects company history and 8 years total experience',()=>{
+ assert.equal(preferences.yearsRequired({description:'Our company has 27 years of experience in offering payment solutions.'}),null);
+ assert.equal(preferences.yearsRequired({description:'Qualifications & Requirements Experience 8+ years of total experience in software development.'}),8);
+ assert.equal(preferences.yearsRequired({description:'Requirements: 3+ years of direct people management or technical team leadership experience.'}),3);
+});
