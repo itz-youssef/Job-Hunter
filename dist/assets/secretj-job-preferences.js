@@ -121,6 +121,9 @@
   if(p.max_experience_years!==null&&p.max_experience_years!==undefined&&p.max_experience_years!==''){
    const years=Number(p.max_experience_years);
    if(Number.isFinite(years)){
+    // The title is a stronger seniority signal than an omitted years requirement.
+    // Apply only when a member sets a concrete maximum of 0, 1 or 2 years.
+    if(years<=2 && /\b(?:senior|sr\.?)\b/i.test(title))return false;
     const required=yearsRequired(job);
     if(required!==null&&required>years)return false;
    }
