@@ -19,7 +19,8 @@ test('job badge updates on account hydration, filters, search and periodic snaps
  assert.match(html,/String\(filterJobs\(validJobs\(\)\)\.length\)/);
  assert.match(html,/memberLoading=false;syncFeedCount\(\);render\(\)/);
  assert.match(html,/syncFeedCount\(\);render\(\);/);
- assert.match(html,/if\(event\.target\.id==='job-search'\)[^\n]+syncFeedCount\(\)/);
+ assert.match(html,/if\(event\.target\.id!=='job-search'\)return/);
+ assert.match(html,/searchTimer=setTimeout\([\s\S]*?syncFeedCount\(\);[\s\S]*?\},250\)/);
 });
 
 test('date filters use employer posting dates instead of first detection',()=>{

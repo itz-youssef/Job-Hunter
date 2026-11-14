@@ -82,3 +82,19 @@ test('different vacancies sharing a title are preserved when their requirements 
  ];
  assert.equal(validJobs().length,3);
 });
+
+test('search input is debounced rather than synchronously rendering the entire page',()=>{
+ assert.match(html,/clearTimeout\(searchTimer\);\s*searchTimer=setTimeout\(/);
+ assert.match(html,/if\(!field\.isConnected \|\| field\.value!==value\)return/);
+ assert.match(html,/\},250\);/);
+ const handler=html.slice(html.indexOf("document.addEventListener('input',event=>{"),html.indexOf("document.addEventListener('submit',async event=>"));
+ assert.doesNotMatch(handler,/syncFeedCount\(\);render\(\);/);
+});
+test('feed renders only a bounded number of job cards and offers load more',()=>{
+ assert.match(html,/const FEED_PAGE_SIZE=40/);
+ assert.match(html,/const visible=list\.slice\(0,state\.feedLimit\)/);
+ assert.match(html,/visible\.map\(jobCard\)/);
+ assert.match(html,/data-load-more-jobs/);
+ assert.match(html,/state\.feedLimit\+=FEED_PAGE_SIZE/);
+ assert.doesNotMatch(html,/list\.map\(jobCard\)/);
+});
