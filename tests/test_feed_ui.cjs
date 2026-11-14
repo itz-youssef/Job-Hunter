@@ -12,6 +12,8 @@ const code=html.slice(from,to);
 const sandbox={
  scoreOf:j=>Number(j.match_score??j.score??0)||0,
  titleOf:j=>j.title||'',
+ companyOf:j=>j.company||'',
+ locationOf:j=>j.location||'',
  jobKey:j=>String(j.id||j.title),
  jobURL:j=>String(j.url||'').startsWith('https://')?j.url:'#',
  jobs:()=>sandbox.rows||[],
@@ -58,4 +60,25 @@ test('employer publishing dates never fall back to discovery timestamps',()=>{
  vm.runInContext(rest+';this.dates={postedDate,firstSeenDate};',sandbox);
  assert.equal(sandbox.dates.postedDate({detected:'2026-11-12T18:38:57Z'}),'');
  assert.equal(sandbox.dates.firstSeenDate({detected:'2026-11-12T18:38:57Z'}),'2026-11-12T18:38:57Z');
+});
+
+test('the same full job listing is shown once despite distinct IDs and tracking URLs',()=>{
+ sandbox.state.member=null;sandbox.state.memberPrefsConfigured=false;
+ const description='A detailed IBM Consulting advertisement describing the same technical responsibilities, engineering requirements and working conditions for this exact vacancy.';
+ sandbox.rows=[
+  {id:'custom-1',title:'Data Engineer-Data Integration',company:'IBM',location:'Giza, EG',description,url:'https://ibm.example/job/100?source=one'},
+  {id:'custom-2',title:'Data Engineer - Data Integration',company:'IBM',location:'Giza, EG',description,url:'https://ibm.example/job/100?source=two'},
+  {id:'custom-3',title:'Data Engineer-Data Integration',company:'IBM',location:'Giza, EG',description,url:'https://ibm.example/job/100?source=three'}
+ ];
+ assert.equal(validJobs().length,1);
+});
+test('different vacancies sharing a title are preserved when their requirements differ',()=>{
+ sandbox.state.member=null;sandbox.state.memberPrefsConfigured=false;
+ const base={title:'Data Engineer',company:'IBM',location:'Giza, EG'};
+ sandbox.rows=[
+  {...base,id:1,url:'https://ibm.example/job/101',description:'Role one requires extensive SQL data modelling, ETL pipelines, cloud storage and warehouse transformation experience.'},
+  {...base,id:2,url:'https://ibm.example/job/102',description:'Role two requires Kafka streaming infrastructure, Python services, realtime processing, Spark deployments and distributed observability.'},
+  {...base,id:3,url:'https://ibm.example/job/103',description:''}
+ ];
+ assert.equal(validJobs().length,3);
 });
