@@ -547,7 +547,7 @@ a:hover{color:var(--ink)}
     const brand=source || {name: key==='siemens'?'Siemens':name};
     return companyBrand(brand);
   }
-  function jobMini(j){return `<div class="mini-job">${brandForJob(j)}<div class="mini-job-content"><strong>${esc(titleOf(j))}</strong><small>${esc(companyOf(j))} · ${esc(locationOf(j))}</small></div><span class="score">${scoreOf(j)} pts</span></div>`;}
+  function jobMini(j){return `<div class="mini-job">${brandForJob(j)}<div class="mini-job-content"><strong>${esc(titleOf(j))}</strong><small>${esc(companyOf(j))} · ${esc(locationOf(j))}</small></div>${scoreOf(j)>=8?`<span class="score">${scoreOf(j)} pts</span>`:""}</div>`;}
   function radarHome(){
     const list=validJobs(), sources=monitoredSources(), active=sources.filter(s=>s.active).length, matching=list.length;
     const recent = list.slice().sort((a,b)=>(getDate(b.discovered_at||b.detected_at||b.published_at)||0)-(getDate(a.discovered_at||a.detected_at||a.published_at)||0)).slice(0,4);
