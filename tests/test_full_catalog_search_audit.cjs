@@ -22,7 +22,7 @@ test('internship does not mistake unrelated international job titles for interns
 });
 test('catalog-wide query is independent of account preferences, but empty query is personalized',()=>{
  const html=fs.readFileSync('dist/index.html','utf8');
- assert.match(html,/if\(state\.reviewExcluded \|\| String\(state\.query\|\|''\)\.trim\(\) \|\| !state\.member/);
+ assert.match(html,/if\(state\.reviewExcluded \|\| String\(state\.query\|\|''\)\.trim\(\) \|\| state\.jobType==='internship' \|\| !state\.member/);
  assert.match(html,/SecretJJobSearch\?\.matches\(j,q,window\.SecretJJobPreferences\?\.classify\)/);
  assert.match(html,/Searching all published listings, including those outside your saved preferences/);
  const opts={role_families:['ai_ml'],max_experience_years:2,egypt_only:true,internships:false};
