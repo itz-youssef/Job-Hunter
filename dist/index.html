@@ -422,7 +422,7 @@ a:hover{color:var(--ink)}
     const all=allPublicJobs();
     // Explicit manual search searches the entire public catalog. Personal
     // preferences only control the default feed and email notifications.
-    if(state.reviewExcluded || state.query.trim() || !state.member || !state.memberPrefsConfigured)return all;
+    if(state.reviewExcluded || String(state.query||'').trim() || !state.member || !state.memberPrefsConfigured)return all;
     const match=window.SecretJJobPreferences?.isMatch;
     // Fail open for browsing when the preference bundle has not loaded.
     if(typeof match!=='function')return all;
