@@ -238,10 +238,11 @@ async function preferences(root){
   <p class="muted">Choose the jobs you want alerts about. Preferences are stored privately in Neon; automatic emails require verification, opt-in and activated mail service.</p>
   <form id="preferences-form">
   <label><span><input type="checkbox" name="egypt_only" style="width:auto" ${p.egypt_only?'checked':''}> Egypt-based opportunities</span></label>
-  <label><span><input type="checkbox" name="internships" style="width:auto" ${p.internships?'checked':''}> Include internships</span></label>
-  <label>Maximum preferred experience (years)<input name="max_experience_years" type="number" min="0" max="10" value="${Number(p.max_experience_years)}"></label>
-  <h3>Role families</h3><div class="grid">
-  ${[['software','Software Engineering'],['ai_ml','AI / ML'],['cv','Computer Vision'],['mlops','MLOps']].map(([v,label])=>
+  <label><span><input type="checkbox" name="internships" style="width:auto" ${p.internships?'checked':''}> Internships &amp; trainee roles only</span></label>
+  <label>Maximum required experience (years) — optional<input name="max_experience_years" type="number" min="0" max="30" placeholder="Any experience" value="${p.max_experience_years==null?'':Number(p.max_experience_years)}"></label>
+  <p class="small">Leave everything unchecked and experience blank to see every discovered job, just like before login. Select any categories to narrow your job feed. Unchecked location and internship options do not restrict results.</p>
+  <h3>Career fields</h3><div class="grid">
+  ${(window.SecretJJobPreferences?.categories||[]).map(({key:v,label})=>
    `<label><span><input type="checkbox" style="width:auto" name="roles" value="${v}" ${p.role_families.includes(v)?'checked':''}> ${label}</span></label>`).join('')}</div>
   <label><span><input type="checkbox" name="email_alerts" style="width:auto" ${p.email_alerts?'checked':''}> Enable job alerts to my verified email address</span></label>
   <button class="btn" type="submit">Save preferences</button></form>`;
@@ -363,7 +364,7 @@ $('#account-content').addEventListener('submit',async event=>{
         egypt_only:Boolean(form.elements.egypt_only.checked),
         internships:Boolean(form.elements.internships.checked),
         email_alerts:Boolean(form.elements.email_alerts.checked),
-        max_experience_years:Number(values.max_experience_years),
+        max_experience_years:values.max_experience_years===''?null:Number(values.max_experience_years),
         role_families:[...form.querySelectorAll('input[name=roles]:checked')].map(x=>x.value)
       });
     }else if(form.id==='application-form'){
