@@ -142,7 +142,7 @@ def relevance(job: dict, config: dict) -> tuple[int, list[str]]:
     if not role:
         return 0, ["Excluded: title is outside Software/AI/ML/CV/MLOps roles"]
 
-    if re.search(r"\b(?:senior|sr\.?|mid[ -]senior|principal|staff|director|head\s+of|tech lead|team lead|manager)\b", title, re.I):
+    if re.search(r"\b(?:senior|sr\.?|mid[ -]senior|principal|staff|director|head\s+of|tech lead|team lead|lead|manager)\b", title, re.I):
         return 0, ["Excluded: explicit senior title"]
 
     # Some ATS feeds have a separate career-level field. Respect it
