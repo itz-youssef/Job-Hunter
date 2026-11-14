@@ -1,0 +1,35 @@
+name: Eligibility Method Benchmark
+on:
+  pull_request:
+    paths:
+      - 'benchmarks/**'
+      - 'scripts/benchmark-eligibility.cjs'
+      - 'dist/assets/secretj-eligibility-lab.js'
+      - 'tests/test_eligibility_benchmark.cjs'
+      - '.github/workflows/eligibility-benchmark.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check module syntax
+        run: node --check dist/assets/secretj-eligibility-lab.js && node --check scripts/benchmark-eligibility.cjs
+      - name: Test candidate comparisons and reference labels
+        run: node --test tests/test_eligibility_benchmark.cjs
+      - name: Run all candidate methods on full catalog
+        run: node scripts/benchmark-eligibility.cjs
+      - name: Publish method comparison and complete per-job results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eligibility-method-benchmark
+          path: reports/eligibility-benchmark/
+          if-no-files-found: warn
+          retention-days: 30
