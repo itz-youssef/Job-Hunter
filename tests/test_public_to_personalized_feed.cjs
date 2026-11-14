@@ -294,8 +294,8 @@ test('hard rejection is based on actual minimum and excludes Valeo, mylo, Deloit
 
 test('anonymous home shows zero matching jobs and generic latest opportunities',()=>{
  const html=fs.readFileSync('dist/index.html','utf8');
- assert.match(html,/matching=state\.member&&state\.memberPrefsConfigured\?list\.length:0/);
- assert.match(html,/matched=state\.member&&state\.memberPrefsConfigured\?validJobs\(\)\.length:0/);
+ assert.match(html,/matching=state\.member&&state\.memberPrefsConfigured\?list\.filter\(/);
+ assert.match(html,/matched=state\.member&&state\.memberPrefsConfigured\?validJobs\(\)\.filter\(/);
  assert.match(html,/state\.member\?'Your latest opportunities':'Latest opportunities'/);
  assert.match(html,/state\.member&&state\.memberPrefsConfigured&&scoreOf\(j\)>=8\?/);
 });
