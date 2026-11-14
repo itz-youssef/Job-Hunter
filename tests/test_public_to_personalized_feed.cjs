@@ -158,5 +158,33 @@ test('home and account request the updated matcher URL to avoid stale cached eli
  const account=fs.readFileSync('dist/account.html','utf8');
  const home=fs.readFileSync('dist/index.html','utf8');
  for(const page of [account,home])
-  assert.match(page,/secretj-job-preferences\.js\?v=experience-valeo-3/);
+  assert.match(page,/secretj-job-preferences\.js\?v=lead-consultant-4/);
+});
+
+test('Lead and Consultant titles are hidden at 0 to 2 years, including Deloitte tech leads',()=>{
+ const titles=[
+  'Deloitte Innovation Hub | AI / ML Engineering Tech Lead, Cairo, Egypt',
+  'Deloitte Innovation Hub | Java Backend Development Tech Lead, Cairo, Egypt',
+  'Deloitte Innovation Hub | Data Engineering Tech Lead, Cairo, Egypt',
+  'Deloitte Innovation Hub | Python Backend Development Tech Lead, Cairo, Egypt',
+  'Cloud Engineering Lead','Cybersecurity Consultant','Technology Consultant'
+ ];
+ for(const max_experience_years of [0,1,2]){
+  const p={role_families:[],max_experience_years,egypt_only:false,internships:false};
+  for(const title of titles)
+   assert.equal(preferences.isMatch({title,location:'Cairo, Egypt'},p),false,title);
+ }
+});
+test('Lead and Consultant are still browsable with no limit or higher experience',()=>{
+ const titles=['Backend Tech Lead','Cybersecurity Consultant'];
+ for(const max_experience_years of [null,3,5]){
+  const p={role_families:[],max_experience_years,egypt_only:false,internships:false};
+  for(const title of titles)
+   assert.equal(preferences.isMatch({title},p),true,title+' at '+max_experience_years);
+ }
+});
+test('word-boundary filter does not reject unrelated words or junior positions',()=>{
+ const p={role_families:[],max_experience_years:2,egypt_only:false,internships:false};
+ for(const title of ['Leadless Process Operator','Junior Software Engineer','Sales Leadership Intern','Graduate Recruitment Coordinator'])
+  assert.equal(preferences.isMatch({title},p),true,title);
 });
