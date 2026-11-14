@@ -101,7 +101,7 @@ module.exports=async function handler(req,res){
     if(scope==='preferences'){
       if(req.method==='GET'){
         const rows=await core.query('SELECT egypt_only,internships,max_experience_years,role_families,email_alerts FROM public.sj_preferences WHERE user_id=$1',[userId]);
-        return core.reply(res,200,{ok:true,preferences:rows[0]||{
+        return core.reply(res,200,{ok:true,configured:rows.length>0,preferences:rows[0]||{
           egypt_only:true,internships:true,max_experience_years:2,
           role_families:['software','ai_ml','cv','mlops'],email_alerts:false
         }});
