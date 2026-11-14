@@ -105,7 +105,7 @@ test('member cron delivers only to verified, opted-in users and never operator e
   const sent=[];
   const snapshot={generated_at:now,jobs:[{
     title:'Software Engineer',company:'Example',location:'Cairo, Egypt',
-    description:'Develop APIs with Node',url:'https://example.com/jobs/42',
+    description:'Develop APIs with Node',url:'https://example.com/jobs/42',score:8,matched:true,
     discovered_at:now
   }]};
   try{
