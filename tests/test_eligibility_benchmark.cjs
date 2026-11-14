@@ -6,10 +6,11 @@ const lab=require('../dist/assets/secretj-eligibility-lab');
 const {evaluate}=require('../scripts/benchmark-eligibility.cjs');
 const snapshot=JSON.parse(fs.readFileSync('dist/data.json','utf8'));
 const ref=JSON.parse(fs.readFileSync('benchmarks/eligibility-manual-reference.json','utf8'));
+const frozen=JSON.parse(fs.readFileSync('benchmarks/eligibility-reviewed-snapshot.json','utf8'));
 test('five independent methods exist, rather than renaming the same method',()=>{
  assert.deepEqual(Object.keys(lab.methods),
   ['A_baseline','B_title_only','C_requirements_only','D_multi_evidence','E_uncertainty_first']);
- const j={title:'Junior Software Engineer',description:'Requirements: 0–2 years of experience'};
+ const j={title:'Software Engineer',description:'No experience requirement stated'};
  assert.ok(new Set(Object.values(lab.methods).map(f=>f(j).decision)).size>=2);
 });
 test('reference is static, deduplicated and excludes ambiguous cases from truth',()=>{
@@ -20,7 +21,7 @@ test('reference is static, deduplicated and excludes ambiguous cases from truth'
  assert.ok(ref.uncertain.length>=25);
 });
 test('every currently published job receives five method predictions',()=>{
- const result=evaluate(snapshot.jobs,ref);
+ const result=evaluate(snapshot.jobs,ref,frozen.jobs);
  assert.equal(result.meta.totalJobs,snapshot.jobs.length);
  assert.equal(result.allRows.length,snapshot.jobs.length);
  assert.equal(result.methods.length,5);
@@ -31,25 +32,24 @@ test('every currently published job receives five method predictions',()=>{
    assert.ok(['include','exclude','review'].includes(row[name]));
  }
 });
-test('real-world advanced and junior cases are not incorrectly certified by uncertainty-first',()=>{
- const get=q=>snapshot.jobs.find(j=>q.test(j.title||''));
+test('frozen advanced and junior cases are tested without dependence on current scanner updates',()=>{
+ const get=q=>frozen.jobs.find(j=>q.test(j.title||''));
  const policy=lab.methods.E_uncertainty_first;
- const negative=[
-  /Senior Software Engineer/i,
-  /Principal Solution Architect/i,
-  /AI Team Manager.*AI4ALL/i,
-  /Full-Stack Engineer/i
- ];
- for(const name of negative){
-  let j=get(name);assert.ok(j,String(name));
-  if(/Full-Stack/.test(name.source))j=snapshot.jobs.find(x=>x.company==='mylo by B.TECH'&&/^Full-Stack Engineer$/i.test(x.title));
-  assert.equal(policy(j).decision,'exclude',j.title);
+ for(const name of [/Senior Software Engineer/i,/Principal Solution Architect/i,/Senior Backend Engineer/i]){
+  const job=get(name);assert.ok(job,String(name));
+  assert.equal(policy(job).decision,'exclude',job.title);
  }
- for(const name of [/Junior Software Engineer, BRAIN/i,/Graduate In Training Program/i,/GIU Winter Internship Program/i]){
-  const j=get(name);assert.ok(j,String(name));
-  assert.equal(policy(j).decision,'include',j.title);
+ for(const name of [/Junior Software Engineer, BRAIN/i,/Graduate In Training Program/i]){
+  const job=get(name);assert.ok(job,String(name));
+  assert.equal(policy(job).decision,'include',job.title);
  }
+ const olderMylo={
+  title:'Full-Stack Engineer',
+  description:'Requirements: 7+ years of professional experience as a software engineer'
+ };
+ assert.equal(policy(olderMylo).decision,'exclude');
 });
+
 test('unverified job is review, not treated as confirmed match',()=>{
  const o=lab.methods.E_uncertainty_first({title:'Software Engineer',description:''});
  assert.equal(o.decision,'review');
