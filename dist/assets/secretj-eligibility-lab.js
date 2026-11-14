@@ -9,7 +9,7 @@
  if(typeof module==='object'&&module.exports)module.exports=result;
  if(root)root.SecretJEligibilityLab=result;
 })(typeof window!=='undefined'?window:null,function(){
- const old=typeof require==='function'?require('./secretj-job-preferences'):null;
+ const old=typeof require==='function'?require('../../benchmarks/legacy-preferences-baseline'):null;
  const core=typeof require==='function'?require('./secretj-eligibility-core'):typeof window!=='undefined'?window.SecretJEligibilityCore:null;
  const norm=x=>String(x??'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
  const title=j=>norm(j.title||j.position||j.job_title);
