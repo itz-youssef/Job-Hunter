@@ -80,7 +80,7 @@
   const reasons=[],evidence=[];
   const junior=earlyTitle.test(t)||earlyCareer.test(inferredLevel)||/\b(?:graduate in training|young professionals? program|work experience programme)\b/i.test(t);
   const senior=highTitle.test(t);
-  if(senior)reasons.push('Advanced title');
+  if(senior)reasons.push('Senior/Lead/Consultant/Staff/Principal or management title');
   if(yrs.minimum!==null){
     evidence.push('Candidate minimum '+yrs.minimum+' years');
     if(yrs.minimum>maxYears)reasons.push('Required experience '+yrs.minimum+' > '+maxYears);
@@ -88,7 +88,13 @@
   const levelSenior=advancedCareer.test(inferredLevel)&&!earlyCareer.test(inferredLevel);
   if(levelSenior){
     evidence.push('ATS career level '+inferredLevel);
-    if(!junior&&!senior&&yrs.minimum===null)evidence.push('Advanced career label without confirmatory minimum');
+    if(junior&&!senior)evidence.push('Conflicting employer seniority and junior title; manual review');
+    else if(!senior)reasons.push('Employer labels the vacancy as advanced level');
+  }
+  if(yrs.minimum===null&&!senior&&!levelSenior){
+    const managing=/\b(?:manage|managing|lead|leading)\s+(?:a\s+|the\s+)?(?:team|engineers|developers|people)\b/i.test(d);
+    const personnel=/\b(?:performance reviews?|appraisals?|direct reports?|hiring|mentoring engineers)\b/i.test(d);
+    if(managing&&personnel)evidence.push('Several leadership responsibilities; verify seniority');
   }
   if(junior)evidence.push('Graduate/early-career title or level');
   let decision='review';
