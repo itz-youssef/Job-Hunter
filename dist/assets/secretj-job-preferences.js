@@ -101,14 +101,33 @@
     p.egypt_only===true||p.internships===true);
  }
  function yearsRequired(job){
-  const description=String(job.description||'').slice(0,12000);
-  const title=String(job.title||'');
-  const explicit=description.match(/\b(?:minimum|min\.?|at least|requires?|required|over|more than)\s*(?:of\s*)?(\d{1,2})\s*\+?\s*years?\b/i)||
-   description.match(/\b(\d{1,2})\s*\+?\s*years?\s+(?:of\s+)?(?:relevant\s+|professional\s+|work\s+)?experience\b/i)||
-   description.match(/\b(\d{1,2})\s*[-–]\s*(\d{1,2})\s*years?\s+(?:of\s+)?experience\b/i);
-  if(explicit)return Number(explicit[1]);
-  if(internships.test(title))return 0;
-  return null; // Unknown is NOT automatically 0; avoid silently discarding jobs.
+  // Requirements must be present in the stored snapshot. Do not confuse the
+  // employer's history ("27 years in business") with applicant experience.
+  const raw=String(job.requirements||'')+' '+String(job.description||'');
+  const source=raw.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').slice(0,20000);
+  const heading=source.search(/\b(?:requirements|qualifications|what you bring|who you are|must[- ]haves?)\s*[:\-]?\s/i);
+  const section=heading>=0?source.slice(heading).split(/\b(?:benefits|what we offer|about (?:us|the company)|how to apply)\s*[:\-]?\s/i)[0]:source;
+  const patterns=[
+    /\b(?:at least|minimum(?: of)?|requires?|required|must have|need(?:s)?)\s*(\d{1,2})\s*\+?\s*(?:years?|yrs?)\b/gi,
+    /\b(\d{1,2})\s*\+?\s*(?:years?|yrs?)\s+(?:of\s+)?(?:(?:relevant|professional|commercial|industry|hands-on|work|software engineering|software development)\s+){0,3}experience\b/gi,
+    /\b(\d{1,2})\s*[-–]\s*\d{1,2}\s*(?:years?|yrs?)\s+(?:of\s+)?(?:(?:relevant|professional)\s+)?experience\b/gi,
+    /\bexperience\s*:\s*(\d{1,2})\s*\+?\s*(?:years?|yrs?)\b/gi
+  ];
+  const numbers=[];
+  for(const pattern of patterns){
+    for(const match of section.matchAll(pattern)){
+      const before=section.slice(Math.max(0,match.index-85),match.index);
+      const after=section.slice(match.index,match.index+125);
+      // "B.TECH has over 27 years of experience in offering..." is history,
+      // not a mandatory requirement for applicants.
+      if(/\byears?\s+of\s+experience\s+in\s+(?:offering|providing|serving|helping|the\s+market)\b/i.test(after))continue;
+      if(/\b(?:company|retailer|platform|business)\s+(?:has|with|brings|boasts)\s+(?:over\s+)?\d{1,2}\+?\s+years?/i.test(before+after))continue;
+      numbers.push(Number(match[1]));
+    }
+  }
+  if(numbers.length)return Math.max(...numbers);
+  if(internships.test(String(job.title||'')))return 0;
+  return null; // Unknown remains unknown, not a fabricated zero.
  }
  function isMatch(job,p){
   if(!p||!hasFilters(p))return true;

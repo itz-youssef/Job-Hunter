@@ -91,3 +91,39 @@ test('senior title rule does not override empty or higher experience preferences
   role_families:['talent_acquisition'],max_experience_years:2,egypt_only:false,internships:false
  }),false);
 });
+
+test('mylo Full-Stack role requiring 7+ professional years never matches a two-year profile',()=>{
+ const role={
+  title:'Full-Stack Engineer',company:'mylo by B.TECH',location:'Cairo, Egypt',
+  description:'mylo is a fintech platform. Born out of B.TECH, a retailer with over 27 years of experience in offering buy now pay later. Responsibilities: Build APIs and scalable services. Requirements: 7+ years of professional experience as a software engineer and have expertise particularly in Typescript.'
+ };
+ const p={role_families:['fullstack'],max_experience_years:2,egypt_only:true,internships:false};
+ assert.equal(preferences.yearsRequired(role),7);
+ assert.equal(preferences.isMatch(role,p),false);
+ assert.equal(preferences.isMatch(role,{...p,max_experience_years:7}),true);
+});
+test('company founding history does not disqualify a 0–2 years applicant',()=>{
+ const role={title:'Full-Stack Engineer',location:'Cairo, Egypt',
+  description:'Born out of B.TECH, a retailer with over 27 years of experience in offering installment solutions. Requirements: Experience in modern APIs and databases.'};
+ assert.equal(preferences.yearsRequired(role),null);
+ assert.equal(preferences.isMatch(role,{role_families:['fullstack'],max_experience_years:2}),true);
+});
+test('explicit minimum and mixed job requirements are compared to saved maximum',()=>{
+ const base={title:'Backend Engineer',location:'Cairo, Egypt'};
+ const p={role_families:['backend'],max_experience_years:2};
+ for(const description of [
+   'Requirements: Minimum 5 years of experience developing APIs.',
+   'Requirements: 4 years of relevant experience',
+   'Qualifications: Experience: 3+ years.',
+   'Requirements: 3–5 years of professional experience'
+ ]){
+  const role={...base,description};
+  assert.equal(preferences.isMatch(role,p),false,description);
+ }
+ assert.equal(preferences.isMatch({...base,description:'Requirements: 2 years of professional experience'},p),true);
+});
+test('same shared experience rules are used by the email notifier',()=>{
+ const code=fs.readFileSync('lib/secretj/member-alerts.js','utf8');
+ assert.match(code,/require\('\.\.\/\.\.\/dist\/assets\/secretj-job-preferences'\)/);
+ assert.match(code,/function matches\(job,p\)\{return isMatch\(job,p\);\}/);
+});
