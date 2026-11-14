@@ -7,9 +7,9 @@ const api=require('../api/secretj-data');
 const core=require('../lib/secretj/core');
 process.env.NODE_ENV='test';
 
-test('personalization never sends unqualified public catalog roles',()=>{
- const p={role_families:['software','ai_ml'],egypt_only:true,internships:true};
- assert.equal(preferences.isMatch({title:'Senior Software Engineer',score:0,matched:false,location:'Cairo, Egypt'},p),false);
+test('expanded account categories filter according to role, not owner relevance score',()=>{
+ const p={role_families:['software','ai_ml'],egypt_only:true,internships:false,max_experience_years:null};
+ assert.equal(preferences.isMatch({title:'Senior Software Engineer',score:0,matched:false,location:'Cairo, Egypt'},p),true);
  assert.equal(preferences.isMatch({title:'Software Engineer Intern',score:8,matched:true,location:'Cairo, Egypt'},p),true);
  assert.equal(preferences.isMatch({title:'HR Specialist',score:0,matched:false,location:'Cairo, Egypt'},p),false);
  assert.equal(preferences.isMatch({title:'Junior Software Engineer',score:8,matched:true,location:'Berlin, Germany'},p),false);
@@ -47,4 +47,26 @@ test('company cards distinguish discovered vacancies from personalized matches',
  const html=fs.readFileSync('dist/index.html','utf8');
  assert.match(html,/public_jobs:scan\?\.public_jobs\?\?scan\?\.parsed_jobs/);
  assert.match(html,/Detected vacancies: \$\{c\.public_jobs\}/);
+});
+
+test('all unchecked with blank experience means all detected jobs for logged-in members',()=>{
+ const prefs={role_families:[],max_experience_years:null,egypt_only:false,internships:false};
+ assert.equal(preferences.hasFilters(prefs),false);
+ for(const title of ['Senior Software Architect','Recruitment Specialist','Cybersecurity Analyst','Frontend Developer']){
+  assert.equal(preferences.isMatch({title,score:0,matched:false,location:'Germany'},prefs),true);
+ }
+});
+test('categories cover technical roles and talent acquisition',()=>{
+ const names=new Set(preferences.categories.map(x=>x.key));
+ for(const k of ['backend','frontend','cybersecurity','cloud','data_engineering','talent_acquisition','hr','qa','devops','ux_ui','mobile','embedded','network','sales','other'])
+  assert.ok(names.has(k),k);
+ const p={role_families:['talent_acquisition'],egypt_only:false,internships:false,max_experience_years:null};
+ assert.equal(preferences.isMatch({title:'Talent Acquisition Specialist',score:0,location:'Cairo'},p),true);
+ assert.equal(preferences.isMatch({title:'Backend Engineer',score:9,location:'Cairo'},p),false);
+});
+test('optional experience differs from zero and rejects explicitly over-budget experience',()=>{
+ const job={title:'Backend Developer',location:'Cairo',description:'Requires 5 years of experience'};
+ assert.equal(preferences.isMatch(job,{role_families:['backend'],max_experience_years:null}),true);
+ assert.equal(preferences.isMatch(job,{role_families:['backend'],max_experience_years:0}),false);
+ assert.equal(preferences.isMatch({...job,description:'Build APIs'},{role_families:['backend'],max_experience_years:0}),true);
 });
