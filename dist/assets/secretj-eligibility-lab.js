@@ -10,6 +10,7 @@
  if(root)root.SecretJEligibilityLab=result;
 })(typeof window!=='undefined'?window:null,function(){
  const old=typeof require==='function'?require('./secretj-job-preferences'):null;
+ const core=typeof require==='function'?require('./secretj-eligibility-core'):typeof window!=='undefined'?window.SecretJEligibilityCore:null;
  const norm=x=>String(x??'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
  const title=j=>norm(j.title||j.position||j.job_title);
  const detail=j=>norm([j.requirements,j.description].filter(Boolean).join(' ')).slice(0,24000);
@@ -103,6 +104,7 @@
  }
  return {methods:{
    A_baseline:a_baseline,B_title_only:b_title,C_requirements_only:c_requirements,
-   D_multi_evidence:d_multi,E_uncertainty_first:e_conservative
+   D_multi_evidence:d_multi,E_uncertainty_first:e_conservative,
+   F_constraint_aware:j=>core.evaluate(j,2)
  },evidence,numberedRequirements};
 });
