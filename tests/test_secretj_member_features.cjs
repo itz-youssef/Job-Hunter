@@ -111,7 +111,7 @@ test('member cron delivers only to verified, opted-in users and never operator e
   try{
     await withSQL(sql=>{
       if(sql.includes('FROM public.sj_users u')&&sql.includes('sj_email_verifications'))
-        return [{id:ID,email:USER_EMAIL,egypt_only:true,internships:true,role_families:['software']}];
+        return [{id:ID,email:USER_EMAIL,egypt_only:true,internships:false,role_families:['software'],max_experience_years:null}];
       if(sql.includes('INSERT INTO public.sj_email_alert_log'))return [{job_key:'https://example.com/jobs/42'}];
       return [];
     },async calls=>{
