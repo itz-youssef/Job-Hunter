@@ -213,7 +213,7 @@ test('review-all mode makes excluded vacancies inspectable without altering emai
  assert.match(home,/state\.reviewExcluded \|\| !state\.member \|\| !state\.memberPrefsConfigured/);
  assert.match(home,/data-review-excluded/);
  assert.match(home,/Outside preferences:/);
- assert.match(home,/Experience requirement not verified in source snapshot/);
+ assert.match(home,/Needs review: experience level is not fully verified/);
  assert.match(home,/state\.reviewExcluded=!state\.reviewExcluded/);
  assert.match(fs.readFileSync('lib/secretj/member-alerts.js','utf8'),/function matches\(job,p\)\{return isMatch\(job,p\);\}/);
 });
