@@ -170,8 +170,8 @@
    if(p.internships===true&&!internships.test(title+' '+String(job.employment||'')))reasons.push('Not an internship');
    if(chosen.length&&!category.some(key=>chosen.includes(key)))reasons.push(category.includes('other')?'Unclassified career field':'Outside selected career fields');
    if(limit!==null&&Number.isFinite(limit)){
-     if(limit<=2&&/\\b(?:senior|sr\\.?|lead|consultant|staff)\\b/i.test(title))reasons.push('Senior/Lead/Consultant/Staff title');
-     else if(limit<=2&&/\\b(?:team manager|engineering manager|software manager|development manager|technical manager|head of|director|principal engineer|staff engineer|team lead|tech lead)\\b/i.test(title))reasons.push('Leadership title');
+     if(limit<=2&&/\b(?:senior|sr\.?|lead|consultant|staff)\b/i.test(title))reasons.push('Senior/Lead/Consultant/Staff title');
+     else if(limit<=2&&/\b(?:team manager|engineering manager|software manager|development manager|technical manager|head of|director|principal engineer|staff engineer|team lead|tech lead)\b/i.test(title))reasons.push('Leadership title');
      if(years!==null&&years>limit)reasons.push('Requires '+years+' years; maximum '+limit);
    }
    return {match:reasons.length===0,status:reasons.length?'excluded':years===null&&limit!==null?'experience-unverified':'matched',reasons,requiredYears:years,categories:category};
