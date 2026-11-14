@@ -144,7 +144,7 @@
    if(Number.isFinite(years)){
     // Exclude explicit Senior, Lead, or Consultant titles with a 0–2 year cap,\n    // even when the job description omits mandatory years.
     // Apply only when a member sets a concrete maximum of 0, 1 or 2 years.
-    if(years<=2 && /\b(?:senior|sr\.?|lead|consultant)\b/i.test(title))return false;
+    if(years<=2 && /\b(?:senior|sr\.?|lead|consultant|staff)\b/i.test(title))return false;
     // A hands-on AI Team Manager / Engineering Manager is still a
     // management vacancy even when years are absent from the snapshot.
     // Do not blanket-reject entry-level Product Manager or Assistant Manager.
@@ -155,5 +155,26 @@
   }
   return true;
  }
- return {categories:categories.map(([key,label])=>({key,label})),classify,hasFilters,isMatch,yearsRequired};
+ // Explain why a listing was included or excluded. This is the same source
+ // of truth used for feed filtering and member email alerts.
+ function explain(job,p){
+   if(!hasFilters(p))return {match:true,status:'unrestricted',reasons:[]};
+   const reasons=[];
+   const title=String(job.title||job.position||job.job_title||'');
+   const location=String(job.location||job.job_location||'');
+   const chosen=Array.isArray(p.role_families)?p.role_families:[];
+   const category=classify(job);
+   const limit=p.max_experience_years===null||p.max_experience_years===undefined||p.max_experience_years===''?null:Number(p.max_experience_years);
+   const years=yearsRequired(job);
+   if(p.egypt_only===true&&!egypt.test(location))reasons.push('Outside selected location');
+   if(p.internships===true&&!internships.test(title+' '+String(job.employment||'')))reasons.push('Not an internship');
+   if(chosen.length&&!category.some(key=>chosen.includes(key)))reasons.push(category.includes('other')?'Unclassified career field':'Outside selected career fields');
+   if(limit!==null&&Number.isFinite(limit)){
+     if(limit<=2&&/\\b(?:senior|sr\\.?|lead|consultant|staff)\\b/i.test(title))reasons.push('Senior/Lead/Consultant/Staff title');
+     else if(limit<=2&&/\\b(?:team manager|engineering manager|software manager|development manager|technical manager|head of|director|principal engineer|staff engineer|team lead|tech lead)\\b/i.test(title))reasons.push('Leadership title');
+     if(years!==null&&years>limit)reasons.push('Requires '+years+' years; maximum '+limit);
+   }
+   return {match:reasons.length===0,status:reasons.length?'excluded':years===null&&limit!==null?'experience-unverified':'matched',reasons,requiredYears:years,categories:category};
+ }
+ return {categories:categories.map(([key,label])=>({key,label})),classify,hasFilters,isMatch,yearsRequired,explain};
 });
