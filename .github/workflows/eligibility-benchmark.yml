@@ -5,6 +5,7 @@ on:
       - 'benchmarks/**'
       - 'scripts/benchmark-eligibility.cjs'
       - 'dist/assets/secretj-eligibility-lab.js'
+      - 'dist/assets/secretj-eligibility-core.js'
       - 'tests/test_eligibility_benchmark.cjs'
       - '.github/workflows/eligibility-benchmark.yml'
   workflow_dispatch:
@@ -20,7 +21,7 @@ jobs:
         with:
           node-version: '22'
       - name: Check module syntax
-        run: node --check dist/assets/secretj-eligibility-lab.js && node --check scripts/benchmark-eligibility.cjs
+        run: node --check dist/assets/secretj-eligibility-lab.js && node --check dist/assets/secretj-eligibility-core.js && node --check scripts/benchmark-eligibility.cjs
       - name: Test candidate comparisons and reference labels
         run: node --test tests/test_eligibility_benchmark.cjs
       - name: Run all candidate methods on full catalog
