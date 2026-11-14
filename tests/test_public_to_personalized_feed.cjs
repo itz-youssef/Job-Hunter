@@ -141,7 +141,7 @@ test('Valeo AI Team Manager with 8+ years total is excluded at 2 years',()=>{
  assert.equal(preferences.isMatch(valeo,{...selected,max_experience_years:null}),true);
 });
 test('explicit hands-on leadership title exclusion works without a description',()=>{
- const p={role_families:['ai_ml'],max_experience_years:2};
+ const p={role_families:[],max_experience_years:2};
  for(const title of ['AI Team Manager, AI4ALL','Engineering Manager (Hands-On)','Software Team Lead','Technical Manager']){
    assert.equal(preferences.isMatch({title},p),false,title);
  }
