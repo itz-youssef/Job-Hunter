@@ -158,7 +158,7 @@ test('home and account request the updated matcher URL to avoid stale cached eli
  const account=fs.readFileSync('dist/account.html','utf8');
  const home=fs.readFileSync('dist/index.html','utf8');
  for(const page of [account,home])
-  assert.match(page,/secretj-job-preferences\.js\?v=staff-review-5/);
+  assert.match(page,/secretj-job-preferences\.js\?v=principal-years-6/);
 });
 
 test('Lead and Consultant titles are hidden at 0 to 2 years, including Deloitte tech leads',()=>{
@@ -216,4 +216,26 @@ test('review-all mode makes excluded vacancies inspectable without altering emai
  assert.match(home,/Experience requirement not verified in source snapshot/);
  assert.match(home,/state\.reviewExcluded=!state\.reviewExcluded/);
  assert.match(fs.readFileSync('lib/secretj/member-alerts.js','utf8'),/function matches\(job,p\)\{return isMatch\(job,p\);\}/);
+});
+
+test('Principal roles excluded for a 0–2 year cap across matching and explanation',()=>{
+ for(const max_experience_years of [0,1,2]){
+  const p={role_families:[],max_experience_years};
+  for(const title of ['Principal Software Engineer','Principal AI Scientist','Principal Architect']){
+   const j={title,location:'Cairo, Egypt'};
+   assert.equal(preferences.isMatch(j,p),false,title);
+   assert.equal(preferences.explain(j,p).match,false,title);
+   assert.match(preferences.explain(j,p).reasons.join(' '),/Principal/);
+  }
+ }
+ const job={title:'Principal Engineer'};
+ assert.equal(preferences.isMatch(job,{role_families:[],max_experience_years:null}),true);
+ assert.equal(preferences.isMatch(job,{role_families:[],max_experience_years:10}),true);
+});
+test('nine-plus years building and shipping products is a candidate requirement',()=>{
+ const job={title:'Platform Engineer',description:'YOU HAVE: 9+ years of building and shipping software products, with experience as a technical lead or architect for enterprise SaaS products.'};
+ assert.equal(preferences.yearsRequired(job),9);
+ assert.equal(preferences.isMatch(job,{role_families:[],max_experience_years:2}),false);
+ assert.equal(preferences.isMatch(job,{role_families:[],max_experience_years:9}),true);
+ assert.equal(preferences.yearsRequired({description:'The company has 27 years of experience in offering financial products.'}),null);
 });
