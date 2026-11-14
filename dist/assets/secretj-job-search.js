@@ -9,9 +9,9 @@
   const normalize=value=>String(value??'')
     .normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
     .toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim().replace(/\s+/g,' ');
-  const internship=/\b(?:intern|interns|internship|internships|trainee|traineeship|apprentice|apprenticeship|co op|cooperative education|student placement|summer training|winter training)\b/i;
+  const internship=/\b(?:intern|interns|internship|internships|trainee|traineeship|apprentice|apprenticeship|co op|cooperative education|student placement|summer training|winter training|graduate program(?:me)?|graduate scheme)\b/i;
   const aliases={
-    internship:['internship','intern','interns','trainee','traineeship','apprentice','apprenticeship','co op','student placement','summer training','winter training'],
+    internship:['internship','intern','interns','trainee','traineeship','apprentice','apprenticeship','co op','student placement','summer training','winter training','graduate program','graduate programme','graduate scheme'],
     backend:['backend','back end','server side','api developer'],
     frontend:['frontend','front end','client side'],
     fullstack:['fullstack','full stack'],
@@ -53,7 +53,7 @@
     const category=normalize(typeof classify==='function'?(classify(job)||[]).join(' '):'');
     const internshipTerm=isInternship(job);
     let total=0;
-    const contains=(hay,term)=>hay.includes(term);
+    const contains=(hay,term)=>(' '+hay+' ').includes(' '+term+' ');
     for(const part of parts){
       const possibilities=expand(part);
       let best=0;
