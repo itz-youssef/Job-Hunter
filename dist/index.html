@@ -219,7 +219,7 @@ a:hover{color:var(--ink)}
   <link rel="stylesheet" href="/assets/secretj-home.css">
   <link rel="stylesheet" href="/assets/secretj-global-theme.css?v=20261113-uniform-2">
   <script src="/assets/secretj-home.js?v=account-sync-1" defer></script>
-  <script src="/assets/secretj-job-preferences.js?v=lead-consultant-4" defer></script>
+  <script src="/assets/secretj-job-preferences.js?v=staff-review-5" defer></script>
 <link rel="stylesheet" href="/assets/responsive.css?v=20261113-mobile-1">
 </head>
 <body>
@@ -307,7 +307,7 @@ a:hover{color:var(--ink)}
   const liveFile = name => RAW + name + '?v=' + Date.now();
   const el = (selector) => document.querySelector(selector);
   const esc = (x) => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const state = { member:null, memberLoading:true, memberPrefs:null, memberPrefsConfigured:false, snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'recent', jobType:'all', companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
+  const state = { member:null, memberLoading:true, memberPrefs:null, memberPrefsConfigured:false, reviewExcluded:false, snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'recent', jobType:'all', companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
   const names = {home:'Home',radar:'Job Hunter',resume:'Resume Updater',cv:'CV Holder',profile:'My Profile', jobs:'Job Feed', saved:'Saved Jobs', companies:'My Companies', alerts:'Email Alerts'};
   const where = (value) => String(value || '').toLowerCase().trim();
   const getDate = (s) => {const d=new Date(s); return Number.isNaN(+d)?null:d;};
@@ -419,7 +419,7 @@ a:hover{color:var(--ink)}
   }
   function validJobs(){
     const all=allPublicJobs();
-    if(!state.member || !state.memberPrefsConfigured)return all;
+    if(state.reviewExcluded || !state.member || !state.memberPrefsConfigured)return all;
     const match=window.SecretJJobPreferences?.isMatch;
     // Fail open for browsing when the preference bundle has not loaded.
     if(typeof match!=='function')return all;
@@ -1019,7 +1019,9 @@ a:hover{color:var(--ink)}
   function jobCard(j){
     const id=jobKey(j), saved=state.saved.has(id), url=jobURL(j), score=scoreOf(j);
     const reasons = j.matched===true ? textOf((j.match_reasons || j.reasons || []).filter(x=>!/^excluded:|^uncertain:/i.test(String(x)))) : '';
-    return `<article class="job-card"><div class="job-card-top">${brandForJob(j)}<div class="job-details"><h3>${esc(titleOf(j))}</h3><p>${esc(companyOf(j))} · ${esc(locationOf(j))}</p></div>${score>=8?`<span class="score">${score} pts</span>`:''}</div><div class="job-info">${badge(j.employment||j.job_type||'Role')}${/egypt|cairo|giza|alexandria/i.test(locationOf(j))?badge('Egypt','green'):badge(locationOf(j),'grey')}${postedDate(j)?badge('Posted: '+prettyDate(postedDate(j))):badge(firstSeenDate(j)?'First seen: '+prettyDate(firstSeenDate(j)):'Posting date unavailable','grey')}</div>${snippet(j)?`<p class="job-desc">${esc(snippet(j))}</p>`:''}${reasons?`<p class="tiny" style="margin-bottom:14px">${esc(reasons)}</p>`:''}<div class="job-actions"><button class="plain-button ${saved?'saved':''}" data-save="${esc(id)}">${saved?'♥ Saved':'♡ Save job'}</button><div class="right">${url==='#'?badge('No application link','grey'):`<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View job ↗</a>`}</div></div></article>`;
+    const evidence=state.reviewExcluded&&state.memberPrefsConfigured?window.SecretJJobPreferences?.explain?.(j,state.memberPrefs):null;
+    const reviewMessage=evidence&&!evidence.match?`<p class="tiny">Outside preferences: ${esc(evidence.reasons.join(' · '))}</p>`:evidence?.status==='experience-unverified'?'<p class="tiny">Experience requirement not verified in source snapshot.</p>':'';
+    return `<article class="job-card"><div class="job-card-top">${brandForJob(j)}<div class="job-details"><h3>${esc(titleOf(j))}</h3><p>${esc(companyOf(j))} · ${esc(locationOf(j))}</p></div>${score>=8?`<span class="score">${score} pts</span>`:''}</div><div class="job-info">${badge(j.employment||j.job_type||'Role')}${/egypt|cairo|giza|alexandria/i.test(locationOf(j))?badge('Egypt','green'):badge(locationOf(j),'grey')}${postedDate(j)?badge('Posted: '+prettyDate(postedDate(j))):badge(firstSeenDate(j)?'First seen: '+prettyDate(firstSeenDate(j)):'Posting date unavailable','grey')}</div>${snippet(j)?`<p class="job-desc">${esc(snippet(j))}</p>`:''}${reasons?`<p class="tiny" style="margin-bottom:14px">${esc(reasons)}</p>`:''}${reviewMessage}<div class="job-actions"><button class="plain-button ${saved?'saved':''}" data-save="${esc(id)}">${saved?'♥ Saved':'♡ Save job'}</button><div class="right">${url==='#'?badge('No application link','grey'):`<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View job ↗</a>`}</div></div></article>`;
   }
   function jobDateForFilter(j){
     return state.dateBasis==='firstseen'?firstSeenDate(j):postedDate(j);
@@ -1055,9 +1057,11 @@ a:hover{color:var(--ink)}
     const roleOptions=availableRoleOptions();
     if(state.role!=='all'&&!roleOptions.some(c=>c.key===state.role))state.role='all';
     const personalized=Boolean(state.member&&state.memberPrefsConfigured);
+    const hiddenCount=personalized?allPublicJobs().length-allPublicJobs().filter(j=>window.SecretJJobPreferences?.isMatch?.(j,state.memberPrefs)).length:0;
     const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':personalized?'Your personalized job feed':'All detected opportunities',saved?(state.member?'Jobs saved to your account.':'Jobs you’ve bookmarked on this device.'):personalized?'Jobs matching your saved preferences. Update them in Account > Preferences.':'Explore every discovered opening with a valid application link. Sign in and save preferences to personalize your feed and alerts.');
     return h+
-      `<section class="job-filter-panel" aria-label="Job search filters">
+      `${personalized&&!saved?`<section class="job-filter-panel" aria-label="Matching transparency"><p class="tiny">${hiddenCount} detected jobs are outside your saved preferences. They are not deleted. Review them to catch missing or incorrectly classified opportunities; email alerts still use your saved preferences.</p><button class="btn secondary" type="button" data-review-excluded aria-pressed="${state.reviewExcluded}">${state.reviewExcluded?'Return to personalized feed':'Review all detected jobs ('+allPublicJobs().length+')'}</button></section>`:''}
+      <section class="job-filter-panel" aria-label="Job search filters">
         <div class="job-filter-row"><label class="filter-field filter-search">Search<input class="search-box" id="job-search" type="search" placeholder="Title, company or skills" value="${esc(state.query)}" aria-label="Search jobs"></label>
         <label class="filter-field">Role family<select class="filter-select" id="role-filter">${option('all','All '+(state.memberPrefs?.role_families?.length?'selected':'')+' roles',state.role)}${roleOptions.map(c=>option(c.key,c.label,state.role)).join('')}</select></label>
         <label class="filter-field">Company<select class="filter-select" id="company-filter">${option('all','All companies',state.companyFilter)}${companies.map(c=>option(c,c,state.companyFilter)).join('')}</select></label></div>
@@ -1397,6 +1401,7 @@ a:hover{color:var(--ink)}
     window.addEventListener('hashchange',()=>go(location.hash.replace('#','')));
     el('#refresh-button').addEventListener('click',()=>Promise.all([refresh(),hydrateMember()]));
     document.addEventListener('click',event=>{
+      if(event.target.closest('[data-review-excluded]')){state.reviewExcluded=!state.reviewExcluded;state.role='all';state.companyFilter='all';state.query='';state.dateFilter='all';syncFeedCount();render();return;}
       if(event.target.closest('[data-account-refresh]')){hydrateMember();return;}
       if(event.target.closest('[data-resume-download]')){
         if(!state.member)return;

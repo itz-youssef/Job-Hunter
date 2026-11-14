@@ -158,7 +158,7 @@ test('home and account request the updated matcher URL to avoid stale cached eli
  const account=fs.readFileSync('dist/account.html','utf8');
  const home=fs.readFileSync('dist/index.html','utf8');
  for(const page of [account,home])
-  assert.match(page,/secretj-job-preferences\.js\?v=lead-consultant-4/);
+  assert.match(page,/secretj-job-preferences\.js\?v=staff-review-5/);
 });
 
 test('Lead and Consultant titles are hidden at 0 to 2 years, including Deloitte tech leads',()=>{
@@ -187,4 +187,33 @@ test('word-boundary filter does not reject unrelated words or junior positions',
  const p={role_families:[],max_experience_years:2,egypt_only:false,internships:false};
  for(const title of ['Leadless Process Operator','Junior Software Engineer','Sales Leadership Intern','Graduate Recruitment Coordinator'])
   assert.equal(preferences.isMatch({title},p),true,title);
+});
+
+test('Staff engineering titles excluded for max experience <= 2 in shared browser/email matcher',()=>{
+ const titles=['Staff Software Engineer','Staff AI Engineer','Staff Engineer, Platform','Principal Staff Backend Developer'];
+ for(const max_experience_years of [0,1,2]){
+  const p={role_families:[],max_experience_years,egypt_only:false,internships:false};
+  for(const title of titles){
+   const job={title,location:'Cairo, Egypt'};
+   assert.equal(preferences.isMatch(job,p),false,title);
+   assert.equal(preferences.explain(job,p).match,false,title);
+   assert.match(preferences.explain(job,p).reasons.join(' '),/Staff/);
+  }
+ }
+});
+test('unlimited or higher experience preserves Staff opportunities',()=>{
+ const job={title:'Staff Software Engineer',location:'Cairo, Egypt'};
+ for(const max_experience_years of [null,3,6]){
+  const p={role_families:[],max_experience_years,egypt_only:false,internships:false};
+  assert.equal(preferences.isMatch(job,p),true,String(max_experience_years));
+ }
+});
+test('review-all mode makes excluded vacancies inspectable without altering email matching',()=>{
+ const home=fs.readFileSync('dist/index.html','utf8');
+ assert.match(home,/state\.reviewExcluded \|\| !state\.member \|\| !state\.memberPrefsConfigured/);
+ assert.match(home,/data-review-excluded/);
+ assert.match(home,/Outside preferences:/);
+ assert.match(home,/Experience requirement not verified in source snapshot/);
+ assert.match(home,/state\.reviewExcluded=!state\.reviewExcluded/);
+ assert.match(fs.readFileSync('lib/secretj/member-alerts.js','utf8'),/function matches\(job,p\)\{return isMatch\(job,p\);\}/);
 });
