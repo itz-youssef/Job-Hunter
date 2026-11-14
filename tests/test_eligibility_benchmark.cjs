@@ -27,6 +27,9 @@ test('every currently published job receives five method predictions',()=>{
  assert.equal(result.methods.length,6);
  assert.equal(result.meta.referenceMissing,0);
  assert.equal(result.meta.referenceFound,ref.include.length+ref.exclude.length);
+ assert.equal(result.winner,'F_constraint_aware','Never deploy a classifier that does not win frozen benchmark');
+ assert.equal(result.methods[0].confusion.FN,0,'Do not silently exclude known suitable positions');
+ assert.equal(result.methods[0].confusion.FP,0,'Do not confirm known unsuitable positions');
  for(const row of result.allRows){
   for(const name of Object.keys(lab.methods))
    assert.ok(['include','exclude','review'].includes(row[name]));
