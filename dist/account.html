@@ -195,7 +195,8 @@ html[data-theme="light"] .nav button.active *{
 <script src="/assets/secretj-admin-console.js?v=20261114" defer></script>
 <script src="/assets/secretj-eligibility-core.js?v=constraint-aware-f-1" defer></script>
   <script src="/assets/secretj-job-preferences.js?v=constraint-aware-f-1" defer></script>
-<script src="/assets/secretj-account.js?v=account-sync-1" defer></script>
+<script src="/assets/secretj-account.js?v=legal-consent-1" defer></script>
+<script src="/assets/secretj-welcome-tour.js?v=welcome-1" defer></script>
 <link rel="stylesheet" href="/assets/responsive.css?v=20261113-mobile-1">
 </head>
 <body>
@@ -218,11 +219,15 @@ html[data-theme="light"] .nav button.active *{
 <form id="auth-form"><label id="name-label" hidden>Full name<input name="name" autocomplete="name" maxlength="120"></label>
 <label>Email address<input type="email" name="email" autocomplete="email" required></label>
 <label>Password<input type="password" name="password" autocomplete="current-password" minlength="12" maxlength="128" required></label>
+<label id="registration-consent" hidden style="display:flex;align-items:flex-start;gap:10px;margin:12px 0;font-size:13px;line-height:1.55">
+<input type="checkbox" name="accept_terms" value="yes" style="width:18px;height:18px;flex:0 0 auto;margin-top:3px">
+<span>I have read and agree to the <a href="/terms.html" target="_blank" rel="noopener noreferrer" style="text-decoration:underline">Terms &amp; Conditions</a>, and acknowledge the <a href="/privacy.html" target="_blank" rel="noopener noreferrer" style="text-decoration:underline">Privacy Policy</a>, including how my CV and profile are stored and processed.</span></label>
 <button class="btn" type="submit" id="auth-submit">Sign in</button>
 <div style="text-align:center;color:var(--muted);font-size:12px">or</div>
 <p class="small muted">Use your email and password to sign in. Google sign-in is not connected.</p>
 </form>
 <p class="small muted">Never reuse a password from another service. Your private data stays in Neon, not in the public GitHub repository.</p>
+<p class="small muted">Read our <a href="/terms.html">Terms &amp; Conditions</a> and <a href="/privacy.html">Privacy Policy</a>.</p>
 </section>
 <section id="member-panel" hidden>
 <span class="eyebrow">YOUR PERSONAL WORKSPACE</span><h1>Welcome back<span id="welcome-name"></span></h1>
