@@ -49,23 +49,12 @@ jobs:
           python -c "from bs4 import BeautifulSoup; import app.custom_sources, app.egypt_expansion_feeds, app.verified_egypt_employers; print('Scanner imports OK')"
           python -m compileall -q app
 
-      - name: Scan custom career pages
+      - name: Scan custom career pages (no legacy SMTP)
+        env:
+          # Preserve vacancy scans but prevent emails to the old operator inbox.
+          # Verified account alerts are sent only from the website Resend cron.
+          LEGACY_SMTP_DISABLED: "true"
         run: python -m app.custom_monitor
-        env:
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          SMTP_FROM: ${{ secrets.SMTP_FROM }}
-          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
-
-      - name: Publish masked email destination
-        run: python scripts/publish_notification_status.py
-        env:
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          SMTP_FROM: ${{ secrets.SMTP_FROM }}
-          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
 
       - name: Save results for Vercel
         run: |
@@ -74,7 +63,6 @@ jobs:
 
           git add -f dist/data.json
           git add -f dist/custom-status.json
-          git add -f dist/notification-status.json
           git add -f data/custom_seen.json
 
           if ! git diff --cached --quiet; then
