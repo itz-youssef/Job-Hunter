@@ -12,7 +12,7 @@ EGYPT = re.compile(r"\b(egypt|cairo|giza|alexandria|maadi|new cairo|6th of octob
 
 def workable(name, slug, get_json, get_bytes, structured, make_job):
     """Workable's publicly embedded job-widget feed."""
-    data = get_json("https://apply.workable.com/api/v1/widget/accounts/" + slug)
+    data = get_json("https://apply.workable.com/api/v1/widget/accounts/" + slug + "?details=true")
     rows = data.get("jobs") or []
     results = []
     detail_calls = 0
@@ -37,7 +37,13 @@ def workable(name, slug, get_json, get_bytes, structured, make_job):
             shortcode = str(item.get("shortcode") or "")
             if not shortcode: continue
             link = f"https://apply.workable.com/{slug}/j/{shortcode}/"
-        description = str(item.get("description") or "")
+        # Request details on the company-level public widget endpoint, in
+        # one request. List summaries alone leave requirements blank, which
+        # previously made a 7+ years vacancy appear eligible for 0–2 years.
+        description = " ".join(
+            str(item.get(key) or "")
+            for key in ("description", "requirements")
+        ).strip()
         if detail_calls < 18 and not description:
             detail_calls += 1
             try:
