@@ -33,7 +33,7 @@ test('local CV handling stays browser-local unless private backup is explicitly 
 test('email test has an actual workflow',()=>{
   const workflow=fs.readFileSync('.github/workflows/test-email.yml','utf8');
   assert.match(workflow,/workflow_dispatch/);
-  assert.match(workflow,/smtplib\.SMTP/);
-  assert.match(workflow,/SMTP_PASSWORD: \$\{\{ secrets\.SMTP_PASSWORD \}\}/);
+  assert.doesNotMatch(workflow,/smtplib/);
+  assert.doesNotMatch(workflow,/secrets\.SMTP_PASSWORD/);
   assert.match(html,/actions\/workflows\/test-email\.yml/);
 });
