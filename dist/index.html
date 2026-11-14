@@ -469,7 +469,7 @@ a:hover{color:var(--ink)}
   }
   function syncFeedCount(){
     const node=el('#nav-job-count');
-    if(node)node.textContent=state.memberLoading?'…':String(validJobs().length);
+    if(node)node.textContent=state.memberLoading?'…':String(filterJobs(validJobs()).length);
     // A changed account or preference set must not preserve an invalid role filter.
     if(state.role!=='all'&&!availableRoleOptions().some(c=>c.key===state.role))state.role='all';
   }
@@ -1028,7 +1028,7 @@ a:hover{color:var(--ink)}
     const q=where(state.query);
     const now=Date.now();
     return list.filter(j=>{
-      if(q && !where([titleOf(j),companyOf(j),locationOf(j),snippet(j)].join(' ')).includes(q))return false;
+      if(q && !where([titleOf(j),companyOf(j),locationOf(j),snippet(j),...(window.SecretJJobPreferences?.classify(j)||[])].join(' ')).includes(q))return false;
       if(!matchesRole(j,state.role))return false;
       if(state.companyFilter!=='all' && companyOf(j)!==state.companyFilter)return false;
       if(state.jobType==='internship'&&!/\b(intern(?:ship)?s?|trainee|graduate program(?:me)?|work experience)\b/i.test(titleOf(j)+' '+(j.employment||'')))return false;
@@ -1045,6 +1045,8 @@ a:hover{color:var(--ink)}
       return scoreOf(b)-scoreOf(a)||(getDate(jobDateForFilter(b))||0)-(getDate(jobDateForFilter(a))||0);
     });
   }
+  // The navbar's count is the same filtered list used to render job cards.
+  // Recompute on auth completion, periodic snapshot refresh, and each filter.
   function jobsPage(saved=false){
     const all=validJobs(), whole=saved?(state.member?(state.savedRecords||[]).map(row=>({...(row.job_snapshot||{}),id:row.job_key})):all.filter(j=>state.saved.has(jobKey(j)))):all;
     const list=filterJobs(whole);
@@ -1485,7 +1487,7 @@ a:hover{color:var(--ink)}
       if(pin){editCompany(pin.dataset.pin,{pinned:pin.dataset.pinned!=='true'});return;}
       const remove=event.target.closest('[data-remove]');if(remove){removeCompany(remove.dataset.remove);return;}
     });
-    document.addEventListener('input',event=>{if(event.target.id==='job-search'){state.query=event.target.value;const at=event.target.selectionStart;render();const field=el('#job-search');field?.focus();try{field?.setSelectionRange(at,at);}catch{}}});
+    document.addEventListener('input',event=>{if(event.target.id==='job-search'){state.query=event.target.value;const at=event.target.selectionStart;syncFeedCount();render();const field=el('#job-search');field?.focus();try{field?.setSelectionRange(at,at);}catch{}}});
     document.addEventListener('submit',async event=>{
       if(event.target.id==='workspace-email-verify'){
         event.preventDefault();const button=event.target.querySelector('button');button.disabled=true;
