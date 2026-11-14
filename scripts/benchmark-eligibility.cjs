@@ -92,6 +92,7 @@ if(require.main===module){
  fs.writeFileSync(path.join(dest,'method-comparison.json'),
   JSON.stringify({meta:result.meta,winner:result.winner,methods:result.methods,missing:result.missing},null,2)+'\n');
  fs.writeFileSync(path.join(dest,'all-jobs-method-comparison.csv'),csv(result.allRows));
+ console.log('WINNER_MISCLASSIFICATIONS '+JSON.stringify(result.methods[0].errors));
  console.log(JSON.stringify({meta:result.meta,winner:result.winner,
   methods:result.methods.map(({name,precision,recallHard,recallSafe,specificity,review,catalogCounts,risk,utilityScore,confusion,unknownDecisions})=>
    ({name,precision,recallHard,recallSafe,specificity,review,catalogCounts,risk,utilityScore,confusion,unknownDecisions}))},null,2));
