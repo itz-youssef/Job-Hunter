@@ -416,7 +416,7 @@ a:hover{color:var(--ink)}
   // distinct openings with the same title, location and company.
   function vacancyFingerprint(j){
     const normalize=v=>String(v||'').normalize('NFKC').toLowerCase()
-      .replace(/[^\\p{L}\\p{N}]+/gu,' ').trim().replace(/\\s+/g,' ');
+      .replace(/[^\p{L}\p{N}]+/gu,' ').trim().replace(/\s+/g,' ');
     const description=normalize(j.description||j.content||'');
     if(description.length<80)return '';
     return [normalize(companyOf(j)),normalize(titleOf(j)),
