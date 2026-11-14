@@ -27,6 +27,7 @@ async function render(root,api,state){
  '<section class="sj-admin-section"><h3>📌 Application pipeline</h3>'+bars(overview.pipeline||[],'count','stage')+'</section></div>'+
  '<section class="sj-admin-section"><div class="sj-admin-heading"><div><h3>👥 User management</h3><p class="muted">Role access, account activation, session security and private usage metadata</p></div><input id="sj-admin-search" type="search" placeholder="Search accounts" aria-label="Search accounts"></div>'+
  '<div class="sj-admin-users" id="sj-admin-users"></div><div id="sj-admin-detail" class="sj-admin-detail" hidden></div></section>'+
+ '<section class="sj-admin-section"><div class="sj-admin-heading"><h3>⚙️ Operations & monitor health</h3><a href="https://github.com/itz-youssef/Job-Hunter/actions" target="_blank" rel="noopener noreferrer">GitHub Actions ↗</a></div><div id="sj-admin-ops" class="sj-admin-ops muted">Checking published scan status…</div></section>'+ 
  '<section class="sj-admin-section"><h3>🛡️ Administrative activity</h3>'+
  (overview.activity||[]).map(a=>'<div class="sj-admin-activity"><strong>'+html(a.action)+'</strong><span>'+html(a.actor_email||'Administrator')+'</span><small>'+html(day(a.created_at))+'</small></div>').join('')+
  (!overview.activity?.length?'<p class="muted">No administrative actions yet.</p>':'')+'</section>'+
@@ -44,9 +45,28 @@ async function render(root,api,state){
    '</div></article>').join('')||'<p class="muted">No matching accounts.</p>';
  }
  paint();
+ // Observe published monitoring state; do not dispatch workflows or expose tokens.
+ Promise.allSettled([
+   fetch('/custom-status.json',{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject(Error('No scan report'))),
+   fetch('/data.json',{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject(Error('No jobs snapshot')))
+ ]).then(results=>{
+   if(!root.isConnected)return;
+   const ops=root.querySelector('#sj-admin-ops');if(!ops)return;
+   const scan=results[0].status==='fulfilled'?results[0].value:null;
+   const snapshot=results[1].status==='fulfilled'?results[1].value:null;
+   const companies=Array.isArray(scan?.companies)?scan.companies:[];
+   const active=companies.filter(c=>['monitoring','partial'].includes(c.status)).length;
+   ops.innerHTML='<div class="sj-admin-kpis">'+[
+     ['Companies checked',companies.length],['Monitoring / partial',active],
+     ['Current job listings',Array.isArray(snapshot?.jobs)?snapshot.jobs.length:'—'],
+     ['Pending legacy scan',scan?.pending_alerts??'—']
+   ].map(([label,value])=>'<div class="sj-admin-kpi"><strong>'+html(value)+'</strong><small>'+html(label)+'</small></div>').join('')+'</div>'+
+   '<p>Last custom scan: '+html(day(scan?.checked_at))+' · Latest snapshot: '+html(day(snapshot?.generated_at))+'</p>'+
+   (!scan||!snapshot?'<p>One or more published reports are unavailable. Do not assume monitoring is healthy.</p>':'');
+ }).catch(()=>{});
  root.querySelector('#sj-admin-search').addEventListener('input',e=>paint(e.target.value));
  root.querySelector('[data-ad-refresh]').addEventListener('click',()=>render(root,api,state).catch(err=>{root.textContent='Could not refresh: '+err.message;}));
- root.addEventListener('click',async e=>{
+ root.onclick=async e=>{
   const b=e.target.closest('[data-admin-detail],[data-admin-revoke]');
   if(!b||!root.contains(b))return;
   const target=root.querySelector('#sj-admin-detail');
@@ -69,7 +89,7 @@ async function render(root,api,state){
    (u.id!==state.user.id?'<button class="btn secondary" data-admin-revoke="'+html(u.id)+'">Revoke active sessions</button>':'');
    target.scrollIntoView({block:'nearest',behavior:'smooth'});
   }catch(err){target.hidden=false;target.textContent='Unable to load user diagnostics: '+err.message;}
- });
+ };
 }
 window.SecretJAdmin={render};
 })();
