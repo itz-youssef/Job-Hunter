@@ -1,0 +1,36 @@
+name: Full Catalog Search Audit
+on:
+  pull_request:
+    paths:
+      - 'dist/index.html'
+      - 'dist/data.json'
+      - 'dist/assets/secretj-job-search.js'
+      - 'dist/assets/secretj-job-preferences.js'
+      - 'scripts/audit-job-catalog.cjs'
+      - 'tests/test_full_catalog_search_audit.cjs'
+      - '.github/workflows/full-catalog-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test real published job catalog and Deloitte GIU search
+        run: node --test tests/test_full_catalog_search_audit.cjs
+      - name: Audit every published job for missing metadata and filtering
+        if: always()
+        run: node scripts/audit-job-catalog.cjs
+      - name: Upload all-job audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: job-catalog-audit
+          path: reports/job-catalog-audit/
+          if-no-files-found: warn
+          retention-days: 30
