@@ -307,7 +307,7 @@ a:hover{color:var(--ink)}
   const liveFile = name => RAW + name + '?v=' + Date.now();
   const el = (selector) => document.querySelector(selector);
   const esc = (x) => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const state = { member:null, memberPrefs:null, memberPrefsConfigured:false, snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'score', jobType:'all', companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
+  const state = { member:null, memberLoading:true, memberPrefs:null, memberPrefsConfigured:false, snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'recent', jobType:'all', companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
   const names = {home:'Home',radar:'Job Hunter',resume:'Resume Updater',cv:'CV Holder',profile:'My Profile', jobs:'Job Feed', saved:'Saved Jobs', companies:'My Companies', alerts:'Email Alerts'};
   const where = (value) => String(value || '').toLowerCase().trim();
   const getDate = (s) => {const d=new Date(s); return Number.isNaN(+d)?null:d;};
@@ -383,7 +383,7 @@ a:hover{color:var(--ink)}
       state.memberEmail=null;state.memberPrefs=null;state.memberPrefsConfigured=false;state.saved=new Set();state.savedRecords=[];
       state.memberError=e.message;
     }finally{
-      if(sequence===memberSequence){state.memberLoading=false;render();}
+      if(sequence===memberSequence){state.memberLoading=false;syncFeedCount();render();}
     }
   }
   async function cloudSave(key,remove){
@@ -458,7 +458,21 @@ a:hover{color:var(--ink)}
     }
     return [...map.values()].sort((a,b)=>Number(Boolean(b.pinned))-Number(Boolean(a.pinned)) || a.name.localeCompare(b.name));
   }
-  function matchesRole(j,role){const t=where(titleOf(j));if(role==='all')return true;const patterns={software:/software|back.?end|front.?end|full.?stack|developer|swe|sde/,ai:/\bai\b|artificial intelligence|genai|llm|nlp|machine learning|\bml\b|deep learning/,cv:/computer vision|image processing|perception|video analytics/,mlops:/mlops|ml platform|machine learning platform|ml infrastructure/};return patterns[role]?.test(t)||false;}
+  function matchesRole(j,role){
+    if(role==='all')return true;
+    return (window.SecretJJobPreferences?.classify(j)||[]).includes(role);
+  }
+  function availableRoleOptions(){
+    const categories=window.SecretJJobPreferences?.categories||[];
+    const selected=state.member&&state.memberPrefsConfigured?state.memberPrefs?.role_families||[]:[];
+    return selected.length?categories.filter(c=>selected.includes(c.key)):categories;
+  }
+  function syncFeedCount(){
+    const node=el('#nav-job-count');
+    // A changed account or preference set must not preserve an invalid role filter.
+    if(state.role!=='all'&&!availableRoleOptions().some(c=>c.key===state.role))state.role='all';
+    if(node)node.textContent=state.memberLoading?'…':String(filterJobs(validJobs()).length);
+  }
   async function json(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);return r.json();}
   async function companyApi(method='GET',payload,admin){
     if(IS_CLOUDFLARE)throw Error('Cloudflare dashboard is read-only. Manage companies on Vercel or GitHub.');
@@ -518,7 +532,7 @@ a:hover{color:var(--ink)}
         :'';
     }
     state.refreshedAt=new Date();
-    el('#nav-job-count').textContent=validJobs().length;
+    syncFeedCount();
     render();
     if(!silent)toast(res[0].status==='fulfilled'?'Workspace updated':'Could not load job snapshot',res[0].status!=='fulfilled');
   }
@@ -1014,15 +1028,15 @@ a:hover{color:var(--ink)}
     const q=where(state.query);
     const now=Date.now();
     return list.filter(j=>{
-      if(q && !where([titleOf(j),companyOf(j),locationOf(j),snippet(j)].join(' ')).includes(q))return false;
+      if(q && !where([titleOf(j),companyOf(j),locationOf(j),snippet(j),...(window.SecretJJobPreferences?.classify(j)||[])].join(' ')).includes(q))return false;
       if(!matchesRole(j,state.role))return false;
       if(state.companyFilter!=='all' && companyOf(j)!==state.companyFilter)return false;
       if(state.jobType==='internship'&&!/\b(intern(?:ship)?s?|trainee|graduate program(?:me)?|work experience)\b/i.test(titleOf(j)+' '+(j.employment||'')))return false;
       if(state.jobType==='junior' && /\b(intern(?:ship)?s?|trainee)\b/i.test(titleOf(j)))return false;
       if(state.dateFilter!=='all'){
-        const days=Number(state.dateFilter);
+        const duration=/h$/.test(state.dateFilter)?Number(state.dateFilter.slice(0,-1))*3600000:Number(state.dateFilter)*86400000;
         const d=getDate(jobDateForFilter(j));
-        if(!d||d.getTime()>now+86400000||now-d.getTime()>days*86400000)return false;
+        if(!d||d.getTime()>now+86400000||now-d.getTime()>duration)return false;
       }
       return true;
     }).sort((a,b)=>{
@@ -1031,25 +1045,29 @@ a:hover{color:var(--ink)}
       return scoreOf(b)-scoreOf(a)||(getDate(jobDateForFilter(b))||0)-(getDate(jobDateForFilter(a))||0);
     });
   }
+  // The navbar's count is the same filtered list used to render job cards.
+  // Recompute on auth completion, periodic snapshot refresh, and each filter.
   function jobsPage(saved=false){
     const all=validJobs(), whole=saved?(state.member?(state.savedRecords||[]).map(row=>({...(row.job_snapshot||{}),id:row.job_key})):all.filter(j=>state.saved.has(jobKey(j)))):all;
     const list=filterJobs(whole);
     const companies=[...new Set(whole.map(companyOf))].sort((a,b)=>a.localeCompare(b));
     const option=(v,text,current)=>`<option value="${esc(v)}" ${current===v?'selected':''}>${esc(text)}</option>`;
+    const roleOptions=availableRoleOptions();
+    if(state.role!=='all'&&!roleOptions.some(c=>c.key===state.role))state.role='all';
     const personalized=Boolean(state.member&&state.memberPrefsConfigured);
     const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':personalized?'Your personalized job feed':'All detected opportunities',saved?(state.member?'Jobs saved to your account.':'Jobs you’ve bookmarked on this device.'):personalized?'Jobs matching your saved preferences. Update them in Account > Preferences.':'Explore every discovered opening with a valid application link. Sign in and save preferences to personalize your feed and alerts.');
     return h+
       `<section class="job-filter-panel" aria-label="Job search filters">
         <div class="job-filter-row"><label class="filter-field filter-search">Search<input class="search-box" id="job-search" type="search" placeholder="Title, company or skills" value="${esc(state.query)}" aria-label="Search jobs"></label>
-        <label class="filter-field">Role family<select class="filter-select" id="role-filter">${option('all','All roles',state.role)}${option('software','Software',state.role)}${option('ai','AI / ML',state.role)}${option('cv','Computer Vision',state.role)}${option('mlops','MLOps',state.role)}</select></label>
+        <label class="filter-field">Role family<select class="filter-select" id="role-filter">${option('all','All '+(state.memberPrefs?.role_families?.length?'selected':'')+' roles',state.role)}${roleOptions.map(c=>option(c.key,c.label,state.role)).join('')}</select></label>
         <label class="filter-field">Company<select class="filter-select" id="company-filter">${option('all','All companies',state.companyFilter)}${companies.map(c=>option(c,c,state.companyFilter)).join('')}</select></label></div>
         <div class="job-filter-row">
         <label class="filter-field">Job type<select class="filter-select" id="type-filter">${option('all','All job types',state.jobType)}${option('internship','Internships / training',state.jobType)}${option('junior','Junior / full-time',state.jobType)}</select></label>
         <label class="filter-field">Date based on<select class="filter-select" id="date-basis">${option('posted','Employer posted date',state.dateBasis)}${option('firstseen','First seen by Job Hunter',state.dateBasis)}</select></label>
-        <label class="filter-field">Date range<select class="filter-select" id="date-filter">${option('all','Any date',state.dateFilter)}${option('1','Past 24 hours',state.dateFilter)}${option('3','Past 3 days',state.dateFilter)}${option('7','Past 7 days',state.dateFilter)}${option('14','Past 14 days',state.dateFilter)}${option('30','Past 30 days',state.dateFilter)}${option('90','Past 90 days',state.dateFilter)}</select></label>
-        <label class="filter-field">Sort<select class="filter-select" id="sort-filter">${option('score','Best match',state.sortBy)}${option('recent','Most recent',state.sortBy)}${option('company','Company A–Z',state.sortBy)}</select></label>
+        <label class="filter-field">Date range<select class="filter-select" id="date-filter">${option('all','Any date',state.dateFilter)}${option('1h','Past hour',state.dateFilter)}${option('6h','Past 6 hours',state.dateFilter)}${option('12h','Past 12 hours',state.dateFilter)}${option('1','Past 24 hours',state.dateFilter)}${option('3','Past 3 days',state.dateFilter)}${option('7','Past 7 days',state.dateFilter)}${option('14','Past 14 days',state.dateFilter)}${option('30','Past 30 days',state.dateFilter)}${option('90','Past 90 days',state.dateFilter)}</select></label>
+        <label class="filter-field">Sort<select class="filter-select" id="sort-filter">${option('score','Best match',state.sortBy)}${option('recent','Newest employer posting',state.sortBy)}${option('company','Company A–Z',state.sortBy)}</select></label>
         <button class="btn secondary clear-job-filters" data-reset-filters type="button">Reset filters</button></div>
-        <p class="tiny">Date filters exclude jobs without the selected date. First seen means when Job Hunter detected it—not necessarily when the employer posted it.</p>
+        <p class="tiny">Employer posted date is verified source metadata when supplied; unknown dates are excluded from posted-date ranges, never replaced with detection timestamps. First seen is separate.</p>
       </section>
       <div class="cards" id="jobs-list">${list.length?list.map(jobCard).join(''):empty('No jobs match these filters','Change the date range or reset filters to see available opportunities.')}</div>
       <p class="tiny">${list.length} of ${whole.length} ${personalized?'preference-matched':'detected'} jobs shown. A matching score is not a hiring probability; other roles may have no score.</p>`;
@@ -1452,8 +1470,8 @@ a:hover{color:var(--ink)}
         return;
       }
       if(event.target.closest('[data-reset-filters]')){
-        Object.assign(state,{query:'',role:'all',companyFilter:'all',dateFilter:'all',dateBasis:'posted',sortBy:'score',jobType:'all'});
-        render();return;
+        Object.assign(state,{query:'',role:'all',companyFilter:'all',dateFilter:'all',dateBasis:'posted',sortBy:'recent',jobType:'all'});
+        syncFeedCount();render();return;
       }
       if(event.target.closest('[data-action="reveal-email"]')){showFullEmail();return;}
       const edit=event.target.closest('[data-edit-name]');
@@ -1469,7 +1487,7 @@ a:hover{color:var(--ink)}
       if(pin){editCompany(pin.dataset.pin,{pinned:pin.dataset.pinned!=='true'});return;}
       const remove=event.target.closest('[data-remove]');if(remove){removeCompany(remove.dataset.remove);return;}
     });
-    document.addEventListener('input',event=>{if(event.target.id==='job-search'){state.query=event.target.value;const at=event.target.selectionStart;render();const field=el('#job-search');field?.focus();try{field?.setSelectionRange(at,at);}catch{}}});
+    document.addEventListener('input',event=>{if(event.target.id==='job-search'){state.query=event.target.value;const at=event.target.selectionStart;syncFeedCount();render();const field=el('#job-search');field?.focus();try{field?.setSelectionRange(at,at);}catch{}}});
     document.addEventListener('submit',async event=>{
       if(event.target.id==='workspace-email-verify'){
         event.preventDefault();const button=event.target.querySelector('button');button.disabled=true;
@@ -1492,7 +1510,7 @@ a:hover{color:var(--ink)}
     });
     document.addEventListener('change',async event=>{
       const fields={'role-filter':'role','company-filter':'companyFilter','date-filter':'dateFilter','date-basis':'dateBasis','sort-filter':'sortBy','type-filter':'jobType'};
-      if(fields[event.target.id]){state[fields[event.target.id]]=event.target.value;render();}
+      if(fields[event.target.id]){state[fields[event.target.id]]=event.target.value;syncFeedCount();render();}
       if(event.target.id==='cv-upload'){
         try{
           await acceptCV(event.target.files?.[0]);
@@ -1535,6 +1553,7 @@ a:hover{color:var(--ink)}
     });
     el('#account-link').href='/account.html';
     go(location.hash.replace('#','')||'home');
+    syncFeedCount();
     hydrateMember();
     refresh(true);
     setInterval(()=>refresh(true),60000);
