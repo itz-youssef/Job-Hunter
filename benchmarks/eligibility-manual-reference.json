@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "basis": "Independent assistant adjudication from actual public snapshot fields inspected on 2026-11-14; not an employer-verified human ground truth. Only unambiguous cases are scored. Unknown cases are excluded from precision/recall.",
+    "basis": "Independent assistant adjudication from actual public snapshot fields inspected on 2026-11-14; not an employer-verified human ground truth. Only unambiguous cases are scored. Unknown cases are excluded from precision/recall. Disputable titles and alternative qualification routes are assigned unknown, never used as binary truth.",
     "label": "eligible means clearly compatible with a maximum of two years in the *seniority/experience* dimension, irrespective of professional specialization or geographic fit."
   },
   "include": [
@@ -139,14 +139,6 @@
     [
       1119,
       "Graduate Area Manager: graduate hiring, not senior engineering title"
-    ],
-    [
-      752,
-      "Mustaqbaly graduate-targeted audit program"
-    ],
-    [
-      13,
-      "Alternative educational pathways include master’s with two years (conditional applicant fit)"
     ]
   ],
   "exclude": [
@@ -175,16 +167,8 @@
       "Three to five years relevant operational experience"
     ],
     [
-      136,
-      "DevOps Solution Architect, specialist senior-level role (title only low certainty)"
-    ],
-    [
       144,
       "Sr Infrastructure Security Specialist"
-    ],
-    [
-      168,
-      "FP&A Manager title (not proven entry-level)"
     ],
     [
       189,
@@ -207,10 +191,6 @@
       "Must have three to five years in investing"
     ],
     [
-      274,
-      "Two to four years as must-have: exceeds two upper bound (ambiguous minimum)"
-    ],
-    [
       282,
       "Engineering Manager + eight years"
     ],
@@ -225,10 +205,6 @@
     [
       338,
       "Five-plus years tender management"
-    ],
-    [
-      345,
-      "Billing Solutions Architect seniority unclear (exclude is weak)"
     ],
     [
       356,
@@ -277,10 +253,6 @@
     [
       634,
       "Mid-senior + eight years"
-    ],
-    [
-      656,
-      "Presales Technical Consultant; title-based conservative exclusion"
     ],
     [
       702,
@@ -345,10 +317,6 @@
     [
       1120,
       "Three-plus years analysis experience"
-    ],
-    [
-      1179,
-      "Retail Media Manager title (managerial ambiguity)"
     ]
   ],
   "uncertain": [
@@ -479,6 +447,34 @@
     [
       1262,
       "French client relations no details"
+    ],
+    [
+      13,
+      "Insufficient unambiguous employer evidence: Alternative educational pathways include master’s with two years (conditional applicant fit)"
+    ],
+    [
+      136,
+      "Insufficient unambiguous employer evidence: DevOps Solution Architect, specialist senior-level role (title only low certainty)"
+    ],
+    [
+      168,
+      "Insufficient unambiguous employer evidence: FP&A Manager title (not proven entry-level)"
+    ],
+    [
+      345,
+      "Insufficient unambiguous employer evidence: Billing Solutions Architect seniority unclear (exclude is weak)"
+    ],
+    [
+      656,
+      "Insufficient unambiguous employer evidence: Presales Technical Consultant; title-based conservative exclusion"
+    ],
+    [
+      752,
+      "Insufficient unambiguous employer evidence: Mustaqbaly graduate-targeted audit program"
+    ],
+    [
+      1179,
+      "Insufficient unambiguous employer evidence: Retail Media Manager title (managerial ambiguity)"
     ]
   ]
 }
