@@ -33,10 +33,12 @@
     const start=m.index,end=start+m[0].length;
     const pre=d.slice(Math.max(0,start-90),start),post=d.slice(end,Math.min(d.length,end+90));
     const full=(pre+m[0]+post);
+    // Ignore an upper endpoint captured inside a range such as 2-5 years.
+    if(/\d+\s*(?:[-–]|to)\s*$/i.test(pre))continue;
     if(/\b(?:retailer|company|business|platform|firm|organization)\s+(?:has|with|boasts|brings)\s+(?:over\s+)?\d{1,2}/i.test(full))continue;
     if(/\byears?\s+of\s+experience\s+in\s+(?:offering|providing|serving|helping|the market)\b/i.test(full))continue;
     if(/\b(?:open\s+for\s+a\s+minimum|posting\s+open|application\s+period)\b/i.test(full))continue;
-    if(/\b(?:preferred|nice to have|desirable|advantage|is a plus|optional)\b/i.test(post.slice(0,34)))continue;
+    if(/\b(?:preferred|nice to have|desirable|advantage|is a plus|optional)\b/i.test(post.slice(0,180).split(/[.;]/)[0]))continue;
     if(/\b(?:preferred|nice to have|desirable|advantage|is a plus|optional)\s*[:\-]?\s*$/i.test(pre.slice(-45)))continue;
     const years=Number(m[1]);
     if(!Number.isInteger(years)||years>40)continue;
