@@ -219,7 +219,7 @@ a:hover{color:var(--ink)}
   <link rel="stylesheet" href="/assets/secretj-home.css">
   <link rel="stylesheet" href="/assets/secretj-global-theme.css?v=20261113-uniform-2">
   <script src="/assets/secretj-home.js?v=account-sync-1" defer></script>
-  <script src="/assets/secretj-job-preferences.js?v=principal-years-6" defer></script>
+  <script src="/assets/secretj-job-preferences.js?v=evidence-engine-7" defer></script>
 <link rel="stylesheet" href="/assets/responsive.css?v=20261113-mobile-1">
 </head>
 <body>
@@ -561,21 +561,21 @@ a:hover{color:var(--ink)}
     const brand=source || {name: key==='siemens'?'Siemens':name};
     return companyBrand(brand);
   }
-  function jobMini(j){return `<div class="mini-job">${brandForJob(j)}<div class="mini-job-content"><strong>${esc(titleOf(j))}</strong><small>${esc(companyOf(j))} · ${esc(locationOf(j))}</small></div>${scoreOf(j)>=8?`<span class="score">${scoreOf(j)} pts</span>`:""}</div>`;}
+  function jobMini(j){return `<div class="mini-job">${brandForJob(j)}<div class="mini-job-content"><strong>${esc(titleOf(j))}</strong><small>${esc(companyOf(j))} · ${esc(locationOf(j))}</small></div>${state.member&&state.memberPrefsConfigured&&scoreOf(j)>=8?`<span class="score">${scoreOf(j)} pts</span>`:""}</div>`;}
   function radarHome(){
-    const list=validJobs(), sources=monitoredSources(), active=sources.filter(s=>s.active).length, matching=list.length;
+    const list=validJobs(), sources=monitoredSources(), active=sources.filter(s=>s.active).length, matching=state.member&&state.memberPrefsConfigured?list.length:0;
     const recent = list.slice().sort((a,b)=>(getDate(b.discovered_at||b.detected_at||b.published_at)||0)-(getDate(a.discovered_at||a.detected_at||a.published_at)||0)).slice(0,4);
     const statuses=sources.slice(0,5);
     return top('YOUR PERSONAL CAREER ASSISTANT','Your career dashboard','Here’s what your job radar is finding for you.',IS_CLOUDFLARE||state.member?.role!=='admin'?'':`<button class="btn primary" data-action="open-company">+ Add company</button>`)+
     `<section class="hero"><div><span class="eyebrow">✦ YOUR JOB RADAR</span><h2>Your next move<br>starts here.</h2><p>Junior, entry-level and internship opportunities in software engineering, AI and computer vision — with Egypt in focus.</p><button class="btn secondary" data-navigate="jobs">Explore opportunities ↗</button></div><div class="hero-graphic" aria-hidden="true"><span class="hero-arrow">↗</span></div></section>`+
     `<section class="stats">${stat('Matching opportunities','Matched in current snapshot',matching)}${stat('Monitored companies','Successful source checks',active)}${stat('Discovered jobs','Current published snapshot',list.length)}${stat('Saved jobs',state.member?'Saved to your account':'Stored on this device',state.saved.size)}</section>`+
     monitoringPanel()+
-    `<div class="grid-two"><section class="panel"><div class="panel-head"><h2>✦ Your latest opportunities</h2><button class="link-button" data-navigate="jobs">View all ↗</button></div>${recent.length?recent.map(jobMini).join(''):empty('No jobs yet','Run the monitoring workflow to populate your feed.')}</section><section class="panel"><div class="panel-head"><h2>Monitoring status</h2><button class="link-button" data-navigate="companies">Manage ↗</button></div><div class="table-list">${statuses.length?statuses.map(s=>`<div class="source-line"><span class="job-logo">${icon(s.name)}</span><div class="source-name">${esc(s.name)}<small>${esc(s.message||s.status)}</small></div>${badge(s.active?'Active':s.status==='pending'?'Pending':s.status,s.active?'green':s.status==='pending'?'orange':'grey')}</div>`).join(''):empty('No companies yet','Add a career page to start building your watchlist.')}</div></section></div>`+
+    `<div class="grid-two"><section class="panel"><div class="panel-head"><h2>✦ ${state.member?'Your latest opportunities':'Latest opportunities'}</h2><button class="link-button" data-navigate="jobs">View all ↗</button></div>${recent.length?recent.map(jobMini).join(''):empty('No jobs yet','Run the monitoring workflow to populate your feed.')}</section><section class="panel"><div class="panel-head"><h2>Monitoring status</h2><button class="link-button" data-navigate="companies">Manage ↗</button></div><div class="table-list">${statuses.length?statuses.map(s=>`<div class="source-line"><span class="job-logo">${icon(s.name)}</span><div class="source-name">${esc(s.name)}<small>${esc(s.message||s.status)}</small></div>${badge(s.active?'Active':s.status==='pending'?'Pending':s.status,s.active?'green':s.status==='pending'?'orange':'grey')}</div>`).join(''):empty('No companies yet','Add a career page to start building your watchlist.')}</div></section></div>`+
     `<section class="panel"><div class="panel-head"><h2>Alerts destination</h2><button class="link-button" data-navigate="alerts">Email settings ↗</button></div><p class="muted" style="margin:0">${state.member?`Your alerts destination: <strong>${esc(state.memberEmail?.recipient||state.member.email)}</strong>.`:'Sign in to set up your personal alerts.'} <span class="tiny">Manage your preferences and send a test from Email Alerts.</span></p></section>`;
   }
 
   function home(){
-    const sources=monitoredSources(),matched=validJobs().length;
+    const sources=monitoredSources(),matched=state.member&&state.memberPrefsConfigured?validJobs().length:0;
     const latest=validJobs().slice().sort((a,b)=>(getDate(firstSeenDate(b))||0)-(getDate(firstSeenDate(a))||0)).slice(0,6);
     return `<div class="sj-home">
       <section class="sj-home-hero">
@@ -1020,7 +1020,7 @@ a:hover{color:var(--ink)}
     const id=jobKey(j), saved=state.saved.has(id), url=jobURL(j), score=scoreOf(j);
     const reasons = j.matched===true ? textOf((j.match_reasons || j.reasons || []).filter(x=>!/^excluded:|^uncertain:/i.test(String(x)))) : '';
     const evidence=state.reviewExcluded&&state.memberPrefsConfigured?window.SecretJJobPreferences?.explain?.(j,state.memberPrefs):null;
-    const reviewMessage=evidence&&!evidence.match?`<p class="tiny">Outside preferences: ${esc(evidence.reasons.join(' · '))}</p>`:evidence?.status==='experience-unverified'?'<p class="tiny">Experience requirement not verified in source snapshot.</p>':'';
+    const reviewMessage=evidence&&!evidence.match?`<p class="tiny">Outside preferences: ${esc(evidence.reasons.join(' · '))}${evidence.evidence?.length?' · Evidence: '+esc(evidence.evidence.join(' · ')):''}</p>`:evidence?.status==='experience-unverified'?`<p class="tiny">Needs review: experience level is not fully verified. ${esc((evidence.evidence||[]).join(' · '))}</p>`:'';
     return `<article class="job-card"><div class="job-card-top">${brandForJob(j)}<div class="job-details"><h3>${esc(titleOf(j))}</h3><p>${esc(companyOf(j))} · ${esc(locationOf(j))}</p></div>${score>=8?`<span class="score">${score} pts</span>`:''}</div><div class="job-info">${badge(j.employment||j.job_type||'Role')}${/egypt|cairo|giza|alexandria/i.test(locationOf(j))?badge('Egypt','green'):badge(locationOf(j),'grey')}${postedDate(j)?badge('Posted: '+prettyDate(postedDate(j))):badge(firstSeenDate(j)?'First seen: '+prettyDate(firstSeenDate(j)):'Posting date unavailable','grey')}</div>${snippet(j)?`<p class="job-desc">${esc(snippet(j))}</p>`:''}${reasons?`<p class="tiny" style="margin-bottom:14px">${esc(reasons)}</p>`:''}${reviewMessage}<div class="job-actions"><button class="plain-button ${saved?'saved':''}" data-save="${esc(id)}">${saved?'♥ Saved':'♡ Save job'}</button><div class="right">${url==='#'?badge('No application link','grey'):`<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View job ↗</a>`}</div></div></article>`;
   }
   function jobDateForFilter(j){

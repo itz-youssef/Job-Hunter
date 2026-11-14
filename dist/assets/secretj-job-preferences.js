@@ -132,50 +132,79 @@
   if(internships.test(String(job.title||'')))return 0;
   return null; // Unknown remains unknown, not a fabricated zero.
  }
- function isMatch(job,p){
-  if(!p||!hasFilters(p))return true;
-  const title=String(job.title||job.position||job.job_title||'');
-  const loc=String(job.location||job.job_location||'');
-  if(p.egypt_only===true&&!egypt.test(loc))return false;
-  if(p.internships===true&&!internships.test(title+' '+String(job.employment||'')))return false;
-  const categoriesWanted=Array.isArray(p.role_families)?p.role_families:[];
-  if(categoriesWanted.length&&!classify(job).some(key=>categoriesWanted.includes(key)))return false;
-  if(p.max_experience_years!==null&&p.max_experience_years!==undefined&&p.max_experience_years!==''){
-   const years=Number(p.max_experience_years);
-   if(Number.isFinite(years)){
-    // Exclude explicit Senior, Lead, or Consultant titles with a 0–2 year cap,\n    // even when the job description omits mandatory years.
-    // Apply only when a member sets a concrete maximum of 0, 1 or 2 years.
-    if(years<=2 && /\b(?:senior|sr\.?|lead|consultant|staff|principal)\b/i.test(title))return false;
-    // A hands-on AI Team Manager / Engineering Manager is still a
-    // management vacancy even when years are absent from the snapshot.
-    // Do not blanket-reject entry-level Product Manager or Assistant Manager.
-    if(years<=2 && /\b(?:team manager|engineering manager|software manager|development manager|technical manager|head of|director|principal engineer|staff engineer|team lead|tech lead)\b/i.test(title))return false;
-    const required=yearsRequired(job);
-    if(required!==null&&required>years)return false;
-   }
-  }
-  return true;
- }
- // Explain why a listing was included or excluded. This is the same source
- // of truth used for feed filtering and member email alerts.
- function explain(job,p){
-   if(!hasFilters(p))return {match:true,status:'unrestricted',reasons:[]};
-   const reasons=[];
+ // Evidence-based eligibility: one single decision function for browser and email.
+ // "review" is a soft signal, NOT a rejection: missing descriptions should
+ // never silently cost a member a potential opportunity.
+ const highTitle=/\b(?:senior|sr\.?|lead|consultant|staff|principal|director|head of|team manager|engineering manager|software manager|development manager|technical manager|tech manager|tech lead|team lead)\b/i;
+ const juniorTitle=/\b(?:junior|jr\.?|entry[ -]?level|graduate|fresh(?:er| graduate)|new grad|intern(?:ship)?|trainee|apprentice|associate)\b/i;
+ const higherATS=/\b(?:senior|mid[ -]?senior|mid[ -]?level|lead|principal|staff|director|executive|management)\b/i;
+ const juniorATS=/\b(?:entry[ -]?level|entry professional|graduate|early[ -]?career|junior|intern(?:ship)?|trainee|associate)\b/i;
+ const ownershipSignals=[
+   /\b(?:manage|managing|lead|leading)\s+(?:a\s+|the\s+)?(?:team|engineers|developers|direct reports|people)\b/i,
+   /\b(?:hire|hiring|performance reviews?|performance appraisals?|people management|direct reports)\b/i,
+   /\b(?:own|ownership of|accountable for)\s+(?:the\s+)?(?:engineering|technical|technology)\s+(?:strategy|roadmap|organization|department)\b/i
+ ];
+ function assess(job,p){
+   if(!hasFilters(p))return {match:true,status:'unrestricted',reasons:[],requiredYears:null,categories:classify(job),evidence:[]};
    const title=String(job.title||job.position||job.job_title||'');
    const location=String(job.location||job.job_location||'');
-   const chosen=Array.isArray(p.role_families)?p.role_families:[];
-   const category=classify(job);
-   const limit=p.max_experience_years===null||p.max_experience_years===undefined||p.max_experience_years===''?null:Number(p.max_experience_years);
-   const years=yearsRequired(job);
+   const selected=Array.isArray(p.role_families)?p.role_families:[];
+   const fields=classify(job);
+   const reasons=[];
+   const evidence=[];
+   let review=false;
    if(p.egypt_only===true&&!egypt.test(location))reasons.push('Outside selected location');
    if(p.internships===true&&!internships.test(title+' '+String(job.employment||'')))reasons.push('Not an internship');
-   if(chosen.length&&!category.some(key=>chosen.includes(key)))reasons.push(category.includes('other')?'Unclassified career field':'Outside selected career fields');
+   if(selected.length&&!fields.some(key=>selected.includes(key)))
+     reasons.push(fields.includes('other')?'Unclassified career field':'Outside selected career fields');
+   const limit=p.max_experience_years===null||p.max_experience_years===undefined||p.max_experience_years===''?null:Number(p.max_experience_years);
+   let required=null;
    if(limit!==null&&Number.isFinite(limit)){
-     if(limit<=2&&/\b(?:senior|sr\.?|lead|consultant|staff|principal)\b/i.test(title))reasons.push('Senior/Lead/Consultant/Staff/Principal title');
-     else if(limit<=2&&/\b(?:team manager|engineering manager|software manager|development manager|technical manager|head of|director|principal engineer|staff engineer|team lead|tech lead)\b/i.test(title))reasons.push('Leadership title');
-     if(years!==null&&years>limit)reasons.push('Requires '+years+' years; maximum '+limit);
+     required=yearsRequired(job);
+     if(required!==null) {
+       evidence.push('Experience requirement detected: '+required+' years');
+       if(required>limit)reasons.push('Requires '+required+' years; maximum '+limit);
+     } else {
+       review=true;
+       evidence.push('No verified minimum years in stored description');
+     }
+     if(limit<=2){
+       const level=String(job.seniority||job.career_level||job.experience_level||job.level||'');
+       const titleIsHigh=highTitle.test(title);
+       const titleIsJunior=juniorTitle.test(title);
+       const levelIsHigh=higherATS.test(level);
+       const levelIsJunior=juniorATS.test(level);
+       if(titleIsHigh){
+         reasons.push('Senior/Lead/Consultant/Staff/Principal or management title');
+         evidence.push('Advanced title: '+title.slice(0,110));
+       }
+       if(levelIsHigh){
+         evidence.push('Employer career level: '+level.slice(0,100));
+         if(titleIsJunior&&!titleIsHigh){
+           review=true;
+           evidence.push('Conflicting employer seniority and junior title; manual review');
+         } else reasons.push('Employer labels the vacancy as advanced level');
+       }
+       if(titleIsJunior||levelIsJunior)evidence.push('Entry/graduate signal from title or employer level');
+       const text=String(job.requirements||'')+' '+String(job.description||'');
+       const heading=text.search(/\b(?:responsibilities|what you will do|about the role)\b/i);
+       const responsibility=heading<0?'':text.slice(heading,heading+5000).replace(/<[^>]*>/g,' ');
+       const signals=ownershipSignals.filter(re=>re.test(responsibility));
+       if(signals.length>=2&&!titleIsHigh&&!levelIsHigh){
+         review=true;
+         evidence.push('Several people/department leadership responsibilities; verify seniority');
+       }
+     }
    }
-   return {match:reasons.length===0,status:reasons.length?'excluded':years===null&&limit!==null?'experience-unverified':'matched',reasons,requiredYears:years,categories:category};
+   const unique=[...new Set(reasons)];
+   return {
+     match:unique.length===0,
+     status:unique.length?'excluded':review?'experience-unverified':'matched',
+     reasons:unique,requiredYears:required,categories:fields,evidence
+   };
  }
- return {categories:categories.map(([key,label])=>({key,label})),classify,hasFilters,isMatch,yearsRequired,explain};
+ function isMatch(job,p){return assess(job,p).match;}
+ function explain(job,p){return assess(job,p);}
+
+ return {categories:categories.map(([key,label])=>({key,label})),classify,hasFilters,isMatch,yearsRequired,explain,assess};
 });
