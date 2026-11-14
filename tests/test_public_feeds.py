@@ -62,3 +62,23 @@ def test_seniority_metadata_blocks_midcareer_even_when_title_says_junior():
     assert relevance(job,{})[0] == 0
     job["seniority"] = "Entry level"
     assert relevance(job,{})[0] > 0
+
+def test_workable_requests_complete_public_descriptions_without_per_job_requests():
+    calls=[]
+    def get_json(url):
+        calls.append(url)
+        assert url.endswith("/mylo?details=true")
+        return {"jobs":[
+          {"title":"Full-Stack Engineer","shortcode":"ABC","location":{"city":"Cairo","country":"Egypt"},
+           "description":"About us: 27 years of experience in offering financial services. Requirements: 7+ years of professional experience as a software engineer."},
+          {"title":"Junior Backend Engineer","shortcode":"XYZ","location":{"city":"Cairo","country":"Egypt"},
+           "description":"Requirements: 0-2 years of experience."}
+        ]}
+    def get_bytes(_):
+        raise AssertionError("Complete public widget payload should need no per-job requests")
+    jobs=workable("mylo by B.TECH","mylo",get_json,get_bytes,cs._structured_jobs,cs._job)
+    assert len(jobs)==2
+    assert calls==["https://apply.workable.com/api/v1/widget/accounts/mylo?details=true"]
+    from importlib import import_module
+    assert "7+ years of professional experience" in jobs[0]["description"]
+    assert "0-2 years" in jobs[1]["description"]
