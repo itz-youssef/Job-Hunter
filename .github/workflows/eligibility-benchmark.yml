@@ -9,6 +9,8 @@ on:
       - 'tests/test_eligibility_benchmark.cjs'
       - '.github/workflows/eligibility-benchmark.yml'
   workflow_dispatch:
+  schedule:
+    - cron: '17 5 * * *'
 permissions:
   contents: read
 jobs:
