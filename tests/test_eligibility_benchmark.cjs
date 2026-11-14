@@ -63,3 +63,14 @@ test('conjunctive requirements use strongest mandatory minimum, but OR pathways 
  assert.equal(f({title:'Software Engineer',description:'Requirements: 1+ years of customer support or 4+ years of stakeholder management experience.'}).decision,'include');
  assert.equal(f({title:'Junior Software Engineer',description:'Minimum 5 years of professional experience required.'}).decision,'exclude');
 });
+
+test('a two-to-five year professional range allows a two-year applicant',()=>{
+ const x=lab.methods.F_constraint_aware({title:'Fullstack-AI Engineer',
+  description:'Professional Experience 2-5 years of professional software engineering experience.'});
+ assert.notEqual(x.decision,'exclude',JSON.stringify(x));
+});
+test('experience marked preferred is not an automatic exclusion',()=>{
+ const x=lab.methods.F_constraint_aware({title:'Maintenance Technician',
+  description:'Practical maintenance experience of 3 to 5 years in traction power supply or comparable electrical infrastructure is preferred.'});
+ assert.notEqual(x.decision,'exclude',JSON.stringify(x));
+});
