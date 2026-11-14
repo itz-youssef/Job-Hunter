@@ -58,13 +58,26 @@ SENIOR_TITLE = re.compile(
     r"expert|experienced)\b", re.I,
 )
 # Reject explicit requirements above 2 years. Avoid interpreting dates or company histories.
-EXCESSIVE_EXPERIENCE = (
-    re.compile(r"\b(?:minimum|min\.?|at least|more than|over)\s*(?:of\s*)?([3-9]|\d{2,})\+?\s*years?", re.I),
-    re.compile(r"\b([3-9]|\d{2,})\s*\+\s*years?\b", re.I),
-    re.compile(r"\b([3-9]|\d{2,})\s*(?:-|–|to)\s*\d+\s*years?\b", re.I),
-    re.compile(r"\b(?:required|requirement|experience|minimum|at least|must have|need(?:s)?)\b[^\n.]{0,55}\b([3-9]|\d{2,})\s*years?", re.I),
-    re.compile(r"\b([3-9]|\d{2,})\s*years?\s+(?:of\s+)?(?:relevant|professional|industry|work|hands-on|practical)?\s*experience\b", re.I),
+# Detect hard requirements, not merely preferred experience or company history.
+REQUIRED_EXPERIENCE = (
+    re.compile(r"\b(?:minimum|min\.?|at least|requires?|required|must have|needs?)\s*(?:of\s*)?(\d{1,2})\s*\+?\s*years?\s+(?:of\s+)?(?:relevant\s+|professional\s+|work\s+)?experience\b", re.I),
+    re.compile(r"\b(\d{1,2})\s*\+?\s*years?\s+(?:of\s+)?(?:relevant\s+|professional\s+|work\s+)?experience\s+(?:is\s+)?(?:required|mandatory|essential|minimum|needed)\b", re.I),
 )
+EXPLICIT_EARLY_LEVEL = re.compile(
+    r"\b(?:entry[ -]?level|entry professional|early[ -]?career|early professional|graduate|fresh[ -]?graduate|new[ -]?grad(?:uate)?|junior|associate|intern(?:ship)?|trainee|apprentice|fresher)\b", re.I,
+)
+
+def required_years(description: str) -> int | None:
+    """Read mandatory experience, not preferred qualifications."""
+    for line in re.split(r"[\n\r;]+|(?<=[.!?])\s+", description):
+        if re.search(r"\b(?:preferred|nice to have|desirable|advantage|a plus|optional)\b", line, re.I):
+            continue
+        for pattern in REQUIRED_EXPERIENCE:
+            found = pattern.search(line)
+            if found:
+                return int(found.group(1))
+    return None
+
 EGYPT_LOCATIONS = (
     "egypt", "cairo", "giza", "alexandria", "new cairo", "nasr city", "maadi",
     "6th of october", "6 october", "6th october", "sheikh zayed", "helwan",
@@ -129,31 +142,31 @@ def relevance(job: dict, config: dict) -> tuple[int, list[str]]:
     if not role:
         return 0, ["Excluded: title is outside Software/AI/ML/CV/MLOps roles"]
 
-    if SENIOR_TITLE.search(title):
-        return 0, ["Excluded: senior, mid-level or management title"]
+    if re.search(r"\b(?:senior|sr\.?|mid[ -]senior|principal|staff|director|head\s+of|tech lead|team lead|lead|manager)\b", title, re.I):
+        return 0, ["Excluded: explicit senior title"]
 
     # Some ATS feeds have a separate career-level field. Respect it
     # even when the title itself does not mention seniority.
     seniority = str(job.get("seniority") or job.get("career_level") or "")
-    if re.search(r"\b(?:mid(?:\s*-\s*senior)?|senior|experienced|managerial|lead|principal|staff|director|expert)\b", seniority, re.I):
-        return 0, ["Excluded: ATS career level is not entry-level"]
+    if re.search(r"\b(?:mid(?:\s*-\s*senior)?|senior|experienced|managerial|lead|principal|staff|director|expert)\b", seniority, re.I) and not EXPLICIT_EARLY_LEVEL.search(seniority):
+        return 0, ["Excluded: ATS explicitly labels career level as senior"]
 
     # Experience requirements can be long. Check the full description, but only in
     # explicit years-of-experience contexts, not arbitrary plain numbers.
-    if any(p.search(description) for p in EXCESSIVE_EXPERIENCE):
-        return 0, ["Excluded: role requires more than 2 years of experience"]
+    min_years = required_years(description)
+    if min_years is not None and min_years > 2:
+        return 0, ["Excluded: explicit minimum experience exceeds 2 years"]
 
     early = bool(
         internship
         or         EARLY_TITLE.search(title)
-        or EARLY_TITLE.search(seniority)
-        or re.search(r"\b(?:early professional|early career|entry professional|entry[- ]level professional)\b",seniority,re.I)
+        or EXPLICIT_EARLY_LEVEL.search(seniority)
         or EARLY_TITLE.search(employment)
         or re.search(r"\b(?:internship|traineeship|apprenticeship)\b", employment, re.I)
         or EARLY_DESCRIPTION.search(description)
     )
     if not early:
-        return 0, ["Excluded: junior, graduate, internship or 0–2 years not confirmed"]
+        return 0, ["Uncertain: early-career level not confirmed by source"]
 
     matched = [skill for skill in SKILLS if _has_term(description + " " + title, skill)]
     score = 8 + min(4, len(matched))  # 8–12, only after all hard filters pass.
