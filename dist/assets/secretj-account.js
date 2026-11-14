@@ -37,6 +37,8 @@ function showAuth() {
   if($('#account-profile-photo'))$('#account-profile-photo').hidden=true;
   if($('#account-profile-initial'))$('#account-profile-initial').hidden=false;
   $('#account-profile-menu').hidden=true;
+  $('#admin-nav').hidden=true;
+  $('#account-admin-profile-link').hidden=true;
   $('#auth-panel').hidden=false;
   $('#member-panel').hidden=true;
   $('#logout').hidden=true;
@@ -93,7 +95,7 @@ function formField(field,label,record={},textarea=false) {
     `<input name="${name}" value="${v}" maxlength="500" autocomplete="off">`}</label>`;
 }
 async function showView(view) {
-  if(view==='admin' && state.user?.role!=='admin')return;
+  if(view==='admin' && state.user?.role!=='admin')view='overview';
   state.view=view;
   for(const button of document.querySelectorAll('[data-view]'))
     button.classList.toggle('active',button.dataset.view===view);
