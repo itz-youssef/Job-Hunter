@@ -42,3 +42,9 @@ test('brand hover exception overrides generic inverse selector and has keyboard 
  assert.match(css,/body a\.brand\.brand\[href\]:not\(\[hidden\]\):not\(\[aria-disabled="true"\]\):is\(:hover,:active,:focus-visible\)/);
  assert.match(css,/outline-offset:4px/);
 });
+
+test('company cards distinguish discovered vacancies from personalized matches',()=>{
+ const html=fs.readFileSync('dist/index.html','utf8');
+ assert.match(html,/public_jobs:scan\?\.public_jobs\?\?scan\?\.parsed_jobs/);
+ assert.match(html,/Detected vacancies: \$\{c\.public_jobs\}/);
+});

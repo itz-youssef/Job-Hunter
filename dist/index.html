@@ -454,7 +454,7 @@ a:hover{color:var(--ink)}
     for(const c of state.companies){
       const name=c.name || 'Custom company';
       const scan=state.scans.find(x=>x.url===c.url);
-      map.set(where(name),{name,active:scan?.status==='monitoring',status:scan?.status||'pending',last:scan?.checked_at||'',alsoMain:Boolean(map.get(where(name))?.active),url:c.url,message:scan?.message||'',matched_jobs:scan?.matched_jobs??0,managed:true,pinned:c.pinned===true});
+      map.set(where(name),{name,active:scan?.status==='monitoring',status:scan?.status||'pending',last:scan?.checked_at||'',alsoMain:Boolean(map.get(where(name))?.active),url:c.url,message:scan?.message||'',matched_jobs:scan?.matched_jobs??0,public_jobs:scan?.public_jobs??scan?.parsed_jobs??scan?.matched_jobs??0,managed:true,pinned:c.pinned===true});
     }
     return [...map.values()].sort((a,b)=>Number(Boolean(b.pinned))-Number(Boolean(a.pinned)) || a.name.localeCompare(b.name));
   }
@@ -1190,7 +1190,7 @@ a:hover{color:var(--ink)}
       `<button class="btn secondary" data-edit-name="${esc(c.url)}">✎ Edit name</button>`+
       `<button class="btn danger" data-remove="${esc(c.url)}">Remove</button>`
     ):'';
-    return `<div class="company-card">${companyBrand(c)}<div class="company-name"><strong>${pin?'📌 ':''}${esc(c.name)}</strong><small>${esc(c.message || (c.managed?'Added to your watchlist':'Built-in monitored source'))}</small>${c.last?`<small>Last check: ${esc(prettyDate(c.last))}</small>`:''}${expectedCheckLabel(c)}${c.managed&&Number.isInteger(c.matched_jobs)?`<small>Eligible jobs: ${c.matched_jobs}</small>`:''}</div><div class="company-actions">${state.member?.role==='admin'?`<button class="btn secondary logo-edit-button" data-edit-logo="${esc(logoKey(c))}" aria-label="Change ${esc(c.name)} logo">Edit logo</button>`:''}${badge(label,color)}${url!=='#'?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="btn secondary">Careers ↗</a>`:''}${actions}</div></div>`;
+    return `<div class="company-card">${companyBrand(c)}<div class="company-name"><strong>${pin?'📌 ':''}${esc(c.name)}</strong><small>${esc(c.message || (c.managed?'Added to your watchlist':'Built-in monitored source'))}</small>${c.last?`<small>Last check: ${esc(prettyDate(c.last))}</small>`:''}${expectedCheckLabel(c)}${c.managed&&Number.isInteger(c.public_jobs)?`<small>Detected vacancies: ${c.public_jobs}</small>`:''}</div><div class="company-actions">${state.member?.role==='admin'?`<button class="btn secondary logo-edit-button" data-edit-logo="${esc(logoKey(c))}" aria-label="Change ${esc(c.name)} logo">Edit logo</button>`:''}${badge(label,color)}${url!=='#'?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="btn secondary">Careers ↗</a>`:''}${actions}</div></div>`;
   }
   function companiesPage(){
     const all=monitoredSources(), active=all.filter(c=>c.active).length, pending=all.filter(c=>c.status==='pending').length;
