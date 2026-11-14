@@ -67,7 +67,7 @@ test('Internships / Training filter matches the exact global search for intern a
 });
 test('intern search aliases capture training pathways even without an intern title',()=>{
  const examples=[
-  {title:'Graduate Training Program',company:'Example',description:'Graduate training placement'},
+  {title:'Graduate Program',company:'Example',description:'Graduate placement'},
   {title:'Software Engineering Trainee',company:'Example'},
   {title:'Co-op Software Engineer',company:'Example'},
   {title:'Junior Engineer',company:'Example',description:'Join our internship training programme.'}
