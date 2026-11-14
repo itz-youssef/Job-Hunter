@@ -469,9 +469,9 @@ a:hover{color:var(--ink)}
   }
   function syncFeedCount(){
     const node=el('#nav-job-count');
-    if(node)node.textContent=state.memberLoading?'…':String(filterJobs(validJobs()).length);
     // A changed account or preference set must not preserve an invalid role filter.
     if(state.role!=='all'&&!availableRoleOptions().some(c=>c.key===state.role))state.role='all';
+    if(node)node.textContent=state.memberLoading?'…':String(filterJobs(validJobs()).length);
   }
   async function json(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);return r.json();}
   async function companyApi(method='GET',payload,admin){
