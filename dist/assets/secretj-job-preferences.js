@@ -175,7 +175,7 @@
        const levelIsHigh=higherATS.test(level);
        const levelIsJunior=juniorATS.test(level);
        if(titleIsHigh){
-         reasons.push('Explicit advanced-level title');
+         reasons.push('Senior/Lead/Consultant/Staff/Principal or management title');
          evidence.push('Advanced title: '+title.slice(0,110));
        }
        if(levelIsHigh){
