@@ -67,3 +67,30 @@ test('without AI configuration engine explicitly labels its qualification as rul
  assert.equal(r.accepted[0].qualification_mode,'rules-only');
  assert.equal(r.rejected,1);
 });
+
+test('Cloudflare Workers AI binding can supply a genuine structured verification response without a separate API key',async()=>{
+ const j=mk('Junior AI Engineer','Build and test Python computer vision models.');
+ const env={SECRETJ_AI_CONFIDENCE_THRESHOLD:'0.85',AI:{
+  run:async(model,payload)=>{
+    assert.match(model,/llama-3\.3-70b/);
+    assert.equal(payload.response_format.type,'json_schema');
+    assert.equal(payload.messages[0].role,'system');
+    return {response:{match:true,confidence:0.94,level:'entry',reason:'0-2 year model engineering duties'}};
+  }
+ }};
+ const result=await gates.aiReview(j,preference,env);
+ assert.equal(result.status,'accepted');
+ assert.equal(result.confidence,0.94);
+});
+test('AI cannot approve an explicit senior verdict for an entry-only subscriber',async()=>{
+ const j=mk('AI Engineer','Build models in Python.');
+ const env={AI:{run:async()=>({response:{match:true,confidence:0.99,
+   level:'senior',reason:'leadership role'}})}};
+ const r=await gates.aiReview(j,preference,env);
+ assert.equal(r.status,'rejected');
+});
+test('invalid or failing AI binding cannot be treated as an accepted match',async()=>{
+ const j=mk('AI Engineer','Build models in Python.');
+ const env={AI:{run:async()=>{throw Error('quota exceeded');}}};
+ assert.equal((await gates.aiReview(j,preference,env)).status,'unavailable');
+});
