@@ -490,15 +490,10 @@ a:hover{color:var(--ink)}
     // Review All Jobs and explicit search always use the unrestricted catalog.
     if(state.reviewExcluded||String(state.query||'').trim()||
        state.jobType==='internship'||!state.member||!state.memberPrefsConfigured)return all;
-    // If the five-minute monitoring cycle has not yet caught up with newly
-    // saved preferences, show safe PROVISIONAL matches from the public
-    // catalog immediately, never a misleading empty feed. As soon as the
-    // dedicated watch is current, that authoritative list replaces them.
-    if(state.watchFeedLoaded)return state.watchFeed.filter(publicJob);
-    const matches=window.SecretJJobPreferences?.isMatch;
-    if(typeof matches!=='function')return [];
-    return all.filter(j=>matches(j,state.memberPrefs))
-      .map(j=>({...j,watch_status:'provisional'}));
+    // Strict feed contract: public catalog provisional matches have not
+    // passed the server-side qualification engine, so they never count as
+    // personalized matches. Pending jobs remain inspectable in Review All.
+    return state.watchFeedLoaded?state.watchFeed.filter(publicJob):[];
   }
   // Only employer-published dates are described as posting dates.
   // Workday sometimes includes one explicitly in its description.
@@ -1102,12 +1097,14 @@ a:hover{color:var(--ink)}
     const careerBadge=career?.level?badge(careerNames[career.level]||career.level):badge('Seniority unverified','grey');
     const reviewBadge=needsReview?'<span class="badge">Potential match · check seniority and requirements</span>':'';
     const monitoringBadge=j.watch_status?badge(
-      j.watch_status==='provisional'?'Catalog match · awaiting source check':
-      j.watch_status==='baseline'?'Monitored opportunity':
-      j.watch_status==='sent'?'Alert sent':'New monitored match',
+      j.watch_status==='baseline'?'Qualified opportunity':
+      j.watch_status==='sent'?'Alert sent':'New qualified match',
       j.watch_status==='sent'?'green':'grey'):'';
+    const verificationBadge=j.qualification_mode==='ai-reviewed'?
+      badge('AI reviewed','green'):j.qualification_mode==='rules-only'?
+      badge('Verified title / experience rules','grey'):'';
     const reviewMessage=evidence&&!evidence.match?`<p class="tiny">Outside preferences: ${esc(evidence.reasons.join(' · '))}${evidence.evidence?.length?' · Evidence: '+esc(evidence.evidence.join(' · ')):''}</p>`:evidence?.status==='experience-unverified'?`<p class="tiny">Needs review: experience level is not fully verified. ${esc((evidence.evidence||[]).join(' · '))}</p>`:'';
-    return `<article class="job-card"><div class="job-card-top">${brandForJob(j)}<div class="job-details"><h3>${esc(titleOf(j))}</h3><p>${esc(companyOf(j))} · ${esc(locationOf(j))}</p></div>${score>=8?`<span class="score">${score} pts</span>`:''}</div><div class="job-info">${badge(j.employment||j.job_type||'Role')}${monitoringBadge}${careerBadge}${/egypt|cairo|giza|alexandria/i.test(locationOf(j))?badge('Egypt','green'):badge(locationOf(j),'grey')}${postedDate(j)?badge('Posted: '+prettyDate(postedDate(j))):badge(firstSeenDate(j)?'First seen: '+prettyDate(firstSeenDate(j)):'Posting date unavailable','grey')}</div>${snippet(j)?`<p class="job-desc">${esc(snippet(j))}</p>`:''}${reasons?`<p class="tiny" style="margin-bottom:14px">${esc(reasons)}</p>`:''}${reviewMessage}${reviewBadge}<div class="job-actions"><button class="plain-button ${saved?'saved':''}" data-save="${esc(id)}">${saved?'♥ Saved':'♡ Save job'}</button><div class="right">${url==='#'?badge('No application link','grey'):`<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View job ↗</a>`}</div></div></article>`;
+    return `<article class="job-card"><div class="job-card-top">${brandForJob(j)}<div class="job-details"><h3>${esc(titleOf(j))}</h3><p>${esc(companyOf(j))} · ${esc(locationOf(j))}</p></div>${score>=8?`<span class="score">${score} pts</span>`:''}</div><div class="job-info">${badge(j.employment||j.job_type||'Role')}${monitoringBadge}${verificationBadge}${careerBadge}${/egypt|cairo|giza|alexandria/i.test(locationOf(j))?badge('Egypt','green'):badge(locationOf(j),'grey')}${postedDate(j)?badge('Posted: '+prettyDate(postedDate(j))):badge(firstSeenDate(j)?'First seen: '+prettyDate(firstSeenDate(j)):'Posting date unavailable','grey')}</div>${snippet(j)?`<p class="job-desc">${esc(snippet(j))}</p>`:''}${reasons?`<p class="tiny" style="margin-bottom:14px">${esc(reasons)}</p>`:''}${reviewMessage}${reviewBadge}<div class="job-actions"><button class="plain-button ${saved?'saved':''}" data-save="${esc(id)}">${saved?'♥ Saved':'♡ Save job'}</button><div class="right">${url==='#'?badge('No application link','grey'):`<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View job ↗</a>`}</div></div></article>`;
   }
   function jobDateForFilter(j){
     return state.dateBasis==='firstseen'?firstSeenDate(j):postedDate(j);
@@ -1155,7 +1152,7 @@ a:hover{color:var(--ink)}
     const personalizedView=personalized&&!state.reviewExcluded&&!globalSearch&&state.jobType!=='internship';
     const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':globalSearch?'Search all detected opportunities':personalized?'Your personalized job feed':'All detected opportunities',saved?(state.member?'Jobs saved to your account.':'Jobs you’ve bookmarked on this device.'):globalSearch?'Searching all published listings, including those outside your saved preferences. Email alerts remain personalized.':personalized?'Opportunities detected by your personalized monitoring system, the same source used for email alerts.':'Explore every discovered opening with a valid application link. Sign in and save preferences to personalize your feed and alerts.');
     return h+
-      `${personalized&&!saved?`<section class="job-filter-panel" aria-label="Matching transparency"><p class="tiny"><strong>Personalized preference monitoring</strong> runs independently from <strong>All Detected Jobs</strong>. Company-native filters are used where verified, with other sources clearly handled through catalog fallback. The general discovery catalog is never reduced by your preferences.</p><p class="tiny">The general catalog currently contains ${hiddenCount} detected jobs, available separately under Review All Jobs and global Search. Your personalized feed reads the same private monitoring records as your email alerts, including the initial baseline of existing opportunities.</p>${personalizedView&&!state.watchFeedLoaded?`<p class="tiny"><strong>Monitoring status:</strong> ${esc(state.watchFeedError||'Waiting for the source monitor to finish its initial scan.')} Provisional matches are shown from the public catalog until official monitoring catches up; these are not email-verified or newly detected.</p>`:''}<button class="btn secondary" type="button" data-review-excluded aria-pressed="${state.reviewExcluded}">${state.reviewExcluded?'Return to personalized feed':'Review all detected jobs ('+allPublicJobs().length+')'}</button></section>`:''}
+      `${personalized&&!saved?`<section class="job-filter-panel" aria-label="Matching transparency"><p class="tiny"><strong>Personalized preference monitoring</strong> runs independently from <strong>All Detected Jobs</strong>. Company-native filters are used where verified, with other sources clearly handled through catalog fallback. The general discovery catalog is never reduced by your preferences.</p><p class="tiny">The general catalog currently contains ${hiddenCount} detected jobs, available separately under Review All Jobs and global Search. Your personalized feed reads the same private monitoring records as your email alerts, including the initial baseline of existing opportunities.</p>${personalizedView&&!state.watchFeedLoaded?`<p class="tiny"><strong>Monitoring status:</strong> ${esc(state.watchFeedError||'Waiting for the source monitor to finish its initial scan.')} Your personalized feed only shows jobs accepted by the configured verification pipeline. While the scan is pending, Review All Jobs remains available without falsely marking unverified postings as matches.</p>`:''}<button class="btn secondary" type="button" data-review-excluded aria-pressed="${state.reviewExcluded}">${state.reviewExcluded?'Return to personalized feed':'Review all detected jobs ('+allPublicJobs().length+')'}</button></section>`:''}
       <section class="job-filter-panel" aria-label="Job search filters">
         <div class="job-filter-row"><label class="filter-field filter-search">Search<input class="search-box" id="job-search" type="search" placeholder="Title, company or skills" value="${esc(state.query)}" aria-label="Search jobs"></label>
         <label class="filter-field">Role family<select class="filter-select" id="role-filter">${option('all','All '+(state.memberPrefs?.role_families?.length?'selected':'')+' roles',state.role)}${roleOptions.map(c=>option(c.key,c.label,state.role)).join('')}</select></label>
