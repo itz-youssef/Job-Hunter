@@ -28,7 +28,7 @@ test('catalog-wide query is independent of account preferences, but empty query 
  const opts={role_families:['ai_ml'],max_experience_years:2,egypt_only:true,internships:false};
  // The internship advertises no specialty and can be outside AI-only email
  // preferences, but MUST still appear under a deliberate search.
- assert.equal(prefs.isMatch(deloitte,opts),false);
+ assert.equal(prefs.assess(deloitte,opts).status,'experience-unverified'); // Unknown field remains discoverable as a potential match.
  assert.equal(search.matches(deloitte,'internship',prefs.classify),true);
 });
 test('all discovered explicit internship posts are searchable',()=>{
