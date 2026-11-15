@@ -36,16 +36,21 @@
   function evaluate(job,experienceCore){
     const title=norm(job.title||job.position||job.job_title);
     const ats=norm([job.seniority,job.career_level,job.experience_level,job.level].filter(Boolean).join(' '));
-    const titleLevel=marker(title),atsLevel=marker(ats);
+    const postingType=norm([job.employment,job.job_type,job.program_type].filter(Boolean).join(' '));
+    const titleLevel=marker(title);
+    const atsLevel=marker(ats);
+    const typeLevel=/\\b(?:internship|intern|trainee|apprentice|student placement)\\b/i.test(postingType)?'internship':null;
     const ext=experienceCore?.extractExperience?.(job);
     const years=ext?.minimum??null;
     const evidence=[];
     if(titleLevel)evidence.push('Title: '+titleLevel);
     if(atsLevel)evidence.push('Employer/ATS level: '+atsLevel);
     if(years!==null)evidence.push('Applicant minimum: '+years+' years');
-    let level=atsLevel||titleLevel,confidence=(atsLevel?'explicit-ats':titleLevel?'title':'unknown');
+    let level=atsLevel||titleLevel||typeLevel;
+    let confidence=atsLevel?'explicit-ats':titleLevel?'title':typeLevel?'employment-type':'unknown';
+    if(typeLevel)evidence.push('Employment type: internship');
     let conflict=false;
-    if(atsLevel&&titleLevel&&atsLevel!==titleLevel){
+    if((atsLevel&&titleLevel&&atsLevel!==titleLevel) || (typeLevel&&atsLevel&&atsLevel!=='internship')){
       // Explicit contradictory employer metadata must not silently override title.
       conflict=true;level=null;confidence='conflict';
       evidence.push('Title and ATS level conflict');
@@ -58,6 +63,11 @@
     }
     if(!level&&!conflict&&years!==null&&years<=2){
       level='entry';confidence='years-inferred';
+    }
+    if(!conflict&&level&&['entry','internship'].includes(level)&&
+       /\\b(?:senior|principal|staff|director|executive|leadership|mid[ -]?senior)\\b/i.test(ats)){
+      conflict=true;level=null;confidence='conflict';
+      evidence.push('Employer seniority conflicts with early-career evidence');
     }
     // A 5+ year requirement is unambiguously not entry, but does not prove
     // Senior vs Lead vs Manager without source evidence.
