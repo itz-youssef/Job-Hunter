@@ -17,7 +17,7 @@ const sandbox={
  jobKey:j=>String(j.id||j.title),
  jobURL:j=>String(j.url||'').startsWith('https://')?j.url:'#',
  jobs:()=>sandbox.rows||[],
- state:{member:null,memberPrefsConfigured:false,memberPrefs:null},
+ state:{member:null,memberPrefsConfigured:false,memberPrefs:null,watchFeed:[],watchFeedLoaded:false,query:'',reviewExcluded:false,jobType:'all'},
  window:{SecretJJobPreferences:pref},
  Date
 };
@@ -38,10 +38,14 @@ test('registered members without preferences see the same complete public catalo
  sandbox.rows=rows;sandbox.state.member={id:'user'};sandbox.state.memberPrefsConfigured=false;
  assert.equal(validJobs().length,4);
 });
-test('only after saving preferences does the feed match that account',()=>{
+test('after saving preferences the feed uses matching native watch records, including baseline',()=>{
  sandbox.rows=rows;sandbox.state.member={id:'user'};sandbox.state.memberPrefsConfigured=true;
  sandbox.state.memberPrefs={role_families:['software'],egypt_only:true,internships:true};
+ sandbox.state.watchFeed=[{...rows[1],watch_status:'baseline'}];sandbox.state.watchFeedLoaded=true;
  assert.deepEqual(Array.from(validJobs(),j=>j.id),[2]);
+ sandbox.state.reviewExcluded=true;assert.equal(validJobs().length,4);
+ sandbox.state.reviewExcluded=false;sandbox.state.query='intern';assert.equal(validJobs().length,4);
+ sandbox.state.query='';sandbox.state.watchFeedLoaded=false;assert.equal(validJobs().length,0);
 });
 test('invalid links and duplicate listings are not public jobs',()=>{
  sandbox.state.member=null;sandbox.state.memberPrefsConfigured=false;

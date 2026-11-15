@@ -311,7 +311,7 @@ a:hover{color:var(--ink)}
   const liveFile = name => RAW + name + '?v=' + Date.now();
   const el = (selector) => document.querySelector(selector);
   const esc = (x) => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const state = { member:null, memberLoading:true, memberPrefs:null, memberPrefsConfigured:false, reviewExcluded:false, snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'recent', jobType:'all', feedLimit:40, companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
+  const state = { member:null, memberLoading:true, memberPrefs:null, memberPrefsConfigured:false, reviewExcluded:false, watchFeed:[], watchFeedLoaded:false, watchFeedError:'', snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'recent', jobType:'all', feedLimit:40, companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
   const FEED_PAGE_SIZE=40;
   let searchTimer=null;
   const names = {home:'Home',radar:'Job Hunter',resume:'Resume Updater',cv:'CV Holder',profile:'My Profile', jobs:'Job Feed', saved:'Saved Jobs', companies:'My Companies', alerts:'Email Alerts'};
@@ -346,6 +346,40 @@ a:hover{color:var(--ink)}
     window.dispatchEvent(new Event('secretj-account-changed'));
     try{localStorage.setItem('sj-account-change',Date.now()+':'+Math.random());}catch{}
   }
+  // Full account-scoped native monitoring output, including baseline jobs.
+  // Pagination completes before replacing the visible list; failures never
+  // silently switch the personalized feed to an unrelated catalog shortlist.
+  async function loadMatchingFeed(userId,sequence){
+    const combined=[];
+    let offset=0;
+    for(let page=0;page<400;page++){
+      const result=await memberRequest('/api/secretj-native-status?action=feed&offset='+offset);
+      if(sequence!==memberSequence||state.member?.id!==userId)return;
+      if(!result.ready)return {jobs:[],ready:false,error:result.message||'Monitoring is initializing'};
+      if(!Array.isArray(result.jobs))throw Error('Invalid personalized monitoring response');
+      combined.push(...result.jobs);
+      if(result.next_offset==null)return {jobs:combined,ready:true,error:''};
+      if(!Number.isSafeInteger(result.next_offset)||result.next_offset<=offset)
+        throw Error('Invalid personalized feed pagination');
+      offset=result.next_offset;
+    }
+    throw Error('Personalized feed exceeded safe pagination limit');
+  }
+  async function refreshMatchingFeed(){
+    if(!state.member||!state.memberPrefsConfigured||state.memberLoading)return;
+    const userId=state.member.id,sequence=memberSequence;
+    try{
+      const feed=await loadMatchingFeed(userId,sequence);
+      if(!feed||sequence!==memberSequence||state.member?.id!==userId)return;
+      state.watchFeed=feed.jobs||[];
+      state.watchFeedLoaded=feed.ready===true;
+      state.watchFeedError=feed.error||'';
+    }catch(error){
+      if(sequence!==memberSequence||state.member?.id!==userId)return;
+      state.watchFeedError=error.message||'Monitoring feed refresh failed';
+    }
+    syncFeedCount();render();
+  }
   async function hydrateMember(){
     const sequence=++memberSequence;
     state.memberLoading=true;
@@ -356,7 +390,7 @@ a:hover{color:var(--ink)}
       state.member=result.user||null;
       if(changed || !state.member){
         profile={...blankProfile(),photo:''};cvEntry=null;
-        state.memberEmail=null;state.memberPrefs=null;state.memberPrefsConfigured=false;state.saved=new Set();state.savedRecords=[];
+        state.memberEmail=null;state.memberPrefs=null;state.memberPrefsConfigured=false;state.watchFeed=[];state.watchFeedLoaded=false;state.watchFeedError='';state.saved=new Set();state.savedRecords=[];
         render();
       }
       if(!state.member){readSaved();state.memberError='';return;}
@@ -381,19 +415,31 @@ a:hover{color:var(--ink)}
       state.memberEmail=value(4);
       state.memberPrefsConfigured=value(5)?.configured===true;
       state.memberPrefs=state.memberPrefsConfigured?value(5)?.preferences:null;
+      state.watchFeed=[];state.watchFeedLoaded=false;state.watchFeedError='';
+      if(state.memberPrefsConfigured){
+        try{
+          const feed=await loadMatchingFeed(userId,sequence);
+          if(sequence!==memberSequence||state.member?.id!==userId)return;
+          state.watchFeed=feed?.jobs||[];
+          state.watchFeedLoaded=feed?.ready===true;
+          state.watchFeedError=feed?.error||'';
+        }catch(error){
+          state.watchFeedError=error.message||'Could not load personalized monitoring feed';
+        }
+      }
       state.memberErrors=Object.fromEntries(resources.map((key,i)=>[key,results[i].status==='rejected'?results[i].reason.message:'']));
       state.memberError='';
     }catch(e){
       if(sequence!==memberSequence)return;
       state.member=null;profile={...blankProfile(),photo:''};cvEntry=null;
-      state.memberEmail=null;state.memberPrefs=null;state.memberPrefsConfigured=false;state.saved=new Set();state.savedRecords=[];
+      state.memberEmail=null;state.memberPrefs=null;state.memberPrefsConfigured=false;state.watchFeed=[];state.watchFeedLoaded=false;state.watchFeedError='';state.saved=new Set();state.savedRecords=[];
       state.memberError=e.message;
     }finally{
       if(sequence===memberSequence){state.memberLoading=false;syncFeedCount();render();}
     }
   }
   async function cloudSave(key,remove){
-    const j=jobs().find(x=>jobKey(x)===key);
+    const j=[...state.watchFeed,...jobs()].find(x=>jobKey(x)===key);
     if(!j&&!remove)throw Error('Job no longer available in the feed');
     const response=await fetch('/api/secretj-data?scope=saved'+(remove?'&key='+encodeURIComponent(key):''),{
       method:remove?'DELETE':'POST',cache:'no-store',credentials:'same-origin',
@@ -441,13 +487,13 @@ a:hover{color:var(--ink)}
   }
   function validJobs(){
     const all=allPublicJobs();
-    // Explicit manual search searches the entire public catalog. Personal
-    // preferences only control the default feed and email notifications.
-    if(state.reviewExcluded || String(state.query||'').trim() || state.jobType==='internship' || !state.member || !state.memberPrefsConfigured)return all;
-    const match=window.SecretJJobPreferences?.isMatch;
-    // Fail open for browsing when the preference bundle has not loaded.
-    if(typeof match!=='function')return all;
-    return all.filter(j=>match(j,state.memberPrefs));
+    // Review All Jobs and explicit search always use the unrestricted catalog.
+    if(state.reviewExcluded||String(state.query||'').trim()||
+       state.jobType==='internship'||!state.member||!state.memberPrefsConfigured)return all;
+    // The default personalized feed MUST come from the same account-scoped
+    // monitoring records that drive email notifications, not an independent
+    // browser-side filter of the public discovery catalog.
+    return state.watchFeedLoaded?state.watchFeed.filter(publicJob):[];
   }
   // Only employer-published dates are described as posting dates.
   // Workday sometimes includes one explicitly in its description.
@@ -1044,14 +1090,15 @@ a:hover{color:var(--ink)}
     const id=jobKey(j), saved=state.saved.has(id), url=jobURL(j), score=scoreOf(j);
     const reasons = j.matched===true ? textOf((j.match_reasons || j.reasons || []).filter(x=>!/^excluded:|^uncertain:/i.test(String(x)))) : '';
     const evidence=state.reviewExcluded&&state.memberPrefsConfigured?window.SecretJJobPreferences?.explain?.(j,state.memberPrefs):null;
-    const personalizedAssessment=state.member&&state.memberPrefsConfigured&&!state.reviewExcluded?window.SecretJJobPreferences?.assess?.(j,state.memberPrefs):null;
+    const personalizedAssessment=state.member&&state.memberPrefsConfigured&&!state.reviewExcluded&&!j.watch_status?window.SecretJJobPreferences?.assess?.(j,state.memberPrefs):null;
     const needsReview=personalizedAssessment?.status==='experience-unverified';
     const career=window.SecretJCareerLevel?.evaluate?.(j,window.SecretJEligibilityCore);
     const careerNames={internship:'Internship / Trainee',entry:'Entry / Junior',mid:'Mid-level',senior:'Senior',lead:'Lead / Principal',manager:'Manager',director:'Director / Head',executive:'Executive'};
     const careerBadge=career?.level?badge(careerNames[career.level]||career.level):badge('Seniority unverified','grey');
     const reviewBadge=needsReview?'<span class="badge">Potential match · check seniority and requirements</span>':'';
+    const monitoringBadge=j.watch_status?badge(j.watch_status==='baseline'?'Monitored opportunity':j.watch_status==='sent'?'Alert sent':'New monitored match',j.watch_status==='sent'?'green':'grey'):'';
     const reviewMessage=evidence&&!evidence.match?`<p class="tiny">Outside preferences: ${esc(evidence.reasons.join(' · '))}${evidence.evidence?.length?' · Evidence: '+esc(evidence.evidence.join(' · ')):''}</p>`:evidence?.status==='experience-unverified'?`<p class="tiny">Needs review: experience level is not fully verified. ${esc((evidence.evidence||[]).join(' · '))}</p>`:'';
-    return `<article class="job-card"><div class="job-card-top">${brandForJob(j)}<div class="job-details"><h3>${esc(titleOf(j))}</h3><p>${esc(companyOf(j))} · ${esc(locationOf(j))}</p></div>${score>=8?`<span class="score">${score} pts</span>`:''}</div><div class="job-info">${badge(j.employment||j.job_type||'Role')}${careerBadge}${/egypt|cairo|giza|alexandria/i.test(locationOf(j))?badge('Egypt','green'):badge(locationOf(j),'grey')}${postedDate(j)?badge('Posted: '+prettyDate(postedDate(j))):badge(firstSeenDate(j)?'First seen: '+prettyDate(firstSeenDate(j)):'Posting date unavailable','grey')}</div>${snippet(j)?`<p class="job-desc">${esc(snippet(j))}</p>`:''}${reasons?`<p class="tiny" style="margin-bottom:14px">${esc(reasons)}</p>`:''}${reviewMessage}${reviewBadge}<div class="job-actions"><button class="plain-button ${saved?'saved':''}" data-save="${esc(id)}">${saved?'♥ Saved':'♡ Save job'}</button><div class="right">${url==='#'?badge('No application link','grey'):`<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View job ↗</a>`}</div></div></article>`;
+    return `<article class="job-card"><div class="job-card-top">${brandForJob(j)}<div class="job-details"><h3>${esc(titleOf(j))}</h3><p>${esc(companyOf(j))} · ${esc(locationOf(j))}</p></div>${score>=8?`<span class="score">${score} pts</span>`:''}</div><div class="job-info">${badge(j.employment||j.job_type||'Role')}${monitoringBadge}${careerBadge}${/egypt|cairo|giza|alexandria/i.test(locationOf(j))?badge('Egypt','green'):badge(locationOf(j),'grey')}${postedDate(j)?badge('Posted: '+prettyDate(postedDate(j))):badge(firstSeenDate(j)?'First seen: '+prettyDate(firstSeenDate(j)):'Posting date unavailable','grey')}</div>${snippet(j)?`<p class="job-desc">${esc(snippet(j))}</p>`:''}${reasons?`<p class="tiny" style="margin-bottom:14px">${esc(reasons)}</p>`:''}${reviewMessage}${reviewBadge}<div class="job-actions"><button class="plain-button ${saved?'saved':''}" data-save="${esc(id)}">${saved?'♥ Saved':'♡ Save job'}</button><div class="right">${url==='#'?badge('No application link','grey'):`<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View job ↗</a>`}</div></div></article>`;
   }
   function jobDateForFilter(j){
     return state.dateBasis==='firstseen'?firstSeenDate(j):postedDate(j);
@@ -1095,10 +1142,11 @@ a:hover{color:var(--ink)}
     if(state.role!=='all'&&!roleOptions.some(c=>c.key===state.role))state.role='all';
     const personalized=Boolean(state.member&&state.memberPrefsConfigured);
     const globalSearch=Boolean(state.query.trim());
-    const hiddenCount=personalized?allPublicJobs().length-allPublicJobs().filter(j=>window.SecretJJobPreferences?.isMatch?.(j,state.memberPrefs)).length:0;
-    const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':globalSearch?'Search all detected opportunities':personalized?'Your personalized job feed':'All detected opportunities',saved?(state.member?'Jobs saved to your account.':'Jobs you’ve bookmarked on this device.'):globalSearch?'Searching all published listings, including those outside your saved preferences. Email alerts remain personalized.':personalized?'Jobs matching your saved preferences. Update them in Account > Preferences.':'Explore every discovered opening with a valid application link. Sign in and save preferences to personalize your feed and alerts.');
+    const hiddenCount=personalized?allPublicJobs().length:0;
+    const personalizedView=personalized&&!state.reviewExcluded&&!globalSearch&&state.jobType!=='internship';
+    const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':globalSearch?'Search all detected opportunities':personalized?'Your personalized job feed':'All detected opportunities',saved?(state.member?'Jobs saved to your account.':'Jobs you’ve bookmarked on this device.'):globalSearch?'Searching all published listings, including those outside your saved preferences. Email alerts remain personalized.':personalized?'Opportunities detected by your personalized monitoring system, the same source used for email alerts.':'Explore every discovered opening with a valid application link. Sign in and save preferences to personalize your feed and alerts.');
     return h+
-      `${personalized&&!saved?`<section class="job-filter-panel" aria-label="Matching transparency"><p class="tiny"><strong>Personalized preference monitoring</strong> runs independently from <strong>All Detected Jobs</strong>. Company-native filters are used where verified, with other sources clearly handled through catalog fallback. The general discovery catalog is never reduced by your preferences.</p><p class="tiny">${hiddenCount} detected jobs are outside your saved preferences. They are not deleted. Review them to catch missing or incorrectly classified opportunities; email alerts still use your saved preferences.</p><button class="btn secondary" type="button" data-review-excluded aria-pressed="${state.reviewExcluded}">${state.reviewExcluded?'Return to personalized feed':'Review all detected jobs ('+allPublicJobs().length+')'}</button></section>`:''}
+      `${personalized&&!saved?`<section class="job-filter-panel" aria-label="Matching transparency"><p class="tiny"><strong>Personalized preference monitoring</strong> runs independently from <strong>All Detected Jobs</strong>. Company-native filters are used where verified, with other sources clearly handled through catalog fallback. The general discovery catalog is never reduced by your preferences.</p><p class="tiny">The general catalog currently contains ${hiddenCount} detected jobs, available separately under Review All Jobs and global Search. Your personalized feed reads the same private monitoring records as your email alerts, including the initial baseline of existing opportunities.</p>${personalizedView&&!state.watchFeedLoaded?`<p class="tiny"><strong>Monitoring status:</strong> ${esc(state.watchFeedError||'Waiting for the source monitor to finish its initial scan.')} No catalog results are being misrepresented as monitored matches.</p>`:''}<button class="btn secondary" type="button" data-review-excluded aria-pressed="${state.reviewExcluded}">${state.reviewExcluded?'Return to personalized feed':'Review all detected jobs ('+allPublicJobs().length+')'}</button></section>`:''}
       <section class="job-filter-panel" aria-label="Job search filters">
         <div class="job-filter-row"><label class="filter-field filter-search">Search<input class="search-box" id="job-search" type="search" placeholder="Title, company or skills" value="${esc(state.query)}" aria-label="Search jobs"></label>
         <label class="filter-field">Role family<select class="filter-select" id="role-filter">${option('all','All '+(state.memberPrefs?.role_families?.length?'selected':'')+' roles',state.role)}${roleOptions.map(c=>option(c.key,c.label,state.role)).join('')}</select></label>
@@ -1622,7 +1670,8 @@ a:hover{color:var(--ink)}
     syncFeedCount();
     hydrateMember();
     refresh(true);
-    setInterval(()=>refresh(true),60000);
+    // Public catalog and private source-watch results refresh independently.
+    setInterval(()=>{refresh(true);refreshMatchingFeed();},60000);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
 })();
