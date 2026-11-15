@@ -96,3 +96,10 @@ test('clear preferences still populate a complete monitoring feed, without mass 
     egypt_only:false,internships:false});
  assert.equal(result.length,2);
 });
+
+test('matching feed generation is not blocked by missing Resend credentials',()=>{
+ const source=fs.readFileSync('lib/secretj/native-preference-monitor.js','utf8');
+ assert.match(source,/const mailReady=/);
+ assert.match(source,/if\(mailReady&&user\.email_eligible===true/);
+ assert.doesNotMatch(source,/if\(!mailEnv\.RESEND_API_KEY\|\|!mailEnv\.SECRETJ_EMAIL_FROM\)return/);
+});
