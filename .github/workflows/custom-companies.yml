@@ -56,6 +56,10 @@ jobs:
           LEGACY_SMTP_DISABLED: "true"
         run: python -m app.custom_monitor
 
+      - name: Publish independent official-filter source capabilities
+        run: |
+          python -c "import json; from app.custom_sources import _ats; from app.native_preference_sources import write_capabilities; items=json.load(open('companies.json',encoding='utf-8')); result=write_capabilities(items,_ats,'dist/native-source-registry.json'); print('Preference source registry:',result['company_count'])"
+
       - name: Save results for Vercel
         run: |
           git config user.name "github-actions[bot]"
@@ -63,6 +67,7 @@ jobs:
 
           git add -f dist/data.json
           git add -f dist/custom-status.json
+          git add -f dist/native-source-registry.json
           git add -f data/custom_seen.json
 
           if ! git diff --cached --quiet; then
