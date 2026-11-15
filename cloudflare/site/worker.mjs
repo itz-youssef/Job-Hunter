@@ -79,6 +79,8 @@ export async function handleRequest(request,env,ctx){
   const pathname=url.pathname.replace(/\/+$/,'');
   if(pathname==='/api/secretj-native-scan')
     return runNodeHandler(nativeScan.createImmediateHandler(env,ctx),request);
+  if(pathname==='/api/secretj-native-status')
+    return runNodeHandler(nativeStatusHandler.createHandler(env),request);
   const handler=handlers.get(pathname);
   if(handler)return runNodeHandler(handler,request);
 

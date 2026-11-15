@@ -57,7 +57,7 @@ test('both monitor paths must qualify BEFORE storing and sending',()=>{
  assert.match(code,/await qualifyJobs\(selected,latest\[0\],env,fetchImpl\)/);
  assert.match(code,/await qualifyJobs\(selected,user,env,fetchImpl\)/);
  assert.match(code,/qualification_status'='accepted'/);
- assert.match(api,/job_snapshot->>'qualification_status'='accepted'/);
+ assert.match(api,/item\.qualification_status==='accepted'/);
 });
 test('without AI configuration engine explicitly labels its qualification as rules only',async()=>{
  const jobs=[mk('Junior AI Engineer','Build machine learning products'),

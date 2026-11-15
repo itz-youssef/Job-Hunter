@@ -1,7 +1,8 @@
 'use strict';
 /** Private subscriber-only status; no cross-account access or exposed preferences. */
 const core=require('../lib/secretj/core');
-module.exports=async function handler(req,res){
+const qualification=require('../lib/secretj/three-stage-qualification');
+function createHandler(env=process.env){return async function handler(req,res){
  try{
   core.allowedMethod(req,['GET']);
   const user=await core.requireUser(req);
@@ -26,11 +27,31 @@ module.exports=async function handler(req,res){
     const rows=await core.query(
       `SELECT job_key,job_snapshot,status,discovered_at,sent_at
        FROM public.sj_native_watch_jobs
-       WHERE user_id=$1 AND job_snapshot->>'qualification_status'='accepted'
+       WHERE user_id=$1
        ORDER BY discovered_at DESC,job_key ASC LIMIT $2 OFFSET $3`,
       [user.id,limit+1,offset]);
-    const page=rows.slice(0,limit).map(row=>({
+    // Rollout compatibility: legacy records predate the unified validator.
+    // Until the scheduled monitor safely backfills qualification provenance,
+    // re-check them on the SERVER using today's stored preferences; do not
+    // blindly expose old jobs, and never bypass strict AI mode.
+    const legacy=rows.some(row=>!row.job_snapshot?.qualification_status);
+    let preference=null;
+    if(legacy&&env.SECRETJ_AI_VERIFICATION_ENABLED!=='true'){
+      const ps=await core.query(
+        `SELECT egypt_only,internships,role_families,career_levels,
+                max_experience_years FROM public.sj_preferences WHERE user_id=$1`,
+        [user.id]);
+      preference=ps[0]||null;
+    }
+    const page=rows.slice(0,limit).filter(row=>{
+      const item=row.job_snapshot||{};
+      if(item.qualification_status==='accepted')return true;
+      return !item.qualification_status&&preference!==null&&
+        qualification.reject(item,preference).ok;
+    }).map(row=>({
       ...(row.job_snapshot||{}),
+      qualification_mode:row.job_snapshot?.qualification_mode||
+        'legacy-rules-only',
       id:row.job_key,
       watch_status:row.status,
       discovered_at:row.discovered_at,
@@ -56,4 +77,6 @@ module.exports=async function handler(req,res){
     immediate_scan:scanRows[0]||null,
     note:'Only native-query supported sources use employer API filters. Other sources rely on explicit fallback classification.'});
  }catch(error){return core.safeError(res,error);}
-};
+};}
+module.exports=createHandler();
+module.exports.createHandler=createHandler;
