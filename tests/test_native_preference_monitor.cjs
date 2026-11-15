@@ -101,3 +101,30 @@ test('public catalog and account-only monitor maintain separate data stores',()=
  assert.equal(registry.companies.filter(x=>x.preference_mode==='server-query').length,6);
  assert.match(fs.readFileSync('cloudflare/site/wrangler.toml','utf8'),/SECRETJ_NATIVE_MONITOR_ENABLED = "true"/);
 });
+
+test('Ashby official API is fetched live independently from catalog snapshot',async()=>{
+ const entry={name:'Thndr',source_kind:'ashby',source_url:'https://jobs.ashbyhq.com/thndr'};
+ const calls=[];
+ const rows=await monitor.ashbyBoard(entry,async url=>{
+   calls.push(url);
+   return {ok:true,json:async()=>({jobs:[
+     {title:'Junior Machine Learning Engineer',jobUrl:'https://jobs.ashbyhq.com/thndr/123',
+      location:'Egypt',team:'Engineering',employmentType:'FullTime',isListed:true},
+     {title:'Unlisted role',jobUrl:'https://jobs.ashbyhq.com/thndr/hidden',isListed:false}
+   ]})};
+ });
+ assert.equal(calls.length,1);assert.match(calls[0],/api\.ashbyhq\.com\/posting-api\/job-board\/thndr/);
+ assert.equal(rows.length,1);assert.equal(rows[0].source_filter_proof,'employer-public-board');
+});
+test('Workable official widget jobs are not prefiltered by the owner career field',async()=>{
+ const entry={name:'Integrant',source_kind:'workable',source_url:'https://apply.workable.com/integrant/'};
+ const rows=await monitor.workableBoard(entry,async url=>{
+   assert.match(url,/apply\.workable\.com\/api\/v1\/widget\/accounts\/integrant/);
+   return {ok:true,json:async()=>({jobs:[
+     {title:'Senior Accountant',shortcode:'ACCT',location:{city:'Cairo',country:'Egypt'}},
+     {title:'Junior Software Engineer',shortcode:'SWE',location:{city:'Cairo',country:'Egypt'}}
+   ]})};
+ });
+ assert.equal(rows.length,2,'Company feed is not silently limited to AI or entry');
+ assert.ok(rows.every(x=>x.source_filter_proof==='employer-public-board'));
+});
