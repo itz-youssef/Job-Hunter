@@ -1,6 +1,6 @@
 {
   "mode": "snapshot",
-  "generated_at": "2026-11-15T22:51:22.266209+00:00",
+  "generated_at": "2026-11-15T22:56:24.419282+00:00",
   "sources": [
     {
       "id": 1,
@@ -8875,6 +8875,33 @@
       "careers_url": "https://www.ibm.com/careers/search?"
     },
     {
+      "id": "custom-ibm-140852",
+      "company": "IBM",
+      "title": "Data Engineer-Data Integration",
+      "location": "Giza, EG",
+      "url": "https://careers.ibm.com/careers/JobDetail?jobId=140852",
+      "description": "A career in IBM Consulting is built on long-term client relationships and close collaboration worldwide. You'll work with leading companies across industries, helping them shape their hybrid cloud and AI journeys. With support from our strategic...",
+      "published_at": "",
+      "employment": "",
+      "source": "Custom Careers",
+      "seniority": "Professional",
+      "category": "Data & Analytics",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.513834+00:00",
+      "apply_url": "https://careers.ibm.com/careers/JobDetail?jobId=140852",
+      "link": "https://careers.ibm.com/careers/JobDetail?jobId=140852",
+      "careers_url": "https://www.ibm.com/careers/search?"
+    },
+    {
       "id": "custom-ibm-140847",
       "company": "IBM",
       "title": "Data Engineer-Data Integration",
@@ -8984,33 +9011,6 @@
       "discovered_at": "2026-11-14T11:46:34.513869+00:00",
       "apply_url": "https://careers.ibm.com/careers/JobDetail?jobId=140863",
       "link": "https://careers.ibm.com/careers/JobDetail?jobId=140863",
-      "careers_url": "https://www.ibm.com/careers/search?"
-    },
-    {
-      "id": "custom-ibm-140852",
-      "company": "IBM",
-      "title": "Data Engineer-Data Integration",
-      "location": "Giza, EG",
-      "url": "https://careers.ibm.com/careers/JobDetail?jobId=140852",
-      "description": "A career in IBM Consulting is built on long-term client relationships and close collaboration worldwide. You'll work with leading companies across industries, helping them shape their hybrid cloud and AI journeys. With support from our strategic...",
-      "published_at": "",
-      "employment": "",
-      "source": "Custom Careers",
-      "seniority": "Professional",
-      "category": "Data & Analytics",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.513834+00:00",
-      "apply_url": "https://careers.ibm.com/careers/JobDetail?jobId=140852",
-      "link": "https://careers.ibm.com/careers/JobDetail?jobId=140852",
       "careers_url": "https://www.ibm.com/careers/search?"
     },
     {
@@ -13885,32 +13885,6 @@
       "careers_url": "https://careers.dxc.com/?utm_source=chatgpt.com"
     },
     {
-      "id": "custom-24b8161c4d62c802b471837c",
-      "company": "DXC Technology",
-      "title": "MS DYNAMICS 365 CRM - DevOps & Automation Specialist",
-      "location": "Egypt",
-      "url": "https://careers.dxc.com/job/23785677/ms-dynamics-365-crm-devops-automation-specialist--eg/",
-      "description": "Job Description: Essential Job Functions: • Design, implement, and maintain CI/CD pipelines for Microsoft Dynamics 365 CRM, Dataverse, Power Platform, and related Azure components using Azure DevOps and Microsoft ALM best practices. • Manage CRM solution packaging, export/import automation, deployment validation, release branching, build definitions, release gates, and rollback procedures across development, test, UAT, staging, and production environments. • Automate administrative and operational tasks using PowerShell, Azure CLI, PAC CLI, Power Platform Build Tools, YAML pipelines, and reusable deployment scripts. • Support environment provisioning, configuration management, connection references, environment variables, service principals, application users, security roles, and managed identity setup. • Establish and enforce DevOps governance, release standards, source control practices, versioning strategy, deployment approvals, and auditability for CRM delivery teams. • Work with developers to integrate plugins, JavaScript/TypeScript components, PCF controls, Azure Functions, Logic Apps, and integration assets into automated build and deployment pipelines. • Implement quality checks, static code analysis, automated deployment verification, smoke testing support, dependency validation, and release readiness controls. • Monitor and troubleshoot pipeline failures, deployment issues, CRM solution conflicts, missing dependencies, environment configuration gaps, and production release incidents. • Maintain DevOps documentation including deployment guides, release calendars, runbooks, rollback plans, automation scripts, environment diagrams, and operational handover documents. • Drive continuous improvement by identifying opportunities to reduce manual effort, improve release reliability, enhance security controls, and accelerate CRM delivery timelines. Basic Qualifications: • 3+ years of hands-on experience in Microsoft Dynamics 365 CRM/Customer Engagement delivery, with strong focus on DevOps, ALM, release management, and automation. • Strong experience with Azure DevOps including repositories, branching strategies, build pipelines, release pipelines, YAML pipelines, approvals, gates, variable groups, service connections, and secure deployment practices. • Practical knowledge of Dynamics 365 CRM solution management, managed/unmanaged solutions, solution layering, dependency management, environment variables, connection references, and Dataverse environment administration. • Hands-on experience with Power Platform Build Tools, PAC CLI, PowerShell, Azure CLI, Git, and automation scripting for CRM and Power Platform deployments. • Good understanding of Dynamics 365 CRM customization and development components including plugins, workflows, custom APIs, JavaScript/TypeScript, PCF controls, and integration assets to support automated release planning. • Experience managing multiple CRM environments and supporting environment refreshes, backups, restores, configuration alignment, security setup, application users, and service principals. • Strong knowledge of Power Platform administration, Dataverse security model, connectors, environment strategy, DLP considerations, and application lifecycle management. • Experience integrating CRM deployment pipelines with Azure services such as Azure Functions, Logic Apps, Service Bus, Key Vault, App Services, Application Insights, and Azure Monitor. • Ability to troubleshoot deployment failures, solution import errors, dependency conflicts, pipeline execution issues, environment-specific configuration problems, and release incidents. • Solid understanding of DevSecOps principles, secure secrets management, privileged access controls, audit requirements, compliance checkpoints, and production release governance. • Prior experience working in Egypt or supporting Egypt-based enterprise/government clients is preferred; Arabic language capability is an advantage. Other Qualifications: • Microsoft certifications in Dynamics 365 Customer Engagement, Power Platform, Azure Administrator, Azure Developer, DevOps Engineer, or Solution Architect are preferred. • Experience with automated testing tools, regression automation, EasyRepro, Playwright, Selenium, or similar test automation frameworks for CRM and Power Platform solutions is an advantage. • Exposure to Agile/Scrum, SAFe, DevSecOps, release trains, change advisory boards, and enterprise release governance is a plus. • Knowledge of MEA market delivery requirements, Arabic/English bilingual delivery environments, data protection expectations, and public sector implementation practices is desirable. At DXC Technology, we believe strong connections and community are key to our success. Our work model prioritizes in-person collaboration while offering flexibility to support wellbeing, productivity, individual work styles, and life circumstances. We’re committed to fostering an inclusive environment where everyone can thrive. Recruitment fraud is a scheme in which fictitious job opportunities are offered to job seekers typically through online services, such as false websites, or through unsolicited emails claiming to be from the company. These emails may request recipients to provide personal information or to make payments as part of their illegitimate recruiting process. DXC does not make offers of employment via social media networks and DXC never asks for any money or payments from applicants at any point in the recruitment process, nor ask a job seeker to purchase IT or other equipment on our behalf. More information on employment scams is available here .",
-      "published_at": "2026-09-01T00:00:00Z",
-      "employment": "Full time",
-      "source": "Custom Careers",
-      "seniority": "",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.523745+00:00",
-      "apply_url": "https://careers.dxc.com/job/23785677/ms-dynamics-365-crm-devops-automation-specialist--eg/",
-      "link": "https://careers.dxc.com/job/23785677/ms-dynamics-365-crm-devops-automation-specialist--eg/",
-      "careers_url": "https://careers.dxc.com/?utm_source=chatgpt.com"
-    },
-    {
       "id": "custom-99a7f455cf821b0a024feaf7",
       "company": "DXC Technology",
       "title": "MS DYNAMICS 365 CRM - Senior Technical Consultant",
@@ -13934,6 +13908,32 @@
       "discovered_at": "2026-11-14T11:46:34.523705+00:00",
       "apply_url": "https://careers.dxc.com/job/23785270/ms-dynamics-365-crm-senior-technical-consultant--eg/",
       "link": "https://careers.dxc.com/job/23785270/ms-dynamics-365-crm-senior-technical-consultant--eg/",
+      "careers_url": "https://careers.dxc.com/?utm_source=chatgpt.com"
+    },
+    {
+      "id": "custom-24b8161c4d62c802b471837c",
+      "company": "DXC Technology",
+      "title": "MS DYNAMICS 365 CRM - DevOps & Automation Specialist",
+      "location": "Egypt",
+      "url": "https://careers.dxc.com/job/23785677/ms-dynamics-365-crm-devops-automation-specialist--eg/",
+      "description": "Job Description: Essential Job Functions: • Design, implement, and maintain CI/CD pipelines for Microsoft Dynamics 365 CRM, Dataverse, Power Platform, and related Azure components using Azure DevOps and Microsoft ALM best practices. • Manage CRM solution packaging, export/import automation, deployment validation, release branching, build definitions, release gates, and rollback procedures across development, test, UAT, staging, and production environments. • Automate administrative and operational tasks using PowerShell, Azure CLI, PAC CLI, Power Platform Build Tools, YAML pipelines, and reusable deployment scripts. • Support environment provisioning, configuration management, connection references, environment variables, service principals, application users, security roles, and managed identity setup. • Establish and enforce DevOps governance, release standards, source control practices, versioning strategy, deployment approvals, and auditability for CRM delivery teams. • Work with developers to integrate plugins, JavaScript/TypeScript components, PCF controls, Azure Functions, Logic Apps, and integration assets into automated build and deployment pipelines. • Implement quality checks, static code analysis, automated deployment verification, smoke testing support, dependency validation, and release readiness controls. • Monitor and troubleshoot pipeline failures, deployment issues, CRM solution conflicts, missing dependencies, environment configuration gaps, and production release incidents. • Maintain DevOps documentation including deployment guides, release calendars, runbooks, rollback plans, automation scripts, environment diagrams, and operational handover documents. • Drive continuous improvement by identifying opportunities to reduce manual effort, improve release reliability, enhance security controls, and accelerate CRM delivery timelines. Basic Qualifications: • 3+ years of hands-on experience in Microsoft Dynamics 365 CRM/Customer Engagement delivery, with strong focus on DevOps, ALM, release management, and automation. • Strong experience with Azure DevOps including repositories, branching strategies, build pipelines, release pipelines, YAML pipelines, approvals, gates, variable groups, service connections, and secure deployment practices. • Practical knowledge of Dynamics 365 CRM solution management, managed/unmanaged solutions, solution layering, dependency management, environment variables, connection references, and Dataverse environment administration. • Hands-on experience with Power Platform Build Tools, PAC CLI, PowerShell, Azure CLI, Git, and automation scripting for CRM and Power Platform deployments. • Good understanding of Dynamics 365 CRM customization and development components including plugins, workflows, custom APIs, JavaScript/TypeScript, PCF controls, and integration assets to support automated release planning. • Experience managing multiple CRM environments and supporting environment refreshes, backups, restores, configuration alignment, security setup, application users, and service principals. • Strong knowledge of Power Platform administration, Dataverse security model, connectors, environment strategy, DLP considerations, and application lifecycle management. • Experience integrating CRM deployment pipelines with Azure services such as Azure Functions, Logic Apps, Service Bus, Key Vault, App Services, Application Insights, and Azure Monitor. • Ability to troubleshoot deployment failures, solution import errors, dependency conflicts, pipeline execution issues, environment-specific configuration problems, and release incidents. • Solid understanding of DevSecOps principles, secure secrets management, privileged access controls, audit requirements, compliance checkpoints, and production release governance. • Prior experience working in Egypt or supporting Egypt-based enterprise/government clients is preferred; Arabic language capability is an advantage. Other Qualifications: • Microsoft certifications in Dynamics 365 Customer Engagement, Power Platform, Azure Administrator, Azure Developer, DevOps Engineer, or Solution Architect are preferred. • Experience with automated testing tools, regression automation, EasyRepro, Playwright, Selenium, or similar test automation frameworks for CRM and Power Platform solutions is an advantage. • Exposure to Agile/Scrum, SAFe, DevSecOps, release trains, change advisory boards, and enterprise release governance is a plus. • Knowledge of MEA market delivery requirements, Arabic/English bilingual delivery environments, data protection expectations, and public sector implementation practices is desirable. At DXC Technology, we believe strong connections and community are key to our success. Our work model prioritizes in-person collaboration while offering flexibility to support wellbeing, productivity, individual work styles, and life circumstances. We’re committed to fostering an inclusive environment where everyone can thrive. Recruitment fraud is a scheme in which fictitious job opportunities are offered to job seekers typically through online services, such as false websites, or through unsolicited emails claiming to be from the company. These emails may request recipients to provide personal information or to make payments as part of their illegitimate recruiting process. DXC does not make offers of employment via social media networks and DXC never asks for any money or payments from applicants at any point in the recruitment process, nor ask a job seeker to purchase IT or other equipment on our behalf. More information on employment scams is available here .",
+      "published_at": "2026-09-01T00:00:00Z",
+      "employment": "Full time",
+      "source": "Custom Careers",
+      "seniority": "",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.523745+00:00",
+      "apply_url": "https://careers.dxc.com/job/23785677/ms-dynamics-365-crm-devops-automation-specialist--eg/",
+      "link": "https://careers.dxc.com/job/23785677/ms-dynamics-365-crm-devops-automation-specialist--eg/",
       "careers_url": "https://careers.dxc.com/?utm_source=chatgpt.com"
     },
     {
@@ -18031,13 +18031,13 @@
       "careers_url": "https://www.luciq.ai/careers?utm_source=chatgpt.com"
     },
     {
-      "id": "custom-cbd631d46448bb3a9257feb8",
+      "id": "custom-6cd8639e613356cd56695206",
       "company": "Breadfast Technology",
-      "title": "Head of Data Privacy & Group Data Protection Officer (DPO)",
+      "title": "Information Technology Help Desk",
       "location": "Cairo, Cairo Governorate, Egypt",
-      "url": "https://careers.4dxventures.com/companies/breadfast/jobs/99342535-head-of-data-privacy-group-data-protection-officer-dpo",
-      "description": "Head of Data Privacy & Group Data Protection Officer (DPO) @ Breadfast | 4DX Ventures Job Board About Portfolio Team Careers Contact About Portfolio Team Careers Search jobs Explore companies Join talent network Talent My job alerts Head of Data Privacy & Group Data Protection Officer (DPO) Breadfast IT · Full-time Cairo, Cairo Governorate, Egypt Posted on Nov 8, 2026 Apply now Role Objectives: Lead Breadfast’s enterprise-wide data privacy strategy and programme, and serve as the company’s designated Data Protection Officer before the Personal Data Protection Center (PDPC). The role ensures that all processing of personal data – of millions of customers, 10,000+ employees and DAs , suppliers and partners – complies with Egypt’s Personal Data Protection Law No. 151 of 2020 (PDPL) and its Executive Regulations, and that privacy is treated as a source of customer trust and a business enabler. The Head of Data Privacy sets the privacy governance framework, advises the CEO, Executive Committee and Board, builds and leads the privacy function. Roles & Responsibilities: Privacy Strategy, Governance & Leadership Define and own the company-wide data privacy strategy, policy framework and multi-year roadmap, approved by the Executive Committee. Establish privacy governance: Privacy Steering Committee, RACI per function, policy hierarchy, and a Privacy Champions network across all departments and sites. Advise the CEO, ExCom and Board on privacy risk, regulatory exposure and the privacy implications of strategic initiatives (new business lines, M&A, market expansion, partnerships). Build, lead and develop the privacy team; set budget, capability plan and success measures for the function. Regulatory Compliance & PDPC Relationship Act as the registered Group DPO and primary point of contact with the PDPC; maintain registrations, licences and permits required under the PDPL for Breadfast as data controller and processor. Lead the company-wide PDPL compliance programme and close gaps within the regulatory grace period of the Executive Regulations. Monitor the PDPL, Executive Regulations, PDPC decisions and adjacent regulations (e.g., Central Bank of Egypt requirements for payments/fintech, consumer protection, e-commerce and cybercrime laws) and translate them into business requirements. Represent Breadfast in PDPC inspections, inquiries and industry forums. Enterprise Data Mapping & Records of Processing Own the enterprise Record of Processing Activities (RoPA) across all functions and systems: customer app and website, CRM, marketing and loyalty, payments, ERP, HRIS/payroll, WMS/TMS, rider apps and telematics, CCTV and biometrics. Maintain data classification, with controls for sensitive personal data ( Biometrics, health/medical records, financial data, national ID data, criminal record certificates) Privacy by Design, Risk & Impact Assessments Embed privacy-by-design and by-default in the product and tech lifecycle; privacy sign-off before launch of new features, systems and data uses. Set the DPIA methodology and ensure DPIAs for high-risk processing: customer profiling and personalization, AI/ML models, marketing analytics, rider GPS tracking, workplace CCTV, biometric attendance, credit/BNPL or payments features. Maintain the enterprise privacy risk register, integrated into Breadfast’s Enterprise Risk Management framework. Customer Trust, Marketing & Data Use Ensure lawful basis, clear notices and consent management for customers across app, web, calls, and marketing channels (SMS, push, email, WhatsApp), including direct marketing consent rules under the PDPL. Govern data sharing with partners, advertisers and analytics providers; set rules for anonymization and pseudonymization of data used for analytics and AI. Own customer-facing privacy policy and cookie/tracking practices. 3.6 Employee & Workforce Privacy Partner with People & Culture on privacy for the full employee lifecycle – recruitment, onboarding, background checks, payroll, social insurance, medical data, pictures, performance and offboarding. Ensure fit-for-purpose privacy notices and training for the front-liners teams, blue-collar and outsourced workforce (clear Arabic, practical formats). Third-Party, Vendor & Cross-Border Data Management Set the third-party privacy risk framework: due diligence, data processing agreements, audits and offboarding for all processors (cloud and SaaS vendors, 3PLs, rider and manpower agencies, payment providers, marketing agencies). Govern cross-border data transfers in line with PDPL conditions and PDPC licensing/approval requirements. Data Subject Rights & Complaints Own the enterprise process for data subject requests (access, correction, erasure, objection, consent withdrawal) for customers, employees and partners, within statutory deadlines. Oversee privacy complaints and escalations, in coordination with Customer Experience, P&C and Legal. Breach Management & Information Security Partnership Own the personal data breach response plan; jointly lead incident response with the CISO/Information Security. Decide on and lead notification to the PDPC and affected data subjects within the legal timeframe (72 hours to the PDPC under the PDPL). Partner with the CISO on technical and organizational security measures, retention schedules and secure disposal across offices, sites and devices. Awareness, Culture & Assurance Design the enterprise privacy training and awareness programme, tailored by audience (ExCom, tech and product, marketing, customer service, operations, frontline workforce). Run a compliance monitoring and assurance plan; support Internal Audit and external audits; report privacy KPIs quarterly to ExCom and the Audit & Risk Committee. Required Education, Knowledge, And Skills: Education Bachelor’s degree in Law, Information Systems, Computer Science or Business Administration. Master’s degree / LLM in technology, data or privacy law is a strong plus. Mandatory Regulatory Requirement (Egypt PDPL) Registered in the PDPC’s DPO Registry, at the highest category/level (Category A / Lead level), given the volume and sensitivity of the personal data Breadfast processes – or able to obtain it before appointment. Passed the PDPC-approved DPO examination required for registration. Keeps registration valid; it lasts two years and must be renewed. Supporting International Certifications (preferred, not a substitute for PDPC registration) IAPP, ISC2, PECB or ISO-accredited IAPP CIPP/E and CIPM; CIPT or FIP a plus. ISO/IEC 27701 or ISO/IEC 27001 Lead Implementer/Auditor; CISA, CISM or CDPSE advantageous. The PDPC may take relevant certifications into account when assigning a DPO’s registration category. Experience 12+ years in data protection, information security, compliance or technology law, including 5+ years leading a privacy programme or function. Proven track record building an enterprise privacy programme end-to-end (governance, RoPA, DPIAs, DSRs, breach response, vendor management) in a large organisation. Experience in consumer-facing digital businesses – e-commerce, quick-commerce, retail/FMCG, telecom or fintech – with large customer databases and a large frontline workforce. Hands-on experience with Egypt PDPL compliance; strong GDPR experience; GCC privacy laws (Saudi PDPL, UAE PDPL) a plus. Experience presenting to Executive Committees and Boards, and dealing directly with regulators. Apply now See more open positions at Breadfast Powered by Getro.com Privacy policy Cookie policy Africa's leader in technology investing About Portfolio Team Careers Contact Linkedin ©2024 4DX Ventures. All rights reserved. Terms of use Privacy Policy Edit Cookies",
-      "published_at": "2026-11-08",
+      "url": "https://careers.4dxventures.com/companies/breadfast/jobs/98855989-information-technology-help-desk",
+      "description": "Information Technology Help Desk @ Breadfast | 4DX Ventures Job Board About Portfolio Team Careers Contact About Portfolio Team Careers Search jobs Explore companies Join talent network Talent My job alerts Information Technology Help Desk Breadfast IT · Full-time Cairo, Cairo Governorate, Egypt Posted on Nov 3, 2026 Apply now Role Objectives: The IT Help Desk Specialist is responsible for providing first-line technical support and maintaining IT infrastructure across Breadfast’s offices and branches. The role supports employees by troubleshooting hardware, software, network, and device-related issues, ensuring timely resolution of support requests, smooth system operations, and reliable IT service delivery. Roles & Responsibilities: IT Department Assets management. Solving network problems and device issues in our main office and branches. Installing internet networking in our new branches Providing support in person, over the phone, or via remote access. Diagnosing issues with computer software, peripherals, and hardware. Running software diagnostic tools and physically inspecting hardware systems. Talking to employees through basic problem-solving processes. Providing basic computer training. Installing and upgrading hardware and software systems. Writing training manuals. Following up with employees regarding the previously solved issues. Completing support tickets. REQUIRED EDUCATION, KNOWLEDGE, AND SKILLS 0-2 years working as a Help Desk. Basic knowledge of networking and Firewalls. Advanced knowledge of computer hardware systems, including Motherboards, memory modules, and processors. Knowledge of computer software systems, including operating systems, office applications, and basic software skills Excellent analytical and diagnostic skills. Advanced knowledge of help desk software and remote-access systems. Ability to troubleshoot complex hardware and software issues. High-level communication skills. Patience and understanding. Apply now See more open positions at Breadfast Powered by Getro.com Privacy policy Cookie policy Africa's leader in technology investing About Portfolio Team Careers Contact Linkedin ©2024 4DX Ventures. All rights reserved. Terms of use Privacy Policy Edit Cookies",
+      "published_at": "2026-11-03",
       "employment": "",
       "source": "Custom Careers",
       "score": 0,
@@ -18050,9 +18050,34 @@
       "match_reasons": [
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
       ],
-      "discovered_at": "2026-11-15T18:41:14.175639+00:00",
-      "apply_url": "https://careers.4dxventures.com/companies/breadfast/jobs/99342535-head-of-data-privacy-group-data-protection-officer-dpo",
-      "link": "https://careers.4dxventures.com/companies/breadfast/jobs/99342535-head-of-data-privacy-group-data-protection-officer-dpo",
+      "discovered_at": "2026-11-15T22:56:24.266552+00:00",
+      "apply_url": "https://careers.4dxventures.com/companies/breadfast/jobs/98855989-information-technology-help-desk",
+      "link": "https://careers.4dxventures.com/companies/breadfast/jobs/98855989-information-technology-help-desk",
+      "careers_url": "https://www.breadfast.com/ar/careers_categories/technology/?utm_source=chatgpt.com"
+    },
+    {
+      "id": "custom-431da7dc762c2e54fb235c44",
+      "company": "Breadfast Technology",
+      "title": "Information Technology Specialist II",
+      "location": "Cairo, Cairo Governorate, Egypt",
+      "url": "https://careers.4dxventures.com/companies/breadfast/jobs/98855990-information-technology-specialist-ii",
+      "description": "Information Technology Specialist II @ Breadfast | 4DX Ventures Job Board About Portfolio Team Careers Contact About Portfolio Team Careers Search jobs Explore companies Join talent network Talent My job alerts Information Technology Specialist II Breadfast IT · Full-time Cairo, Cairo Governorate, Egypt Posted on Nov 3, 2026 Apply now Role Objectives: The IT Specialist II is responsible for managing and resolving complex technical issues that arise beyond the scope of the IT HelpDesk and junior IT staff. Roles & Responsibilities: Handle more complex technical issues escalated from IT HelpDesk and IT Specialists. Design and implement improvements and updates. Troubleshoot and resolve advanced hardware, network, and software problems. Manage and configure servers, firewalls, and other network infrastructure. Oversee system security and data protection policies and procedures. Provide support for virtualization technologies (e.g., VMware, Hyper-V). Administer cloud-based services and platforms (Google, AWS, Azure). Conduct network performance monitoring and identify optimization opportunities. Assist in the planning and implementation of large IT projects. Mentor junior IT staff and help them resolve complex technical issues. Required Education, Knowledge, And Skills: Minimum of 2 years of experience in IT or a related field, with proven expertise in advanced technical troubleshooting. Strong knowledge of server management, networking principles, and security protocols. Proficiency in virtualization technologies (e.g., VMware, Hyper-V) and cloud platforms (e.g., Google Cloud, AWS, Azure). Excellent problem-solving skills and the ability to work under pressure. Strong communication and interpersonal skills, with a commitment to providing exceptional support. Relevant certifications (e.g., CompTIA Network+, Security+, or similar) are highly desirable. Apply now See more open positions at Breadfast Powered by Getro.com Privacy policy Cookie policy Africa's leader in technology investing About Portfolio Team Careers Contact Linkedin ©2024 4DX Ventures. All rights reserved. Terms of use Privacy Policy Edit Cookies",
+      "published_at": "2026-11-03",
+      "employment": "",
+      "source": "Custom Careers",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-15T22:56:24.266585+00:00",
+      "apply_url": "https://careers.4dxventures.com/companies/breadfast/jobs/98855990-information-technology-specialist-ii",
+      "link": "https://careers.4dxventures.com/companies/breadfast/jobs/98855990-information-technology-specialist-ii",
       "careers_url": "https://www.breadfast.com/ar/careers_categories/technology/?utm_source=chatgpt.com"
     },
     {
@@ -18082,6 +18107,31 @@
       "discovered_at": "2026-11-15T15:36:15.652237+00:00",
       "apply_url": "https://careers.4dxventures.com/companies/breadfast/jobs/98449465-information-technology-intern",
       "link": "https://careers.4dxventures.com/companies/breadfast/jobs/98449465-information-technology-intern",
+      "careers_url": "https://www.breadfast.com/ar/careers_categories/technology/?utm_source=chatgpt.com"
+    },
+    {
+      "id": "custom-cbd631d46448bb3a9257feb8",
+      "company": "Breadfast Technology",
+      "title": "Head of Data Privacy & Group Data Protection Officer (DPO)",
+      "location": "Cairo, Cairo Governorate, Egypt",
+      "url": "https://careers.4dxventures.com/companies/breadfast/jobs/99342535-head-of-data-privacy-group-data-protection-officer-dpo",
+      "description": "Head of Data Privacy & Group Data Protection Officer (DPO) @ Breadfast | 4DX Ventures Job Board About Portfolio Team Careers Contact About Portfolio Team Careers Search jobs Explore companies Join talent network Talent My job alerts Head of Data Privacy & Group Data Protection Officer (DPO) Breadfast IT · Full-time Cairo, Cairo Governorate, Egypt Posted on Nov 8, 2026 Apply now Role Objectives: Lead Breadfast’s enterprise-wide data privacy strategy and programme, and serve as the company’s designated Data Protection Officer before the Personal Data Protection Center (PDPC). The role ensures that all processing of personal data – of millions of customers, 10,000+ employees and DAs , suppliers and partners – complies with Egypt’s Personal Data Protection Law No. 151 of 2020 (PDPL) and its Executive Regulations, and that privacy is treated as a source of customer trust and a business enabler. The Head of Data Privacy sets the privacy governance framework, advises the CEO, Executive Committee and Board, builds and leads the privacy function. Roles & Responsibilities: Privacy Strategy, Governance & Leadership Define and own the company-wide data privacy strategy, policy framework and multi-year roadmap, approved by the Executive Committee. Establish privacy governance: Privacy Steering Committee, RACI per function, policy hierarchy, and a Privacy Champions network across all departments and sites. Advise the CEO, ExCom and Board on privacy risk, regulatory exposure and the privacy implications of strategic initiatives (new business lines, M&A, market expansion, partnerships). Build, lead and develop the privacy team; set budget, capability plan and success measures for the function. Regulatory Compliance & PDPC Relationship Act as the registered Group DPO and primary point of contact with the PDPC; maintain registrations, licences and permits required under the PDPL for Breadfast as data controller and processor. Lead the company-wide PDPL compliance programme and close gaps within the regulatory grace period of the Executive Regulations. Monitor the PDPL, Executive Regulations, PDPC decisions and adjacent regulations (e.g., Central Bank of Egypt requirements for payments/fintech, consumer protection, e-commerce and cybercrime laws) and translate them into business requirements. Represent Breadfast in PDPC inspections, inquiries and industry forums. Enterprise Data Mapping & Records of Processing Own the enterprise Record of Processing Activities (RoPA) across all functions and systems: customer app and website, CRM, marketing and loyalty, payments, ERP, HRIS/payroll, WMS/TMS, rider apps and telematics, CCTV and biometrics. Maintain data classification, with controls for sensitive personal data ( Biometrics, health/medical records, financial data, national ID data, criminal record certificates) Privacy by Design, Risk & Impact Assessments Embed privacy-by-design and by-default in the product and tech lifecycle; privacy sign-off before launch of new features, systems and data uses. Set the DPIA methodology and ensure DPIAs for high-risk processing: customer profiling and personalization, AI/ML models, marketing analytics, rider GPS tracking, workplace CCTV, biometric attendance, credit/BNPL or payments features. Maintain the enterprise privacy risk register, integrated into Breadfast’s Enterprise Risk Management framework. Customer Trust, Marketing & Data Use Ensure lawful basis, clear notices and consent management for customers across app, web, calls, and marketing channels (SMS, push, email, WhatsApp), including direct marketing consent rules under the PDPL. Govern data sharing with partners, advertisers and analytics providers; set rules for anonymization and pseudonymization of data used for analytics and AI. Own customer-facing privacy policy and cookie/tracking practices. 3.6 Employee & Workforce Privacy Partner with People & Culture on privacy for the full employee lifecycle – recruitment, onboarding, background checks, payroll, social insurance, medical data, pictures, performance and offboarding. Ensure fit-for-purpose privacy notices and training for the front-liners teams, blue-collar and outsourced workforce (clear Arabic, practical formats). Third-Party, Vendor & Cross-Border Data Management Set the third-party privacy risk framework: due diligence, data processing agreements, audits and offboarding for all processors (cloud and SaaS vendors, 3PLs, rider and manpower agencies, payment providers, marketing agencies). Govern cross-border data transfers in line with PDPL conditions and PDPC licensing/approval requirements. Data Subject Rights & Complaints Own the enterprise process for data subject requests (access, correction, erasure, objection, consent withdrawal) for customers, employees and partners, within statutory deadlines. Oversee privacy complaints and escalations, in coordination with Customer Experience, P&C and Legal. Breach Management & Information Security Partnership Own the personal data breach response plan; jointly lead incident response with the CISO/Information Security. Decide on and lead notification to the PDPC and affected data subjects within the legal timeframe (72 hours to the PDPC under the PDPL). Partner with the CISO on technical and organizational security measures, retention schedules and secure disposal across offices, sites and devices. Awareness, Culture & Assurance Design the enterprise privacy training and awareness programme, tailored by audience (ExCom, tech and product, marketing, customer service, operations, frontline workforce). Run a compliance monitoring and assurance plan; support Internal Audit and external audits; report privacy KPIs quarterly to ExCom and the Audit & Risk Committee. Required Education, Knowledge, And Skills: Education Bachelor’s degree in Law, Information Systems, Computer Science or Business Administration. Master’s degree / LLM in technology, data or privacy law is a strong plus. Mandatory Regulatory Requirement (Egypt PDPL) Registered in the PDPC’s DPO Registry, at the highest category/level (Category A / Lead level), given the volume and sensitivity of the personal data Breadfast processes – or able to obtain it before appointment. Passed the PDPC-approved DPO examination required for registration. Keeps registration valid; it lasts two years and must be renewed. Supporting International Certifications (preferred, not a substitute for PDPC registration) IAPP, ISC2, PECB or ISO-accredited IAPP CIPP/E and CIPM; CIPT or FIP a plus. ISO/IEC 27701 or ISO/IEC 27001 Lead Implementer/Auditor; CISA, CISM or CDPSE advantageous. The PDPC may take relevant certifications into account when assigning a DPO’s registration category. Experience 12+ years in data protection, information security, compliance or technology law, including 5+ years leading a privacy programme or function. Proven track record building an enterprise privacy programme end-to-end (governance, RoPA, DPIAs, DSRs, breach response, vendor management) in a large organisation. Experience in consumer-facing digital businesses – e-commerce, quick-commerce, retail/FMCG, telecom or fintech – with large customer databases and a large frontline workforce. Hands-on experience with Egypt PDPL compliance; strong GDPR experience; GCC privacy laws (Saudi PDPL, UAE PDPL) a plus. Experience presenting to Executive Committees and Boards, and dealing directly with regulators. Apply now See more open positions at Breadfast Powered by Getro.com Privacy policy Cookie policy Africa's leader in technology investing About Portfolio Team Careers Contact Linkedin ©2024 4DX Ventures. All rights reserved. Terms of use Privacy Policy Edit Cookies",
+      "published_at": "2026-11-08",
+      "employment": "",
+      "source": "Custom Careers",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-15T18:41:14.175639+00:00",
+      "apply_url": "https://careers.4dxventures.com/companies/breadfast/jobs/99342535-head-of-data-privacy-group-data-protection-officer-dpo",
+      "link": "https://careers.4dxventures.com/companies/breadfast/jobs/99342535-head-of-data-privacy-group-data-protection-officer-dpo",
       "careers_url": "https://www.breadfast.com/ar/careers_categories/technology/?utm_source=chatgpt.com"
     },
     {
@@ -34461,7 +34511,7 @@
       "location": "Egypt, Cairo, BOOMERANG",
       "url": "https://cibeg.taleo.net/careersection/cib_ex/jobdetail.ftl?job=260002VH&lang=en",
       "description": "",
-      "published_at": "2026-11-08",
+      "published_at": "2026-11-09",
       "employment": "",
       "source": "Custom Careers",
       "external_id": "260002VH",
@@ -35007,7 +35057,7 @@
       "location": "Egypt, Cairo, Egypt, Egypt, Giza, GIZA BRANCH",
       "url": "https://cibeg.taleo.net/careersection/cib_ex/jobdetail.ftl?job=260002MD&lang=en",
       "description": "",
-      "published_at": "2026-10-13",
+      "published_at": "2026-10-14",
       "employment": "",
       "source": "Custom Careers",
       "external_id": "260002MD",
@@ -36245,7 +36295,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 19
       },
-      "checked_at": "2026-11-15T22:51:22.125645+00:00"
+      "checked_at": "2026-11-15T22:56:24.239009+00:00"
     },
     {
       "name": "Bosta",
@@ -36260,7 +36310,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 81,
         "Excluded: job location is not explicitly in Egypt": 11
       },
-      "checked_at": "2026-11-15T22:51:22.129518+00:00"
+      "checked_at": "2026-11-15T22:56:24.243985+00:00"
     },
     {
       "name": "Thndr",
@@ -36276,7 +36326,7 @@
         "Excluded: job location is not explicitly in Egypt": 7,
         "Excluded: explicit senior title": 3
       },
-      "checked_at": "2026-11-15T22:51:22.130129+00:00"
+      "checked_at": "2026-11-15T22:56:24.244760+00:00"
     },
     {
       "name": "Klivvr",
@@ -36290,7 +36340,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 7
       },
-      "checked_at": "2026-11-15T22:51:22.130305+00:00"
+      "checked_at": "2026-11-15T22:56:24.244993+00:00"
     },
     {
       "name": "Emergence",
@@ -36305,7 +36355,7 @@
         "Excluded: job location is not explicitly in Egypt": 7,
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 1
       },
-      "checked_at": "2026-11-15T22:51:22.130646+00:00"
+      "checked_at": "2026-11-15T22:56:24.245388+00:00"
     },
     {
       "name": "Lean Technologies",
@@ -36319,7 +36369,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 8
       },
-      "checked_at": "2026-11-15T22:51:22.131013+00:00"
+      "checked_at": "2026-11-15T22:56:24.245819+00:00"
     },
     {
       "name": "Chatbase",
@@ -36334,7 +36384,7 @@
         "Excluded: job location is not explicitly in Egypt": 12,
         "Uncertain: early-career level not confirmed by source": 1
       },
-      "checked_at": "2026-11-15T22:51:22.131863+00:00"
+      "checked_at": "2026-11-15T22:56:24.246895+00:00"
     },
     {
       "name": "Lua Global",
@@ -36346,7 +36396,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-15T22:51:22.131882+00:00"
+      "checked_at": "2026-11-15T22:56:24.246916+00:00"
     },
     {
       "name": "IBM",
@@ -36361,7 +36411,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 5,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-15T22:51:22.132798+00:00"
+      "checked_at": "2026-11-15T22:56:24.248051+00:00"
     },
     {
       "name": "Schneider Electric",
@@ -36377,7 +36427,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 3
       },
-      "checked_at": "2026-11-15T22:51:22.134471+00:00"
+      "checked_at": "2026-11-15T22:56:24.250337+00:00"
     },
     {
       "name": "Ericsson",
@@ -36391,7 +36441,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 11
       },
-      "checked_at": "2026-11-15T22:51:22.134766+00:00"
+      "checked_at": "2026-11-15T22:56:24.250718+00:00"
     },
     {
       "name": "Capgemini Egypt",
@@ -36407,7 +36457,7 @@
         "Excluded: explicit senior title": 3,
         "Excluded: ATS explicitly labels career level as senior": 3
       },
-      "checked_at": "2026-11-15T22:51:22.139087+00:00"
+      "checked_at": "2026-11-15T22:56:24.256232+00:00"
     },
     {
       "name": "DXC Technology",
@@ -36423,7 +36473,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-15T22:51:22.140786+00:00"
+      "checked_at": "2026-11-15T22:56:24.258426+00:00"
     },
     {
       "name": "Luxoft Egypt",
@@ -36438,7 +36488,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 15,
         "Uncertain: early-career level not confirmed by source": 1
       },
-      "checked_at": "2026-11-15T22:51:22.141307+00:00"
+      "checked_at": "2026-11-15T22:56:24.259085+00:00"
     },
     {
       "name": "Nokia",
@@ -36450,7 +36500,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-15T22:51:22.141328+00:00"
+      "checked_at": "2026-11-15T22:56:24.259122+00:00"
     },
     {
       "name": "SAP",
@@ -36464,7 +36514,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3
       },
-      "checked_at": "2026-11-15T22:51:22.141421+00:00"
+      "checked_at": "2026-11-15T22:56:24.259244+00:00"
     },
     {
       "name": "Orange Egypt",
@@ -36478,7 +36528,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 10
       },
-      "checked_at": "2026-11-15T22:51:22.141671+00:00"
+      "checked_at": "2026-11-15T22:56:24.259561+00:00"
     },
     {
       "name": "e& / Etisalat",
@@ -36492,7 +36542,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 25
       },
-      "checked_at": "2026-11-15T22:51:22.142504+00:00"
+      "checked_at": "2026-11-15T22:56:24.260649+00:00"
     },
     {
       "name": "Telecom Egypt (WE)",
@@ -36504,7 +36554,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-15T22:51:22.142532+00:00"
+      "checked_at": "2026-11-15T22:56:24.260686+00:00"
     },
     {
       "name": "Paymob",
@@ -36518,7 +36568,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 71
       },
-      "checked_at": "2026-11-15T22:51:22.145304+00:00"
+      "checked_at": "2026-11-15T22:56:24.264056+00:00"
     },
     {
       "name": "Breadfast",
@@ -36532,7 +36582,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 12
       },
-      "checked_at": "2026-11-15T22:51:22.145669+00:00"
+      "checked_at": "2026-11-15T22:56:24.264509+00:00"
     },
     {
       "name": "ITWorx",
@@ -36547,7 +36597,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 2,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-15T22:51:22.145750+00:00"
+      "checked_at": "2026-11-15T22:56:24.264610+00:00"
     },
     {
       "name": "Sumerge",
@@ -36562,7 +36612,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 5,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-15T22:51:22.147290+00:00"
+      "checked_at": "2026-11-15T22:56:24.266438+00:00"
     },
     {
       "name": "Luciq (formerly Instabug)",
@@ -36576,21 +36626,21 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 2
       },
-      "checked_at": "2026-11-15T22:51:22.147352+00:00"
+      "checked_at": "2026-11-15T22:56:24.266513+00:00"
     },
     {
       "name": "Breadfast Technology",
       "url": "https://www.breadfast.com/ar/careers_categories/technology/?utm_source=chatgpt.com",
       "status": "partial",
-      "message": "2 detail-verified technology roles from Breadfast's public investor board searches",
-      "parsed_jobs": 2,
+      "message": "4 detail-verified technology roles from Breadfast's public investor board searches",
+      "parsed_jobs": 4,
       "matched_jobs": 1,
-      "public_jobs": 2,
-      "excluded_jobs": 1,
+      "public_jobs": 4,
+      "excluded_jobs": 3,
       "exclusion_reasons": {
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 1
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3
       },
-      "checked_at": "2026-11-15T22:51:22.148089+00:00"
+      "checked_at": "2026-11-15T22:56:24.267537+00:00"
     },
     {
       "name": "Link Development",
@@ -36606,7 +36656,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 24,
         "Uncertain: early-career level not confirmed by source": 1
       },
-      "checked_at": "2026-11-15T22:51:22.148794+00:00"
+      "checked_at": "2026-11-15T22:56:24.268542+00:00"
     },
     {
       "name": "Fawry",
@@ -36620,7 +36670,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 4
       },
-      "checked_at": "2026-11-15T22:51:22.148980+00:00"
+      "checked_at": "2026-11-15T22:56:24.268761+00:00"
     },
     {
       "name": "Siemens",
@@ -36635,7 +36685,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 15,
         "Uncertain: early-career level not confirmed by source": 7
       },
-      "checked_at": "2026-11-15T22:51:22.151818+00:00"
+      "checked_at": "2026-11-15T22:56:24.272467+00:00"
     },
     {
       "name": "Deloitte",
@@ -36651,7 +36701,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 7
       },
-      "checked_at": "2026-11-15T22:51:22.154522+00:00"
+      "checked_at": "2026-11-15T22:56:24.275796+00:00"
     },
     {
       "name": "BlackStone eIT",
@@ -36667,7 +36717,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 5,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-15T22:51:22.155562+00:00"
+      "checked_at": "2026-11-15T22:56:24.277182+00:00"
     },
     {
       "name": "Lamdax",
@@ -36682,7 +36732,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-15T22:51:22.158382+00:00"
+      "checked_at": "2026-11-15T22:56:24.280639+00:00"
     },
     {
       "name": "Yassir",
@@ -36699,7 +36749,7 @@
         "Uncertain: early-career level not confirmed by source": 2,
         "Excluded: explicit senior title": 19
       },
-      "checked_at": "2026-11-15T22:51:22.162756+00:00"
+      "checked_at": "2026-11-15T22:56:24.286074+00:00"
     },
     {
       "name": "Integrant",
@@ -36714,7 +36764,7 @@
         "Excluded: explicit senior title": 7,
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 12
       },
-      "checked_at": "2026-11-15T22:51:22.163340+00:00"
+      "checked_at": "2026-11-15T22:56:24.286821+00:00"
     },
     {
       "name": "inDrive",
@@ -36730,7 +36780,7 @@
         "Uncertain: early-career level not confirmed by source": 2,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-15T22:51:22.163668+00:00"
+      "checked_at": "2026-11-15T22:56:24.287186+00:00"
     },
     {
       "name": "robusta / RTG",
@@ -36746,7 +36796,7 @@
         "Uncertain: early-career level not confirmed by source": 2,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-15T22:51:22.164449+00:00"
+      "checked_at": "2026-11-15T22:56:24.288235+00:00"
     },
     {
       "name": "Incorta",
@@ -36762,23 +36812,19 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-15T22:51:22.164715+00:00"
+      "checked_at": "2026-11-15T22:56:24.288548+00:00"
     },
     {
       "name": "SOUM",
       "url": "https://jobs.lever.co/soum",
-      "status": "monitoring",
-      "message": "24 jobs parsed from lever",
-      "parsed_jobs": 24,
+      "status": "error",
+      "message": "The read operation timed out",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "public_jobs": 24,
-      "excluded_jobs": 24,
-      "exclusion_reasons": {
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 5,
-        "Excluded: job location is not explicitly in Egypt": 18,
-        "Uncertain: early-career level not confirmed by source": 1
-      },
-      "checked_at": "2026-11-15T22:51:22.165611+00:00"
+      "public_jobs": 0,
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-15T22:56:24.288559+00:00"
     },
     {
       "name": "econstruct",
@@ -36794,7 +36840,7 @@
         "Excluded: job location is not explicitly in Egypt": 11,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-15T22:51:22.166833+00:00"
+      "checked_at": "2026-11-15T22:56:24.290203+00:00"
     },
     {
       "name": "PetroApp",
@@ -36808,7 +36854,7 @@
       "exclusion_reasons": {
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-15T22:51:22.166875+00:00"
+      "checked_at": "2026-11-15T22:56:24.290251+00:00"
     },
     {
       "name": "SSC HR Solutions",
@@ -36826,7 +36872,7 @@
         "Excluded: explicit minimum experience exceeds 2 years": 1,
         "Excluded: explicit senior title": 9
       },
-      "checked_at": "2026-11-15T22:51:22.169456+00:00"
+      "checked_at": "2026-11-15T22:56:24.293781+00:00"
     },
     {
       "name": "Mondia Group",
@@ -36841,7 +36887,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-15T22:51:22.169751+00:00"
+      "checked_at": "2026-11-15T22:56:24.294174+00:00"
     },
     {
       "name": "mylo by B.TECH",
@@ -36857,7 +36903,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 2,
         "Excluded: explicit senior title": 3
       },
-      "checked_at": "2026-11-15T22:51:22.169870+00:00"
+      "checked_at": "2026-11-15T22:56:24.294329+00:00"
     },
     {
       "name": "Infomineo",
@@ -36871,7 +36917,7 @@
       "exclusion_reasons": {
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-15T22:51:22.169903+00:00"
+      "checked_at": "2026-11-15T22:56:24.294370+00:00"
     },
     {
       "name": "ArpuPlus",
@@ -36886,7 +36932,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 2,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-15T22:51:22.169993+00:00"
+      "checked_at": "2026-11-15T22:56:24.294485+00:00"
     },
     {
       "name": "Madar",
@@ -36900,7 +36946,7 @@
       "exclusion_reasons": {
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-15T22:51:22.170027+00:00"
+      "checked_at": "2026-11-15T22:56:24.294529+00:00"
     },
     {
       "name": "EY Egypt",
@@ -36915,7 +36961,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 19,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-15T22:51:22.170866+00:00"
+      "checked_at": "2026-11-15T22:56:24.295483+00:00"
     },
     {
       "name": "PwC Egypt",
@@ -36929,7 +36975,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3
       },
-      "checked_at": "2026-11-15T22:51:22.170996+00:00"
+      "checked_at": "2026-11-15T22:56:24.295645+00:00"
     },
     {
       "name": "Blink22",
@@ -36943,7 +36989,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 16
       },
-      "checked_at": "2026-11-15T22:51:22.171107+00:00"
+      "checked_at": "2026-11-15T22:56:24.295789+00:00"
     },
     {
       "name": "Amazon Egypt",
@@ -36958,7 +37004,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 92,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-15T22:51:22.176467+00:00"
+      "checked_at": "2026-11-15T22:56:24.302632+00:00"
     },
     {
       "name": "AWS Egypt",
@@ -36970,7 +37016,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-15T22:51:22.176583+00:00"
+      "checked_at": "2026-11-15T22:56:24.302754+00:00"
     },
     {
       "name": "Talabat Egypt",
@@ -36985,7 +37031,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 51,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-15T22:51:22.177735+00:00"
+      "checked_at": "2026-11-15T22:56:24.304216+00:00"
     },
     {
       "name": "Uber Egypt",
@@ -36997,7 +37043,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-15T22:51:22.177792+00:00"
+      "checked_at": "2026-11-15T22:56:24.304290+00:00"
     },
     {
       "name": "Teleperformance Egypt",
@@ -37011,7 +37057,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 4
       },
-      "checked_at": "2026-11-15T22:51:22.177864+00:00"
+      "checked_at": "2026-11-15T22:56:24.304385+00:00"
     },
     {
       "name": "Finaira",
@@ -37025,7 +37071,7 @@
       "exclusion_reasons": {
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-15T22:51:22.177898+00:00"
+      "checked_at": "2026-11-15T22:56:24.304427+00:00"
     },
     {
       "name": "CIB Egypt",
@@ -37040,7 +37086,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 22,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-15T22:51:22.178493+00:00"
+      "checked_at": "2026-11-15T22:56:24.305186+00:00"
     },
     {
       "name": "Konecta Egypt",
@@ -37054,7 +37100,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 38
       },
-      "checked_at": "2026-11-15T22:51:22.179884+00:00"
+      "checked_at": "2026-11-15T22:56:24.306795+00:00"
     },
     {
       "name": "ADCB Egypt",
@@ -37068,7 +37114,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 7
       },
-      "checked_at": "2026-11-15T22:51:22.180094+00:00"
+      "checked_at": "2026-11-15T22:56:24.307049+00:00"
     },
     {
       "name": "Fab Minds Egypt",
@@ -37082,7 +37128,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3
       },
-      "checked_at": "2026-11-15T22:51:22.180160+00:00"
+      "checked_at": "2026-11-15T22:56:24.307147+00:00"
     }
   ]
 }
