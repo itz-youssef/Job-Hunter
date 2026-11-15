@@ -20,8 +20,18 @@ SECRETJ_REGISTRATION_ENABLED = "true"
 SECRETJ_ALERTS_ENABLED = "true"
 # Independent source-aware personalized monitoring supersedes snapshot-only alerts.
 SECRETJ_NATIVE_MONITOR_ENABLED = "true"
+# AI verification is opt-in after model smoke tests and backfilling existing jobs.
+# Activate strict gating only after testing the live binding; it never guesses on failures.
+SECRETJ_AI_VERIFICATION_ENABLED = "false"
+SECRETJ_AI_CONFIDENCE_THRESHOLD = "0.85"
+SECRETJ_AI_MAX_PER_RUN = "12"
+SECRETJ_CF_AI_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 
 # Separate from the existing scanner scheduler. The site worker only handles
 # opted-in, email-confirmed members. Requires configured Resend secrets and verified opt-in.
 [triggers]
 crons = ["* * * * *"]
+
+# Free allocation and usage limits depend on the Cloudflare account.
+[ai]
+binding = "AI"
