@@ -391,6 +391,21 @@ $('#account-content').addEventListener('submit',async event=>{
         max_experience_years:values.max_experience_years===''?null:Number(values.max_experience_years),
         role_families:[...form.querySelectorAll('input[name=roles]:checked')].map(x=>x.value)
       });
+      // Saving preferences immediately starts a NEW account-scoped employer
+      // scan. This is separate from the five-minute scheduled monitor.
+      // A failed trigger must not pretend that the successful save failed.
+      let notice='Preferences saved. ';
+      try{
+        const trigger=await api('/api/secretj-native-scan','POST',{});
+        notice+=trigger.status==='already_running'
+          ?'A source scan is already in progress.'
+          :'Immediate company-source scan started.';
+      }catch{
+        notice+='Immediate scan unavailable; the regular five-minute scan remains active.';
+      }
+      await showView('preferences');
+      banner(notice);
+      return;
     }else if(form.id==='application-form'){
       await api(dataUrl('applications'),'POST',values);
     }
