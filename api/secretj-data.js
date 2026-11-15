@@ -100,9 +100,9 @@ module.exports=async function handler(req,res){
     }
     if(scope==='preferences'){
       if(req.method==='GET'){
-        const rows=await core.query('SELECT egypt_only,internships,max_experience_years,role_families,email_alerts FROM public.sj_preferences WHERE user_id=$1',[userId]);
+        const rows=await core.query('SELECT egypt_only,internships,max_experience_years,role_families,career_levels,email_alerts FROM public.sj_preferences WHERE user_id=$1',[userId]);
         return core.reply(res,200,{ok:true,configured:rows.length>0,preferences:rows[0]||{
-          egypt_only:false,internships:false,max_experience_years:null,
+          egypt_only:false,internships:false,max_experience_years:null,career_levels:[],
           role_families:[],email_alerts:false
         }});
       }
@@ -111,17 +111,19 @@ module.exports=async function handler(req,res){
       if((years!==null&&(!Number.isInteger(years)||years<0||years>30))||
          typeof body.egypt_only!=='boolean'||typeof body.internships!=='boolean'||
          typeof body.email_alerts!=='boolean'||!Array.isArray(body.role_families)||
+         (body.career_levels!==undefined&&(!Array.isArray(body.career_levels)||body.career_levels.length>8||new Set(body.career_levels).size!==body.career_levels.length||!body.career_levels.every(x=>require('../dist/assets/secretj-career-level').levels.some(v=>v.key===x))))||
          body.role_families.length>45||
          new Set(body.role_families).size!==body.role_families.length||
          !body.role_families.every(x=>require('../dist/assets/secretj-job-preferences').categories.some(c=>c.key===x)))throw core.fail(400,'Invalid preferences');
       await core.query(
-        `INSERT INTO public.sj_preferences(user_id,egypt_only,internships,max_experience_years,role_families,email_alerts)
-         VALUES($1,$2,$3,$4,$5,$6)
+        `INSERT INTO public.sj_preferences(user_id,egypt_only,internships,max_experience_years,role_families,email_alerts,career_levels)
+         VALUES($1,$2,$3,$4,$5,$6,$7)
          ON CONFLICT(user_id) DO UPDATE SET
            egypt_only=EXCLUDED.egypt_only,internships=EXCLUDED.internships,
            max_experience_years=EXCLUDED.max_experience_years,
-           role_families=EXCLUDED.role_families,email_alerts=EXCLUDED.email_alerts,updated_at=now()`,
-        [userId,body.egypt_only,body.internships,years,body.role_families,body.email_alerts]
+           role_families=EXCLUDED.role_families,email_alerts=EXCLUDED.email_alerts,
+           career_levels=EXCLUDED.career_levels,updated_at=now()`,
+        [userId,body.egypt_only,body.internships,years,body.role_families,body.email_alerts,body.career_levels||[]]
       );
       return core.reply(res,200,{ok:true});
     }
