@@ -1,0 +1,103 @@
+'use strict';
+process.env.NODE_ENV='test';
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const core=require('../lib/secretj/core');
+const monitor=require('../lib/secretj/native-preference-monitor');
+const ID='e07bb2d6-a213-45d0-ab23-e5051967a616';
+const other=(id,title,description='')=>({id,company:'Example',title,description,
+  location:'Cairo, Egypt',url:'https://example.com/jobs/'+id});
+function fixture(){
+ let state=null,settings={egypt_only:false,internships:false,
+   career_levels:['entry','internship'],role_families:['ai_ml'],max_experience_years:2};
+ const queue=new Map(),sent=[];
+ let jobs=[other('old','Junior AI Engineer','Internship machine learning models')];
+ const responses=[];
+ const env={ASSETS:{fetch:async req=>({
+  ok:true,json:async()=>String(req.url).includes('registry')?
+   {companies:[{name:'Bosta',source_kind:'lever',source_url:'https://jobs.lever.co/Bosta/'}]}:
+   {generated_at:new Date().toISOString(),jobs}
+ })}};
+ core.setQueryForTests(async(sql,args=[])=>{
+  if(sql.includes('FROM public.sj_users u'))return [{id:ID,email:'member@example.com',...settings}];
+  if(sql.startsWith('SELECT preference_signature'))return state?[{preference_signature:state}]:[];
+  if(sql.startsWith('INSERT INTO public.sj_native_watch_state')){state=args[1];return [];}
+  if(sql.startsWith('UPDATE public.sj_native_watch_state')){state=args[1];return [];}
+  if(sql.includes("SET status='baseline'")){
+   for(const row of queue.values())if(['pending','failed'].includes(row.status))row.status='baseline';
+   return [];
+  }
+  if(sql.includes('FROM jsonb_to_recordset')){
+   for(const item of JSON.parse(args[1]))if(!queue.has(item.key))queue.set(item.key,{job_key:item.key,job_snapshot:item.job,status:args[2]});
+   return [];
+  }
+  if(sql.startsWith('UPDATE public.sj_native_watch_jobs SET attempted_at')){
+   const batch=[...queue.values()].filter(x=>['pending','failed'].includes(x.status)).slice(0,5);
+   batch.forEach(x=>x.status='pending');return batch;
+  }
+  if(sql.includes("SET status='sent'")){for(const key of args[1])queue.get(key).status='sent';return [];}
+  if(sql.includes("SET status='failed'")){for(const key of args[1])queue.get(key).status='failed';return [];}
+  throw Error('Unexpected SQL: '+sql.slice(0,100));
+ });
+ const fetchImpl=async url=>{
+  responses.push(String(url));
+  return {ok:true,json:async()=>[]};
+ };
+ return {env,queue,sent,responses,fetchImpl,
+   add(job){jobs.push(job);},change(p){settings={...settings,...p};},
+   async run(){
+    const previous={enabled:process.env.SECRETJ_NATIVE_MONITOR_ENABLED,
+      alerts:process.env.SECRETJ_ALERTS_ENABLED,key:process.env.RESEND_API_KEY,
+      from:process.env.SECRETJ_EMAIL_FROM};
+    Object.assign(process.env,{SECRETJ_NATIVE_MONITOR_ENABLED:'true',
+      SECRETJ_ALERTS_ENABLED:'true',RESEND_API_KEY:'test',SECRETJ_EMAIL_FROM:'alerts@example.org'});
+    try{return await monitor.deliver(env,async(to,subject,body)=>{sent.push({to,subject,body});},fetchImpl);}
+    finally{for(const [k,v] of Object.entries({SECRETJ_NATIVE_MONITOR_ENABLED:previous.enabled,SECRETJ_ALERTS_ENABLED:previous.alerts,RESEND_API_KEY:previous.key,SECRETJ_EMAIL_FROM:previous.from})){
+      if(v===undefined)delete process.env[k];else process.env[k]=v;
+    }}
+   },
+   finish(){core.setQueryForTests(null);}
+ };
+}
+test('personalized scanner baselines existing jobs then emails only new ones once',async()=>{
+ const f=fixture();
+ try{
+  const first=await f.run();assert.equal(first.processed,1);assert.equal(f.sent.length,0);
+  assert.equal(f.queue.get('https://example.com/jobs/old').status,'baseline');
+  f.add(other('new','Machine Learning Intern','Develop ML models'));
+  assert.equal((await f.run()).sent,1);assert.equal(f.sent.length,1);
+  assert.match(f.sent[0].body,/Machine Learning Intern/);
+  await f.run();assert.equal(f.sent.length,1,'No duplicate mail for same posting');
+  assert.equal(f.queue.get('https://example.com/jobs/new').status,'sent');
+ }finally{f.finish();}
+});
+test('changing subscriber preferences rebaselines currently visible jobs',async()=>{
+ const f=fixture();
+ try{
+  await f.run();f.change({career_levels:['senior']});
+  f.add(other('senior','Senior AI Engineer','Design ML platform'));
+  await f.run();assert.equal(f.sent.length,0,'Existing posting after preference change is baseline');
+  f.add(other('senior2','Senior ML Engineer','Lead inference optimization'));
+  await f.run();assert.equal(f.sent.length,1);
+  assert.match(f.sent[0].body,/Senior ML Engineer/);
+ }finally{f.finish();}
+});
+test('official board URL is pinned to known Lever host and native filters are not invented',async()=>{
+ assert.equal(monitor.leverSlug({source_kind:'lever',source_url:'https://jobs.lever.co/Bosta/'}),'Bosta');
+ assert.equal(monitor.leverSlug({source_kind:'lever',source_url:'https://evil.example/Bosta/'}),'');
+ const job={title:'Junior AI Engineer',source_facets:{level:'Junior'}};
+ assert.deepEqual(monitor.supportedLevelFacets([job],{career_levels:['entry']}),['Junior']);
+ assert.deepEqual(monitor.supportedLevelFacets([job],{career_levels:['senior']}),[]);
+});
+test('public catalog and account-only monitor maintain separate data stores',()=>{
+ const main=fs.readFileSync('app/custom_monitor.py','utf8');
+ const worker=fs.readFileSync('cloudflare/site/worker.mjs','utf8');
+ const registry=JSON.parse(fs.readFileSync('dist/native-source-registry.json','utf8'));
+ assert.match(main,/snapshot\["jobs"\] = list/);
+ assert.doesNotMatch(main,/sj_native_watch_jobs/);
+ assert.match(worker,/nativeMonitor\.deliver\(env\)/);
+ assert.equal(registry.company_count,58);
+ assert.equal(registry.companies.filter(x=>x.preference_mode==='server-query').length,6);
+ assert.match(fs.readFileSync('cloudflare/site/wrangler.toml','utf8'),/SECRETJ_NATIVE_MONITOR_ENABLED = "true"/);
+});
