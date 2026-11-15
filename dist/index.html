@@ -365,6 +365,21 @@ a:hover{color:var(--ink)}
     }
     throw Error('Personalized feed exceeded safe pagination limit');
   }
+  async function refreshMatchingFeed(){
+    if(!state.member||!state.memberPrefsConfigured||state.memberLoading)return;
+    const userId=state.member.id,sequence=memberSequence;
+    try{
+      const feed=await loadMatchingFeed(userId,sequence);
+      if(!feed||sequence!==memberSequence||state.member?.id!==userId)return;
+      state.watchFeed=feed.jobs||[];
+      state.watchFeedLoaded=feed.ready===true;
+      state.watchFeedError=feed.error||'';
+    }catch(error){
+      if(sequence!==memberSequence||state.member?.id!==userId)return;
+      state.watchFeedError=error.message||'Monitoring feed refresh failed';
+    }
+    syncFeedCount();render();
+  }
   async function hydrateMember(){
     const sequence=++memberSequence;
     state.memberLoading=true;
@@ -1655,7 +1670,8 @@ a:hover{color:var(--ink)}
     syncFeedCount();
     hydrateMember();
     refresh(true);
-    setInterval(()=>refresh(true),60000);
+    // Public catalog and private source-watch results refresh independently.
+    setInterval(()=>{refresh(true);refreshMatchingFeed();},60000);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
 })();
