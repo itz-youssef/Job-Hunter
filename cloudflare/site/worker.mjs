@@ -10,6 +10,7 @@ import adminHandler from '../../api/secretj-admin.js';
 import healthHandler from '../../api/secretj-health.js';
 import linkedinHandler from '../../api/secretj-linkedin.js';
 import emailHandler from '../../api/secretj-email.js';
+import nativeStatusHandler from '../../api/secretj-native-status.js';
 import memberAlerts from '../../lib/secretj/member-alerts.js';
 import nativeMonitor from '../../lib/secretj/native-preference-monitor.js';
 
@@ -19,7 +20,8 @@ const handlers = new Map([
   ['/api/secretj-admin',adminHandler],
   ['/api/secretj-health',healthHandler],
   ['/api/secretj-linkedin',linkedinHandler],
-  ['/api/secretj-email',emailHandler]
+  ['/api/secretj-email',emailHandler],
+  ['/api/secretj-native-status',nativeStatusHandler]
 ]);
 const maxBody = 1_250_000;
 const jsonHeaders={
