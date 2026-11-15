@@ -1,0 +1,355 @@
+{
+  "schema_version": 1,
+  "company_count": 58,
+  "generated_from": "companies.json",
+  "companies": [
+    {
+      "name": "VOIS",
+      "source_url": "https://jobs.vodafone.com/careers?domain=vodafone.com&start=0&location=Egypt&pid=563018698305416&sort_by=match&filter_include_remote=1&filter_include_relocation=0&filter_seniority=1%2C0",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Bosta",
+      "source_url": "https://jobs.lever.co/Bosta/?utm_source=chatgpt.com",
+      "source_kind": "lever",
+      "preference_mode": "server-query"
+    },
+    {
+      "name": "Thndr",
+      "source_url": "https://jobs.ashbyhq.com/thndr?",
+      "source_kind": "ashby",
+      "preference_mode": "official-live-unfiltered"
+    },
+    {
+      "name": "Klivvr",
+      "source_url": "https://jobs.lever.co/klivvr?utm_source=chatgpt.com",
+      "source_kind": "lever",
+      "preference_mode": "server-query"
+    },
+    {
+      "name": "Emergence",
+      "source_url": "https://jobs.ashbyhq.com/emergence?utm_source=chatgpt.com",
+      "source_kind": "ashby",
+      "preference_mode": "official-live-unfiltered"
+    },
+    {
+      "name": "Lean Technologies",
+      "source_url": "https://jobs.ashbyhq.com/LeanTech?utm_source=chatgpt.com",
+      "source_kind": "ashby",
+      "preference_mode": "official-live-unfiltered"
+    },
+    {
+      "name": "Chatbase",
+      "source_url": "https://jobs.ashbyhq.com/chatbase?utm_source=chatgpt.com",
+      "source_kind": "ashby",
+      "preference_mode": "official-live-unfiltered"
+    },
+    {
+      "name": "Lua Global",
+      "source_url": "https://jobs.ashbyhq.com/lua?utm_source=chatgpt.com",
+      "source_kind": "ashby",
+      "preference_mode": "official-live-unfiltered"
+    },
+    {
+      "name": "IBM",
+      "source_url": "https://www.ibm.com/careers/search?",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Schneider Electric",
+      "source_url": "https://careers.se.com/Defaultlandingpage/jobs/categories?lang=en-US&utm_source=chatgpt.com",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Ericsson",
+      "source_url": "https://jobs.ericsson.com/careers?utm_source=chatgpt.com&query=Software+Engineer&start=0&location=egypt&pid=563121777515649&sort_by=relevance&filter_include_remote=1&filter_include_relocation=0",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Capgemini Egypt",
+      "source_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "DXC Technology",
+      "source_url": "https://careers.dxc.com/?utm_source=chatgpt.com",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Luxoft Egypt",
+      "source_url": "https://career.luxoft.com/locations/egypt?utm_source=chatgpt.com",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Nokia",
+      "source_url": "https://fa-evmr-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "SAP",
+      "source_url": "https://jobs.sap.com/en/jobs/?location=Cairo&utm_source=chatgpt.com",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Orange Egypt",
+      "source_url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "e& / Etisalat",
+      "source_url": "https://www.eand.com/ar/careers/careers.html?utm_source=chatgpt.com",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Telecom Egypt (WE)",
+      "source_url": "https://te.eg/en/web/guest/about-te/careers-and-training?utm_source=chatgpt.com",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Paymob",
+      "source_url": "https://origin.paymob.com/en/careers?utm_source=chatgpt.com",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Breadfast",
+      "source_url": "https://www.breadfast.com/careers/?utm_source=chatgpt.com",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "ITWorx",
+      "source_url": "https://careers.itworx.com/?utm_source=chatgpt.com",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Sumerge",
+      "source_url": "https://www.sumerge.com/careers/job-openings?utm_source=chatgpt.com",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Luciq (formerly Instabug)",
+      "source_url": "https://www.luciq.ai/careers?utm_source=chatgpt.com",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Breadfast Technology",
+      "source_url": "https://www.breadfast.com/ar/careers_categories/technology/?utm_source=chatgpt.com",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Link Development",
+      "source_url": "https://linkdevelopment.com/careers/opportunities/?utm_source=chatgpt.com",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Fawry",
+      "source_url": "https://www.fawry.com/jobs/?utm_source=chatgpt.com",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Siemens",
+      "source_url": "https://jobs.sw.siemens.com/business-structure/electronic-design-automation-eda/jobs/?location=Cairo&utm_source=chatgpt.com",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Deloitte",
+      "source_url": "https://middleeastjobs.deloitte.com/careersME/SearchJobs/?9570=%5B25581143%5D&9570_format=11920&9571=%5B56311763%5D&9571_format=11921&12333=%5B56312272%5D&12333_format=16407&listFilterMode=1&pipelineRecordsPerPage=6&",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "BlackStone eIT",
+      "source_url": "https://apply.workable.com/blackstone-eit-2/",
+      "source_kind": "workable",
+      "preference_mode": "official-live-unfiltered"
+    },
+    {
+      "name": "Lamdax",
+      "source_url": "https://apply.workable.com/lamdax/",
+      "source_kind": "workable",
+      "preference_mode": "official-live-unfiltered"
+    },
+    {
+      "name": "Yassir",
+      "source_url": "https://jobs.lever.co/Yassir/",
+      "source_kind": "lever",
+      "preference_mode": "server-query"
+    },
+    {
+      "name": "Integrant",
+      "source_url": "https://apply.workable.com/integrant/",
+      "source_kind": "workable",
+      "preference_mode": "official-live-unfiltered"
+    },
+    {
+      "name": "inDrive",
+      "source_url": "https://careers.indrive.com/vacancies/?country=Egypt",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "robusta / RTG",
+      "source_url": "https://apply.workable.com/robusta/",
+      "source_kind": "workable",
+      "preference_mode": "official-live-unfiltered"
+    },
+    {
+      "name": "Incorta",
+      "source_url": "https://jobs.lever.co/incorta",
+      "source_kind": "lever",
+      "preference_mode": "server-query"
+    },
+    {
+      "name": "SOUM",
+      "source_url": "https://jobs.lever.co/soum",
+      "source_kind": "lever",
+      "preference_mode": "server-query"
+    },
+    {
+      "name": "econstruct",
+      "source_url": "https://jobs.lever.co/econstruct",
+      "source_kind": "lever",
+      "preference_mode": "server-query"
+    },
+    {
+      "name": "PetroApp",
+      "source_url": "https://apply.workable.com/petroapp/",
+      "source_kind": "workable",
+      "preference_mode": "official-live-unfiltered"
+    },
+    {
+      "name": "SSC HR Solutions",
+      "source_url": "https://apply.workable.com/ssc-hr/",
+      "source_kind": "workable",
+      "preference_mode": "official-live-unfiltered"
+    },
+    {
+      "name": "Mondia Group",
+      "source_url": "https://apply.workable.com/mondia-group/",
+      "source_kind": "workable",
+      "preference_mode": "official-live-unfiltered"
+    },
+    {
+      "name": "mylo by B.TECH",
+      "source_url": "https://apply.workable.com/mylo-btech/",
+      "source_kind": "workable",
+      "preference_mode": "official-live-unfiltered"
+    },
+    {
+      "name": "Infomineo",
+      "source_url": "https://apply.workable.com/infomineo/",
+      "source_kind": "workable",
+      "preference_mode": "official-live-unfiltered"
+    },
+    {
+      "name": "ArpuPlus",
+      "source_url": "https://apply.workable.com/arpu-telecommunication-services/",
+      "source_kind": "workable",
+      "preference_mode": "official-live-unfiltered"
+    },
+    {
+      "name": "Madar",
+      "source_url": "https://apply.workable.com/madarplatform/",
+      "source_kind": "workable",
+      "preference_mode": "official-live-unfiltered"
+    },
+    {
+      "name": "EY Egypt",
+      "source_url": "https://careers.ey.com/ey/search/?q=&locationsearch=Egypt",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "PwC Egypt",
+      "source_url": "https://careers.pwc.com/search/?q=&locationsearch=Egypt",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Blink22",
+      "source_url": "https://blink22.com/careers/",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Amazon Egypt",
+      "source_url": "https://www.amazon.jobs/en/location/egypt",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "AWS Egypt",
+      "source_url": "https://www.amazon.jobs/en/search?country=EGY",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Talabat Egypt",
+      "source_url": "https://careers.deliveryhero.com/jobs?options=252%2C845&page=1",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Uber Egypt",
+      "source_url": "https://iaziqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/UberCareers/jobs",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Teleperformance Egypt",
+      "source_url": "https://tpegyptcareers.teleperformance.com.eg/vacancies",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Finaira",
+      "source_url": "https://finaira.ai/work-at-finaira/",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "CIB Egypt",
+      "source_url": "https://cibeg.taleo.net/careersection/cib_ex/moresearch.ftl",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Konecta Egypt",
+      "source_url": "https://konectagroup.wd3.myworkdayjobs.com/Konecta",
+      "source_kind": "workday",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "ADCB Egypt",
+      "source_url": "https://www.adcb.com.eg/available-careers/",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    },
+    {
+      "name": "Fab Minds Egypt",
+      "source_url": "https://www.fab-minds.com/careers/",
+      "source_kind": "site-specific",
+      "preference_mode": "fallback"
+    }
+  ]
+}

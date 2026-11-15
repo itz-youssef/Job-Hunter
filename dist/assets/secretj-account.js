@@ -216,6 +216,10 @@ async function preferences(root){
     api('/api/secretj-email?action=status').catch(()=>({configured:false,verified:false}))
   ]);
   const p=data.preferences;
+  const nativeStatus=await api('/api/secretj-native-status').catch(()=>null);
+  const nativeProgress=nativeStatus?.configured?
+    `Monitoring initialized · ${Number(nativeStatus.counts?.sent||0)} new-job alerts sent · ${Number(nativeStatus.counts?.pending||0)} awaiting dispatch`:
+    'First monitoring pass will establish a baseline. Existing jobs are not emailed.';
   const emailReady=emailState.configured===true;
   const verified=emailState.verified===true;
   const recipient=emailState.recipient||state.user.email;
@@ -236,6 +240,11 @@ async function preferences(root){
       <button class="btn secondary" type="submit" ${emailReady?'':'disabled'}>Verify my email</button>
     </form>`}
     <p class="small">The test goes only to the address you entered above. Sending is limited to once every 15 minutes. A successful request means the mail provider accepted it, not guaranteed inbox delivery.</p>
+  </div>
+  <div class="notice"><strong>Personalized company monitoring</strong>
+    <p class="small">A separate five-minute source watch checks your selected career fields and levels. It prefers official employer-side filters when available; other employers use a clearly identified catalog fallback. The All Detected Jobs catalog stays independent and unfiltered.</p>
+    <p class="small"><strong>Subscription status:</strong> ${esc(nativeProgress)}</p>
+    <p class="small">Changing your saved preferences establishes a fresh baseline; only subsequently detected jobs trigger new messages. Source failures and incomplete career pages can delay alerts.</p>
   </div>
   <p class="muted">Choose the jobs you want alerts about. Preferences are stored privately in Neon; automatic emails require verification, opt-in and activated mail service.</p>
   <form id="preferences-form">

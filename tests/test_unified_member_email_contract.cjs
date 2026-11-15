@@ -29,7 +29,9 @@ test('the website email service uses Resend and the dedicated domain sender',()=
   const email=read('api/secretj-email.js');
   const alerts=read('lib/secretj/member-alerts.js');
   assert.match(email,/api\.resend\.com\/emails/);
-  assert.match(email,/from:process\.env\.SECRETJ_EMAIL_FROM/);
+  assert.match(email,/from:config\.SECRETJ_EMAIL_FROM/);
+  assert.match(email,/config=process\.env/);
+  assert.match(read('lib/secretj/native-preference-monitor.js'),/mailEnv/);
   assert.match(alerts,/p\.email_alerts=true AND v\.verified_at IS NOT NULL/);
   assert.doesNotMatch(alerts,/process\.env\.ALERT_EMAIL/);
 });

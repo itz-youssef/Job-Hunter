@@ -148,7 +148,9 @@ def _job(
     url,
     description="",
     published="",
-    employment=""
+    employment="",
+    *,
+    source_facets=None
 ) -> dict:
 
     url = str(url or "")
@@ -171,6 +173,7 @@ def _job(
         "published_at": str(published or ""),
         "employment": _clean(employment),
         "source": "Custom Careers",
+        **({"source_facets": source_facets} if source_facets else {}),
     }
 
 
@@ -802,6 +805,11 @@ def _board_jobs(name: str, url: str) -> list[dict]:
                     item.get("absolute_url"),
                     item.get("content"),
                     item.get("updated_at"),
+                    source_facets={
+                        "provider": "greenhouse",
+                        "departments": [str(x.get("name")) for x in item.get("departments", []) if isinstance(x, dict) and x.get("name")],
+                        "offices": [str(x.get("name")) for x in item.get("offices", []) if isinstance(x, dict) and x.get("name")],
+                    },
                 )
             )
 
@@ -827,6 +835,14 @@ def _board_jobs(name: str, url: str) -> list[dict]:
                     or item.get("description"),
                     item.get("createdAt"),
                     cat.get("commitment"),
+                    source_facets={
+                        "provider": "lever",
+                        "team": str(cat.get("team") or ""),
+                        "department": str(cat.get("department") or ""),
+                        "commitment": str(cat.get("commitment") or ""),
+                        "location": str(cat.get("location") or ""),
+                        "level": str(item.get("level") or ""),
+                    },
                 )
             )
 
@@ -852,6 +868,13 @@ def _board_jobs(name: str, url: str) -> list[dict]:
                         or item.get("descriptionHtml"),
                         item.get("publishedAt"),
                         item.get("employmentType"),
+                        source_facets={
+                            "provider": "ashby",
+                            "team": str(item.get("team") or ""),
+                            "department": str(item.get("department") or ""),
+                            "employment_type": str(item.get("employmentType") or ""),
+                            "location": str(item.get("location") or ""),
+                        },
                     )
                 )
 

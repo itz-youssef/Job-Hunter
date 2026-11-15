@@ -18,6 +18,8 @@ NODE_ENV = "production"
 SECRETJ_REGISTRATION_ENABLED = "true"
 # The sender and API key must still be set privately. No mail is sent otherwise.
 SECRETJ_ALERTS_ENABLED = "true"
+# Independent source-aware personalized monitoring supersedes snapshot-only alerts.
+SECRETJ_NATIVE_MONITOR_ENABLED = "true"
 
 # Separate from the existing scanner scheduler. The site worker only handles
 # opted-in, email-confirmed members. Requires configured Resend secrets and verified opt-in.
