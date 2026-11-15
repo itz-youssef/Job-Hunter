@@ -13,12 +13,14 @@ from urllib.parse import quote, urlencode, urlsplit
 
 # Modes describe verified PUBLIC API abilities, not the employer's UI.
 SERVER_FILTER_KINDS = {"lever"}
+OFFICIAL_LIVE_KINDS = {"ashby", "workable"}
 PUBLISHED_FACET_KINDS = {"greenhouse", "ashby", "smartrecruiters", "workday"}
 # An HTML source can have site-specific filtering, but it is NOT marked verified.
 FILTER_FIELDS = {
     "lever": ["location", "team", "department", "commitment", "level"],
     "greenhouse": ["department", "office", "published_custom_metadata"],
     "ashby": ["department", "team", "employment_type", "location"],
+    "workable": ["employment_type", "experience", "location"],
     "smartrecruiters": ["employment_type", "location"],
     "workday": ["location", "published_job_metadata"],
 }
@@ -38,6 +40,7 @@ def capabilities(companies, detector):
             continue
         kind, meta = detector(str(company["url"]))
         mode = ("server-query" if kind in SERVER_FILTER_KINDS else
+                "official-live-unfiltered" if kind in OFFICIAL_LIVE_KINDS else
                 "official-posting-facets" if kind in PUBLISHED_FACET_KINDS else
                 "internal-fallback")
         entries.append({
@@ -47,7 +50,7 @@ def capabilities(companies, detector):
             "preference_mode": mode,
             "available_fields": FILTER_FIELDS.get(kind, []),
             "supports_employer_side_filter": kind in SERVER_FILTER_KINDS,
-            "verification": "documented-api-capability" if kind in SERVER_FILTER_KINDS | PUBLISHED_FACET_KINDS else "not-verified",
+            "verification": "documented-api-capability" if kind in SERVER_FILTER_KINDS | OFFICIAL_LIVE_KINDS | PUBLISHED_FACET_KINDS else "not-verified",
             "documentation": DOCS.get(kind, ""),
         })
     return entries
