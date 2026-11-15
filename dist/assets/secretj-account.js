@@ -220,7 +220,7 @@ async function preferences(root){
   const currentScan=nativeStatus?.immediate_scan;
   const scanLabel=currentScan?.status==='running'?'Immediate scan in progress':
     currentScan?.status==='complete'?'Immediate scan completed':
-    currentScan?.status==='failed'?'Immediate scan failed; scheduled monitoring will retry':
+    ['failed','timed_out'].includes(currentScan?.status)?'Immediate scan did not complete; scheduled monitoring will retry':
     'No immediate source scan requested yet';
   const nativeProgress=nativeStatus?.configured?
     `Monitoring initialized · ${Number(nativeStatus.counts?.sent||0)} new-job alerts sent · ${Number(nativeStatus.counts?.pending||0)} awaiting dispatch`:
@@ -421,12 +421,12 @@ $('#account-content').addEventListener('submit',async event=>{
           try{
             const result=await api('/api/secretj-native-status');
             const scan=result.immediate_scan;
-            if(scan?.status==='complete'||scan?.status==='failed'){
+            if(['complete','failed','timed_out'].includes(scan?.status)){
               await showView('preferences');
               banner(scan.status==='complete'?
                 'Immediate source scan completed. Matching opportunities are now available in Job Feed.':
                 'Immediate scan could not finish; scheduled monitoring will retry.',
-                scan.status==='failed');
+                scan.status!=='complete');
               return;
             }
           }catch{/* Keep periodic monitoring available after transient errors. */}
