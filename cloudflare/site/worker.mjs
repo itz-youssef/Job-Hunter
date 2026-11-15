@@ -11,6 +11,7 @@ import healthHandler from '../../api/secretj-health.js';
 import linkedinHandler from '../../api/secretj-linkedin.js';
 import emailHandler from '../../api/secretj-email.js';
 import memberAlerts from '../../lib/secretj/member-alerts.js';
+import nativeMonitor from '../../lib/secretj/native-preference-monitor.js';
 
 const handlers = new Map([
   ['/api/secretj-auth',authHandler],
@@ -93,12 +94,25 @@ export async function handleRequest(request,env){
 }
 export async function scheduled(controller,env){
   try{
-    const result=await memberAlerts.deliver(env);
-    console.log('secretj-member-alerts',{status:result.status,
-      delivered:result.delivered||0,failed:result.failed||0});
+    if(env.SECRETJ_NATIVE_MONITOR_ENABLED==='true'){
+      // Independent five-minute subscriber checks; public discovery stays intact.
+      const when=new Date(controller?.scheduledTime||Date.now());
+      if(when.getUTCMinutes()%5!==0)return;
+      const result=await nativeMonitor.deliver(env);
+      console.log('secretj-native-preferences',{
+        status:result.status,processed:result.processed||0,
+        sent:result.sent||0,failed:result.failed||0,
+        nativeBoards:result.nativeBoards||0,
+        failedSources:result.failedSources||0
+      });
+    }else{
+      const result=await memberAlerts.deliver(env);
+      console.log('secretj-member-alerts',{status:result.status,
+        delivered:result.delivered||0,failed:result.failed||0});
+    }
   }catch{
-    // Avoid logging email address, provider secrets, or CV/user profile data.
-    console.warn('secretj-member-alerts',{status:'failed'});
+    // Never log recipients, profile fields, secrets, or CV contents.
+    console.warn('secretj-personalized-alerts',{status:'failed'});
   }
 }
 export default {fetch:handleRequest,scheduled};
