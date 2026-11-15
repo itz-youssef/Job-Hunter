@@ -102,3 +102,24 @@ test('feed renders only a bounded number of job cards and offers load more',()=>
  assert.match(html,/state\.feedLimit\+=FEED_PAGE_SIZE/);
  assert.doesNotMatch(html,/list\.map\(jobCard\)/);
 });
+
+test('recent preference edits show matching existing catalog jobs instead of a false zero',()=>{
+ sandbox.rows=rows;
+ sandbox.state.member={id:'user'};
+ sandbox.state.memberPrefsConfigured=true;
+ sandbox.state.memberPrefs={role_families:['software'],career_levels:['internship','entry'],
+   egypt_only:true,internships:false,max_experience_years:null};
+ sandbox.state.watchFeedLoaded=false;
+ sandbox.state.watchFeed=[];
+ sandbox.state.reviewExcluded=false;
+ sandbox.state.query='';
+ sandbox.state.jobType='all';
+ const shown=Array.from(validJobs());
+ assert.ok(shown.length>0,'Existing matching roles must not disappear during source-watch resync');
+ assert.ok(shown.some(j=>j.id===2),'Internship should remain discoverable immediately');
+ assert.ok(shown.every(j=>j.watch_status==='provisional'),
+   'Catalog interim jobs must never be presented as employer-verified notifications');
+ sandbox.state.watchFeedLoaded=true;
+ sandbox.state.watchFeed=[{...rows[1],watch_status:'baseline'}];
+ assert.deepEqual(Array.from(validJobs(),j=>j.watch_status),['baseline']);
+});
