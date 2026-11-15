@@ -46,7 +46,7 @@
  ['technical_writing','Technical Writing',/technical writer|documentation engineer|developer advocate|technical content/i],
  ['talent_acquisition','Talent Acquisition & Tech Recruitment',/talent acquisition|recruiter|recruitment|recruiting specialist|sourcer|talent partner/i],
  ['hr','Human Resources & People Ops',/human resources|\bhr\b|people operations|hr generalist|hr business partner|personnel/i],
- ['marketing','Digital & Growth Marketing',/digital marketing|growth marketing|seo specialist|performance marketing|content marketing/i],
+ ['marketing','Digital & Growth Marketing',/(?:digital |growth |performance |content )?marketing (?:specialist|manager|associate|analyst|coordinator|intern|executive)|digital marketing|growth marketing|seo specialist|performance marketing|content marketing/i],
  ['finance','Finance & Accounting',/finance analyst|financial analyst|accountant|accounting|audit associate|tax associate/i],
  ['operations','Operations & Supply Chain',/operations analyst|operations specialist|supply chain|procurement|logistics coordinator/i],
  ['customer_success','Customer Success & Service',/customer success|customer service|customer experience|client support|account manager/i],
