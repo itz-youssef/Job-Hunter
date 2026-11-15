@@ -6,19 +6,19 @@
 const {randomBytes,randomInt,timingSafeEqual}=require('node:crypto');
 const core=require('../lib/secretj/core');
 
-function configured(){
-  return Boolean(process.env.RESEND_API_KEY&&
-    /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(process.env.SECRETJ_EMAIL_FROM||''));
+function configured(config=process.env){
+  return Boolean(config.RESEND_API_KEY&&
+    /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(config.SECRETJ_EMAIL_FROM||''));
 }
-async function send(to,subject,text){
-  if(!configured())throw core.fail(503,'Email delivery is not configured yet');
+async function send(to,subject,text,config=process.env){
+  if(!configured(config))throw core.fail(503,'Email delivery is not configured yet');
   const response=await fetch('https://api.resend.com/emails',{
     method:'POST',headers:{
-      Authorization:'Bearer '+process.env.RESEND_API_KEY,
+      Authorization:'Bearer '+config.RESEND_API_KEY,
       'Content-Type':'application/json'
     },
     body:JSON.stringify({
-      from:process.env.SECRETJ_EMAIL_FROM,
+      from:config.SECRETJ_EMAIL_FROM,
       to:[to],subject,text
     }),
     signal:AbortSignal.timeout(15000)
