@@ -25,7 +25,10 @@ function fixture(){
   if(sql.startsWith('INSERT INTO public.sj_native_watch_state')){state=args[1];return [];}
   if(sql.startsWith('UPDATE public.sj_native_watch_state')){state=args[1];return [];}
   if(sql.startsWith('DELETE FROM public.sj_native_watch_jobs')){
-   queue.clear();return [];
+   if(sql.includes("qualification_status")) {
+     for(const [key,row] of queue)if(row.job_snapshot?.qualification_status!=='accepted')queue.delete(key);
+   } else queue.clear();
+   return [];
   }
   if(sql.includes('FROM jsonb_to_recordset')){
    for(const item of JSON.parse(args[1]))if(!queue.has(item.key))queue.set(item.key,{job_key:item.key,job_snapshot:item.job,status:args[2]});

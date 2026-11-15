@@ -45,8 +45,7 @@ test('after saving preferences the feed uses matching native watch records, incl
  assert.deepEqual(Array.from(validJobs(),j=>j.id),[2]);
  sandbox.state.reviewExcluded=true;assert.equal(validJobs().length,4);
  sandbox.state.reviewExcluded=false;sandbox.state.query='intern';assert.equal(validJobs().length,4);
- sandbox.state.query='';sandbox.state.watchFeedLoaded=false;assert.equal(validJobs().length,1);
- assert.equal(validJobs()[0].watch_status,'provisional');
+ sandbox.state.query='';sandbox.state.watchFeedLoaded=false;assert.equal(validJobs().length,0);
 });
 test('invalid links and duplicate listings are not public jobs',()=>{
  sandbox.state.member=null;sandbox.state.memberPrefsConfigured=false;
@@ -104,23 +103,19 @@ test('feed renders only a bounded number of job cards and offers load more',()=>
  assert.doesNotMatch(html,/list\.map\(jobCard\)/);
 });
 
-test('recent preference edits show matching existing catalog jobs instead of a false zero',()=>{
+test('strict feed excludes unverified provisional catalog posts until native verification',()=>{
  sandbox.rows=rows;
  sandbox.state.member={id:'user'};
  sandbox.state.memberPrefsConfigured=true;
  sandbox.state.memberPrefs={role_families:['software'],career_levels:['internship','entry'],
-   egypt_only:true,internships:false,max_experience_years:null};
+  egypt_only:true,internships:false,max_experience_years:null};
  sandbox.state.watchFeedLoaded=false;
- sandbox.state.watchFeed=[];
- sandbox.state.reviewExcluded=false;
- sandbox.state.query='';
- sandbox.state.jobType='all';
- const shown=Array.from(validJobs());
- assert.ok(shown.length>0,'Existing matching roles must not disappear during source-watch resync');
- assert.ok(shown.some(j=>j.id===2),'Internship should remain discoverable immediately');
- assert.ok(shown.every(j=>j.watch_status==='provisional'),
-   'Catalog interim jobs must never be presented as employer-verified notifications');
+ sandbox.state.watchFeed=[];sandbox.state.reviewExcluded=false;
+ sandbox.state.query='';sandbox.state.jobType='all';
+ assert.equal(validJobs().length,0,'No unverified catalog job may impersonate a verified match');
  sandbox.state.watchFeedLoaded=true;
- sandbox.state.watchFeed=[{...rows[1],watch_status:'baseline'}];
- assert.deepEqual(Array.from(validJobs(),j=>j.watch_status),['baseline']);
+ sandbox.state.watchFeed=[{...rows[1],qualification_mode:'ai-reviewed',watch_status:'baseline'}];
+ assert.deepEqual(Array.from(validJobs(),j=>j.id),[2]);
+ sandbox.state.reviewExcluded=true;
+ assert.equal(validJobs().length,4,'Review All remains unfiltered');
 });

@@ -75,7 +75,7 @@ test('website personal feed is sourced exclusively from the watch feed, with glo
  const html=fs.readFileSync('dist/index.html','utf8');
  assert.match(html,/loadMatchingFeed\(userId,sequence\)/);
  assert.match(html,/\/api\/secretj-native-status\?action=feed&offset=/);
- assert.match(html,/if\(state\.watchFeedLoaded\)return state\.watchFeed\.filter\(publicJob\)/);
+ assert.match(html,/return state\.watchFeedLoaded\?state\.watchFeed\.filter\(publicJob\):\[\]/);
  assert.match(html,/if\(state\.reviewExcluded\|\|String\(state\.query\|\|''\)\.trim\(\)\|\|/);
  assert.match(html,/const all=allPublicJobs\(\)/);
  assert.match(html,/The general catalog currently contains/);
@@ -104,10 +104,9 @@ test('matching feed generation is not blocked by missing Resend credentials',()=
  assert.doesNotMatch(source,/if\(!mailEnv\.RESEND_API_KEY\|\|!mailEnv\.SECRETJ_EMAIL_FROM\)return/);
 });
 
-test('preference edits temporarily show clearly labeled catalog matches until the independent source watch completes',()=>{
+test('personalized feed never exposes catalog candidates that bypass server validation',()=>{
  const html=fs.readFileSync('dist/index.html','utf8');
- assert.match(html,/watch_status:'provisional'/);
- assert.match(html,/all\.filter\(j=>matches\(j,state\.memberPrefs\)\)/);
- assert.match(html,/Catalog match · awaiting source check/);
- assert.match(html,/Provisional matches are shown from the public catalog until official monitoring catches up/);
+ assert.match(html,/return state\.watchFeedLoaded\?state\.watchFeed\.filter\(publicJob\):\[\]/);
+ assert.doesNotMatch(html,/watch_status:'provisional'/);
+ assert.match(html,/Your personalized feed only shows jobs accepted by the configured verification pipeline/);
 });
