@@ -22,4 +22,4 @@ SECRETJ_ALERTS_ENABLED = "true"
 # Separate from the existing scanner scheduler. The site worker only handles
 # opted-in, email-confirmed members. Requires configured Resend secrets and verified opt-in.
 [triggers]
-crons = ["*/5 * * * *"]
+crons = ["* * * * *"]

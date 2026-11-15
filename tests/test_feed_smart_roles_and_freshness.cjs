@@ -44,8 +44,8 @@ test('smart matching recognizes employer aliases and does not classify unrelated
  assert.equal(prefs.isMatch({title:'HR Business Partner',description:'AI cloud python',location:'Egypt'},chosen),false);
 });
 
-test('verified member cron runs every five minutes and considers full public snapshot',()=>{
- assert.match(cron,/crons = \["\*\/5 \* \* \* \*"\]/);
+test('verified member alerts run every minute and consider the complete published snapshot',()=>{
+ assert.match(cron,/crons = \["\* \* \* \* \*"\]/);
  assert.match(memberAlerts,/MAX_RECIPIENTS=15/);
  assert.match(memberAlerts,/\.slice\(0,2500\)/);
  assert.match(memberAlerts,/p\.email_alerts=true AND v\.verified_at IS NOT NULL/);
