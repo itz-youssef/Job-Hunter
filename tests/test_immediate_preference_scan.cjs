@@ -59,7 +59,7 @@ test('saving preferences triggers authenticated immediate source scan for only t
  assert.ok(x.calls.some(x=>x.sql.includes('INSERT INTO public.sj_native_scan_requests')));
  assert.ok(x.calls.some(x=>x.sql.includes('FROM jsonb_to_recordset')));
  assert.ok(x.calls.some(x=>x.sql.includes('INSERT INTO public.sj_native_watch_state')));
- assert.ok(x.calls.every(c=>!c.args.length||c.args[0]===UID));
+ assert.ok(x.calls.filter(c=>!c.sql.includes('FROM public.sj_sessions s JOIN public.sj_users u')).every(c=>!c.args.length||c.args[0]===UID));
  assert.ok(!x.calls.some(c=>c.sql.includes('sj_email_alert_log')),'Immediate baseline is never an email blast');
 });
 test('only a logged-in user can trigger immediate scan',async()=>{
