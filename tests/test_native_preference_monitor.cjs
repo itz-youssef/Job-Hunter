@@ -32,6 +32,9 @@ function fixture(){
    for(const item of JSON.parse(args[1]))if(!queue.has(item.key))queue.set(item.key,{job_key:item.key,job_snapshot:item.job,status:args[2]});
    return [];
   }
+  if(sql.includes('GROUP BY user_id')&&sql.includes('sj_native_watch_jobs')){
+   return [...queue.values()].some(x=>['pending','failed'].includes(x.status))?[{user_id:ID}]:[];
+  }
   if(sql.includes('FOR UPDATE SKIP LOCKED')){
    const batch=[...queue.values()].filter(x=>['pending','failed'].includes(x.status)).slice(0,5);
    batch.forEach(x=>x.status='pending');return batch;
@@ -155,4 +158,12 @@ test('overlapping source monitoring invocations use atomic row reservation',()=>
  assert.match(source,/FOR UPDATE SKIP LOCKED/);
  assert.match(source,/UPDATE public\.sj_native_watch_jobs AS queue/);
  assert.match(source,/attempted_at < now\(\)-interval '10 minutes'/);
+});
+
+test('subscribers are not silently dropped after an arbitrary first-100 cap',()=>{
+ const source=fs.readFileSync('lib/secretj/native-preference-monitor.js','utf8');
+ assert.doesNotMatch(source,/LIMIT \$\{MAX_USERS\}/);
+ assert.match(source,/ORDER BY MIN\(discovered_at\) ASC/);
+ assert.match(source,/WHERE user_id=ANY\(\$1::uuid\[\]\)/);
+ assert.match(source,/Lever board exceeds verified pagination cap/);
 });
