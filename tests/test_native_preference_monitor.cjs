@@ -128,3 +128,24 @@ test('Workable official widget jobs are not prefiltered by the owner career fiel
  assert.equal(rows.length,2,'Company feed is not silently limited to AI or entry');
  assert.ok(rows.every(x=>x.source_filter_proof==='employer-public-board'));
 });
+
+test('official Lever field, seniority and internship facets are used by source query planner',async()=>{
+ const entry={name:'Bosta',source_kind:'lever',source_url:'https://jobs.lever.co/Bosta'};
+ const rows=[
+ {title:'AI Engineering Intern',source_facets:{team:'Machine Learning',department:'AI & Machine Learning',
+   commitment:'Internship',level:'Junior'}},
+ {title:'HR Manager',source_facets:{team:'Human Resources',level:'Manager'}}
+ ];
+ const matched=monitor.supportedNativeFacets(rows,{
+   career_levels:['internship','entry'],role_families:['ai_ml']});
+ assert.ok(matched.some(f=>f.parameter==='team'&&f.value==='Machine Learning'));
+ assert.ok(matched.some(f=>f.parameter==='commitment'&&f.value==='Internship'));
+ assert.ok(matched.some(f=>f.parameter==='level'&&f.value==='Junior'));
+ assert.ok(!matched.some(f=>f.value==='Manager'));
+ let requested='';
+ const links=await monitor.leverFacetProof(entry,{parameter:'team',value:'Machine Learning'},async url=>{
+   requested=url;return {ok:true,json:async()=>[{hostedUrl:'https://jobs.lever.co/Bosta/abc'}]};
+ });
+ assert.match(requested,/team=Machine%20Learning/);
+ assert.equal(links.has('https://jobs.lever.co/Bosta/abc'),true);
+});
