@@ -17,5 +17,5 @@ module.exports=async function handler(req,res){
     configured:state.length>0,initialized_at:state[0]?.initialized_at||null,
     last_preference_reset_at:state[0]?.updated_at||null,counts,
     note:'Only native-query supported sources use employer API filters. Other sources rely on explicit fallback classification.'});
- }catch(error){return core.handleError(res,error);}
+ }catch(error){return core.safeError(res,error);}
 };
