@@ -20,13 +20,12 @@ function fixture(){
    {generated_at:new Date().toISOString(),jobs}
  })}};
  core.setQueryForTests(async(sql,args=[])=>{
-  if(sql.includes('FROM public.sj_users u'))return [{id:ID,email:'member@example.com',...settings}];
+  if(sql.includes('FROM public.sj_users u'))return [{id:ID,email:'member@example.com',email_eligible:true,...settings}];
   if(sql.startsWith('SELECT preference_signature'))return state?[{preference_signature:state}]:[];
   if(sql.startsWith('INSERT INTO public.sj_native_watch_state')){state=args[1];return [];}
   if(sql.startsWith('UPDATE public.sj_native_watch_state')){state=args[1];return [];}
-  if(sql.includes("SET status='baseline'")){
-   for(const row of queue.values())if(['pending','failed'].includes(row.status))row.status='baseline';
-   return [];
+  if(sql.startsWith('DELETE FROM public.sj_native_watch_jobs')){
+   queue.clear();return [];
   }
   if(sql.includes('FROM jsonb_to_recordset')){
    for(const item of JSON.parse(args[1]))if(!queue.has(item.key))queue.set(item.key,{job_key:item.key,job_snapshot:item.job,status:args[2]});
