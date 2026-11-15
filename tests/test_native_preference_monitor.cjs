@@ -32,7 +32,7 @@ function fixture(){
    for(const item of JSON.parse(args[1]))if(!queue.has(item.key))queue.set(item.key,{job_key:item.key,job_snapshot:item.job,status:args[2]});
    return [];
   }
-  if(sql.startsWith('UPDATE public.sj_native_watch_jobs SET attempted_at')){
+  if(sql.includes('FOR UPDATE SKIP LOCKED')){
    const batch=[...queue.values()].filter(x=>['pending','failed'].includes(x.status)).slice(0,5);
    batch.forEach(x=>x.status='pending');return batch;
   }
@@ -148,4 +148,11 @@ test('official Lever field, seniority and internship facets are used by source q
  });
  assert.match(requested,/team=Machine%20Learning/);
  assert.equal(links.has('https://jobs.lever.co/Bosta/abc'),true);
+});
+
+test('overlapping source monitoring invocations use atomic row reservation',()=>{
+ const source=fs.readFileSync('lib/secretj/native-preference-monitor.js','utf8');
+ assert.match(source,/FOR UPDATE SKIP LOCKED/);
+ assert.match(source,/UPDATE public\.sj_native_watch_jobs AS queue/);
+ assert.match(source,/attempted_at < now\(\)-interval '10 minutes'/);
 });
