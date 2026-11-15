@@ -94,3 +94,29 @@ test('account save workflow triggers immediate source scan only after a successf
  assert.match(monitor,/await reserveNew\(latest\[0\],signature\(latest\[0\]\),selected\)/);
  assert.doesNotMatch(monitor.slice(monitor.indexOf('async function scanOneUser('),monitor.indexOf('async function deliver(')),/flush\(/);
 });
+
+test('immediate source scan uses concurrent employer queries to minimize Worker waitUntil time',()=>{
+ const code=fs.readFileSync('lib/secretj/native-preference-monitor.js','utf8');
+ assert.match(code,/const batchSize=options\.immediate===true\?12:4/);
+ assert.match(code,/gather\(env,fetchImpl,\{immediate:true\}\)/);
+});
+test('immediate scan lifecycle is visible only through an authenticated private status endpoint',()=>{
+ const status=fs.readFileSync('api/secretj-native-status.js','utf8');
+ assert.match(status,/core\.requireUser\(req\)/);
+ assert.match(status,/FROM public\.sj_native_scan_requests WHERE user_id=\$1/);
+ assert.match(status,/immediate_scan:scanRows\[0\]\|\|null/);
+ const account=fs.readFileSync('dist/assets/secretj-account.js','utf8');
+ assert.match(account,/Save preferences &amp; scan now/);
+ assert.match(account,/Immediate scan in progress/);
+ assert.match(account,/Immediate source scan completed/);
+ assert.match(account,/await api\('\/api\/secretj-native-scan','POST'/);
+});
+
+test('abandoned worker scans report timeout instead of staying running forever',()=>{
+ const api=fs.readFileSync('api/secretj-native-status.js','utf8');
+ assert.match(api,/WHEN status='running' AND started_at<now\(\)-interval '2 minutes'/);
+ assert.match(api,/THEN 'timed_out' ELSE status END AS status/);
+ const frontend=fs.readFileSync('dist/assets/secretj-account.js','utf8');
+ assert.match(frontend,/\['failed','timed_out'\]\.includes\(currentScan\?\.status\)/);
+ assert.match(frontend,/\['complete','failed','timed_out'\]\.includes\(scan\?\.status\)/);
+});

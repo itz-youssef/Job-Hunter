@@ -217,6 +217,11 @@ async function preferences(root){
   ]);
   const p=data.preferences;
   const nativeStatus=await api('/api/secretj-native-status').catch(()=>null);
+  const currentScan=nativeStatus?.immediate_scan;
+  const scanLabel=currentScan?.status==='running'?'Immediate scan in progress':
+    currentScan?.status==='complete'?'Immediate scan completed':
+    ['failed','timed_out'].includes(currentScan?.status)?'Immediate scan did not complete; scheduled monitoring will retry':
+    'No immediate source scan requested yet';
   const nativeProgress=nativeStatus?.configured?
     `Monitoring initialized · ${Number(nativeStatus.counts?.sent||0)} new-job alerts sent · ${Number(nativeStatus.counts?.pending||0)} awaiting dispatch`:
     'First monitoring pass will establish a baseline. Existing jobs are not emailed.';
@@ -244,6 +249,8 @@ async function preferences(root){
   <div class="notice"><strong>Personalized company monitoring</strong>
     <p class="small">A separate five-minute source watch checks your selected career fields and levels. It prefers official employer-side filters when available; other employers use a clearly identified catalog fallback. The All Detected Jobs catalog stays independent and unfiltered.</p>
     <p class="small"><strong>Subscription status:</strong> ${esc(nativeProgress)}</p>
+    <p class="small"><strong>Latest immediate scan:</strong> ${esc(scanLabel)}
+    ${currentScan?.completed_at?' · '+esc(new Date(currentScan.completed_at).toLocaleString()):''}</p>
     <p class="small">Changing your saved preferences establishes a fresh baseline; only subsequently detected jobs trigger new messages. Source failures and incomplete career pages can delay alerts.</p>
   </div>
   <p class="muted">Choose the jobs you want alerts about. Preferences are stored privately in Neon; automatic emails require verification, opt-in and activated mail service.</p>
@@ -262,7 +269,7 @@ async function preferences(root){
   ${(window.SecretJJobPreferences?.categories||[]).map(({key:v,label})=>
    `<label><span><input type="checkbox" style="width:auto" name="roles" value="${v}" ${p.role_families.includes(v)?'checked':''}> ${label}</span></label>`).join('')}</div>
   <label><span><input type="checkbox" name="email_alerts" style="width:auto" ${p.email_alerts?'checked':''}> Enable job alerts to my verified email address</span></label>
-  <button class="btn" type="submit">Save preferences</button></form>`;
+  <button class="btn" type="submit">Save preferences &amp; scan now</button></form>`;
 }
 function readBase64(file) {
   return new Promise((resolve,reject)=>{
@@ -405,6 +412,28 @@ $('#account-content').addEventListener('submit',async event=>{
       }
       await showView('preferences');
       banner(notice);
+      // Refresh the monitoring status after a new scan completes. The Job
+      // Feed refreshes independently; never claim completion on HTTP 202.
+      if(typeof window!=='undefined'){
+        const issuedAt=Date.now();
+        const poll=async()=>{
+          if(state.view!=='preferences'||Date.now()-issuedAt>25000)return;
+          try{
+            const result=await api('/api/secretj-native-status');
+            const scan=result.immediate_scan;
+            if(['complete','failed','timed_out'].includes(scan?.status)){
+              await showView('preferences');
+              banner(scan.status==='complete'?
+                'Immediate source scan completed. Matching opportunities are now available in Job Feed.':
+                'Immediate scan could not finish; scheduled monitoring will retry.',
+                scan.status!=='complete');
+              return;
+            }
+          }catch{/* Keep periodic monitoring available after transient errors. */}
+          setTimeout(poll,2000);
+        };
+        setTimeout(poll,2000);
+      }
       return;
     }else if(form.id==='application-form'){
       await api(dataUrl('applications'),'POST',values);
