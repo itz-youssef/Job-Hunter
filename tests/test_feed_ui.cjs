@@ -45,7 +45,8 @@ test('after saving preferences the feed uses matching native watch records, incl
  assert.deepEqual(Array.from(validJobs(),j=>j.id),[2]);
  sandbox.state.reviewExcluded=true;assert.equal(validJobs().length,4);
  sandbox.state.reviewExcluded=false;sandbox.state.query='intern';assert.equal(validJobs().length,4);
- sandbox.state.query='';sandbox.state.watchFeedLoaded=false;assert.equal(validJobs().length,0);
+ sandbox.state.query='';sandbox.state.watchFeedLoaded=false;assert.equal(validJobs().length,1);
+ assert.equal(validJobs()[0].watch_status,'provisional');
 });
 test('invalid links and duplicate listings are not public jobs',()=>{
  sandbox.state.member=null;sandbox.state.memberPrefsConfigured=false;
