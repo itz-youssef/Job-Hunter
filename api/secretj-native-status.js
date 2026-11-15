@@ -26,7 +26,7 @@ module.exports=async function handler(req,res){
     const rows=await core.query(
       `SELECT job_key,job_snapshot,status,discovered_at,sent_at
        FROM public.sj_native_watch_jobs
-       WHERE user_id=$1
+       WHERE user_id=$1 AND job_snapshot->>'qualification_status'='accepted'
        ORDER BY discovered_at DESC,job_key ASC LIMIT $2 OFFSET $3`,
       [user.id,limit+1,offset]);
     const page=rows.slice(0,limit).map(row=>({
