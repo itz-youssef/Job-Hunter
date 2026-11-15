@@ -68,7 +68,7 @@
   ['talent_acquisition',/talent sourc(?:er|ing)|recruitment coordinator|hiring specialist|people sourcer/i],
   ['qa',/test engineer|test specialist|verification engineer|validation engineer/i],
   ['it_support',/technical assistance|end user support|service desk|customer technical engineer/i],
-  ['ai_ml',/applied (?:scientist|researcher)|intelligent systems|language model engineer/i],
+  ['ai_ml',/applied (?:scientist|researcher|machine learning)|intelligent systems|language model engineer|deep learning engineer|nlp engineer|llm engineer|generative ai engineer|ai researcher|artificial intelligence engineer/i],
   ['devops',/release engineer|build engineer|continuous delivery engineer/i],
   ['cloud',/cloud operations|cloud platform|cloud services engineer/i]
  ];
@@ -158,8 +158,14 @@
    // New multi-level selections supersede legacy internship-only switch.
    const chosenLevels=Array.isArray(p.career_levels)?p.career_levels:[];
    if(!chosenLevels.length&&p.internships===true&&!internships.test(title+' '+String(job.employment||'')))reasons.push('Not an internship');
-   if(selected.length&&!fields.some(key=>selected.includes(key)))
-     reasons.push(fields.includes('other')?'Unclassified career field':'Outside selected career fields');
+   if(selected.length&&!fields.some(key=>selected.includes(key))){
+     if(fields.includes('other')){
+       // Never silently discard a plausible vacancy whose field has no usable
+       // evidence; expose it as uncertain instead of asserting a false mismatch.
+       review=true;
+       evidence.push('Career field unavailable or ambiguous');
+     }else reasons.push('Outside selected career fields');
+   }
    const limit=p.max_experience_years===null||p.max_experience_years===undefined||p.max_experience_years===''?null:Number(p.max_experience_years);
    if(chosenLevels.length&&careerLevel){
      const levelResult=careerLevel.match(job,chosenLevels,eligibilityCore);
