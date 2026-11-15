@@ -61,8 +61,8 @@ test('feed pagination remains deterministic and rejects invalid offsets',async()
  let called;
  const valid=await request({action:'feed',offset:'250'},(sql,args)=>{
    if(sql.includes('sj_native_watch_state'))return [{preferences_current:true}];
-   called=args;
-   return [{job_key:'https://company.com/new',job_snapshot:{title:'AI Engineer'},
+   if(sql.includes('FROM public.sj_native_watch_jobs'))called=args;
+   return [{job_key:'https://company.com/new',job_snapshot:{title:'AI Engineer',qualification_status:'accepted'},
      status:'pending',discovered_at:'2026-11-16'}];
  });
  assert.equal(valid.result.jobs.length,1);
