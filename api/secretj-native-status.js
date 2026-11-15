@@ -39,6 +39,9 @@ module.exports=async function handler(req,res){
     return core.reply(res,200,{ok:true,ready:true,jobs:page,
       next_offset:rows.length>limit?offset+limit:null});
   }
+  const scanRows=await core.query(
+    `SELECT status,started_at,completed_at
+       FROM public.sj_native_scan_requests WHERE user_id=$1 LIMIT 1`,[user.id]);
   const counters=await core.query(
     `SELECT status,count(*)::int AS count FROM public.sj_native_watch_jobs
       WHERE user_id=$1 GROUP BY status`,[user.id]);
@@ -47,6 +50,7 @@ module.exports=async function handler(req,res){
   return core.reply(res,200,{ok:true,monitor:'company-native-first',
     configured:state.length>0,initialized_at:state[0]?.initialized_at||null,
     last_preference_reset_at:state[0]?.updated_at||null,counts,
+    immediate_scan:scanRows[0]||null,
     note:'Only native-query supported sources use employer API filters. Other sources rely on explicit fallback classification.'});
  }catch(error){return core.safeError(res,error);}
 };
