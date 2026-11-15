@@ -75,7 +75,7 @@ test('website personal feed is sourced exclusively from the watch feed, with glo
  const html=fs.readFileSync('dist/index.html','utf8');
  assert.match(html,/loadMatchingFeed\(userId,sequence\)/);
  assert.match(html,/\/api\/secretj-native-status\?action=feed&offset=/);
- assert.match(html,/return if\(state\.watchFeedLoaded\)return state\.watchFeed\.filter\(publicJob\)/);
+ assert.match(html,/if\(state\.watchFeedLoaded\)return state\.watchFeed\.filter\(publicJob\)/);
  assert.match(html,/if\(state\.reviewExcluded\|\|String\(state\.query\|\|''\)\.trim\(\)\|\|/);
  assert.match(html,/const all=allPublicJobs\(\)/);
  assert.match(html,/The general catalog currently contains/);
