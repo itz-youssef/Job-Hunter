@@ -9,6 +9,7 @@
 })(typeof window!=='undefined'?window:null,function(){
  'use strict';
  const eligibilityCore=typeof require==='function'?require('./secretj-eligibility-core'):typeof window!=='undefined'?window.SecretJEligibilityCore:null;
+ const careerLevel=typeof require==='function'?require('./secretj-career-level'):typeof window!=='undefined'?window.SecretJCareerLevel:null;
  const categories=[
  ['software','Software Engineering',/software (?:engineer|developer|development)|application (?:developer|engineer)|\bprogrammer\b|\bswe\b|\bsde\b/i],
  ['backend','Backend Development',/back[ -]?end|server[ -]?side|(?:python|java|node\.?js|golang|go|php|ruby|\.net) developer/i],
@@ -45,7 +46,7 @@
  ['technical_writing','Technical Writing',/technical writer|documentation engineer|developer advocate|technical content/i],
  ['talent_acquisition','Talent Acquisition & Tech Recruitment',/talent acquisition|recruiter|recruitment|recruiting specialist|sourcer|talent partner/i],
  ['hr','Human Resources & People Ops',/human resources|\bhr\b|people operations|hr generalist|hr business partner|personnel/i],
- ['marketing','Digital & Growth Marketing',/digital marketing|growth marketing|seo specialist|performance marketing|content marketing/i],
+ ['marketing','Digital & Growth Marketing',/(?:digital |growth |performance |content )?marketing (?:specialist|manager|associate|analyst|coordinator|intern|executive)|digital marketing|growth marketing|seo specialist|performance marketing|content marketing/i],
  ['finance','Finance & Accounting',/finance analyst|financial analyst|accountant|accounting|audit associate|tax associate/i],
  ['operations','Operations & Supply Chain',/operations analyst|operations specialist|supply chain|procurement|logistics coordinator/i],
  ['customer_success','Customer Success & Service',/customer success|customer service|customer experience|client support|account manager/i],
@@ -67,7 +68,7 @@
   ['talent_acquisition',/talent sourc(?:er|ing)|recruitment coordinator|hiring specialist|people sourcer/i],
   ['qa',/test engineer|test specialist|verification engineer|validation engineer/i],
   ['it_support',/technical assistance|end user support|service desk|customer technical engineer/i],
-  ['ai_ml',/applied (?:scientist|researcher)|intelligent systems|language model engineer/i],
+  ['ai_ml',/applied (?:scientist|researcher|machine learning)|intelligent systems|language model engineer|deep learning engineer|nlp engineer|llm engineer|generative ai engineer|ai researcher|artificial intelligence engineer/i],
   ['devops',/release engineer|build engineer|continuous delivery engineer/i],
   ['cloud',/cloud operations|cloud platform|cloud services engineer/i]
  ];
@@ -99,7 +100,7 @@
  function hasFilters(p){
   return !!p&&(Array.isArray(p.role_families)&&p.role_families.length>0||
     p.max_experience_years!==null&&p.max_experience_years!==undefined&&p.max_experience_years!==''||
-    p.egypt_only===true||p.internships===true);
+    p.egypt_only===true||p.internships===true||Array.isArray(p.career_levels)&&p.career_levels.length>0);
  }
  function yearsRequired(job){
   // Requirements must be present in the stored snapshot. Do not confuse the
@@ -154,11 +155,26 @@
    const reasons=[],evidence=[];
    let review=false,required=null;
    if(p.egypt_only===true&&!egypt.test(location))reasons.push('Outside selected location');
-   if(p.internships===true&&!internships.test(title+' '+String(job.employment||'')))reasons.push('Not an internship');
-   if(selected.length&&!fields.some(key=>selected.includes(key)))
-     reasons.push(fields.includes('other')?'Unclassified career field':'Outside selected career fields');
+   // New multi-level selections supersede legacy internship-only switch.
+   const chosenLevels=Array.isArray(p.career_levels)?p.career_levels:[];
+   if(!chosenLevels.length&&p.internships===true&&!internships.test(title+' '+String(job.employment||'')))reasons.push('Not an internship');
+   if(selected.length&&!fields.some(key=>selected.includes(key))){
+     if(fields.includes('other')){
+       // Never silently discard a plausible vacancy whose field has no usable
+       // evidence; expose it as uncertain instead of asserting a false mismatch.
+       review=true;
+       evidence.push('Career field unavailable or ambiguous');
+     }else reasons.push('Outside selected career fields');
+   }
    const limit=p.max_experience_years===null||p.max_experience_years===undefined||p.max_experience_years===''?null:Number(p.max_experience_years);
-   if(limit!==null&&Number.isFinite(limit)){
+   if(chosenLevels.length&&careerLevel){
+     const levelResult=careerLevel.match(job,chosenLevels,eligibilityCore);
+     required=levelResult.requiredYears;
+     evidence.push(...levelResult.evidence);
+     if(!levelResult.match)reasons.push('Outside selected career levels');
+     if(levelResult.review)review=true;
+   }
+   if(!chosenLevels.length&&limit!==null&&Number.isFinite(limit)){
      if(limit<=2&&eligibilityCore){
        // Selected on a frozen, independently labeled comparison of six models.
        // REVIEW stays visible; it is never called a confirmed match.
@@ -183,5 +199,5 @@
  function isMatch(job,p){return assess(job,p).match;}
  function explain(job,p){return assess(job,p);}
 
- return {categories:categories.map(([key,label])=>({key,label})),classify,hasFilters,isMatch,yearsRequired,explain,assess};
+ return {categories:categories.map(([key,label])=>({key,label})),careerLevels:careerLevel?.levels||[],classify,hasFilters,isMatch,yearsRequired,explain,assess};
 });

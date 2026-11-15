@@ -111,5 +111,5 @@ test('browser and verified member emails both load the same selected core',()=>{
  }
  assert.match(alerts,/const \{isMatch,hasFilters,assess\}=require/);
  assert.match(alerts,/POTENTIAL MATCH/);
- assert.match(home,/Needs review · experience not verified/);
+ assert.match(home,/Potential match · check seniority and requirements/);
 });
