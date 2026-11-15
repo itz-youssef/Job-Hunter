@@ -111,3 +111,12 @@ test('immediate scan lifecycle is visible only through an authenticated private 
  assert.match(account,/Immediate source scan completed/);
  assert.match(account,/await api\('\/api\/secretj-native-scan','POST'/);
 });
+
+test('abandoned worker scans report timeout instead of staying running forever',()=>{
+ const api=fs.readFileSync('api/secretj-native-status.js','utf8');
+ assert.match(api,/WHEN status='running' AND started_at<now\(\)-interval '2 minutes'/);
+ assert.match(api,/THEN 'timed_out' ELSE status END AS status/);
+ const frontend=fs.readFileSync('dist/assets/secretj-account.js','utf8');
+ assert.match(frontend,/\['failed','timed_out'\]\.includes\(currentScan\?\.status\)/);
+ assert.match(frontend,/\['complete','failed','timed_out'\]\.includes\(scan\?\.status\)/);
+});
