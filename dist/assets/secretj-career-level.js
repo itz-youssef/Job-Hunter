@@ -21,7 +21,7 @@
     ['executive',/\b(?:chief (?:executive|technology|financial|operating|product|information|people) officer|ceo|cto|cfo|coo|cio|cpo|ciso|executive vice president|svp|vice president|v[. ]?p[. ]?|general manager|managing director)\b/i],
     ['director',/\b(?:director|head of|head,|department head)\b/i],
     ['manager',/\b(?:engineering manager|product manager|project manager|program manager|people manager|team manager|development manager|marketing manager|operations manager|hr manager|finance manager|sales manager|customer success manager|line manager|manager of)\b/i],
-    ['lead',/\b(?:tech(?:nical)? lead|team lead|lead (?:software|backend|frontend|full.?stack|data|machine learning|ai|ml|security|devops|cloud|qa|engineer|developer|designer|analyst|scientist)|staff (?:engineer|developer|scientist|designer)|principal (?:engineer|developer|scientist|designer|architect))\b/i],
+    ['lead',/\b(?:tech(?:nical)? lead|team lead|lead (?:software|backend|frontend|full.?stack|data|machine learning|ai|ml|security|devops|cloud|qa|engineer|developer|designer|analyst|scientist)|staff (?:\\w+[ -]+){0,3}(?:engineer|developer|scientist|designer|architect)|principal (?:\\w+[ -]+){0,3}(?:engineer|developer|scientist|designer|architect))\b/i],
     ['senior',/\b(?:senior|sr[.]?)\b/i],
     ['mid',/\b(?:mid[ -]?level|mid[ -]?senior|intermediate)\b/i],
     ['internship',/\b(?:interns?|internship|trainee|traineeship|apprentice(?:ship)?|student placement|co[ -]?op|summer training|winter training)\b/i],
