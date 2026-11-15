@@ -40,7 +40,10 @@ module.exports=async function handler(req,res){
       next_offset:rows.length>limit?offset+limit:null});
   }
   const scanRows=await core.query(
-    `SELECT status,started_at,completed_at
+    `SELECT CASE
+        WHEN status='running' AND started_at<now()-interval '2 minutes'
+          THEN 'timed_out' ELSE status END AS status,
+        started_at,completed_at
        FROM public.sj_native_scan_requests WHERE user_id=$1 LIMIT 1`,[user.id]);
   const counters=await core.query(
     `SELECT status,count(*)::int AS count FROM public.sj_native_watch_jobs
