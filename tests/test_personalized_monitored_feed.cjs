@@ -8,7 +8,7 @@ const api=require('../api/secretj-native-status');
 const monitor=require('../lib/secretj/native-preference-monitor');
 const UID='e07bb2d6-a213-45d0-ab23-e5051967a616';
 const COOKIE='sj_session='+Buffer.from('A'.repeat(32)).toString('base64url');
-async function request(query,queryImpl){
+async function request(query,queryImpl,env){
   core.setQueryForTests(async(sql,args)=>{
     if(sql.includes('FROM public.sj_sessions s JOIN public.sj_users u'))
       return [{id:UID,email:'member@example.com',is_active:true}];
@@ -17,7 +17,7 @@ async function request(query,queryImpl){
   let result={};
   const res={statusCode:200,setHeader(){},
     end(v){result=JSON.parse(v);}};
-  try{await api({method:'GET',headers:{cookie:COOKIE},query},res);
+  try{await (env?api.createHandler(env):api)({method:'GET',headers:{cookie:COOKIE},query},res);
     return {status:res.statusCode,result};
   }finally{core.setQueryForTests(null);}
 }
@@ -29,10 +29,10 @@ test('personal feed includes baseline, new and already alerted jobs for the sign
      preferences_current:true}];
    if(sql.includes('FROM public.sj_native_watch_jobs'))return [
      {job_key:'https://company.com/one',job_snapshot:{title:'Junior AI Engineer',
-       company:'A',url:'https://company.com/one'},status:'baseline',
+       company:'A',url:'https://company.com/one',qualification_status:'accepted'},status:'baseline',
        discovered_at:'2026-11-15'},
      {job_key:'https://company.com/two',job_snapshot:{title:'AI Internship',
-       company:'B',url:'https://company.com/two'},status:'sent',
+       company:'B',url:'https://company.com/two',qualification_status:'accepted'},status:'sent',
        discovered_at:'2026-11-16'}
    ];
    throw Error('Unexpected SQL');
@@ -109,4 +109,28 @@ test('personalized feed never exposes catalog candidates that bypass server vali
  assert.match(html,/return state\.watchFeedLoaded\?state\.watchFeed\.filter\(publicJob\):\[\]/);
  assert.doesNotMatch(html,/watch_status:'provisional'/);
  assert.match(html,/Your personalized feed only shows jobs accepted by the configured verification pipeline/);
+});
+
+test('legacy watch data is not treated as qualified until revalidated against stored preferences',async()=>{
+ const rows=[
+  {job_key:'https://example.com/senior',job_snapshot:{
+   title:'Senior AI Engineer',location:'Cairo, Egypt',company:'Example',
+   url:'https://example.com/senior'},status:'baseline'},
+  {job_key:'https://example.com/junior',job_snapshot:{
+   title:'Junior AI Engineer',location:'Cairo, Egypt',company:'Example',
+   url:'https://example.com/junior'},status:'baseline'}
+ ];
+ const p={role_families:['ai_ml'],career_levels:['entry','internship'],
+   egypt_only:true,internships:false,max_experience_years:2};
+ const query=sql=>{
+   if(sql.includes('sj_native_watch_state'))return [{preferences_current:true}];
+   if(sql.includes('FROM public.sj_native_watch_jobs'))return rows;
+   if(sql.includes('FROM public.sj_preferences WHERE user_id'))return [p];
+   throw Error('Unexpected SQL: '+sql);
+ };
+ const enabled=await request({action:'feed'},query,{SECRETJ_AI_VERIFICATION_ENABLED:'false'});
+ assert.deepEqual(enabled.result.jobs.map(j=>j.title),['Junior AI Engineer']);
+ assert.equal(enabled.result.jobs[0].qualification_mode,'legacy-rules-only');
+ const strict=await request({action:'feed'},query,{SECRETJ_AI_VERIFICATION_ENABLED:'true'});
+ assert.equal(strict.result.jobs.length,0,'Strict AI must never reintroduce unreviewed legacy jobs');
 });
