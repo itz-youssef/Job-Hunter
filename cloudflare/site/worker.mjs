@@ -13,6 +13,7 @@ import emailHandler from '../../api/secretj-email.js';
 import nativeStatusHandler from '../../api/secretj-native-status.js';
 import memberAlerts from '../../lib/secretj/member-alerts.js';
 import nativeMonitor from '../../lib/secretj/native-preference-monitor.js';
+import nativeScan from '../../api/secretj-native-scan.js';
 
 const handlers = new Map([
   ['/api/secretj-auth',authHandler],
@@ -73,9 +74,12 @@ export async function runNodeHandler(handler,request){
   return response||json(500,{ok:false,error:'No response from account service'});
 }
 
-export async function handleRequest(request,env){
+export async function handleRequest(request,env,ctx){
   const url=new URL(request.url);
-  const handler=handlers.get(url.pathname.replace(/\/+$/,''));
+  const pathname=url.pathname.replace(/\/+$/,'');
+  if(pathname==='/api/secretj-native-scan')
+    return runNodeHandler(nativeScan.createImmediateHandler(env,ctx),request);
+  const handler=handlers.get(pathname);
   if(handler)return runNodeHandler(handler,request);
 
   if(url.pathname.startsWith('/api/')){
