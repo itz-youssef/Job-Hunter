@@ -94,3 +94,39 @@ test('invalid or failing AI binding cannot be treated as an accepted match',asyn
  const env={AI:{run:async()=>{throw Error('quota exceeded');}}};
  assert.equal((await gates.aiReview(j,preference,env)).status,'unavailable');
 });
+
+test('strict three-stage engine keeps only AI-approved, rules-compatible roles',async()=>{
+ const core=require('../lib/secretj/core');
+ const pref={...preference};
+ const candidate=mk('Junior AI Engineer','Design and test machine learning systems in Python.');
+ const wrong=mk('Senior AI Engineer','Senior architecture ownership and people leadership.');
+ const model={AI:{run:async()=>({response:{
+   match:true,confidence:0.93,level:'entry',reason:'Junior role and hands-on engineering requirements'
+ }})},SECRETJ_AI_VERIFICATION_ENABLED:'true'};
+ core.setQueryForTests(async sql=>{
+   if(sql.includes('FROM public.sj_ai_qualification_cache'))return [];
+   if(sql.includes('INSERT INTO public.sj_ai_qualification_cache'))return [];
+   throw Error('Unexpected qualification SQL');
+ });
+ try{
+   const result=await monitor.qualifyJobs([candidate,wrong],pref,model);
+   assert.equal(result.accepted.length,1);
+   assert.equal(result.accepted[0].qualification_mode,'ai-reviewed');
+   assert.equal(result.rejected,1);
+   assert.equal(result.needsReview,0);
+ }finally{core.setQueryForTests(null);}
+});
+test('strict mode abstains from sending or displaying jobs if AI is unavailable',async()=>{
+ const core=require('../lib/secretj/core');
+ const candidate=mk('Junior AI Engineer','Design and deploy Python model applications.');
+ const env={SECRETJ_AI_VERIFICATION_ENABLED:'true'};
+ core.setQueryForTests(async sql=>{
+   if(sql.includes('FROM public.sj_ai_qualification_cache'))return [];
+   throw Error('Unexpected SQL');
+ });
+ try{
+   const result=await monitor.qualifyJobs([candidate],preference,env);
+   assert.equal(result.accepted.length,0);
+   assert.equal(result.needsReview,1);
+ }finally{core.setQueryForTests(null);}
+});
