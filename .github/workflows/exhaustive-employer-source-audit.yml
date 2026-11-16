@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - "scripts/audit-all-employer-sources.py"
+      - "app/**"
       - ".github/workflows/exhaustive-employer-source-audit.yml"
       - "tests/test_all_employer_source_audit.py"
   schedule:
