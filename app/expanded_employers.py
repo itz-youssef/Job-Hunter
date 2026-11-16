@@ -77,7 +77,9 @@ def luxoft_egypt(name,get_bytes,make_job):
         slug=parts.path.strip("/").split("/")[-1]
         title=re.sub(r"-[0-9]+$", "", slug).replace("-", " ")
         # Use human-readable anchor title where possible, before metadata.
-        human=re.split(r"\b(?:Remote|On-site|Hybrid|Egypt)\b",text,maxsplit=1)[0].strip()
+        # Employer cards often append city before country; do not contaminate
+        # the exact vacancy title used to validate the official detail page.
+        human=re.split(r"\b(?:Remote|On-site|Hybrid|Egypt|Cairo|Giza|Alexandria|New Cairo)\b",text,maxsplit=1)[0].strip()
         if human and len(human)<120:
             title=human
         if not title:
