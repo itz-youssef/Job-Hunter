@@ -1,0 +1,536 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-11-16",
+  "live_run": "https://github.com/itz-youssef/Job-Hunter/actions/runs/43788614728",
+  "companies_audited": 58,
+  "summary": {
+    "jobs": 1182,
+    "descriptions": 961,
+    "requirements": 156
+  },
+  "caution": "Actual live listing totals vary between runs; cannot claim every job independently verified or source completeness from a successful scanner. A title-only record should not be AI-accepted.",
+  "companies": [
+    {
+      "company": "ADCB Egypt",
+      "kind": "adcb_egypt",
+      "status": "partial",
+      "jobs": 7,
+      "descriptions": 7,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Amazon Egypt",
+      "kind": "amazon_egypt",
+      "status": "monitoring",
+      "jobs": 95,
+      "descriptions": 95,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "ArpuPlus",
+      "kind": "workable",
+      "status": "monitoring",
+      "jobs": 4,
+      "descriptions": 4,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "AWS Egypt",
+      "kind": "amazon_egypt",
+      "status": "monitoring",
+      "jobs": 0,
+      "descriptions": 0,
+      "requirements": 0,
+      "followup": "Confirm real vacancy availability via source's official website"
+    },
+    {
+      "company": "BlackStone eIT",
+      "kind": "workable",
+      "status": "monitoring",
+      "jobs": 9,
+      "descriptions": 9,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Blink22",
+      "kind": "blink22_egypt",
+      "status": "partial",
+      "jobs": 16,
+      "descriptions": 16,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Bosta",
+      "kind": "lever",
+      "status": "monitoring",
+      "jobs": 92,
+      "descriptions": 92,
+      "requirements": 86,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Breadfast",
+      "kind": "breadfast_egypt",
+      "status": "partial",
+      "jobs": 12,
+      "descriptions": 12,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Breadfast Technology",
+      "kind": "breadfast_tech",
+      "status": "partial",
+      "jobs": 4,
+      "descriptions": 4,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Capgemini Egypt",
+      "kind": "capgemini_egypt",
+      "status": "monitoring",
+      "jobs": 95,
+      "descriptions": 94,
+      "requirements": 0,
+      "followup": "Expand correctly matched job-detail pagination"
+    },
+    {
+      "company": "Chatbase",
+      "kind": "ashby",
+      "status": "monitoring",
+      "jobs": 13,
+      "descriptions": 13,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "CIB Egypt",
+      "kind": "cib_egypt",
+      "status": "partial",
+      "jobs": 23,
+      "descriptions": 0,
+      "requirements": 0,
+      "followup": "Investigate and repair per-job original detail extraction"
+    },
+    {
+      "company": "Deloitte",
+      "kind": "deloitte_partial",
+      "status": "partial",
+      "jobs": 61,
+      "descriptions": 0,
+      "requirements": 0,
+      "followup": "Investigate and repair per-job original detail extraction"
+    },
+    {
+      "company": "DXC Technology",
+      "kind": "dxc_egypt",
+      "status": "monitoring",
+      "jobs": 45,
+      "descriptions": 45,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "e& / Etisalat",
+      "kind": "etisalat_egypt",
+      "status": "partial",
+      "jobs": 25,
+      "descriptions": 0,
+      "requirements": 0,
+      "followup": "Investigate and repair per-job original detail extraction"
+    },
+    {
+      "company": "econstruct",
+      "kind": "lever",
+      "status": "monitoring",
+      "jobs": 20,
+      "descriptions": 20,
+      "requirements": 19,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Emergence",
+      "kind": "ashby",
+      "status": "monitoring",
+      "jobs": 8,
+      "descriptions": 8,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Ericsson",
+      "kind": "ericsson_egypt",
+      "status": "monitoring",
+      "jobs": 11,
+      "descriptions": 11,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "EY Egypt",
+      "kind": "ey_egypt",
+      "status": "monitoring",
+      "jobs": 20,
+      "descriptions": 12,
+      "requirements": 0,
+      "followup": "Expand correctly matched job-detail pagination"
+    },
+    {
+      "company": "Fab Minds Egypt",
+      "kind": "fab_minds_egypt",
+      "status": "partial",
+      "jobs": 3,
+      "descriptions": 3,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Fawry",
+      "kind": "fawry_partial",
+      "status": "partial",
+      "jobs": 4,
+      "descriptions": 0,
+      "requirements": 0,
+      "followup": "Investigate and repair per-job original detail extraction"
+    },
+    {
+      "company": "Finaira",
+      "kind": "html",
+      "status": "partial",
+      "jobs": 1,
+      "descriptions": 1,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "IBM",
+      "kind": "ibm_egypt",
+      "status": "monitoring",
+      "jobs": 9,
+      "descriptions": 9,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Incorta",
+      "kind": "lever",
+      "status": "monitoring",
+      "jobs": 4,
+      "descriptions": 4,
+      "requirements": 1,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "inDrive",
+      "kind": "indrive_egypt",
+      "status": "partial",
+      "jobs": 10,
+      "descriptions": 0,
+      "requirements": 0,
+      "followup": "Investigate and repair per-job original detail extraction"
+    },
+    {
+      "company": "Infomineo",
+      "kind": "workable",
+      "status": "monitoring",
+      "jobs": 1,
+      "descriptions": 1,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Integrant",
+      "kind": "workable",
+      "status": "monitoring",
+      "jobs": 19,
+      "descriptions": 19,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "ITWorx",
+      "kind": "itworx",
+      "status": "monitoring",
+      "jobs": 3,
+      "descriptions": 3,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Klivvr",
+      "kind": "lever",
+      "status": "monitoring",
+      "jobs": 7,
+      "descriptions": 7,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Konecta Egypt",
+      "kind": "workday",
+      "status": "monitoring",
+      "jobs": 34,
+      "descriptions": 20,
+      "requirements": 0,
+      "followup": "Expand correctly matched job-detail pagination"
+    },
+    {
+      "company": "Lamdax",
+      "kind": "workable",
+      "status": "monitoring",
+      "jobs": 6,
+      "descriptions": 6,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Lean Technologies",
+      "kind": "ashby",
+      "status": "monitoring",
+      "jobs": 8,
+      "descriptions": 8,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Link Development",
+      "kind": "linkdevelopment",
+      "status": "monitoring",
+      "jobs": 27,
+      "descriptions": 0,
+      "requirements": 0,
+      "followup": "Investigate and repair per-job original detail extraction"
+    },
+    {
+      "company": "Lua Global",
+      "kind": "ashby",
+      "status": "monitoring",
+      "jobs": 0,
+      "descriptions": 0,
+      "requirements": 0,
+      "followup": "Confirm real vacancy availability via source's official website"
+    },
+    {
+      "company": "Luciq (formerly Instabug)",
+      "kind": "html",
+      "status": "monitoring",
+      "jobs": 2,
+      "descriptions": 0,
+      "requirements": 0,
+      "followup": "Investigate and repair per-job original detail extraction"
+    },
+    {
+      "company": "Luxoft Egypt",
+      "kind": "luxoft_egypt",
+      "status": "monitoring",
+      "jobs": 16,
+      "descriptions": 0,
+      "requirements": 0,
+      "followup": "Investigate and repair per-job original detail extraction"
+    },
+    {
+      "company": "Madar",
+      "kind": "workable",
+      "status": "monitoring",
+      "jobs": 1,
+      "descriptions": 1,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Mondia Group",
+      "kind": "workable",
+      "status": "monitoring",
+      "jobs": 2,
+      "descriptions": 2,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "mylo by B.TECH",
+      "kind": "workable",
+      "status": "monitoring",
+      "jobs": 6,
+      "descriptions": 6,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Nokia",
+      "kind": "oracle",
+      "status": "monitoring",
+      "jobs": 0,
+      "descriptions": 0,
+      "requirements": 0,
+      "followup": "Confirm real vacancy availability via source's official website"
+    },
+    {
+      "company": "Orange Egypt",
+      "kind": "orange_egypt",
+      "status": "monitoring",
+      "jobs": 10,
+      "descriptions": 0,
+      "requirements": 0,
+      "followup": "Investigate and repair per-job original detail extraction"
+    },
+    {
+      "company": "Paymob",
+      "kind": "paymob_recruitera",
+      "status": "monitoring",
+      "jobs": 71,
+      "descriptions": 71,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "PetroApp",
+      "kind": "workable",
+      "status": "monitoring",
+      "jobs": 1,
+      "descriptions": 1,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "PwC Egypt",
+      "kind": "pwc_egypt",
+      "status": "monitoring",
+      "jobs": 3,
+      "descriptions": 3,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "robusta / RTG",
+      "kind": "workable",
+      "status": "monitoring",
+      "jobs": 11,
+      "descriptions": 11,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "SAP",
+      "kind": "sap_cairo",
+      "status": "monitoring",
+      "jobs": 3,
+      "descriptions": 3,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Schneider Electric",
+      "kind": "schneider_egypt",
+      "status": "monitoring",
+      "jobs": 40,
+      "descriptions": 40,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Siemens",
+      "kind": "siemens_software",
+      "status": "monitoring",
+      "jobs": 22,
+      "descriptions": 22,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "SOUM",
+      "kind": "lever",
+      "status": "monitoring",
+      "jobs": 24,
+      "descriptions": 24,
+      "requirements": 20,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "SSC HR Solutions",
+      "kind": "workable",
+      "status": "monitoring",
+      "jobs": 45,
+      "descriptions": 45,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Sumerge",
+      "kind": "workable",
+      "status": "monitoring",
+      "jobs": 8,
+      "descriptions": 8,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Talabat Egypt",
+      "kind": "talabat_egypt",
+      "status": "monitoring",
+      "jobs": 52,
+      "descriptions": 52,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Telecom Egypt (WE)",
+      "kind": "telecom_egypt",
+      "status": "monitoring",
+      "jobs": 0,
+      "descriptions": 0,
+      "requirements": 0,
+      "followup": "Confirm real vacancy availability via source's official website"
+    },
+    {
+      "company": "Teleperformance Egypt",
+      "kind": "tp_egypt",
+      "status": "monitoring",
+      "jobs": 4,
+      "descriptions": 0,
+      "requirements": 0,
+      "followup": "Investigate and repair per-job original detail extraction"
+    },
+    {
+      "company": "Thndr",
+      "kind": "ashby",
+      "status": "monitoring",
+      "jobs": 17,
+      "descriptions": 17,
+      "requirements": 0,
+      "followup": "Check remaining separate experience/requirements schema"
+    },
+    {
+      "company": "Uber Egypt",
+      "kind": "uber_egypt",
+      "status": "partial",
+      "jobs": 0,
+      "descriptions": 0,
+      "requirements": 0,
+      "followup": "Confirm real vacancy availability via source's official website"
+    },
+    {
+      "company": "VOIS",
+      "kind": "vois_egypt",
+      "status": "monitoring",
+      "jobs": 28,
+      "descriptions": 12,
+      "requirements": 0,
+      "followup": "Expand correctly matched job-detail pagination"
+    },
+    {
+      "company": "Yassir",
+      "kind": "lever",
+      "status": "monitoring",
+      "jobs": 120,
+      "descriptions": 120,
+      "requirements": 30,
+      "followup": "Check remaining separate experience/requirements schema"
+    }
+  ]
+}
