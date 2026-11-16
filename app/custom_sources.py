@@ -817,67 +817,69 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     # LEVER
     elif kind == "lever":
         slug = urllib.parse.quote(meta, safe="")
-
         data = _json(
             "https://api.lever.co"
             f"/v0/postings/{slug}?mode=json"
         )
-
         for item in data:
             cat = item.get("categories") or {}
-
-            jobs.append(
-                _job(
-                    name,
-                    item.get("text"),
-                    cat.get("location"),
-                    item.get("hostedUrl"),
-                    item.get("descriptionPlain")
-                    or item.get("description"),
-                    item.get("createdAt"),
-                    cat.get("commitment"),
-                    source_facets={
-                        "provider": "lever",
-                        "team": str(cat.get("team") or ""),
-                        "department": str(cat.get("department") or ""),
-                        "commitment": str(cat.get("commitment") or ""),
-                        "location": str(cat.get("location") or ""),
-                        "level": str(item.get("level") or ""),
-                    },
-                )
+            lists=item.get("lists") or []
+            structured_sections=[]
+            required_sections=[]
+            for section in lists if isinstance(lists,list) else []:
+                if not isinstance(section,dict):continue
+                heading=str(section.get("text") or "")
+                body=_clean(section.get("content") or "")
+                if not body:continue
+                structured_sections.append(heading+": "+body)
+                if re.search(r"\b(?:requirements?|qualifications?|what you (?:bring|need)|must.haves?|who you are|skills)\b",heading,re.I):
+                    required_sections.append(body)
+            full_description=" ".join(part for part in (
+                _clean(item.get("descriptionPlain") or item.get("description") or ""),
+                *structured_sections,
+                _clean(item.get("additionalPlain") or "")
+            ) if part).strip()
+            job=_job(
+                name,item.get("text"),cat.get("location"),item.get("hostedUrl"),
+                full_description,item.get("createdAt"),cat.get("commitment"),
+                source_facets={
+                    "provider":"lever",
+                    "team":str(cat.get("team") or ""),
+                    "department":str(cat.get("department") or ""),
+                    "commitment":str(cat.get("commitment") or ""),
+                    "location":str(cat.get("location") or ""),
+                    "level":str(item.get("level") or ""),
+                }
             )
+            job["department"]=str(cat.get("department") or cat.get("team") or "")
+            job["seniority"]=str(item.get("level") or "")
+            job["requirements"]=" ".join(required_sections)[:12000]
+            job["source_detail_status"]="lever-public-posting"
+            jobs.append(job)
 
     # ASHBY
     elif kind == "ashby":
-        slug = urllib.parse.quote(meta, safe="")
-
-        data = _json(
-            "https://api.ashbyhq.com"
-            f"/posting-api/job-board/{slug}"
-        )
-
-        for item in data.get("jobs", []):
-
-            if item.get("isListed", True):
-                jobs.append(
-                    _job(
-                        name,
-                        item.get("title"),
-                        item.get("location"),
-                        item.get("jobUrl"),
-                        item.get("descriptionPlain")
-                        or item.get("descriptionHtml"),
-                        item.get("publishedAt"),
-                        item.get("employmentType"),
-                        source_facets={
-                            "provider": "ashby",
-                            "team": str(item.get("team") or ""),
-                            "department": str(item.get("department") or ""),
-                            "employment_type": str(item.get("employmentType") or ""),
-                            "location": str(item.get("location") or ""),
-                        },
-                    )
+        slug=urllib.parse.quote(meta,safe="")
+        data=_json("https://api.ashbyhq.com"+f"/posting-api/job-board/{slug}")
+        for item in data.get("jobs",[]):
+            if item.get("isListed",True):
+                job=_job(
+                    name,item.get("title"),item.get("location"),
+                    item.get("jobUrl"),
+                    item.get("descriptionPlain") or item.get("descriptionHtml"),
+                    item.get("publishedAt"),item.get("employmentType"),
+                    source_facets={
+                        "provider":"ashby",
+                        "team":str(item.get("team") or ""),
+                        "department":str(item.get("department") or ""),
+                        "employment_type":str(item.get("employmentType") or ""),
+                        "location":str(item.get("location") or ""),
+                    }
                 )
+                job["department"]=str(item.get("department") or item.get("team") or "")
+                job["requirements"]=_clean(item.get("requirements") or "")
+                job["source_detail_status"]="ashby-public-posting"
+                jobs.append(job)
 
     # SMARTRECRUITERS
     elif kind == "smartrecruiters":
