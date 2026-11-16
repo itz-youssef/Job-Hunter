@@ -92,3 +92,49 @@ def test_vois_brand_facet_includes_unbranded_internship_titles():
     rows=eightfold_egypt("VOIS","jobs.vodafone.com","vodafone.com",fake,cs._job,vois=True)
     assert len(rows)==1
     assert rows[0]["title"]=="Technology Internship"
+
+
+def test_vodafone_official_detail_enriches_missing_search_description():
+    # Fixed page-shaped fixture from employer JobPosting JSON-LD (offline test).
+    rows={"data":{"count":1,"positions":[{
+      "id":713,"name":"VOIS EG Work Experience Programme 2027 - Technology",
+      "locations":["Cairo, Egypt"],"positionUrl":"/careers/job/713",
+      "jobDescription":""}]}}
+    detail=b"""<html><script type="application/ld+json">
+      {"@context":"https://schema.org","@type":"JobPosting",
+       "title":"VOIS EG Work Experience Programme 2027 - Technology",
+       "description":"<h2>About this Role</h2><p>6-month internship for final-year students on AI and Machine Learning, DevOps, cloud and software development.</p>",
+       "employmentType":"INTERN","datePosted":"2026-10-29"}
+       </script></html>"""
+    calls=[]
+    def get_bytes(url):
+        assert url=="https://jobs.vodafone.com/careers/job/713"
+        calls.append(url)
+        return detail
+    jobs=eightfold_egypt("VOIS","jobs.vodafone.com","vodafone.com",
+      lambda _:rows,cs._job,vois=True,get_bytes=get_bytes,max_details=2)
+    assert len(jobs)==1
+    assert len(calls)==1
+    assert "AI and Machine Learning" in jobs[0]["description"]
+    assert jobs[0]["source_detail_status"]=="jsonld-jobposting"
+    assert jobs[0]["published_at"]=="2026-10-29"
+
+
+def test_vodafone_detail_failure_does_not_invent_description_or_lose_job():
+    payload={"data":{"count":1,"positions":[{
+      "id":714,"name":"VOIS EG Work Experience Programme 2027 - Technology",
+      "locations":["Egypt"],"positionUrl":"/careers/job/714"}]}}
+    def blocked(_):
+        raise TimeoutError("official vacancy detail timeout")
+    rows=eightfold_egypt("VOIS","jobs.vodafone.com","vodafone.com",
+      lambda _:payload,cs._job,vois=True,get_bytes=blocked)
+    assert len(rows)==1
+    assert rows[0]["description"]==""
+    assert rows[0]["source_detail_status"]=="detail-unavailable"
+
+
+def test_unrelated_jsonld_title_must_not_be_used_as_vacancy_description():
+    from app.three_employer_feeds import _eightfold_official_detail
+    html=b"""<script type="application/ld+json">{"@type":"JobPosting",
+     "title":"Senior Finance Lead","description":"Ten years of finance leadership"}</script>"""
+    assert _eightfold_official_detail(html,"Junior AI Engineer") is None

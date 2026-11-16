@@ -619,7 +619,8 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     if kind == "vois_egypt":
         from app.three_employer_feeds import eightfold_egypt
         return _dedupe(eightfold_egypt(
-            name, "jobs.vodafone.com", "vodafone.com", _json, _job, vois=True
+            name, "jobs.vodafone.com", "vodafone.com", _json, _job,
+            vois=True, get_bytes=_bytes, max_details=12
         ))
 
     if kind == "ericsson_egypt":
