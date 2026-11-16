@@ -626,7 +626,8 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     if kind == "ericsson_egypt":
         from app.three_employer_feeds import eightfold_egypt
         return _dedupe(eightfold_egypt(
-            name, "jobs.ericsson.com", "ericsson.com", _json, _job
+            name, "jobs.ericsson.com", "ericsson.com", _json, _job,
+            get_bytes=_bytes, max_details=20
         ))
 
     if kind == "fawry_partial":
@@ -1013,26 +1014,27 @@ def _board_jobs(name: str, url: str) -> list[dict]:
                     continue
 
                 description = ""
-
-                if (
-                    detail_count < MAX_DETAILS
-                    and re.search(
-                        r"egypt|cairo|giza|alexandria",
-                        location,
-                        re.I
-                    )
-                ):
+                detail_department=""
+                detail_employment=""
+                detail_status="workday-summary"
+                # Workday summaries may omit full locations or use a custom
+                # site naming convention (Konecta). Fetch a bounded sample
+                # of actual detail records even when location text is sparse.
+                # Geography is validated independently at preference stage.
+                if detail_count < MAX_DETAILS:
                     try:
                         detail = _json(
                             endpoint + path
                         )
-                        description = (
-                            detail.get(
-                                "jobPostingInfo"
-                            ) or {}
-                        ).get(
-                            "jobDescription"
-                        ) or ""
+                        posting=detail.get("jobPostingInfo") or {}
+                        description=posting.get("jobDescription") or ""
+                        if not isinstance(description,str):
+                            description=str(description)
+                        detail_department=str(posting.get("jobFamily") or
+                            posting.get("jobFamilyGroup") or "")
+                        detail_employment=str(posting.get("timeType") or
+                            posting.get("workerSubType") or "")
+                        detail_status="workday-official-detail" if description else "workday-detail-empty"
 
                     except (
                         urllib.error.HTTPError,
@@ -1048,16 +1050,13 @@ def _board_jobs(name: str, url: str) -> list[dict]:
                     f"{public_prefix}{path}"
                 )
 
-                jobs.append(
-                    _job(
-                        name,
-                        title,
-                        location,
-                        public_url,
-                        description,
-                        item.get("postedOn"),
-                    )
+                job=_job(
+                    name,title,location,public_url,description,
+                    item.get("postedOn"),detail_employment
                 )
+                job["department"]=detail_department
+                job["source_detail_status"]=detail_status
+                jobs.append(job)
 
             if (
                 not rows
