@@ -21,6 +21,14 @@ def init():
         CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY,value TEXT);
         CREATE TABLE IF NOT EXISTS runs(id INTEGER PRIMARY KEY,source_id INTEGER,started TEXT,ended TEXT,count INTEGER,new_count INTEGER,status TEXT,error TEXT);
         CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY,value TEXT);''')
+        # Non-destructive migration for existing production SQLite state. The
+        # discovery scanners already capture these employer fields, but the
+        # original table discarded them at ingest, so models saw incomplete
+        # records after export.
+        current={row[1] for row in c.execute("PRAGMA table_info(jobs)")}
+        for column in ("requirements","department","seniority","source_detail_status"):
+            if column not in current:
+                c.execute(f"ALTER TABLE jobs ADD COLUMN {column} TEXT")
         seeds=[('Vodafone / VOIS','https://jobs.vodafone.com/careers?filter_country=Egypt','eightfold'),('Siemens','https://jobs.siemens.com/en_US/externaljobs','avature'),('Valeo','https://valeo.wd3.myworkdayjobs.com/en-US/valeo_jobs','workday'),('Microsoft','https://apply.careers.microsoft.com/careers','microsoft'),('Fawry','https://www.fawry.com/jobs/','jsonld')]
         c.executemany('INSERT OR IGNORE INTO sources(name,url,kind) VALUES (?,?,?)',seeds)
         for k,v in {'interval':30,'email':'','email_enabled':False,'paused':False,'keywords':'python,software,backend,machine learning,computer vision,deep learning,mlops,data scientist,artificial intelligence','locations':'egypt,cairo,giza','min_score':3}.items():
@@ -36,14 +44,34 @@ def ingest(source,jobs,score_fn):
             score,reasons=score_fn(j); stamp=now()
             old=c.execute('SELECT id, score FROM jobs WHERE source_id=? AND external_id=?',(source['id'],j['external_id'])).fetchone()
             if old:
-                c.execute('UPDATE jobs SET title=?,location=?,description=?,last_seen=?,score=?,reasons=?,published=COALESCE(NULLIF(?, \'\'),published) WHERE id=?',(j['title'],j['location'],j['description'],stamp,score,json.dumps(reasons),j.get('published'),old['id']))
+                c.execute("""UPDATE jobs SET title=?,location=?,description=?,
+                    last_seen=?,score=?,reasons=?,
+                    published=COALESCE(NULLIF(?, ''),published),
+                    employment=COALESCE(NULLIF(?, ''),employment),
+                    requirements=COALESCE(NULLIF(?, ''),requirements),
+                    department=COALESCE(NULLIF(?, ''),department),
+                    seniority=COALESCE(NULLIF(?, ''),seniority),
+                    source_detail_status=COALESCE(NULLIF(?, ''),source_detail_status)
+                    WHERE id=?""",
+                    (j['title'],j['location'],j['description'],stamp,score,json.dumps(reasons),
+                     j.get('published') or j.get('published_at'),
+                     j.get('employment'),j.get('requirements'),j.get('department'),
+                     j.get('seniority'),j.get('source_detail_status'),old['id']))
                 # A previously rejected role can gain employer-verified junior
                 # evidence later. Alert once when it first becomes eligible.
                 # UNIQUE(outbox.job_id) also prevents duplicate queue entries.
                 if source['baseline'] and (old['score'] or 0)<settings()['min_score'] and score>=settings()['min_score']:
                     c.execute('INSERT OR IGNORE INTO outbox(job_id,created) VALUES (?,?)',(old['id'],stamp))
                 continue
-            cur=c.execute('INSERT INTO jobs(source_id,external_id,title,location,description,published,url,employment,detected,last_seen,score,reasons) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',(source['id'],j['external_id'],j['title'],j['location'],j['description'],j.get('published'),j['url'],j.get('employment','Not provided'),stamp,stamp,score,json.dumps(reasons)))
+            cur=c.execute("""INSERT INTO jobs
+                (source_id,external_id,title,location,description,published,url,employment,
+                 detected,last_seen,score,reasons,requirements,department,seniority,source_detail_status)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (source['id'],j['external_id'],j['title'],j['location'],j['description'],
+                 j.get('published') or j.get('published_at'),j['url'],
+                 j.get('employment','Not provided'),stamp,stamp,score,json.dumps(reasons),
+                 j.get('requirements') or '',j.get('department') or '',
+                 j.get('seniority') or '',j.get('source_detail_status') or ''))
             fresh+=1
             if source['baseline'] and score>=settings()['min_score']:
                 c.execute('INSERT INTO outbox(job_id,created) VALUES (?,?)',(cur.lastrowid,stamp))
