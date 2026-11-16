@@ -5,15 +5,15 @@
  * Uses independently adjudicated benchmark examples, records precision/recall,
  * and exits nonzero when model inference cannot be confirmed.
  */
-const fs=require('node:fs');
-const path=require('node:path');
-const assert=require('node:assert/strict');
+import fs from 'node:fs';
+import path from 'node:path';
+import assert from 'node:assert/strict';
 const account=process.env.CLOUDFLARE_ACCOUNT_ID;
 const token=process.env.CLOUDFLARE_API_TOKEN;
 const model='@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 if(!account||!token)throw Error('Cloudflare production credentials are unavailable');
-const cases=JSON.parse(fs.readFileSync(path.join(__dirname,'../benchmarks/eligibility-manual-reference.json'),'utf8'));
-const jobs=JSON.parse(fs.readFileSync(path.join(__dirname,'../benchmarks/eligibility-reviewed-snapshot.json'),'utf8')).jobs;
+const cases=JSON.parse(fs.readFileSync(new URL('../benchmarks/eligibility-manual-reference.json',import.meta.url),'utf8'));
+const jobs=JSON.parse(fs.readFileSync(new URL('../benchmarks/eligibility-reviewed-snapshot.json',import.meta.url),'utf8')).jobs;
 const byId=new Map(jobs.map(j=>[String(j.id),j]));
 const pick=(arr,n)=>arr.filter(x=>byId.has(String(x.id))).slice(0,n).map(x=>({expected:x.expected,reference:x,job:byId.get(String(x.id))}));
 const samples=[...pick(cases.include,4),...pick(cases.exclude,6)];
