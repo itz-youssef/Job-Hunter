@@ -28,6 +28,8 @@ SECRETJ_AI_CONFIDENCE_THRESHOLD = "0.85"
 SECRETJ_AI_MAX_PER_RUN = "8"
 SECRETJ_AI_DAILY_REVIEW_LIMIT = "90"
 SECRETJ_CF_AI_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+# GPT-OSS is selectively used for occupations with uncertain titles/teams.
+SECRETJ_SEMANTIC_AI_MODEL = "@cf/openai/gpt-oss-120b"
 
 # Separate from the existing scanner scheduler. The site worker only handles
 # opted-in, email-confirmed members. Requires configured Resend secrets and verified opt-in.
