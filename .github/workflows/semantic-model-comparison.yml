@@ -1,0 +1,50 @@
+name: Semantic Job Relevance Model Comparison
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/semantic-model-comparison.yml"
+      - "scripts/compare-semantic-workers-ai.mjs"
+      - "benchmarks/semantic-role-reference.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Start temporary real remote Workers AI binding
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CI: "true"
+        run: |
+          nohup npx --yes wrangler@4 dev --config cloudflare/ai-smoke/wrangler.toml --port 8787 --log-level error --show-interactive-dev-session=false >/tmp/secretj-semantic-ai.log 2>&1 &
+          echo $! >/tmp/secretj-semantic-ai.pid
+          for attempt in $(seq 1 45); do
+            if curl -s -o /dev/null --max-time 2 http://127.0.0.1:8787; then exit 0; fi
+            sleep 2
+          done
+          echo "::error::Remote AI test binding did not start"
+          exit 1
+      - name: Compare real GPT-OSS and Llama semantic decisions
+        env:
+          SECRETJ_AI_SMOKE_URL: http://127.0.0.1:8787
+        run: node scripts/compare-semantic-workers-ai.mjs
+      - name: Stop temporary binding
+        if: always()
+        run: if test -f /tmp/secretj-semantic-ai.pid; then kill "$(cat /tmp/secretj-semantic-ai.pid)" || true; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: semantic-role-model-comparison
+          path: /tmp/secretj-semantic-model-comparison.json
+          if-no-files-found: ignore
