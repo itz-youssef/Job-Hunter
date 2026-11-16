@@ -4,7 +4,9 @@ export default {async fetch(request,env){
  try{
   const input=await request.json();
   if(!Array.isArray(input.messages)||input.messages.length>3)return new Response('invalid input',{status:400});
-  const response=await env.AI.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast',{
+  const allowed=new Set(['@cf/meta/llama-3.3-70b-instruct-fp8-fast','@cf/openai/gpt-oss-120b']);
+  const model=allowed.has(input.model)?input.model:'@cf/meta/llama-3.3-70b-instruct-fp8-fast';
+  const response=await env.AI.run(model,{
     messages:input.messages,response_format:input.response_format,
     max_tokens:input.max_tokens??240,temperature:0
   });
