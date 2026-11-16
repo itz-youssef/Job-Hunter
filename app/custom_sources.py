@@ -1315,13 +1315,18 @@ def scan_company(company: dict):
         kind, _ = _ats(url)
 
         if kind == "html":
-            return _discover(
-                name, url
-            )
+            found,status,message=_discover(name,url)
+            from app.official_job_details import enrich_missing
+            return enrich_missing(found,kind,_bytes),status,message
 
         jobs = _board_jobs(
             name, url
         )
+        # Only job-specific public pages, never generic company home pages.
+        # Incomplete search summaries still surface as partial evidence when
+        # the official employer detail is inaccessible.
+        from app.official_job_details import enrich_missing
+        jobs=enrich_missing(jobs,kind,_bytes)
 
         if kind in ("adcb_egypt", "fab_minds_egypt"):
             return jobs, "partial", f"{len(jobs)} public vacancy details from official company pages; coverage may be incomplete"
