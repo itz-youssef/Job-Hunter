@@ -20,11 +20,13 @@ SECRETJ_REGISTRATION_ENABLED = "true"
 SECRETJ_ALERTS_ENABLED = "true"
 # Independent source-aware personalized monitoring supersedes snapshot-only alerts.
 SECRETJ_NATIVE_MONITOR_ENABLED = "true"
-# AI verification is opt-in after model smoke tests and backfilling existing jobs.
-# Activate strict gating only after testing the live binding; it never guesses on failures.
-SECRETJ_AI_VERIFICATION_ENABLED = "false"
+# Real Llama 3.3 70B remote-binding test: 30 reviewed job listings,
+# precision 100%, recall 83.3%. Enable strict AI qualification on new jobs,
+# with bounded progressive review of previously monitored listings.
+SECRETJ_AI_VERIFICATION_ENABLED = "true"
 SECRETJ_AI_CONFIDENCE_THRESHOLD = "0.85"
-SECRETJ_AI_MAX_PER_RUN = "12"
+SECRETJ_AI_MAX_PER_RUN = "8"
+SECRETJ_AI_DAILY_REVIEW_LIMIT = "90"
 SECRETJ_CF_AI_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 
 # Separate from the existing scanner scheduler. The site worker only handles

@@ -105,6 +105,7 @@ test('strict three-stage engine keeps only AI-approved, rules-compatible roles',
  }})},SECRETJ_AI_VERIFICATION_ENABLED:'true'};
  core.setQueryForTests(async sql=>{
    if(sql.includes('FROM public.sj_ai_qualification_cache'))return [];
+   if(sql.includes('count(*)::int AS count FROM public.sj_ai_qualification_cache'))return [{count:0}];
    if(sql.includes('INSERT INTO public.sj_ai_qualification_cache'))return [];
    throw Error('Unexpected qualification SQL');
  });
@@ -122,6 +123,7 @@ test('strict mode abstains from sending or displaying jobs if AI is unavailable'
  const env={SECRETJ_AI_VERIFICATION_ENABLED:'true'};
  core.setQueryForTests(async sql=>{
    if(sql.includes('FROM public.sj_ai_qualification_cache'))return [];
+   if(sql.includes('count(*)::int AS count FROM public.sj_ai_qualification_cache'))return [{count:0}];
    throw Error('Unexpected SQL');
  });
  try{
@@ -129,4 +131,16 @@ test('strict mode abstains from sending or displaying jobs if AI is unavailable'
    assert.equal(result.accepted.length,0);
    assert.equal(result.needsReview,1);
  }finally{core.setQueryForTests(null);}
+});
+
+test('staged AI activation preserves prior baseline keys to prevent backfill email floods',()=>{
+ const source=fs.readFileSync('lib/secretj/native-preference-monitor.js','utf8');
+ assert.match(source,/existing\.user_id=\$1 AND existing\.job_key=x\.key/);
+ assert.match(source,/THEN 'baseline' ELSE 'pending' END/);
+ assert.doesNotMatch(source,/DELETE FROM public\.sj_native_watch_jobs\s+WHERE user_id=\$1 AND job_snapshot->>'qualification_status'/);
+});
+test('project-wide AI daily budget is enforced before model requests',()=>{
+ const source=fs.readFileSync('lib/secretj/native-preference-monitor.js','utf8');
+ assert.match(source,/SECRETJ_AI_DAILY_REVIEW_LIMIT/);
+ assert.match(source,/const max=Math\.min\(maxPerRun,remaining\)/);
 });
