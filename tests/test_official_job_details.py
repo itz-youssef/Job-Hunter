@@ -55,3 +55,29 @@ def test_source_kinds_without_missing_detail_are_untouched():
     calls=[]
     assert enrich_missing([j],"lever",lambda url:calls.append(url))==[j]
     assert calls==[]
+
+
+def test_luxoft_original_job_article_sections_are_recoverable():
+    job={"title":"Software Test Engineer",
+      "url":"https://career.luxoft.com/jobs/software-test-engineer-27164",
+      "description":""}
+    html="""<main><h1>Software Test Engineer</h1>
+     <h5>Project description</h5><p>Develop automotive navigation and vehicle
+     electronics testing systems for an international software delivery team.</p>
+     <h5>Responsibilities</h5><p>Define test criteria for software requirements,
+     implement automated tests in Python and report failures to software engineers.</p>
+     <h5>Skills</h5><p>Python, CI/CD, software testing, troubleshooting and debugging.</p>
+     <h5>Similar jobs</h5><p>Senior HR Manager, irrelevant links.</p></main>"""
+    out=parse_detail(job,html)
+    assert out["source_detail_status"]=="official-article-sections"
+    assert "Python" in out["description"]
+    assert "Senior HR Manager" not in out["description"]
+
+
+def test_luxoft_article_without_matching_h1_is_not_valid_job_evidence():
+    j={"title":"Junior AI Engineer","url":"https://career.luxoft.com/jobs/fake",
+       "description":""}
+    html="""<main><h1>Software Test Engineer</h1>
+    <h5>Project description</h5><p>Build software for banking and telecom.</p>
+    <h5>Responsibilities</h5><p>Develop REST APIs and backend systems.</p></main>"""
+    assert parse_detail(j,html) is None
