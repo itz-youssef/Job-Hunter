@@ -45,7 +45,8 @@ for(const [index,sample] of samples.entries()){
    const codes=(data?.errors||[]).map(e=>e.code).join(',');
    throw Error('Live Cloudflare AI call failed: HTTP '+response.status+' error codes '+codes+' (no credential data shown)');
  }
- const raw=(devBinding?data:data?.result)?.response??(devBinding?data:data?.result);
+ const envelope=devBinding?data:data?.result;
+ const raw=envelope?.response??envelope?.choices?.[0]?.message?.content??envelope;
  const parsed=typeof raw==='string'?JSON.parse(raw):raw;
  if(typeof parsed?.match!=='boolean'||typeof parsed.confidence!=='number'){
    console.log('AI structured-output diagnostics',JSON.stringify({

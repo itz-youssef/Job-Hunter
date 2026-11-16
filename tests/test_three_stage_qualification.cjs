@@ -144,3 +144,27 @@ test('project-wide AI daily budget is enforced before model requests',()=>{
  assert.match(source,/SECRETJ_AI_DAILY_REVIEW_LIMIT/);
  assert.match(source,/const max=Math\.min\(maxPerRun,remaining\)/);
 });
+
+test('GPT-OSS Workers AI Chat Completions response is parsed and validated',async()=>{
+ const j=mk('Junior AI Engineer','Build and validate machine learning models.');
+ const out=await gates.aiReview(j,preference,{
+   SECRETJ_CF_AI_MODEL:'@cf/openai/gpt-oss-120b',
+   AI:{run:async(model,opts)=>{
+     assert.equal(model,'@cf/openai/gpt-oss-120b');
+     assert.ok(opts.max_tokens>=1000);
+     return {choices:[{message:{content:JSON.stringify({
+       match:true,confidence:0.92,level:'entry',reason:'Junior model development'
+     })}}]};
+   }}
+ });
+ assert.equal(out.status,'accepted');
+ assert.equal(out.confidence,0.92);
+});
+test('GPT-OSS malformed completion abstains, not an accepted job',async()=>{
+ const out=await gates.aiReview(
+   mk('Junior AI Engineer','Build and test ML applications.'),preference,{
+   SECRETJ_CF_AI_MODEL:'@cf/openai/gpt-oss-120b',
+   AI:{run:async()=>({choices:[{message:{content:'not json'}}]})}
+ });
+ assert.equal(out.status,'unavailable');
+});
