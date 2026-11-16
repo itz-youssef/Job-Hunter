@@ -45,7 +45,10 @@ function createHandler(env=process.env){return async function handler(req,res){
     }
     const page=rows.slice(0,limit).filter(row=>{
       const item=row.job_snapshot||{};
-      if(item.qualification_status==='accepted')return true;
+      if(item.qualification_status==='accepted')return (
+        env.SECRETJ_AI_VERIFICATION_ENABLED!=='true'||
+        item.qualification_mode==='ai-reviewed'
+      );
       return !item.qualification_status&&preference!==null&&
         qualification.reject(item,preference).ok;
     }).map(row=>({
