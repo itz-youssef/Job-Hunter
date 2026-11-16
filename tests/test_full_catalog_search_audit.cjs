@@ -76,3 +76,21 @@ test('intern search aliases capture training pathways even without an intern tit
  for(const job of examples)assert.equal(search.matches(job,'intern',prefs.classify),true,job.title);
  assert.equal(search.matches({title:'Senior Software Engineer',description:'Build production applications'},'intern',prefs.classify),false);
 });
+
+test('company audit exposes source-specific missing field matrix without claiming unverifiable confidence',()=>{
+ const registry=JSON.parse(fs.readFileSync('dist/native-source-registry.json','utf8'));
+ const result=auditCatalog(jobs,snapshot.generated_at,registry.companies);
+ assert.equal(result.sourceCoverage.registeredCompanies,registry.companies.length);
+ assert.ok(result.sourceCoverage.registeredCompanies>=50);
+ assert.ok(result.metrics.requirementsMissing>=0);
+ assert.ok(result.metrics.departmentMissing>=0);
+ assert.ok(result.metrics.descriptionShort>=0);
+ assert.ok(Object.keys(result.byCompany).length>=20);
+ for(const company of Object.values(result.byCompany)){
+  assert.equal(typeof company.missingRequirements,'number');
+  assert.equal(typeof company.missingDepartment,'number');
+  assert.equal(typeof company.sourceKind,'string');
+  assert.equal(typeof company.detailEvidence,'number');
+  assert.ok(company.missingDescription<=company.total);
+ }
+});
