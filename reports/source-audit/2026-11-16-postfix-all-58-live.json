@@ -1,0 +1,756 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-16",
+  "run_url": "https://github.com/itz-youssef/Job-Hunter/actions/runs/43787958810",
+  "verified_scope": "All 58 official configured career sources scanned live; absence of a field is recorded, never invented",
+  "important_limit": "Source probing is NOT exhaustive manual comparison of every vacancy to original site. Source totals changed during time between audits.",
+  "baseline_run": "https://github.com/itz-youssef/Job-Hunter/actions/runs/43786674215",
+  "baseline": {
+    "vacancies": 1181,
+    "descriptions": 902,
+    "explicit_requirements": 0
+  },
+  "postfix": {
+    "vacancies": 1161,
+    "descriptions": 939,
+    "explicit_requirements": 156
+  },
+  "follow_up": [
+    {
+      "name": "ADCB Egypt",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Amazon Egypt",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "ArpuPlus",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "AWS Egypt",
+      "action": "verify-empty-or-unavailable-board"
+    },
+    {
+      "name": "BlackStone eIT",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Blink22",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Breadfast",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Breadfast Technology",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Capgemini Egypt",
+      "action": "expand-bounded-detail-coverage"
+    },
+    {
+      "name": "Chatbase",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "CIB Egypt",
+      "action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "Deloitte",
+      "action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "DXC Technology",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "e& / Etisalat",
+      "action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "Emergence",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Ericsson",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "EY Egypt",
+      "action": "expand-bounded-detail-coverage"
+    },
+    {
+      "name": "Fab Minds Egypt",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Fawry",
+      "action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "Finaira",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "IBM",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "inDrive",
+      "action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "Infomineo",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Integrant",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "ITWorx",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Klivvr",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Konecta Egypt",
+      "action": "expand-bounded-detail-coverage"
+    },
+    {
+      "name": "Lamdax",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Lean Technologies",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Link Development",
+      "action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "Lua Global",
+      "action": "verify-empty-or-unavailable-board"
+    },
+    {
+      "name": "Luciq (formerly Instabug)",
+      "action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "Luxoft Egypt",
+      "action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "Madar",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Mondia Group",
+      "action": "verify-empty-or-unavailable-board"
+    },
+    {
+      "name": "mylo by B.TECH",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Nokia",
+      "action": "verify-empty-or-unavailable-board"
+    },
+    {
+      "name": "Orange Egypt",
+      "action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "Paymob",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "PetroApp",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "PwC Egypt",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "robusta / RTG",
+      "action": "verify-empty-or-unavailable-board"
+    },
+    {
+      "name": "SAP",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Schneider Electric",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Siemens",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "SSC HR Solutions",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Sumerge",
+      "action": "verify-empty-or-unavailable-board"
+    },
+    {
+      "name": "Talabat Egypt",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Telecom Egypt (WE)",
+      "action": "verify-empty-or-unavailable-board"
+    },
+    {
+      "name": "Teleperformance Egypt",
+      "action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "Thndr",
+      "action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Uber Egypt",
+      "action": "verify-empty-or-unavailable-board"
+    },
+    {
+      "name": "VOIS",
+      "action": "expand-bounded-detail-coverage"
+    }
+  ],
+  "companies": [
+    {
+      "name": "ADCB Egypt",
+      "source_kind": "adcb_egypt",
+      "status": "partial",
+      "jobs": 7,
+      "descriptions_present": 7,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Amazon Egypt",
+      "source_kind": "amazon_egypt",
+      "status": "monitoring",
+      "jobs": 95,
+      "descriptions_present": 95,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "ArpuPlus",
+      "source_kind": "workable",
+      "status": "monitoring",
+      "jobs": 4,
+      "descriptions_present": 4,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "AWS Egypt",
+      "source_kind": "amazon_egypt",
+      "status": "monitoring",
+      "jobs": 0,
+      "descriptions_present": 0,
+      "separate_requirements_present": 0,
+      "next_action": "verify-empty-or-unavailable-board"
+    },
+    {
+      "name": "BlackStone eIT",
+      "source_kind": "workable",
+      "status": "monitoring",
+      "jobs": 9,
+      "descriptions_present": 9,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Blink22",
+      "source_kind": "blink22_egypt",
+      "status": "partial",
+      "jobs": 16,
+      "descriptions_present": 16,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Bosta",
+      "source_kind": "lever",
+      "status": "monitoring",
+      "jobs": 92,
+      "descriptions_present": 92,
+      "separate_requirements_present": 86,
+      "next_action": "validate-full-field-completeness"
+    },
+    {
+      "name": "Breadfast",
+      "source_kind": "breadfast_egypt",
+      "status": "partial",
+      "jobs": 12,
+      "descriptions_present": 12,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Breadfast Technology",
+      "source_kind": "breadfast_tech",
+      "status": "partial",
+      "jobs": 4,
+      "descriptions_present": 4,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Capgemini Egypt",
+      "source_kind": "capgemini_egypt",
+      "status": "monitoring",
+      "jobs": 95,
+      "descriptions_present": 94,
+      "separate_requirements_present": 0,
+      "next_action": "expand-bounded-detail-coverage"
+    },
+    {
+      "name": "Chatbase",
+      "source_kind": "ashby",
+      "status": "monitoring",
+      "jobs": 13,
+      "descriptions_present": 13,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "CIB Egypt",
+      "source_kind": "cib_egypt",
+      "status": "partial",
+      "jobs": 23,
+      "descriptions_present": 0,
+      "separate_requirements_present": 0,
+      "next_action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "Deloitte",
+      "source_kind": "deloitte_partial",
+      "status": "partial",
+      "jobs": 61,
+      "descriptions_present": 0,
+      "separate_requirements_present": 0,
+      "next_action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "DXC Technology",
+      "source_kind": "dxc_egypt",
+      "status": "monitoring",
+      "jobs": 45,
+      "descriptions_present": 45,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "e& / Etisalat",
+      "source_kind": "etisalat_egypt",
+      "status": "partial",
+      "jobs": 25,
+      "descriptions_present": 0,
+      "separate_requirements_present": 0,
+      "next_action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "econstruct",
+      "source_kind": "lever",
+      "status": "monitoring",
+      "jobs": 20,
+      "descriptions_present": 20,
+      "separate_requirements_present": 19,
+      "next_action": "validate-full-field-completeness"
+    },
+    {
+      "name": "Emergence",
+      "source_kind": "ashby",
+      "status": "monitoring",
+      "jobs": 8,
+      "descriptions_present": 8,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Ericsson",
+      "source_kind": "ericsson_egypt",
+      "status": "monitoring",
+      "jobs": 11,
+      "descriptions_present": 11,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "EY Egypt",
+      "source_kind": "ey_egypt",
+      "status": "monitoring",
+      "jobs": 20,
+      "descriptions_present": 11,
+      "separate_requirements_present": 0,
+      "next_action": "expand-bounded-detail-coverage"
+    },
+    {
+      "name": "Fab Minds Egypt",
+      "source_kind": "fab_minds_egypt",
+      "status": "partial",
+      "jobs": 3,
+      "descriptions_present": 3,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Fawry",
+      "source_kind": "fawry_partial",
+      "status": "partial",
+      "jobs": 4,
+      "descriptions_present": 0,
+      "separate_requirements_present": 0,
+      "next_action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "Finaira",
+      "source_kind": "html",
+      "status": "partial",
+      "jobs": 1,
+      "descriptions_present": 1,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "IBM",
+      "source_kind": "ibm_egypt",
+      "status": "monitoring",
+      "jobs": 9,
+      "descriptions_present": 9,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Incorta",
+      "source_kind": "lever",
+      "status": "monitoring",
+      "jobs": 4,
+      "descriptions_present": 4,
+      "separate_requirements_present": 1,
+      "next_action": "validate-full-field-completeness"
+    },
+    {
+      "name": "inDrive",
+      "source_kind": "indrive_egypt",
+      "status": "partial",
+      "jobs": 10,
+      "descriptions_present": 0,
+      "separate_requirements_present": 0,
+      "next_action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "Infomineo",
+      "source_kind": "workable",
+      "status": "monitoring",
+      "jobs": 1,
+      "descriptions_present": 1,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Integrant",
+      "source_kind": "workable",
+      "status": "monitoring",
+      "jobs": 19,
+      "descriptions_present": 19,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "ITWorx",
+      "source_kind": "itworx",
+      "status": "monitoring",
+      "jobs": 3,
+      "descriptions_present": 3,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Klivvr",
+      "source_kind": "lever",
+      "status": "monitoring",
+      "jobs": 7,
+      "descriptions_present": 7,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Konecta Egypt",
+      "source_kind": "workday",
+      "status": "monitoring",
+      "jobs": 34,
+      "descriptions_present": 20,
+      "separate_requirements_present": 0,
+      "next_action": "expand-bounded-detail-coverage"
+    },
+    {
+      "name": "Lamdax",
+      "source_kind": "workable",
+      "status": "monitoring",
+      "jobs": 6,
+      "descriptions_present": 6,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Lean Technologies",
+      "source_kind": "ashby",
+      "status": "monitoring",
+      "jobs": 8,
+      "descriptions_present": 8,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Link Development",
+      "source_kind": "linkdevelopment",
+      "status": "monitoring",
+      "jobs": 27,
+      "descriptions_present": 0,
+      "separate_requirements_present": 0,
+      "next_action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "Lua Global",
+      "source_kind": "ashby",
+      "status": "monitoring",
+      "jobs": 0,
+      "descriptions_present": 0,
+      "separate_requirements_present": 0,
+      "next_action": "verify-empty-or-unavailable-board"
+    },
+    {
+      "name": "Luciq (formerly Instabug)",
+      "source_kind": "html",
+      "status": "monitoring",
+      "jobs": 2,
+      "descriptions_present": 0,
+      "separate_requirements_present": 0,
+      "next_action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "Luxoft Egypt",
+      "source_kind": "luxoft_egypt",
+      "status": "monitoring",
+      "jobs": 16,
+      "descriptions_present": 0,
+      "separate_requirements_present": 0,
+      "next_action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "Madar",
+      "source_kind": "workable",
+      "status": "monitoring",
+      "jobs": 1,
+      "descriptions_present": 1,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Mondia Group",
+      "source_kind": "workable",
+      "status": "access_blocked",
+      "jobs": 0,
+      "descriptions_present": 0,
+      "separate_requirements_present": 0,
+      "next_action": "verify-empty-or-unavailable-board"
+    },
+    {
+      "name": "mylo by B.TECH",
+      "source_kind": "workable",
+      "status": "monitoring",
+      "jobs": 6,
+      "descriptions_present": 6,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Nokia",
+      "source_kind": "oracle",
+      "status": "monitoring",
+      "jobs": 0,
+      "descriptions_present": 0,
+      "separate_requirements_present": 0,
+      "next_action": "verify-empty-or-unavailable-board"
+    },
+    {
+      "name": "Orange Egypt",
+      "source_kind": "orange_egypt",
+      "status": "monitoring",
+      "jobs": 10,
+      "descriptions_present": 0,
+      "separate_requirements_present": 0,
+      "next_action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "Paymob",
+      "source_kind": "paymob_recruitera",
+      "status": "monitoring",
+      "jobs": 71,
+      "descriptions_present": 71,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "PetroApp",
+      "source_kind": "workable",
+      "status": "monitoring",
+      "jobs": 1,
+      "descriptions_present": 1,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "PwC Egypt",
+      "source_kind": "pwc_egypt",
+      "status": "monitoring",
+      "jobs": 3,
+      "descriptions_present": 3,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "robusta / RTG",
+      "source_kind": "workable",
+      "status": "access_blocked",
+      "jobs": 0,
+      "descriptions_present": 0,
+      "separate_requirements_present": 0,
+      "next_action": "verify-empty-or-unavailable-board"
+    },
+    {
+      "name": "SAP",
+      "source_kind": "sap_cairo",
+      "status": "monitoring",
+      "jobs": 3,
+      "descriptions_present": 3,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Schneider Electric",
+      "source_kind": "schneider_egypt",
+      "status": "monitoring",
+      "jobs": 40,
+      "descriptions_present": 40,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Siemens",
+      "source_kind": "siemens_software",
+      "status": "monitoring",
+      "jobs": 22,
+      "descriptions_present": 22,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "SOUM",
+      "source_kind": "lever",
+      "status": "monitoring",
+      "jobs": 24,
+      "descriptions_present": 24,
+      "separate_requirements_present": 20,
+      "next_action": "validate-full-field-completeness"
+    },
+    {
+      "name": "SSC HR Solutions",
+      "source_kind": "workable",
+      "status": "monitoring",
+      "jobs": 45,
+      "descriptions_present": 45,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Sumerge",
+      "source_kind": "workable",
+      "status": "access_blocked",
+      "jobs": 0,
+      "descriptions_present": 0,
+      "separate_requirements_present": 0,
+      "next_action": "verify-empty-or-unavailable-board"
+    },
+    {
+      "name": "Talabat Egypt",
+      "source_kind": "talabat_egypt",
+      "status": "monitoring",
+      "jobs": 52,
+      "descriptions_present": 52,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Telecom Egypt (WE)",
+      "source_kind": "telecom_egypt",
+      "status": "monitoring",
+      "jobs": 0,
+      "descriptions_present": 0,
+      "separate_requirements_present": 0,
+      "next_action": "verify-empty-or-unavailable-board"
+    },
+    {
+      "name": "Teleperformance Egypt",
+      "source_kind": "tp_egypt",
+      "status": "monitoring",
+      "jobs": 4,
+      "descriptions_present": 0,
+      "separate_requirements_present": 0,
+      "next_action": "inspect-original-detail-page-extraction"
+    },
+    {
+      "name": "Thndr",
+      "source_kind": "ashby",
+      "status": "monitoring",
+      "jobs": 17,
+      "descriptions_present": 17,
+      "separate_requirements_present": 0,
+      "next_action": "verify-explicit-requirements-section"
+    },
+    {
+      "name": "Uber Egypt",
+      "source_kind": "uber_egypt",
+      "status": "partial",
+      "jobs": 0,
+      "descriptions_present": 0,
+      "separate_requirements_present": 0,
+      "next_action": "verify-empty-or-unavailable-board"
+    },
+    {
+      "name": "VOIS",
+      "source_kind": "vois_egypt",
+      "status": "monitoring",
+      "jobs": 28,
+      "descriptions_present": 12,
+      "separate_requirements_present": 0,
+      "next_action": "expand-bounded-detail-coverage"
+    },
+    {
+      "name": "Yassir",
+      "source_kind": "lever",
+      "status": "monitoring",
+      "jobs": 120,
+      "descriptions_present": 120,
+      "separate_requirements_present": 30,
+      "next_action": "validate-full-field-completeness"
+    }
+  ]
+}
