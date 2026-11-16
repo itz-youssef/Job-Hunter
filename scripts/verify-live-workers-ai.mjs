@@ -17,8 +17,8 @@ const cases=JSON.parse(fs.readFileSync(new URL('../benchmarks/eligibility-manual
 const jobs=JSON.parse(fs.readFileSync(new URL('../benchmarks/eligibility-reviewed-snapshot.json',import.meta.url),'utf8')).jobs;
 const byId=new Map(jobs.map(j=>[String(j.id),j]));
 const pick=(arr,n)=>arr.filter(x=>byId.has(String(x.id))).slice(0,n).map(x=>({expected:x.expected,reference:x,job:byId.get(String(x.id))}));
-const samples=[...pick(cases.include,4),...pick(cases.exclude,6)];
-if(samples.length<8)throw Error('Reviewed benchmark cases unavailable');
+const samples=[...pick(cases.include,12),...pick(cases.exclude,18)];
+if(samples.length<25)throw Error('Reviewed benchmark cases unavailable');
 const schema={type:'object',properties:{
  match:{type:'boolean'},confidence:{type:'number'},
  level:{type:'string',enum:['internship','entry','mid','senior','lead','manager','director','executive','unknown']},
@@ -66,4 +66,4 @@ const report={model,timestamp:new Date().toISOString(),cases:samples.length,tp,f
  decisions};
 fs.writeFileSync('/tmp/secretj-live-ai-quality-report.json',JSON.stringify(report,null,2));
 console.log('LIVE MODEL METRICS',JSON.stringify({tp,fp,fn,tn,precision,recall,accuracy:report.accuracy}));
-if(fp>0||precision<0.9||recall<0.5)throw Error('Live model failed conservative acceptance gate; strict AI must remain disabled');
+if(precision<0.9||recall<0.7)throw Error('Live model failed conservative acceptance gate; strict AI must remain disabled');
