@@ -1,0 +1,36 @@
+name: Live Cloudflare Workers AI Quality Gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/live-workers-ai-quality.yml"
+      - "scripts/verify-live-workers-ai.mjs"
+      - "benchmarks/eligibility-manual-reference.json"
+      - "benchmarks/eligibility-reviewed-snapshot.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-model-evaluation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Evaluate real Llama 3.3 70B on reviewed employer jobs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/verify-live-workers-ai.mjs
+      - name: Upload non-secret metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: secretj-live-ai-quality-report
+          path: /tmp/secretj-live-ai-quality-report.json
+          if-no-files-found: ignore
