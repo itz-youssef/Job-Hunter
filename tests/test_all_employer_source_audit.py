@@ -1,7 +1,13 @@
 """Offline validation that all 58 configured employers are audited without omission."""
 import json
 from pathlib import Path
-from scripts.audit_all_employer_sources import execute, summarize
+import importlib.util
+import sys
+_spec=importlib.util.spec_from_file_location('audit_all_employer_sources',Path('scripts/audit-all-employer-sources.py'))
+_module=importlib.util.module_from_spec(_spec)
+sys.modules['audit_all_employer_sources']=_module
+_spec.loader.exec_module(_module)
+execute,summarize=_module.execute,_module.summarize
 
 COMPANIES=json.loads(Path("companies.json").read_text(encoding="utf-8"))
 
@@ -13,7 +19,7 @@ def test_every_employer_is_in_exactly_one_shard(monkeypatch):
            "company":company["name"],"location":"Cairo, Egypt",
            "description":"Build Python APIs for customers",
            "url":"https://example.com/apply/123"}],"monitoring","fixture")
-    monkeypatch.setattr("scripts.audit_all_employer_sources.scan_company",fake_scan)
+    monkeypatch.setattr("audit_all_employer_sources.scan_company",fake_scan)
     results=[execute(COMPANIES,part=i,parts=6,workers=3) for i in range(6)]
     checked=[r["name"] for report in results for r in report["results"]]
     assert len(COMPANIES)==58
