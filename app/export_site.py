@@ -66,7 +66,9 @@ def main() -> None:
                 """
                 SELECT
                     j.id, j.source_id, j.title, j.location,
-                    j.description, j.published, j.url,
+                    j.description, j.requirements, j.department,
+                    j.seniority, j.source_detail_status,
+                    j.published, j.url,
                     j.employment, j.detected, j.last_seen,
                     j.score, j.reasons, s.name AS company
                 FROM jobs j
