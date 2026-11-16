@@ -95,17 +95,17 @@ def parse_detail(job,html):
         for section in soup.select("main,article,[role=main]"):
             text=section.get_text(" ",strip=True)
             start=re.search(
-                r"\\b(?:project description|job description|responsibilities|about this role)\\b",
+                r"\b(?:project description|job description|responsibilities|about this role)\b",
                 text,re.I)
             if not start:continue
             body=text[start.start():]
             if len(body)<160:continue
             labels=set(m.group(0).lower() for m in re.finditer(
-                r"\\b(?:project description|job description|responsibilities|"
-                r"qualifications|requirements|skills|must have|nice to have)\\b",body,re.I))
+                r"\b(?:project description|job description|responsibilities|"
+                r"qualifications|requirements|skills|must have|nice to have)\b",body,re.I))
             if len(labels)<2:continue
-            end=re.search(r"\\b(?:similar jobs|related jobs|other jobs|"
-                r"discover other vacancies|share this job)\\b",body,re.I)
+            end=re.search(r"\b(?:similar jobs|related jobs|other jobs|"
+                r"discover other vacancies|share this job)\b",body,re.I)
             if end and end.start()>200:
                 body=body[:end.start()]
             if len(body)>160:
