@@ -1,0 +1,46 @@
+name: Exhaustive Employer Source Evidence Audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/audit-all-employer-sources.py"
+      - ".github/workflows/exhaustive-employer-source-audit.yml"
+      - "tests/test_all_employer_source_audit.py"
+  schedule:
+    - cron: "23 4 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-all-58:
+    name: Inspect original source shard ${{ matrix.part }}
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [0, 1, 2, 3, 4, 5]
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install source parsing dependencies
+        run: pip install -r requirements.txt
+      - name: Test complete registry partition and source probe contract
+        run: python -m pytest -q tests/test_all_employer_source_audit.py
+      - name: Inspect each original employer ATS (read-only)
+        run: |
+          python scripts/audit-all-employer-sources.py --part ${{ matrix.part }} --parts 6 \
+            --workers 3 --output reports/employer-source-probes/shard-${{ matrix.part }}.json
+      - name: Upload per-company field evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: original-employer-probe-${{ matrix.part }}
+          path: reports/employer-source-probes/shard-${{ matrix.part }}.json
+          if-no-files-found: warn
+          retention-days: 30
