@@ -1,0 +1,151 @@
+{
+  "metadata": {
+    "purpose": "Semantic occupational relevance separate from job seniority. Official cases are paraphrased from inspected original employers; synthetic cases test narrowly defined semantic aliases.",
+    "labels": "Independent manually authored expected role-family match; small, nonrepresentative evaluation.",
+    "source_verified_at": "2026-11-16"
+  },
+  "cases": [
+    {
+      "title": "VOIS EG Work Experience Programme 2027 - Technology",
+      "company": "VOIS",
+      "preference": [
+        "ai_ml",
+        "software"
+      ],
+      "level": "internship",
+      "expected": true,
+      "source": "official",
+      "url": "https://opportunities.vodafone.com/job/Cairo-VOIS-EG-Work-Experience-Programme-2027-Technology/1452414633",
+      "description": "Six-month internship for students in the technology team. Real projects across DevOps, Java, cloud, AI and machine learning, data engineering, front-end development and software development."
+    },
+    {
+      "title": "VOIS EG Work Experience Programme 2027 - Technology",
+      "company": "VOIS",
+      "preference": [
+        "hr"
+      ],
+      "level": "internship",
+      "expected": false,
+      "source": "official",
+      "url": "https://opportunities.vodafone.com/job/Cairo-VOIS-EG-Work-Experience-Programme-2027-Technology/1452414633",
+      "description": "Internship in engineering and technology with software, data analytics, DevOps and AI projects. No human resources duties."
+    },
+    {
+      "title": "VOIS EG Work Experience Programme 2027 - HR Operations - Italian Speaker",
+      "company": "VOIS",
+      "preference": [
+        "ai_ml",
+        "software"
+      ],
+      "level": "internship",
+      "expected": false,
+      "source": "official",
+      "url": "https://opportunities.vodafone.com/job/Cairo-VOIS-EG-Work-Experience-Programme-2027-HR-Operations-Italian-Speaker/1452414333/",
+      "description": "Internship in human resources operations: onboarding, employee records, payroll coordination, HR reporting, HR systems and Excel. Some data analytics and UAT, but not AI or software engineering."
+    },
+    {
+      "title": "VOIS EG Work Experience Programme 2027 - HR Operations - Italian Speaker",
+      "company": "VOIS",
+      "preference": [
+        "hr"
+      ],
+      "level": "internship",
+      "expected": true,
+      "source": "official",
+      "url": "https://opportunities.vodafone.com/job/Cairo-VOIS-EG-Work-Experience-Programme-2027-HR-Operations-Italian-Speaker/1452414333/",
+      "description": "Internship with HR operations: updating employee records, payroll support, HR systems, onboarding and offboarding."
+    },
+    {
+      "title": "VOIS EG Work Experience Programme 2027 - Product Activation",
+      "company": "VOIS",
+      "preference": [
+        "ai_ml"
+      ],
+      "level": "internship",
+      "expected": false,
+      "source": "official",
+      "url": "https://opportunities.vodafone.com/job/Cairo-VOIS-EG-Work-Experience-Programme-2027-Product-Activation/1453481833/",
+      "description": "Product activation team internship involving marketing, sales, customer product adoption, reporting and stakeholder coordination. Data tools are a plus; no AI model engineering."
+    },
+    {
+      "title": "VOIS EG Work Experience Programme 2027 - Product Activation",
+      "company": "VOIS",
+      "preference": [
+        "marketing"
+      ],
+      "level": "internship",
+      "expected": true,
+      "source": "official",
+      "url": "https://opportunities.vodafone.com/job/Cairo-VOIS-EG-Work-Experience-Programme-2027-Product-Activation/1453481833/",
+      "description": "Product activation internship: collaborate with marketing and sales teams, design customer activation campaigns and promote product adoption."
+    },
+    {
+      "title": "VOIS EG Work Experience Programme - Corporate Security",
+      "company": "VOIS",
+      "preference": [
+        "cybersecurity"
+      ],
+      "level": "internship",
+      "expected": false,
+      "source": "official",
+      "url": "https://opportunities.vodafone.com/job/Cairo-VOIS-EG-Work-Experience-Programme-Corporate-Security/1452404033/",
+      "description": "Fraud management operations internship focused on fraud risk assessments, internal investigations, corporate policy, risk mitigation and compliance reports. Not network security, penetration testing or SOC duties."
+    },
+    {
+      "title": "Discover Graduate Program | Consumer Sales | 2027",
+      "company": "Vodafone",
+      "preference": [
+        "ai_ml"
+      ],
+      "level": "entry",
+      "expected": false,
+      "source": "official",
+      "url": "https://opportunities.vodafone.com/job/Giza-Discover-Graduate-Program-Consumer-Sales-2027/1449713833/",
+      "description": "Fresh graduate rotation program in consumer sales and marketing, commercial customer engagement and business performance. Does not involve building AI models."
+    },
+    {
+      "title": "AI Sales Executive",
+      "company": "Example",
+      "preference": [
+        "ai_ml"
+      ],
+      "level": "entry",
+      "expected": false,
+      "source": "synthetic",
+      "description": "Sell AI software to companies, negotiate contracts and meet revenue targets. No ML development."
+    },
+    {
+      "title": "Python API Developer",
+      "company": "Example",
+      "preference": [
+        "backend"
+      ],
+      "level": "entry",
+      "expected": true,
+      "source": "synthetic",
+      "description": "Build REST APIs using Python and FastAPI, maintain PostgreSQL persistence, test services, write backend code. Junior role with 0–2 years of experience."
+    },
+    {
+      "title": "Perception Engineer",
+      "company": "Example",
+      "preference": [
+        "cv"
+      ],
+      "level": "entry",
+      "expected": true,
+      "source": "synthetic",
+      "description": "Build camera perception and visual tracking models, object detection, image segmentation and computer vision algorithms. Junior position."
+    },
+    {
+      "title": "Applied Intelligence Engineer",
+      "company": "Example",
+      "preference": [
+        "ai_ml"
+      ],
+      "level": "entry",
+      "expected": true,
+      "source": "synthetic",
+      "description": "Train and deploy PyTorch neural networks, evaluate supervised learning pipelines, perform model evaluation and improve inference quality. Entry level."
+    }
+  ]
+}
