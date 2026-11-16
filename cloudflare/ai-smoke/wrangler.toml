@@ -1,0 +1,6 @@
+name = "secretj-ai-smoke-local-only"
+main = "worker.mjs"
+compatibility_date = "2026-11-13"
+[ai]
+binding = "AI"
+remote = true

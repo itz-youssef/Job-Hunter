@@ -11,7 +11,8 @@ import assert from 'node:assert/strict';
 const account=process.env.CLOUDFLARE_ACCOUNT_ID;
 const token=process.env.CLOUDFLARE_API_TOKEN;
 const model='@cf/meta/llama-3.3-70b-instruct-fp8-fast';
-if(!account||!token)throw Error('Cloudflare production credentials are unavailable');
+const devBinding=process.env.SECRETJ_AI_SMOKE_URL;
+if(!devBinding&&(!account||!token))throw Error('Cloudflare inference credentials unavailable');
 const cases=JSON.parse(fs.readFileSync(new URL('../benchmarks/eligibility-manual-reference.json',import.meta.url),'utf8'));
 const jobs=JSON.parse(fs.readFileSync(new URL('../benchmarks/eligibility-reviewed-snapshot.json',import.meta.url),'utf8')).jobs;
 const byId=new Map(jobs.map(j=>[String(j.id),j]));
@@ -31,15 +32,18 @@ for(const [index,sample] of samples.entries()){
   {role:'user',content:JSON.stringify({title:sample.job.title,company:sample.job.company,
     location:sample.job.location,description:String(sample.job.description||'').slice(0,4300)})}
  ],response_format:{type:'json_schema',json_schema:schema},max_tokens:240,temperature:0};
- const response=await fetch('https://api.cloudflare.com/client/v4/accounts/'+encodeURIComponent(account)+'/ai/run/'+model,{
-   method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)
+ const response=await fetch(devBinding||
+  ('https://api.cloudflare.com/client/v4/accounts/'+encodeURIComponent(account)+'/ai/run/'+model),{
+   method:'POST',headers:{
+     ...(devBinding?{}:{'Authorization':'Bearer '+token}),
+     'Content-Type':'application/json'},body:JSON.stringify(body)
  });
  const data=await response.json().catch(()=>null);
  if(!response.ok||data?.success===false){
    const codes=(data?.errors||[]).map(e=>e.code).join(',');
    throw Error('Live Cloudflare AI call failed: HTTP '+response.status+' error codes '+codes+' (no credential data shown)');
  }
- const raw=data?.result?.response??data?.result;
+ const raw=(devBinding?data:data?.result)?.response??(devBinding?data:data?.result);
  const parsed=typeof raw==='string'?JSON.parse(raw):raw;
  if(typeof parsed?.match!=='boolean'||typeof parsed.confidence!=='number'||
   !Number.isFinite(parsed.confidence)||!schema.properties.level.enum.includes(parsed.level))

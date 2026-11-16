@@ -22,11 +22,34 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Evaluate real Llama 3.3 70B on reviewed employer jobs
+      - name: Start local-only Worker with real remote AI binding
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CI: "true"
+        run: |
+          nohup npx --yes wrangler@4 dev --config cloudflare/ai-smoke/wrangler.toml --port 8787 --log-level error --show-interactive-dev-session=false > /tmp/secretj-ai-dev.log 2>&1 &
+          echo $! > /tmp/secretj-ai-dev.pid
+          for attempt in $(seq 1 45); do
+            if curl -sS -o /dev/null --max-time 2 http://127.0.0.1:8787; then
+              echo "Cloudflare remote AI binding test server is responding"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::AI development binding failed to start"
+          tail -35 /tmp/secretj-ai-dev.log | sed -E 's/[A-Za-z0-9_-]{30,}/[redacted]/g'
+          exit 1
+      - name: Evaluate real Llama 3.3 70B on reviewed employer jobs
+        env:
+          SECRETJ_AI_SMOKE_URL: http://127.0.0.1:8787
         run: node scripts/verify-live-workers-ai.mjs
+      - name: Stop local test Worker
+        if: always()
+        run: |
+          if test -f /tmp/secretj-ai-dev.pid; then
+            kill "$(cat /tmp/secretj-ai-dev.pid)" || true
+          fi
       - name: Upload non-secret metrics
         if: always()
         uses: actions/upload-artifact@v4
