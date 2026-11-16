@@ -31,7 +31,9 @@ for(const [index,sample] of samples.entries()){
   {role:'system',content:system},
   {role:'user',content:JSON.stringify({title:sample.job.title,company:sample.job.company,
     location:sample.job.location,description:String(sample.job.description||'').slice(0,4300)})}
- ],response_format:{type:'json_schema',json_schema:schema},max_tokens:240,temperature:0};
+ ],response_format:{type:'json_schema',json_schema:schema},
+    max_tokens:model.includes('gpt-oss')?1000:240,
+    reasoning_effort:model.includes('gpt-oss')?'low':undefined,temperature:0};
  const response=await fetch(devBinding||
   ('https://api.cloudflare.com/client/v4/accounts/'+encodeURIComponent(account)+'/ai/run/'+model),{
    method:'POST',headers:{
@@ -45,6 +47,15 @@ for(const [index,sample] of samples.entries()){
  }
  const raw=(devBinding?data:data?.result)?.response??(devBinding?data:data?.result);
  const parsed=typeof raw==='string'?JSON.parse(raw):raw;
+ if(typeof parsed?.match!=='boolean'||typeof parsed.confidence!=='number'){
+   console.log('AI structured-output diagnostics',JSON.stringify({
+     model,topKeys:Object.keys(data||{}),
+     responseType:typeof raw,
+     responseKeys:raw&&typeof raw==='object'?Object.keys(raw):[],
+     responseLength:typeof raw==='string'?raw.length:null,
+     hasMatch:typeof parsed?.match==='boolean',hasConfidence:typeof parsed?.confidence==='number'
+   }));
+ }
  if(typeof parsed?.match!=='boolean'||typeof parsed.confidence!=='number'||
   !Number.isFinite(parsed.confidence)||!schema.properties.level.enum.includes(parsed.level))
    throw Error('Live AI response did not satisfy decision schema for sample '+(index+1));
