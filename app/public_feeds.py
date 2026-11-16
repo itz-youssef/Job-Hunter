@@ -40,22 +40,30 @@ def workable(name, slug, get_json, get_bytes, structured, make_job):
         # Request details on the company-level public widget endpoint, in
         # one request. List summaries alone leave requirements blank, which
         # previously made a 7+ years vacancy appear eligible for 0–2 years.
+        detail_description = str(item.get("description") or "")
+        raw_requirements = str(item.get("requirements") or "")
         description = " ".join(
-            str(item.get(key) or "")
-            for key in ("description", "requirements")
+            text for text in (detail_description,raw_requirements) if text
         ).strip()
+        detail_status="workable-widget-details" if description else "workable-widget-summary"
         if detail_calls < 18 and not description:
             detail_calls += 1
             try:
                 page = get_bytes(link).decode("utf-8", errors="replace")
                 matches = structured(name, link, page)
                 if matches:
-                    description = matches[0].get("description") or ""
-                    place = matches[0].get("location") or place
+                    candidate=next((j for j in matches if str(j.get("title") or "").strip().casefold()==title.strip().casefold()),None)
+                    if candidate:
+                        description = candidate.get("description") or ""
+                        place = candidate.get("location") or place
+                        detail_status="official-jsonld-detail" if description else detail_status
             except (OSError, ValueError, TypeError):
                 pass
         job = make_job(name,title,place,link,description,item.get("published_at") or item.get("published_on") or "",item.get("employment_type") or "")
         job["seniority"] = str(item.get("experience") or "")
+        job["requirements"] = raw_requirements
+        job["department"] = str(item.get("department") or item.get("category") or "")
+        job["source_detail_status"] = detail_status
         results.append(job)
     return results
 
