@@ -87,3 +87,43 @@ def test_siemens_missing_pagination_is_an_error():
     from app.egypt_public_feeds import siemens_software
     with pytest.raises(ValueError,match="pagination"):
         siemens_software("Siemens",lambda _: {"jobs":[]},cs._job)
+
+
+def test_siemens_official_search_keeps_distinct_department_and_requirements():
+    from app.egypt_public_feeds import siemens_software
+    payload={"jobs":[{
+      "country_exact":"Egypt","title_exact":"Junior Software Development Engineer",
+      "city_exact":"Cairo","title_slug":"junior-software-development-engineer",
+      "guid":"AABBCCDD00112233445566778899FF00",
+      "description":"Develop Python APIs and backend services with a collaborative engineering team.",
+      "qualifications":"Required: 0-2 years relevant software development experience",
+      "job_family_exact":"Research & Development",
+      "experience_level_exact":"Early Professional",
+      "location_exact":"Cairo, Egypt"
+    }],"pagination":{"has_more_pages":False}}
+    jobs=siemens_software("Siemens",lambda _:payload,cs._job)
+    assert len(jobs)==1
+    assert jobs[0]["requirements"].startswith("Required:")
+    assert jobs[0]["department"]=="Research & Development"
+    assert jobs[0]["seniority"]=="Early Professional"
+    assert jobs[0]["source_detail_status"] in ("ats-search","ats-summary-only")
+
+
+def test_siemens_detail_jobposting_description_requires_matching_title():
+    from app.egypt_public_feeds import siemens_software
+    payload={"jobs":[{
+      "country_exact":"Egypt","title_exact":"Software Development Engineer",
+      "city_exact":"Cairo","title_slug":"software-development-engineer",
+      "guid":"11223344556677889900AABBCCDDEEFF",
+      "location_exact":"Cairo, Egypt"
+    }],"pagination":{"has_more_pages":False}}
+    html=b'''<div>Experience level: Early Professional</div>
+    <script type="application/ld+json">{"@type":"JobPosting",
+    "title":"Software Development Engineer",
+    "description":"<p>Build APIs with Python and work on backend engineering. Junior-friendly development opportunity.</p>",
+    "datePosted":"2026-11-01"}</script>'''
+    jobs=siemens_software("Siemens",lambda _:payload,cs._job,lambda _:html)
+    assert len(jobs)==1
+    assert "Build APIs with Python" in jobs[0]["description"]
+    assert jobs[0]["source_detail_status"]=="official-jsonld-detail"
+    assert jobs[0]["seniority"]=="Early Professional"

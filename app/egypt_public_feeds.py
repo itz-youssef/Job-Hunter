@@ -158,8 +158,17 @@ def siemens_software(name, get_json, make_job, get_bytes=None):
                 "experience_level_exact", "experience_level", "career_level",
                 "experienceLevel", "job_level_exact", "job_level",
             ))
-            description = str(row.get("description") or "")
+            # Siemens search exposes separate ATS description and qualification
+            # fields on some job families. Preserve them independently rather
+            # than accepting title-only records as complete.
+            description = str(row.get("description") or row.get("job_description")
+                              or row.get("jobDescription") or "")
+            requirements = str(row.get("qualifications") or row.get("requirements")
+                               or row.get("qualification_exact") or "")
+            family = str(row.get("job_family_exact") or row.get("job_family")
+                         or row.get("field_of_work") or "")
             published = row.get("date_new") or row.get("date_added") or ""
+            detail_evidence = "ats-search" if len(description)>120 else "ats-summary-only"
             if not re.search(r"\b(?:early professional|entry.level|junior|graduate|intern)\b", experience, re.I):
                 # A limited number of ambiguous technical jobs are checked
                 # against their official detail page for explicit career-level evidence.
@@ -174,11 +183,44 @@ def siemens_software(name, get_json, make_job, get_bytes=None):
                         match = re.search(r"\bExperience level\s*:\s*(Early Professional|Entry Level|Junior|Graduate|Internship)\b", plain, re.I)
                         if match:
                             experience = match.group(1)
+                            detail_evidence = "official-detail-level"
+                        # Pull JobPosting JSON-LD if it names this same vacancy,
+                        # not unrelated recommended jobs in site-wide metadata.
+                        if len(description)<120:
+                            import json
+                            from bs4 import BeautifulSoup
+                            soup = BeautifulSoup(detail, "html.parser")
+                            for tag in soup.select('script[type="application/ld+json"]'):
+                                try:
+                                    info=json.loads(tag.string or tag.get_text())
+                                except (ValueError, TypeError):
+                                    continue
+                                postings=info if isinstance(info,list) else [info]
+                                for posting in postings:
+                                    if not isinstance(posting,dict):
+                                        continue
+                                    types=posting.get("@type") or []
+                                    has_type=("JobPosting" in types if isinstance(types,list)
+                                              else types=="JobPosting")
+                                    if not has_type or str(posting.get("title") or "").strip().casefold()!=title.casefold():
+                                        continue
+                                    detail_desc=BeautifulSoup(str(posting.get("description") or ""),
+                                        "html.parser").get_text(" ",strip=True)
+                                    if len(detail_desc)>len(description):
+                                        description=detail_desc[:18000]
+                                        detail_evidence="official-jsonld-detail"
+                                    published=published or posting.get("datePosted") or ""
+                                    break
                     except (OSError, ValueError, TimeoutError):
-                        pass
+                        detail_evidence = "detail-unavailable" if detail_evidence=="ats-summary-only" else detail_evidence
             job = make_job(
                 name, title, location, url, description, published, ""
             )
+            if requirements:
+                job["requirements"] = requirements[:12000]
+            if family:
+                job["department"] = family[:160]
+            job["source_detail_status"] = detail_evidence
             if re.search(r"\b(?:early professional|entry.level|junior|graduate|intern)\b", experience, re.I):
                 job["seniority"] = "Early Professional" if re.search("early professional",experience,re.I) else experience.strip()[:100]
             job["external_id"] = str(row.get("req_id") or row.get("job_id") or "")
