@@ -435,6 +435,28 @@ def run(
                 job["discovered_at"] = (
                     old.get("discovered_at") or job["discovered_at"]
                 )
+                # Employer search summaries routinely omit fields that were
+                # present on a previously fetched OFFICIAL detail page.
+                # Preserve that evidence only for the same URL AND job title,
+                # never for an unrelated replacement vacancy.
+                if str(old.get("title") or "").strip().casefold()==str(job.get("title") or "").strip().casefold():
+                    for field in ("requirements","department","seniority","published_at"):
+                        if not job.get(field) and old.get(field):
+                            job[field] = old[field]
+                    old_desc=str(old.get("description") or "")
+                    current_desc=str(job.get("description") or "")
+                    trusted_detail=str(old.get("source_detail_status") or "") in (
+                        "official-jsonld-detail","jsonld-jobposting",
+                        "official-page-section","official-detail-level",
+                        "retained-official-detail"
+                    )
+                    if trusted_detail and len(old_desc)>max(120,len(current_desc)):
+                        job["description"]=old_desc
+                        job["source_detail_status"]="retained-official-detail"
+                # Recompute source-side relevance from actual preserved
+                # evidence. Personal feed/alerts still have their own
+                # stricter AI verification and baseline.
+                job=_enrich(job) or job
 
             custom_jobs[key] = job
 
