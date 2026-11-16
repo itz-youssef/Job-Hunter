@@ -1,6 +1,6 @@
 {
   "mode": "snapshot",
-  "generated_at": "2026-11-16T08:16:43.994868+00:00",
+  "generated_at": "2026-11-16T08:21:39.258834+00:00",
   "sources": [
     {
       "id": 1,
@@ -9929,33 +9929,6 @@
       "careers_url": "https://www.ibm.com/careers/search?"
     },
     {
-      "id": "custom-ibm-140847",
-      "company": "IBM",
-      "title": "Data Engineer-Data Integration",
-      "location": "Giza, EG",
-      "url": "https://careers.ibm.com/careers/JobDetail?jobId=140847",
-      "description": "A career in IBM Consulting is built on long-term client relationships and close collaboration worldwide. You'll work with leading companies across industries, helping them shape their hybrid cloud and AI journeys. With support from our strategic...",
-      "published_at": "",
-      "employment": "",
-      "source": "Custom Careers",
-      "seniority": "Professional",
-      "category": "Data & Analytics",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.513403+00:00",
-      "apply_url": "https://careers.ibm.com/careers/JobDetail?jobId=140847",
-      "link": "https://careers.ibm.com/careers/JobDetail?jobId=140847",
-      "careers_url": "https://www.ibm.com/careers/search?"
-    },
-    {
       "id": "custom-ibm-140852",
       "company": "IBM",
       "title": "Data Engineer-Data Integration",
@@ -9980,6 +9953,33 @@
       "discovered_at": "2026-11-14T11:46:34.513834+00:00",
       "apply_url": "https://careers.ibm.com/careers/JobDetail?jobId=140852",
       "link": "https://careers.ibm.com/careers/JobDetail?jobId=140852",
+      "careers_url": "https://www.ibm.com/careers/search?"
+    },
+    {
+      "id": "custom-ibm-140847",
+      "company": "IBM",
+      "title": "Data Engineer-Data Integration",
+      "location": "Giza, EG",
+      "url": "https://careers.ibm.com/careers/JobDetail?jobId=140847",
+      "description": "A career in IBM Consulting is built on long-term client relationships and close collaboration worldwide. You'll work with leading companies across industries, helping them shape their hybrid cloud and AI journeys. With support from our strategic...",
+      "published_at": "",
+      "employment": "",
+      "source": "Custom Careers",
+      "seniority": "Professional",
+      "category": "Data & Analytics",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.513403+00:00",
+      "apply_url": "https://careers.ibm.com/careers/JobDetail?jobId=140847",
+      "link": "https://careers.ibm.com/careers/JobDetail?jobId=140847",
       "careers_url": "https://www.ibm.com/careers/search?"
     },
     {
@@ -18587,9 +18587,9 @@
       "url": "https://careers.4dxventures.com/companies/breadfast/jobs/99615414-live-operations-specialist-food",
       "description": "Role Objectives: As a Live Operations Specialist Monitored real-time delivery operations to ensure on-time performance and SLA adherence. Proactively managed delayed and at-risk orders by coordinating with DAs, vendors, and Live Ops teams, identifying root causes, and escalating high-risk cases. Delivered performance insights, supported process improvements, and ensured operational efficiency. Roles & Responsibilities: Monitor DA lateness and order on-time performance in real time using live ops and dispatch tools. Track scheduled vs actual arrival times at restaurants and customers; intervene to prevent SLA breaches. Follow up on late, at-risk, and breached orders with DAs, vendors, and Logistics coordinators. Monitor live order flows across zones using dispatch and Live Ops dashboards to proactively identify SLA risks. Identify root causes of delays (DA, vendor, system, routing) and ensure accurate delay tagging. Escalate high-risk orders (repeat delays, DA non-responsiveness, cash blocks) for immediate action. Coordinate with Live Ops & Field teams to resolve operational issues impacting delivery timelines. Track DA behavior affecting delays (late check-ins, route deviations, rejection patterns). Support cash collection monitoring by flagging delays, mismatches, or settlement risks. Assist in rolling out and monitoring new operational processes (routing changes, app updates, SLA rules). Maintain daily and weekly live operations performance reports with insights and recommendations. Required Education, Knowledge, And Skills: 1–2 years experience in Live Operations / DA Support / Dispatch. Hands-on experience with real-time tracking & dispatch tools. Strong understanding of DA workflows, SLA enforcement, and delay management. Proven ability to handle high-pressure, real-time escalations. Strong analytical skills for delay pattern identification and root-cause analysis. Clear communication skills for DA coordination and escalation handling. KPIs: On-Time Delivery Rate – percentage of orders delivered within ETA. Order Assignment Accuracy – percentage of orders assigned to the correct zone/DA. Average Delivery Time – time taken from restaurant readiness to customer delivery. Customer Feedback/Complaints related to delivery experience. % of At-Risk Orders Resolved Before SLA Breach.",
       "published_at": "2026-11-11T14:42:19.867Z",
-      "employment": "",
+      "employment": "['FULL_TIME']",
       "source": "Custom Careers",
-      "source_detail_status": "retained-official-detail",
+      "source_detail_status": "official-jsonld-detail",
       "score": 0,
       "match_score": 0,
       "relevance_score": 0,
@@ -38343,7 +38343,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 19
       },
-      "checked_at": "2026-11-16T08:16:43.507493+00:00"
+      "checked_at": "2026-11-16T08:21:38.940453+00:00"
     },
     {
       "name": "Bosta",
@@ -38358,7 +38358,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 81,
         "Excluded: job location is not explicitly in Egypt": 11
       },
-      "checked_at": "2026-11-16T08:16:43.572248+00:00"
+      "checked_at": "2026-11-16T08:21:38.984780+00:00"
     },
     {
       "name": "Thndr",
@@ -38374,7 +38374,7 @@
         "Excluded: job location is not explicitly in Egypt": 7,
         "Excluded: explicit senior title": 3
       },
-      "checked_at": "2026-11-16T08:16:43.578228+00:00"
+      "checked_at": "2026-11-16T08:21:38.988927+00:00"
     },
     {
       "name": "Klivvr",
@@ -38388,7 +38388,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 7
       },
-      "checked_at": "2026-11-16T08:16:43.579405+00:00"
+      "checked_at": "2026-11-16T08:21:38.989737+00:00"
     },
     {
       "name": "Emergence",
@@ -38403,7 +38403,7 @@
         "Excluded: job location is not explicitly in Egypt": 7,
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 1
       },
-      "checked_at": "2026-11-16T08:16:43.580272+00:00"
+      "checked_at": "2026-11-16T08:21:38.990305+00:00"
     },
     {
       "name": "Lean Technologies",
@@ -38417,7 +38417,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 8
       },
-      "checked_at": "2026-11-16T08:16:43.581478+00:00"
+      "checked_at": "2026-11-16T08:21:38.991130+00:00"
     },
     {
       "name": "Chatbase",
@@ -38432,7 +38432,7 @@
         "Excluded: job location is not explicitly in Egypt": 12,
         "Uncertain: early-career level not confirmed by source": 1
       },
-      "checked_at": "2026-11-16T08:16:43.583719+00:00"
+      "checked_at": "2026-11-16T08:21:38.992693+00:00"
     },
     {
       "name": "Lua Global",
@@ -38444,7 +38444,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-16T08:16:43.585148+00:00"
+      "checked_at": "2026-11-16T08:21:38.993700+00:00"
     },
     {
       "name": "IBM",
@@ -38459,7 +38459,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 5,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-16T08:16:43.586937+00:00"
+      "checked_at": "2026-11-16T08:21:38.994887+00:00"
     },
     {
       "name": "Schneider Electric",
@@ -38475,7 +38475,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 3
       },
-      "checked_at": "2026-11-16T08:16:43.591958+00:00"
+      "checked_at": "2026-11-16T08:21:38.998279+00:00"
     },
     {
       "name": "Ericsson",
@@ -38489,7 +38489,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 11
       },
-      "checked_at": "2026-11-16T08:16:43.595386+00:00"
+      "checked_at": "2026-11-16T08:21:39.000786+00:00"
     },
     {
       "name": "Capgemini Egypt",
@@ -38505,7 +38505,7 @@
         "Excluded: explicit senior title": 3,
         "Excluded: ATS explicitly labels career level as senior": 3
       },
-      "checked_at": "2026-11-16T08:16:43.604389+00:00"
+      "checked_at": "2026-11-16T08:21:39.006778+00:00"
     },
     {
       "name": "DXC Technology",
@@ -38521,7 +38521,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-16T08:16:43.615517+00:00"
+      "checked_at": "2026-11-16T08:21:39.014397+00:00"
     },
     {
       "name": "Luxoft Egypt",
@@ -38536,7 +38536,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 15,
         "Uncertain: early-career level not confirmed by source": 1
       },
-      "checked_at": "2026-11-16T08:16:43.619269+00:00"
+      "checked_at": "2026-11-16T08:21:39.017142+00:00"
     },
     {
       "name": "Nokia",
@@ -38548,7 +38548,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-16T08:16:43.620091+00:00"
+      "checked_at": "2026-11-16T08:21:39.017711+00:00"
     },
     {
       "name": "SAP",
@@ -38562,7 +38562,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3
       },
-      "checked_at": "2026-11-16T08:16:43.620266+00:00"
+      "checked_at": "2026-11-16T08:21:39.017839+00:00"
     },
     {
       "name": "Orange Egypt",
@@ -38576,7 +38576,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 10
       },
-      "checked_at": "2026-11-16T08:16:43.620933+00:00"
+      "checked_at": "2026-11-16T08:21:39.018264+00:00"
     },
     {
       "name": "e& / Etisalat",
@@ -38590,7 +38590,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 25
       },
-      "checked_at": "2026-11-16T08:16:43.623029+00:00"
+      "checked_at": "2026-11-16T08:21:39.019690+00:00"
     },
     {
       "name": "Telecom Egypt (WE)",
@@ -38602,7 +38602,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-16T08:16:43.624437+00:00"
+      "checked_at": "2026-11-16T08:21:39.020722+00:00"
     },
     {
       "name": "Paymob",
@@ -38616,7 +38616,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 71
       },
-      "checked_at": "2026-11-16T08:16:43.629707+00:00"
+      "checked_at": "2026-11-16T08:21:39.024169+00:00"
     },
     {
       "name": "Breadfast",
@@ -38630,7 +38630,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 12
       },
-      "checked_at": "2026-11-16T08:16:43.635254+00:00"
+      "checked_at": "2026-11-16T08:21:39.027834+00:00"
     },
     {
       "name": "ITWorx",
@@ -38645,7 +38645,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 2,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-16T08:16:43.635873+00:00"
+      "checked_at": "2026-11-16T08:21:39.028276+00:00"
     },
     {
       "name": "Sumerge",
@@ -38660,7 +38660,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 5,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-16T08:16:43.638675+00:00"
+      "checked_at": "2026-11-16T08:21:39.030281+00:00"
     },
     {
       "name": "Luciq (formerly Instabug)",
@@ -38674,7 +38674,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 2
       },
-      "checked_at": "2026-11-16T08:16:43.641362+00:00"
+      "checked_at": "2026-11-16T08:21:39.032231+00:00"
     },
     {
       "name": "Breadfast Technology",
@@ -38688,7 +38688,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3
       },
-      "checked_at": "2026-11-16T08:16:43.642990+00:00"
+      "checked_at": "2026-11-16T08:21:39.033329+00:00"
     },
     {
       "name": "Link Development",
@@ -38704,7 +38704,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 24,
         "Uncertain: early-career level not confirmed by source": 1
       },
-      "checked_at": "2026-11-16T08:16:43.645961+00:00"
+      "checked_at": "2026-11-16T08:21:39.035297+00:00"
     },
     {
       "name": "Fawry",
@@ -38718,7 +38718,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 4
       },
-      "checked_at": "2026-11-16T08:16:43.647683+00:00"
+      "checked_at": "2026-11-16T08:21:39.036340+00:00"
     },
     {
       "name": "Siemens",
@@ -38733,7 +38733,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 15,
         "Uncertain: early-career level not confirmed by source": 7
       },
-      "checked_at": "2026-11-16T08:16:43.653285+00:00"
+      "checked_at": "2026-11-16T08:21:39.040498+00:00"
     },
     {
       "name": "Deloitte",
@@ -38749,7 +38749,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 7
       },
-      "checked_at": "2026-11-16T08:16:43.663488+00:00"
+      "checked_at": "2026-11-16T08:21:39.047815+00:00"
     },
     {
       "name": "BlackStone eIT",
@@ -38765,7 +38765,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 5,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-16T08:16:43.669972+00:00"
+      "checked_at": "2026-11-16T08:21:39.052564+00:00"
     },
     {
       "name": "Lamdax",
@@ -38780,24 +38780,19 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-16T08:16:43.676970+00:00"
+      "checked_at": "2026-11-16T08:21:39.057463+00:00"
     },
     {
       "name": "Yassir",
       "url": "https://jobs.lever.co/Yassir/",
-      "status": "monitoring",
-      "message": "119 jobs parsed from lever",
-      "parsed_jobs": 119,
+      "status": "error",
+      "message": "The read operation timed out",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "public_jobs": 119,
-      "excluded_jobs": 119,
-      "exclusion_reasons": {
-        "Excluded: job location is not explicitly in Egypt": 83,
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 15,
-        "Uncertain: early-career level not confirmed by source": 2,
-        "Excluded: explicit senior title": 19
-      },
-      "checked_at": "2026-11-16T08:16:43.691136+00:00"
+      "public_jobs": 0,
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-16T08:21:39.061054+00:00"
     },
     {
       "name": "Integrant",
@@ -38812,7 +38807,7 @@
         "Excluded: explicit senior title": 7,
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 12
       },
-      "checked_at": "2026-11-16T08:16:43.700980+00:00"
+      "checked_at": "2026-11-16T08:21:39.061919+00:00"
     },
     {
       "name": "inDrive",
@@ -38828,7 +38823,7 @@
         "Uncertain: early-career level not confirmed by source": 2,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-16T08:16:43.702269+00:00"
+      "checked_at": "2026-11-16T08:21:39.062796+00:00"
     },
     {
       "name": "robusta / RTG",
@@ -38844,7 +38839,7 @@
         "Uncertain: early-career level not confirmed by source": 2,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-16T08:16:43.704131+00:00"
+      "checked_at": "2026-11-16T08:21:39.064139+00:00"
     },
     {
       "name": "Incorta",
@@ -38860,7 +38855,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-16T08:16:43.706421+00:00"
+      "checked_at": "2026-11-16T08:21:39.065882+00:00"
     },
     {
       "name": "SOUM",
@@ -38876,7 +38871,7 @@
         "Excluded: job location is not explicitly in Egypt": 18,
         "Uncertain: early-career level not confirmed by source": 1
       },
-      "checked_at": "2026-11-16T08:16:43.709363+00:00"
+      "checked_at": "2026-11-16T08:21:39.067945+00:00"
     },
     {
       "name": "econstruct",
@@ -38892,7 +38887,7 @@
         "Excluded: job location is not explicitly in Egypt": 11,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-16T08:16:43.714830+00:00"
+      "checked_at": "2026-11-16T08:21:39.071587+00:00"
     },
     {
       "name": "PetroApp",
@@ -38906,7 +38901,7 @@
       "exclusion_reasons": {
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-16T08:16:43.718270+00:00"
+      "checked_at": "2026-11-16T08:21:39.073811+00:00"
     },
     {
       "name": "SSC HR Solutions",
@@ -38924,7 +38919,7 @@
         "Excluded: explicit minimum experience exceeds 2 years": 1,
         "Excluded: explicit senior title": 9
       },
-      "checked_at": "2026-11-16T08:16:43.723460+00:00"
+      "checked_at": "2026-11-16T08:21:39.077351+00:00"
     },
     {
       "name": "Mondia Group",
@@ -38939,7 +38934,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-16T08:16:43.729025+00:00"
+      "checked_at": "2026-11-16T08:21:39.081045+00:00"
     },
     {
       "name": "mylo by B.TECH",
@@ -38955,7 +38950,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 2,
         "Excluded: explicit senior title": 3
       },
-      "checked_at": "2026-11-16T08:16:43.729732+00:00"
+      "checked_at": "2026-11-16T08:21:39.081526+00:00"
     },
     {
       "name": "Infomineo",
@@ -38969,7 +38964,7 @@
       "exclusion_reasons": {
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-16T08:16:43.729995+00:00"
+      "checked_at": "2026-11-16T08:21:39.081691+00:00"
     },
     {
       "name": "ArpuPlus",
@@ -38984,7 +38979,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 2,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-16T08:16:43.730200+00:00"
+      "checked_at": "2026-11-16T08:21:39.081835+00:00"
     },
     {
       "name": "Madar",
@@ -38998,7 +38993,7 @@
       "exclusion_reasons": {
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-16T08:16:43.730392+00:00"
+      "checked_at": "2026-11-16T08:21:39.081976+00:00"
     },
     {
       "name": "EY Egypt",
@@ -39013,7 +39008,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 19,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-16T08:16:43.731821+00:00"
+      "checked_at": "2026-11-16T08:21:39.083011+00:00"
     },
     {
       "name": "PwC Egypt",
@@ -39027,7 +39022,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3
       },
-      "checked_at": "2026-11-16T08:16:43.733257+00:00"
+      "checked_at": "2026-11-16T08:21:39.084068+00:00"
     },
     {
       "name": "Blink22",
@@ -39041,7 +39036,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 16
       },
-      "checked_at": "2026-11-16T08:16:43.733638+00:00"
+      "checked_at": "2026-11-16T08:21:39.084322+00:00"
     },
     {
       "name": "Amazon Egypt",
@@ -39056,7 +39051,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 90,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-16T08:16:43.744345+00:00"
+      "checked_at": "2026-11-16T08:21:39.091471+00:00"
     },
     {
       "name": "AWS Egypt",
@@ -39068,7 +39063,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-16T08:16:43.754656+00:00"
+      "checked_at": "2026-11-16T08:21:39.098308+00:00"
     },
     {
       "name": "Talabat Egypt",
@@ -39080,7 +39075,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-16T08:16:43.754674+00:00"
+      "checked_at": "2026-11-16T08:21:39.098315+00:00"
     },
     {
       "name": "Uber Egypt",
@@ -39092,7 +39087,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-16T08:16:43.755045+00:00"
+      "checked_at": "2026-11-16T08:21:39.098517+00:00"
     },
     {
       "name": "Teleperformance Egypt",
@@ -39106,7 +39101,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 4
       },
-      "checked_at": "2026-11-16T08:16:43.755225+00:00"
+      "checked_at": "2026-11-16T08:21:39.098638+00:00"
     },
     {
       "name": "Finaira",
@@ -39120,7 +39115,7 @@
       "exclusion_reasons": {
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-16T08:16:43.755399+00:00"
+      "checked_at": "2026-11-16T08:21:39.098757+00:00"
     },
     {
       "name": "CIB Egypt",
@@ -39135,7 +39130,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 22,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-16T08:16:43.756652+00:00"
+      "checked_at": "2026-11-16T08:21:39.099604+00:00"
     },
     {
       "name": "Konecta Egypt",
@@ -39149,7 +39144,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 34
       },
-      "checked_at": "2026-11-16T08:16:43.759993+00:00"
+      "checked_at": "2026-11-16T08:21:39.101847+00:00"
     },
     {
       "name": "ADCB Egypt",
@@ -39163,7 +39158,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 7
       },
-      "checked_at": "2026-11-16T08:16:43.762381+00:00"
+      "checked_at": "2026-11-16T08:21:39.103463+00:00"
     },
     {
       "name": "Fab Minds Egypt",
@@ -39177,7 +39172,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3
       },
-      "checked_at": "2026-11-16T08:16:43.762791+00:00"
+      "checked_at": "2026-11-16T08:21:39.103730+00:00"
     }
   ]
 }
