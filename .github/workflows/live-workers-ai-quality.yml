@@ -40,9 +40,10 @@ jobs:
           echo "::error::AI development binding failed to start"
           tail -35 /tmp/secretj-ai-dev.log | sed -E 's/[A-Za-z0-9_-]{30,}/[redacted]/g'
           exit 1
-      - name: Evaluate real Llama 3.3 70B on reviewed employer jobs
+      - name: Evaluate real GPT-OSS 120B on reviewed employer jobs
         env:
           SECRETJ_AI_SMOKE_URL: http://127.0.0.1:8787
+          SECRETJ_BENCHMARK_MODEL: "@cf/openai/gpt-oss-120b"
         run: node scripts/verify-live-workers-ai.mjs
       - name: Stop local test Worker
         if: always()
