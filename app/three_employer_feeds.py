@@ -23,7 +23,56 @@ def _location(values):
     return ""
 
 
-def eightfold_egypt(name, host, domain, get_json, make_job, vois=False):
+def _eightfold_official_detail(raw, expected_title):
+    """Read only an official Eightfold detail page; never scrape unrelated CTAs.
+
+    Extract requisition's JobPosting JSON-LD first, then employer-authored
+    About/Responsibilities/Qualifications sections. Unknown remains unknown.
+    """
+    import json
+    from bs4 import BeautifulSoup
+    from html import unescape
+    doc = BeautifulSoup(raw.decode("utf-8", "replace"), "html.parser")
+    for script in doc.select('script[type="application/ld+json"]'):
+        try:
+            payload=json.loads(script.string or script.get_text())
+        except (json.JSONDecodeError, TypeError):
+            continue
+        records=payload if isinstance(payload,list) else [payload]
+        for record in records:
+            if not isinstance(record,dict):
+                continue
+            types=record.get("@type") or []
+            if (("JobPosting" in types) if isinstance(types,list) else types=="JobPosting"):
+                title=" ".join(str(record.get("title") or "").split())
+                if title and title.casefold()!=expected_title.casefold():
+                    continue
+                description=BeautifulSoup(unescape(str(record.get("description") or "")),
+                    "html.parser").get_text(" ",strip=True)[:18000]
+                return {"description":description,
+                  "employment":str(record.get("employmentType") or ""),
+                  "published":str(record.get("datePosted") or ""),
+                  "evidence":"jsonld-jobposting"} if description else None
+    # Framework pages may include their own requisition as semantic sections.
+    # Do not treat navigational links, similar jobs, or page-wide footers as
+    # a genuine job description.
+    start=doc.find(string=re.compile(r"^(?:Job description|About this Role|About the Role)$",re.I))
+    if start is None:return None
+    container=start.parent
+    node=container.find_next_sibling() if container else None
+    parts=[]
+    for _ in range(75):
+        if node is None:break
+        snippet=node.get_text(" ",strip=True)
+        if re.search(r"^(?:Similar jobs|Related jobs|Insights from previous hires|Apply now)$",snippet,re.I):
+            break
+        if snippet:parts.append(snippet)
+        node=node.find_next_sibling()
+    desc=" ".join(parts)[:18000]
+    return {"description":desc,"employment":"","published":"","evidence":"official-page-section"} if len(desc)>80 else None
+
+
+def eightfold_egypt(name, host, domain, get_json, make_job, vois=False, get_bytes=None, max_details=12):
     """Employer's public Eightfold PCSX search scoped to Egyptian job locations.
 
     Never trust the location filter alone: multi-country roles can appear in
@@ -33,6 +82,7 @@ def eightfold_egypt(name, host, domain, get_json, make_job, vois=False):
     results = {}
     total = None
     page_size = 10
+    detail_attempts = 0
     for page in range(50):
         params = {
             "domain": domain,
@@ -92,8 +142,26 @@ def eightfold_egypt(name, host, domain, get_json, make_job, vois=False):
             else:
                 published = str(timestamp or "")
             desc = str(item.get("job_description") or item.get("jobDescription") or "")
+            employment = str(item.get("employmentType") or item.get("employment_type") or "")
+            detail_status = "search-api" if len(desc.strip())>120 else "not-fetched"
+            # A bounded detail lookup makes incomplete ATS search records
+            # richer. On failure preserve original data and mark the failure.
+            if len(desc.strip())<120 and get_bytes and detail_attempts<max_details:
+                detail_attempts+=1
+                try:
+                    detail=_eightfold_official_detail(get_bytes(link),title)
+                    if detail and len(detail["description"])>len(desc):
+                        desc=detail["description"]
+                        employment=detail["employment"] or employment
+                        published=detail["published"] or published
+                        detail_status=detail["evidence"]
+                    else:
+                        detail_status="detail-not-readable"
+                except (ValueError, OSError, TimeoutError, UnicodeError):
+                    detail_status="detail-unavailable"
             job = make_job(name, title, location, link, desc, published,
-                           str(item.get("employmentType") or item.get("employment_type") or ""))
+                           employment)
+            job["source_detail_status"]=detail_status
             job["id"] = "custom-" + ("vois" if vois else "ericsson") + "-" + identity
             job["external_id"] = str(item.get("displayJobId") or item.get("atsJobId") or identity)
             results[identity] = job
