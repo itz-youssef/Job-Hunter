@@ -115,3 +115,43 @@ def test_retry_after_respected(monkeypatch):
     def fail(_):raise SourceError('Rate limited',retry_after=3600)
     monkeypatch.setattr(worker,'fetch',fail);worker.scan(source())
     assert source()['next_check']>=time.time()+3599
+
+
+def test_structured_ats_fields_survive_ingest_and_rechecks():
+    data=job('ats-fields')
+    data.update(requirements="Required: 1 year Python development",
+      department="Research and Development",seniority="Early Professional",
+      source_detail_status="official-jsonld-detail")
+    ingest(source(),[data],score)
+    with db() as c:
+        row=c.execute("SELECT requirements,department,seniority,source_detail_status FROM jobs WHERE external_id='ats-fields'").fetchone()
+        assert row['requirements'].startswith('Required:')
+        assert row['department']=='Research and Development'
+        assert row['seniority']=='Early Professional'
+        assert row['source_detail_status']=='official-jsonld-detail'
+    # A later ATS search listing may omit details: never erase evidence.
+    shallow=job('ats-fields')
+    shallow['description']='Build Python computer vision models'
+    ingest(source(),[shallow],score)
+    with db() as c:
+        row=c.execute("SELECT requirements,department,seniority,source_detail_status FROM jobs WHERE external_id='ats-fields'").fetchone()
+        assert row['requirements'].startswith('Required:')
+        assert row['department']=='Research and Development'
+        assert row['seniority']=='Early Professional'
+
+
+def test_public_export_retains_employer_requirements_and_evidence(monkeypatch,tmp_path):
+    from app.export_site import main as export_main
+    data=job('export-evidence')
+    data.update(requirements='Minimum 2 years of experience in Python',
+      department='Software Engineering',seniority='Early Professional',
+      source_detail_status='official-jsonld-detail')
+    ingest(source(),[data],score)
+    monkeypatch.chdir(tmp_path)
+    export_main()
+    payload=json.loads((tmp_path/'dist'/'data.json').read_text())
+    item=next(x for x in payload['jobs'] if x['title']=='Graduate Engineer')
+    assert item['requirements']=='Minimum 2 years of experience in Python'
+    assert item['department']=='Software Engineering'
+    assert item['seniority']=='Early Professional'
+    assert item['source_detail_status']=='official-jsonld-detail'
