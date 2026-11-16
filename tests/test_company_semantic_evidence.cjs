@@ -67,3 +67,43 @@ test('strict AI still decides ambiguous title before personal feed or emails',as
   assert.equal(out.accepted[0].qualification_mode,'ai-reviewed');
  }finally{core.setQueryForTests(null);}
 });
+
+test('Corporate Security fraud internship is NOT cybersecurity engineering',()=>{
+ const j=mk('VOIS EG Work Experience Programme - Corporate Security',
+   'Fraud management team, fraud risk assessments, compliance and internal investigations.');
+ assert.equal(evidence.fieldGate(j,['cybersecurity']).decision,'reject');
+});
+test('semantic uncertainty uses GPT-OSS, while explicit AI title stays on Llama',async()=>{
+ const core=require('../lib/secretj/core');
+ const calls=[];
+ core.setQueryForTests(async sql=>{
+   if(sql.includes('FROM public.sj_ai_qualification_cache'))return [];
+   if(sql.includes('count(*)::int AS count FROM public.sj_ai_qualification_cache'))return [{count:0}];
+   if(sql.includes('INSERT INTO public.sj_ai_qualification_cache'))return [];
+   throw Error('Unexpected SQL: '+sql);
+ });
+ try{
+  const env={SECRETJ_AI_VERIFICATION_ENABLED:'true',
+   SECRETJ_CF_AI_MODEL:'@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+   SECRETJ_SEMANTIC_AI_MODEL:'@cf/openai/gpt-oss-120b',
+   AI:{run:async(model,opts)=>{
+      calls.push(model);
+      if(model.includes('gpt-oss'))
+        return {choices:[{message:{content:JSON.stringify({
+          match:true,confidence:0.93,level:'entry',reason:'Model development duties'
+        })}}]};
+      return {response:{match:true,confidence:0.91,level:'entry',
+        reason:'Direct AI engineer role at junior level'}};
+   }}};
+  const roles=[
+    mk('Applied Intelligence Engineer','Model training in PyTorch and machine learning pipelines.'),
+    mk('Junior AI Engineer','Develop neural networks and ML inference applications.')
+  ];
+  const chosen=await monitor.qualifyJobs(roles,{...p,role_families:['ai_ml']},env);
+  assert.equal(chosen.accepted.length,2);
+  assert.ok(calls.includes('@cf/openai/gpt-oss-120b'));
+  assert.ok(calls.includes('@cf/meta/llama-3.3-70b-instruct-fp8-fast'));
+  assert.equal(chosen.accepted.find(x=>x.title.startsWith('Applied')).qualification_model,
+    '@cf/openai/gpt-oss-120b');
+ }finally{core.setQueryForTests(null);}
+});
