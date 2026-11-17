@@ -1,6 +1,6 @@
 {
   "mode": "snapshot",
-  "generated_at": "2026-11-17T20:51:44.837416+00:00",
+  "generated_at": "2026-11-17T20:56:55.462937+00:00",
   "sources": [
     {
       "id": 1,
@@ -9681,6 +9681,33 @@
       "careers_url": "https://jobs.ashbyhq.com/chatbase?utm_source=chatgpt.com"
     },
     {
+      "id": "custom-ibm-140861",
+      "company": "IBM",
+      "title": "Data Engineer-Data Integration",
+      "location": "Giza, EG",
+      "url": "https://careers.ibm.com/careers/JobDetail?jobId=140861",
+      "description": "A career in IBM Consulting is built on long-term client relationships and close collaboration worldwide. You'll work with leading companies across industries, helping them shape their hybrid cloud and AI journeys. With support from our strategic...",
+      "published_at": "",
+      "employment": "",
+      "source": "Custom Careers",
+      "seniority": "Professional",
+      "category": "Data & Analytics",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.513754+00:00",
+      "apply_url": "https://careers.ibm.com/careers/JobDetail?jobId=140861",
+      "link": "https://careers.ibm.com/careers/JobDetail?jobId=140861",
+      "careers_url": "https://www.ibm.com/careers/search?"
+    },
+    {
       "id": "custom-ibm-141863",
       "company": "IBM",
       "title": "Application Developer-IBM Cloud FullStack",
@@ -9739,64 +9766,6 @@
       "careers_url": "https://www.ibm.com/careers/search?"
     },
     {
-      "id": "custom-ibm-140861",
-      "company": "IBM",
-      "title": "Data Engineer-Data Integration",
-      "location": "Giza, EG",
-      "url": "https://careers.ibm.com/careers/JobDetail?jobId=140861",
-      "description": "A career in IBM Consulting is built on long-term client relationships and close collaboration worldwide. You'll work with leading companies across industries, helping them shape their hybrid cloud and AI journeys. With support from our strategic...",
-      "published_at": "",
-      "employment": "",
-      "source": "Custom Careers",
-      "seniority": "Professional",
-      "category": "Data & Analytics",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.513754+00:00",
-      "apply_url": "https://careers.ibm.com/careers/JobDetail?jobId=140861",
-      "link": "https://careers.ibm.com/careers/JobDetail?jobId=140861",
-      "careers_url": "https://www.ibm.com/careers/search?"
-    },
-    {
-      "id": "custom-ibm-141858",
-      "company": "IBM",
-      "title": "Application Developer-IBM Cloud FullStack",
-      "location": "Giza, EG",
-      "url": "https://careers.ibm.com/careers/JobDetail?jobId=141858",
-      "description": "A career in IBM Consulting is built on long-term client relationships and close collaboration worldwide. You'll work with leading companies across industries, helping them shape their hybrid cloud and AI journeys. With support from our strategic...",
-      "published_at": "",
-      "employment": "",
-      "source": "Custom Careers",
-      "seniority": "Internship",
-      "category": "Software Engineering",
-      "score": 8,
-      "match_score": 8,
-      "relevance_score": 8,
-      "matched": true,
-      "reasons": [
-        "Egypt only",
-        "Early career confirmed",
-        "Target role: Software Engineering"
-      ],
-      "match_reasons": [
-        "Egypt only",
-        "Early career confirmed",
-        "Target role: Software Engineering"
-      ],
-      "discovered_at": "2026-11-12T19:12:38.753749+00:00",
-      "apply_url": "https://careers.ibm.com/careers/JobDetail?jobId=141858",
-      "link": "https://careers.ibm.com/careers/JobDetail?jobId=141858",
-      "careers_url": "https://www.ibm.com/careers/search?"
-    },
-    {
       "id": "custom-ibm-140852",
       "company": "IBM",
       "title": "Data Engineer-Data Integration",
@@ -9848,6 +9817,37 @@
       "discovered_at": "2026-11-14T11:46:34.513788+00:00",
       "apply_url": "https://careers.ibm.com/careers/JobDetail?jobId=140850",
       "link": "https://careers.ibm.com/careers/JobDetail?jobId=140850",
+      "careers_url": "https://www.ibm.com/careers/search?"
+    },
+    {
+      "id": "custom-ibm-141858",
+      "company": "IBM",
+      "title": "Application Developer-IBM Cloud FullStack",
+      "location": "Giza, EG",
+      "url": "https://careers.ibm.com/careers/JobDetail?jobId=141858",
+      "description": "A career in IBM Consulting is built on long-term client relationships and close collaboration worldwide. You'll work with leading companies across industries, helping them shape their hybrid cloud and AI journeys. With support from our strategic...",
+      "published_at": "",
+      "employment": "",
+      "source": "Custom Careers",
+      "seniority": "Internship",
+      "category": "Software Engineering",
+      "score": 8,
+      "match_score": 8,
+      "relevance_score": 8,
+      "matched": true,
+      "reasons": [
+        "Egypt only",
+        "Early career confirmed",
+        "Target role: Software Engineering"
+      ],
+      "match_reasons": [
+        "Egypt only",
+        "Early career confirmed",
+        "Target role: Software Engineering"
+      ],
+      "discovered_at": "2026-11-12T19:12:38.753749+00:00",
+      "apply_url": "https://careers.ibm.com/careers/JobDetail?jobId=141858",
+      "link": "https://careers.ibm.com/careers/JobDetail?jobId=141858",
       "careers_url": "https://www.ibm.com/careers/search?"
     },
     {
@@ -15198,32 +15198,6 @@
       "careers_url": "https://careers.dxc.com/?utm_source=chatgpt.com"
     },
     {
-      "id": "custom-24b8161c4d62c802b471837c",
-      "company": "DXC Technology",
-      "title": "MS DYNAMICS 365 CRM - DevOps & Automation Specialist",
-      "location": "Egypt",
-      "url": "https://careers.dxc.com/job/23785677/ms-dynamics-365-crm-devops-automation-specialist--eg/",
-      "description": "Job Description: Essential Job Functions: • Design, implement, and maintain CI/CD pipelines for Microsoft Dynamics 365 CRM, Dataverse, Power Platform, and related Azure components using Azure DevOps and Microsoft ALM best practices. • Manage CRM solution packaging, export/import automation, deployment validation, release branching, build definitions, release gates, and rollback procedures across development, test, UAT, staging, and production environments. • Automate administrative and operational tasks using PowerShell, Azure CLI, PAC CLI, Power Platform Build Tools, YAML pipelines, and reusable deployment scripts. • Support environment provisioning, configuration management, connection references, environment variables, service principals, application users, security roles, and managed identity setup. • Establish and enforce DevOps governance, release standards, source control practices, versioning strategy, deployment approvals, and auditability for CRM delivery teams. • Work with developers to integrate plugins, JavaScript/TypeScript components, PCF controls, Azure Functions, Logic Apps, and integration assets into automated build and deployment pipelines. • Implement quality checks, static code analysis, automated deployment verification, smoke testing support, dependency validation, and release readiness controls. • Monitor and troubleshoot pipeline failures, deployment issues, CRM solution conflicts, missing dependencies, environment configuration gaps, and production release incidents. • Maintain DevOps documentation including deployment guides, release calendars, runbooks, rollback plans, automation scripts, environment diagrams, and operational handover documents. • Drive continuous improvement by identifying opportunities to reduce manual effort, improve release reliability, enhance security controls, and accelerate CRM delivery timelines. Basic Qualifications: • 3+ years of hands-on experience in Microsoft Dynamics 365 CRM/Customer Engagement delivery, with strong focus on DevOps, ALM, release management, and automation. • Strong experience with Azure DevOps including repositories, branching strategies, build pipelines, release pipelines, YAML pipelines, approvals, gates, variable groups, service connections, and secure deployment practices. • Practical knowledge of Dynamics 365 CRM solution management, managed/unmanaged solutions, solution layering, dependency management, environment variables, connection references, and Dataverse environment administration. • Hands-on experience with Power Platform Build Tools, PAC CLI, PowerShell, Azure CLI, Git, and automation scripting for CRM and Power Platform deployments. • Good understanding of Dynamics 365 CRM customization and development components including plugins, workflows, custom APIs, JavaScript/TypeScript, PCF controls, and integration assets to support automated release planning. • Experience managing multiple CRM environments and supporting environment refreshes, backups, restores, configuration alignment, security setup, application users, and service principals. • Strong knowledge of Power Platform administration, Dataverse security model, connectors, environment strategy, DLP considerations, and application lifecycle management. • Experience integrating CRM deployment pipelines with Azure services such as Azure Functions, Logic Apps, Service Bus, Key Vault, App Services, Application Insights, and Azure Monitor. • Ability to troubleshoot deployment failures, solution import errors, dependency conflicts, pipeline execution issues, environment-specific configuration problems, and release incidents. • Solid understanding of DevSecOps principles, secure secrets management, privileged access controls, audit requirements, compliance checkpoints, and production release governance. • Prior experience working in Egypt or supporting Egypt-based enterprise/government clients is preferred; Arabic language capability is an advantage. Other Qualifications: • Microsoft certifications in Dynamics 365 Customer Engagement, Power Platform, Azure Administrator, Azure Developer, DevOps Engineer, or Solution Architect are preferred. • Experience with automated testing tools, regression automation, EasyRepro, Playwright, Selenium, or similar test automation frameworks for CRM and Power Platform solutions is an advantage. • Exposure to Agile/Scrum, SAFe, DevSecOps, release trains, change advisory boards, and enterprise release governance is a plus. • Knowledge of MEA market delivery requirements, Arabic/English bilingual delivery environments, data protection expectations, and public sector implementation practices is desirable. At DXC Technology, we believe strong connections and community are key to our success. Our work model prioritizes in-person collaboration while offering flexibility to support wellbeing, productivity, individual work styles, and life circumstances. We’re committed to fostering an inclusive environment where everyone can thrive. Recruitment fraud is a scheme in which fictitious job opportunities are offered to job seekers typically through online services, such as false websites, or through unsolicited emails claiming to be from the company. These emails may request recipients to provide personal information or to make payments as part of their illegitimate recruiting process. DXC does not make offers of employment via social media networks and DXC never asks for any money or payments from applicants at any point in the recruitment process, nor ask a job seeker to purchase IT or other equipment on our behalf. More information on employment scams is available here .",
-      "published_at": "2026-09-01T00:00:00Z",
-      "employment": "Full time",
-      "source": "Custom Careers",
-      "seniority": "",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.523745+00:00",
-      "apply_url": "https://careers.dxc.com/job/23785677/ms-dynamics-365-crm-devops-automation-specialist--eg/",
-      "link": "https://careers.dxc.com/job/23785677/ms-dynamics-365-crm-devops-automation-specialist--eg/",
-      "careers_url": "https://careers.dxc.com/?utm_source=chatgpt.com"
-    },
-    {
       "id": "custom-99a7f455cf821b0a024feaf7",
       "company": "DXC Technology",
       "title": "MS DYNAMICS 365 CRM - Senior Technical Consultant",
@@ -15247,6 +15221,32 @@
       "discovered_at": "2026-11-14T11:46:34.523705+00:00",
       "apply_url": "https://careers.dxc.com/job/23785270/ms-dynamics-365-crm-senior-technical-consultant--eg/",
       "link": "https://careers.dxc.com/job/23785270/ms-dynamics-365-crm-senior-technical-consultant--eg/",
+      "careers_url": "https://careers.dxc.com/?utm_source=chatgpt.com"
+    },
+    {
+      "id": "custom-24b8161c4d62c802b471837c",
+      "company": "DXC Technology",
+      "title": "MS DYNAMICS 365 CRM - DevOps & Automation Specialist",
+      "location": "Egypt",
+      "url": "https://careers.dxc.com/job/23785677/ms-dynamics-365-crm-devops-automation-specialist--eg/",
+      "description": "Job Description: Essential Job Functions: • Design, implement, and maintain CI/CD pipelines for Microsoft Dynamics 365 CRM, Dataverse, Power Platform, and related Azure components using Azure DevOps and Microsoft ALM best practices. • Manage CRM solution packaging, export/import automation, deployment validation, release branching, build definitions, release gates, and rollback procedures across development, test, UAT, staging, and production environments. • Automate administrative and operational tasks using PowerShell, Azure CLI, PAC CLI, Power Platform Build Tools, YAML pipelines, and reusable deployment scripts. • Support environment provisioning, configuration management, connection references, environment variables, service principals, application users, security roles, and managed identity setup. • Establish and enforce DevOps governance, release standards, source control practices, versioning strategy, deployment approvals, and auditability for CRM delivery teams. • Work with developers to integrate plugins, JavaScript/TypeScript components, PCF controls, Azure Functions, Logic Apps, and integration assets into automated build and deployment pipelines. • Implement quality checks, static code analysis, automated deployment verification, smoke testing support, dependency validation, and release readiness controls. • Monitor and troubleshoot pipeline failures, deployment issues, CRM solution conflicts, missing dependencies, environment configuration gaps, and production release incidents. • Maintain DevOps documentation including deployment guides, release calendars, runbooks, rollback plans, automation scripts, environment diagrams, and operational handover documents. • Drive continuous improvement by identifying opportunities to reduce manual effort, improve release reliability, enhance security controls, and accelerate CRM delivery timelines. Basic Qualifications: • 3+ years of hands-on experience in Microsoft Dynamics 365 CRM/Customer Engagement delivery, with strong focus on DevOps, ALM, release management, and automation. • Strong experience with Azure DevOps including repositories, branching strategies, build pipelines, release pipelines, YAML pipelines, approvals, gates, variable groups, service connections, and secure deployment practices. • Practical knowledge of Dynamics 365 CRM solution management, managed/unmanaged solutions, solution layering, dependency management, environment variables, connection references, and Dataverse environment administration. • Hands-on experience with Power Platform Build Tools, PAC CLI, PowerShell, Azure CLI, Git, and automation scripting for CRM and Power Platform deployments. • Good understanding of Dynamics 365 CRM customization and development components including plugins, workflows, custom APIs, JavaScript/TypeScript, PCF controls, and integration assets to support automated release planning. • Experience managing multiple CRM environments and supporting environment refreshes, backups, restores, configuration alignment, security setup, application users, and service principals. • Strong knowledge of Power Platform administration, Dataverse security model, connectors, environment strategy, DLP considerations, and application lifecycle management. • Experience integrating CRM deployment pipelines with Azure services such as Azure Functions, Logic Apps, Service Bus, Key Vault, App Services, Application Insights, and Azure Monitor. • Ability to troubleshoot deployment failures, solution import errors, dependency conflicts, pipeline execution issues, environment-specific configuration problems, and release incidents. • Solid understanding of DevSecOps principles, secure secrets management, privileged access controls, audit requirements, compliance checkpoints, and production release governance. • Prior experience working in Egypt or supporting Egypt-based enterprise/government clients is preferred; Arabic language capability is an advantage. Other Qualifications: • Microsoft certifications in Dynamics 365 Customer Engagement, Power Platform, Azure Administrator, Azure Developer, DevOps Engineer, or Solution Architect are preferred. • Experience with automated testing tools, regression automation, EasyRepro, Playwright, Selenium, or similar test automation frameworks for CRM and Power Platform solutions is an advantage. • Exposure to Agile/Scrum, SAFe, DevSecOps, release trains, change advisory boards, and enterprise release governance is a plus. • Knowledge of MEA market delivery requirements, Arabic/English bilingual delivery environments, data protection expectations, and public sector implementation practices is desirable. At DXC Technology, we believe strong connections and community are key to our success. Our work model prioritizes in-person collaboration while offering flexibility to support wellbeing, productivity, individual work styles, and life circumstances. We’re committed to fostering an inclusive environment where everyone can thrive. Recruitment fraud is a scheme in which fictitious job opportunities are offered to job seekers typically through online services, such as false websites, or through unsolicited emails claiming to be from the company. These emails may request recipients to provide personal information or to make payments as part of their illegitimate recruiting process. DXC does not make offers of employment via social media networks and DXC never asks for any money or payments from applicants at any point in the recruitment process, nor ask a job seeker to purchase IT or other equipment on our behalf. More information on employment scams is available here .",
+      "published_at": "2026-09-01T00:00:00Z",
+      "employment": "Full time",
+      "source": "Custom Careers",
+      "seniority": "",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.523745+00:00",
+      "apply_url": "https://careers.dxc.com/job/23785677/ms-dynamics-365-crm-devops-automation-specialist--eg/",
+      "link": "https://careers.dxc.com/job/23785677/ms-dynamics-365-crm-devops-automation-specialist--eg/",
       "careers_url": "https://careers.dxc.com/?utm_source=chatgpt.com"
     },
     {
@@ -18753,9 +18753,9 @@
       "url": "https://careers.4dxventures.com/companies/breadfast/jobs/100074407-payroll-specialist",
       "description": "Role Objectives: As a Payroll Specialist, you will be responsible for ensuring accurate and timely payroll processing, compliance with labor laws, and resolving payroll concerns internally; within the People & Culture department, while maintaining confidentiality. Roles & Responsibilities: Responsible for collecting all the needed data for the monthly payroll including overtime, incentives, loans, if any. Maintains payroll information by collecting, calculating, and entering data. Updates payroll records by entering changes in exemptions, insurance coverage, savings deductions, and job title and department/division transfers. Resolves payroll discrepancies by collecting and analyzing information. Ensure payroll records meets exact taxation and labor law compliance standards Maintains employee trust by keeping information confidential within the concerned stakeholders. Process and monitor all staffing changes including new hires, transfers, leavers and other amendments to salaries and employee data in compliance with policy and payroll requirements. Make all final settlements to all leavers and separate their payment in the payroll sheet. Handling bank accounts opening for new hires. REQUIRED EDUCATION, KNOWLEDGE, AND SKILLS: Bachelor’s Degree 2-3 years of solid Experience in payroll function. Proficiency in MS. Office is a must. Exceptional Communication Very good spoken and written English. Highly organized and detail-oriented High follow up skills",
       "published_at": "2026-11-17T16:46:33.562Z",
-      "employment": "['FULL_TIME']",
+      "employment": "",
       "source": "Custom Careers",
-      "source_detail_status": "official-jsonld-detail",
+      "source_detail_status": "retained-official-detail",
       "score": 0,
       "match_score": 0,
       "relevance_score": 0,
@@ -31263,11 +31263,11 @@
       "title": "Data Protection Officer - Risk Management - Cairo, Egypt",
       "location": "Cairo, EG, Egypt",
       "url": "https://careers.ey.com/ey/job/Cairo-Data-Protection-Officer-Risk-Management-Cairo%2C-Egypt/1455401533/",
-      "description": "EY's people in more than 150 countries are committed to operating with integrity, quality and professionalism in the provision of audit, tax and transaction advisory services. We strive to help all of our people achieve their professional and personal goals through an inclusive environment that values everyone's contributions, appreciates diversity of thought, fosters growth, and provides continuous opportunities for development. Recognized as one of MENA's top employers, EY continually strives to be a great place to work. The opportunity We are currently seeking an Egyptian National to take the role of Egyptian Data Protection Officer as required by Egyptian Personal Data Protection Law. The successful candidate would join our dynamic team of professionals within the Risk Management function to focus on the rapidly developing Egyptian data protection legal framework and ensure all our own expanding Egyptian member firm’s businesses are compliant. EY MENA’s Data Protection Team straddles our Risk Management and Legal Team and are responsible for the development, implementation and on-going monitoring of the firm’s data risk and regulatory compliance. As an integral part of the data protection team, this individual will be managing the Egyptian member firms’ data protection and become a technical subject matter expert in consulting with, and providing guidance to, our service line professionals. They will also support the wider regional team with their expertise across MENA’s developing and exciting data protection regulatory and confidentiality landscape. This individual will also serve as a role model by promoting and demonstrating our commitment to data protection, data privacy and risk management policies and processes within the organization. Your key responsibilities • Informing and advising us and our personnel with respect to our obligations under the Egyptian Personal Data Protection Law and other regional data protection provisions • Monitoring EY Egypt firm’s compliance with the Egyptian Personal Data Protection Law, the regulations of Ernst & Young Global Limited insofar as they relate to the protection of personal data and any other applicable policies in relation to the protection of personal data, including the assignment of responsibilities, awareness-raising and training of our staff, and conducting and/or arranging for internal audits as appropriate • Working and cooperating with our designated supervisory authority and serving as the contact point for the supervisory authority on issues relating to the processing of personal data • Being available to respond to inquiries from data subjects on issues relating to data protection practices and data subjects’ rights, including withdrawal of consent, the right to be forgotten, and related rights. • Develop and deliver personal data protection training courses and presentations • Assisting in the developing and monitoring of local procedures for personal data breach handling and being available as a first point of contact to assist with responding to any breaches of personal data, including  assessing whether the data breach must be notified to supervisory authorities and/or data subjects • Contribute to the development of data breach response plans and prepare periodic reports regarding EYactivities related to the processing of personal data • Keeping up-to-date your in-depth knowledge of the Egyptian Personal Data Protection Law (and any other future variants), including guidance issued by supervisory authorities and relevant legal decisions that may impact our processing of personal data. You are responsible for arranging through EY any necessary subsequent training required under the law • Notifying EY if you become aware of a conflict between your duties as Egyptian DPO and any additional tasks and duties you fulfil or if those additional tasks and duties • Lead on the completing and maintaining of ROPA (record of processing activities) for all EY Egypt businessoperations in line with retention policy • Following up on regulatory documents issued by the competent authority related to the protection ofpersonal data, including any amendments, and inform the relevant departments to ensure compliance • Providing support and advice to those responsible for developing and operating modern technological systems to ensure compliance with the requirements of the Egyptian Law and its Implementing Regulations • Provide direct support and advice to EY Egypt partners, briefing them of their responsibilities and ensuring they are compliant to their requirements as leaders of our Egypt member firm • Assist the EY MENA Region Data Protection team in the monitoring of data handling, client confidentiality, awareness campaigns and data breach response • Assist the EY MENA Region DPO and Data Privacy Team in conducting privacy assessments and reviews, andimplementation of data privacy regulations across the region. Cooperating with GCO and RM on relevant local, regional and global projects and initiatives • Assist with preparation for, and coordination of, practice inspections by external regulators and EY’s Global Internal Audit team; • Manage or participate in other risk management projects as required • Other duties as assigned. Skills and attributes for success • Strong analytical, critical thinking and problem-solving skills with the ability to apply conceptual framework tonew and unique situations • Excellent IT, business writing, communication and presentation skills • Ability to work in a busy, deadline driven environment and meet unexpected internal, regulatory or clientdemands • Can work independently, showing initiative to handle multiple tasks simultaneously • Honesty and integrity having not been convicted or involved in any dishonest incident or breach of trust • A high level of confidence in dealing and briefing senior executives and challenging situations To qualify for the role you must have • 3+ years of experience in a data protection, data privacy or a legal function with data protection experience • An academic degree, preferably in law, computer science, cyber security or a related field • Have appropriate credentials and experience in the field of Data Protection • Experience of operating in a large international or Egyptian business in risk management, data protection, internal compliance or legal function • Fluent, verbal and written, in English and Arabic What we look for Highly motivated individuals with excellent problem-solving skills and the ability to prioritize shifting workloads in a rapidly changing industry. An effective communicator, you’ll be a confident leader equipped with strong people management skills and a genuine passion to make things happen in a dynamic organization. What we offer We offer a competitive compensation package where you’ll be rewarded based on performance and recognized for the value you bring to our business. Plus, we offer: • Continuous learning: You’ll develop the mindset and skills to navigate whatever comes next. • Success as defined by you: We’ll provide the tools and flexibility, so you can make a meaningful impact, your way. • Transformative leadership: We’ll give you the insights, coaching and confidence to be the leader the world needs. • Diverse and inclusive culture: You’ll be embraced for who you are and empowered to use your voice to help others find theirs. If you can demonstrate that you meet the criteria above, please contact us as soon as possible. The exceptional EY experience. It’s yours to build. EY | Building a better working world EY exists to build a better working world, helping to create long-term value for clients, people and society and build trust in the capital markets. Enabled by data and technology, diverse EY teams in over 150 countries provide trust through assurance and help clients grow, transform and operate. Working across assurance, consulting, law, strategy, tax and transactions, EY teams ask better questions to find new answers for the complex issues facing our world today.",
+      "description": "",
       "published_at": "",
       "employment": "",
       "source": "Custom Careers",
-      "source_detail_status": "official-job-section",
+      "source_detail_status": "official-detail-unavailable",
       "score": 0,
       "match_score": 0,
       "relevance_score": 0,
@@ -31289,11 +31289,11 @@
       "title": "EY Cairo TAX GCR Senior Consultant",
       "location": "Cairo, EG, Egypt",
       "url": "https://careers.ey.com/ey/job/Cairo-EY-Cairo-TAX-GCR-Senior-Consultant/1437159133/",
-      "description": "MENA Tax - Global Compliance & Reporting, Senior Consultant At EY, we’re all in to shape your future with confidence. We’ll help you succeed in a globally connected powerhouse of diverse teams and take your career wherever you want it to go. Join EY and help build a better working world. The opportunity EY is seeking a Senior Consultant to join our GCR team, where you will lead complex engagements and play a key role in driving the growth of our GCR practice. Your key responsibilities You will combine strong technical skills with practical commercial, legislative, and industry knowledge to lead a team in providing tax services. You will be responsible for managing our clients’ compliance and reporting needs. You will establish, maintain, and strengthen valued internal and external relationships and ensure that the services delivered to clients are of the highest quality. You will be responsible for the day-to-day management of client engagements, monitor progress and deliverables, put in place the necessary standardized processes, anticipate and identify risks, escalate issues as appropriate, and drive performance-improvement solutions. You will supervise high-performing teams and build a positive learning culture, coaching and counseling junior team members to help them develop. You will also be responsible for ensuring adherence to our Tax Quality guidelines. Skills and attributes for success If you are an excellent communicator and detail-oriented professional with a strong track record of management experience and who is comfortable working across borders with a wide network of people and with large amounts of data, you will be perfect for the role. Qualification and Experience A bachelor's degree with strong academic credentials in accounting, business, finance, taxation, or any related essential fields. MBA, master’s or another related advanced degree and/or professional qualifications e.g. CA, CPA, ACCA, CTA, ADIT, or equivalent qualification. A very strong knowledge and minimum of 3 years of experience in domestic and international tax rules/regulations, developments, etc., ideally within a large professional services company or similar environment. A very strong background in tax accounting and tax auditing, ideally within a large professional services company or similar environment. A strong track record of managerial, organizational, and project management experience. Ideally, you will also Have experience of dealing with multinational clients and the ability to work in a multi-cultural environment. In-depth commercial, legislative, and industry knowledge. What we look for Highly motivated individuals with excellent problem-solving skills and the ability to prioritize shifting workloads in a rapidly changing industry. An effective communicator, you’ll be a confident team player that collaborates with people from various teams while looking to develop your career in a dynamic organization. What we offer you At EY, we’ll develop you with future-focused skills and equip you with world-class experiences. We’ll empower you in a flexible environment, and fuel you and your extraordinary talents in a diverse and inclusive culture of globally connected teams. Learn more. Are you ready to shape your future with confidence? Apply today.",
+      "description": "",
       "published_at": "",
       "employment": "",
       "source": "Custom Careers",
-      "source_detail_status": "official-job-section",
+      "source_detail_status": "official-detail-unavailable",
       "score": 0,
       "match_score": 0,
       "relevance_score": 0,
@@ -37654,7 +37654,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 21
       },
-      "checked_at": "2026-11-17T20:51:44.451140+00:00"
+      "checked_at": "2026-11-17T20:56:55.153945+00:00"
     },
     {
       "name": "Bosta",
@@ -37669,7 +37669,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 70,
         "Excluded: job location is not explicitly in Egypt": 10
       },
-      "checked_at": "2026-11-17T20:51:44.496056+00:00"
+      "checked_at": "2026-11-17T20:56:55.190314+00:00"
     },
     {
       "name": "Thndr",
@@ -37685,7 +37685,7 @@
         "Excluded: job location is not explicitly in Egypt": 7,
         "Excluded: explicit senior title": 3
       },
-      "checked_at": "2026-11-17T20:51:44.500514+00:00"
+      "checked_at": "2026-11-17T20:56:55.193601+00:00"
     },
     {
       "name": "Klivvr",
@@ -37699,7 +37699,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 10
       },
-      "checked_at": "2026-11-17T20:51:44.501654+00:00"
+      "checked_at": "2026-11-17T20:56:55.194439+00:00"
     },
     {
       "name": "Emergence",
@@ -37714,7 +37714,7 @@
         "Excluded: job location is not explicitly in Egypt": 7,
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 1
       },
-      "checked_at": "2026-11-17T20:51:44.502487+00:00"
+      "checked_at": "2026-11-17T20:56:55.195051+00:00"
     },
     {
       "name": "Lean Technologies",
@@ -37728,7 +37728,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 8
       },
-      "checked_at": "2026-11-17T20:51:44.503488+00:00"
+      "checked_at": "2026-11-17T20:56:55.195774+00:00"
     },
     {
       "name": "Chatbase",
@@ -37743,7 +37743,7 @@
         "Excluded: job location is not explicitly in Egypt": 12,
         "Uncertain: early-career level not confirmed by source": 1
       },
-      "checked_at": "2026-11-17T20:51:44.505328+00:00"
+      "checked_at": "2026-11-17T20:56:55.197173+00:00"
     },
     {
       "name": "Lua Global",
@@ -37755,7 +37755,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-17T20:51:44.506489+00:00"
+      "checked_at": "2026-11-17T20:56:55.198061+00:00"
     },
     {
       "name": "IBM",
@@ -37770,7 +37770,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 5,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-17T20:51:44.507838+00:00"
+      "checked_at": "2026-11-17T20:56:55.199140+00:00"
     },
     {
       "name": "Schneider Electric",
@@ -37786,7 +37786,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 3
       },
-      "checked_at": "2026-11-17T20:51:44.511809+00:00"
+      "checked_at": "2026-11-17T20:56:55.202233+00:00"
     },
     {
       "name": "Ericsson",
@@ -37800,7 +37800,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 17
       },
-      "checked_at": "2026-11-17T20:51:44.514900+00:00"
+      "checked_at": "2026-11-17T20:56:55.204649+00:00"
     },
     {
       "name": "Capgemini Egypt",
@@ -37816,7 +37816,7 @@
         "Excluded: explicit senior title": 4,
         "Excluded: ATS explicitly labels career level as senior": 3
       },
-      "checked_at": "2026-11-17T20:51:44.526888+00:00"
+      "checked_at": "2026-11-17T20:56:55.214206+00:00"
     },
     {
       "name": "DXC Technology",
@@ -37832,7 +37832,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-17T20:51:44.540495+00:00"
+      "checked_at": "2026-11-17T20:56:55.224966+00:00"
     },
     {
       "name": "Luxoft Egypt",
@@ -37847,7 +37847,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 19,
         "Uncertain: early-career level not confirmed by source": 1
       },
-      "checked_at": "2026-11-17T20:51:44.543809+00:00"
+      "checked_at": "2026-11-17T20:56:55.227485+00:00"
     },
     {
       "name": "Nokia",
@@ -37859,7 +37859,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-17T20:51:44.544682+00:00"
+      "checked_at": "2026-11-17T20:56:55.228142+00:00"
     },
     {
       "name": "SAP",
@@ -37873,7 +37873,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3
       },
-      "checked_at": "2026-11-17T20:51:44.544835+00:00"
+      "checked_at": "2026-11-17T20:56:55.228258+00:00"
     },
     {
       "name": "Orange Egypt",
@@ -37887,7 +37887,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 11
       },
-      "checked_at": "2026-11-17T20:51:44.545452+00:00"
+      "checked_at": "2026-11-17T20:56:55.228723+00:00"
     },
     {
       "name": "e& / Etisalat",
@@ -37901,7 +37901,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 25
       },
-      "checked_at": "2026-11-17T20:51:44.547184+00:00"
+      "checked_at": "2026-11-17T20:56:55.230030+00:00"
     },
     {
       "name": "Telecom Egypt (WE)",
@@ -37913,7 +37913,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-17T20:51:44.548329+00:00"
+      "checked_at": "2026-11-17T20:56:55.231141+00:00"
     },
     {
       "name": "Paymob",
@@ -37927,7 +37927,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 66
       },
-      "checked_at": "2026-11-17T20:51:44.552331+00:00"
+      "checked_at": "2026-11-17T20:56:55.234197+00:00"
     },
     {
       "name": "Breadfast",
@@ -37941,7 +37941,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 14
       },
-      "checked_at": "2026-11-17T20:51:44.556588+00:00"
+      "checked_at": "2026-11-17T20:56:55.237312+00:00"
     },
     {
       "name": "ITWorx",
@@ -37956,7 +37956,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 2,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-17T20:51:44.557184+00:00"
+      "checked_at": "2026-11-17T20:56:55.237749+00:00"
     },
     {
       "name": "Sumerge",
@@ -37971,7 +37971,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 5,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-17T20:51:44.559384+00:00"
+      "checked_at": "2026-11-17T20:56:55.239642+00:00"
     },
     {
       "name": "Luciq (formerly Instabug)",
@@ -37985,7 +37985,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 2
       },
-      "checked_at": "2026-11-17T20:51:44.561515+00:00"
+      "checked_at": "2026-11-17T20:56:55.241419+00:00"
     },
     {
       "name": "Breadfast Technology",
@@ -37999,23 +37999,19 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3
       },
-      "checked_at": "2026-11-17T20:51:44.561744+00:00"
+      "checked_at": "2026-11-17T20:56:55.241583+00:00"
     },
     {
       "name": "Link Development",
       "url": "https://linkdevelopment.com/careers/opportunities/?utm_source=chatgpt.com",
-      "status": "monitoring",
-      "message": "18 jobs parsed from linkdevelopment",
-      "parsed_jobs": 18,
+      "status": "access_blocked",
+      "message": "Careers website returned HTTP 403",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "public_jobs": 18,
-      "excluded_jobs": 18,
-      "exclusion_reasons": {
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 16,
-        "Excluded: explicit senior title": 1,
-        "Uncertain: early-career level not confirmed by source": 1
-      },
-      "checked_at": "2026-11-17T20:51:44.562602+00:00"
+      "public_jobs": 0,
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-17T20:56:55.241683+00:00"
     },
     {
       "name": "Fawry",
@@ -38029,7 +38025,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 4
       },
-      "checked_at": "2026-11-17T20:51:44.563533+00:00"
+      "checked_at": "2026-11-17T20:56:55.242232+00:00"
     },
     {
       "name": "Siemens",
@@ -38044,7 +38040,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 15,
         "Uncertain: early-career level not confirmed by source": 7
       },
-      "checked_at": "2026-11-17T20:51:44.568132+00:00"
+      "checked_at": "2026-11-17T20:56:55.245877+00:00"
     },
     {
       "name": "Deloitte",
@@ -38059,7 +38055,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 43,
         "Excluded: explicit senior title": 6
       },
-      "checked_at": "2026-11-17T20:51:44.575779+00:00"
+      "checked_at": "2026-11-17T20:56:55.251883+00:00"
     },
     {
       "name": "BlackStone eIT",
@@ -38075,7 +38071,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 5,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-17T20:51:44.579321+00:00"
+      "checked_at": "2026-11-17T20:56:55.254506+00:00"
     },
     {
       "name": "Lamdax",
@@ -38090,7 +38086,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-17T20:51:44.583523+00:00"
+      "checked_at": "2026-11-17T20:56:55.257944+00:00"
     },
     {
       "name": "Yassir",
@@ -38107,7 +38103,7 @@
         "Uncertain: early-career level not confirmed by source": 2,
         "Excluded: explicit senior title": 19
       },
-      "checked_at": "2026-11-17T20:51:44.594753+00:00"
+      "checked_at": "2026-11-17T20:56:55.266578+00:00"
     },
     {
       "name": "Integrant",
@@ -38122,7 +38118,7 @@
         "Excluded: explicit senior title": 7,
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 12
       },
-      "checked_at": "2026-11-17T20:51:44.602378+00:00"
+      "checked_at": "2026-11-17T20:56:55.272381+00:00"
     },
     {
       "name": "inDrive",
@@ -38138,7 +38134,7 @@
         "Uncertain: early-career level not confirmed by source": 2,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-17T20:51:44.603385+00:00"
+      "checked_at": "2026-11-17T20:56:55.273157+00:00"
     },
     {
       "name": "robusta / RTG",
@@ -38154,7 +38150,7 @@
         "Uncertain: early-career level not confirmed by source": 2,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-17T20:51:44.604887+00:00"
+      "checked_at": "2026-11-17T20:56:55.274330+00:00"
     },
     {
       "name": "Incorta",
@@ -38170,7 +38166,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-17T20:51:44.606782+00:00"
+      "checked_at": "2026-11-17T20:56:55.275830+00:00"
     },
     {
       "name": "SOUM",
@@ -38186,19 +38182,23 @@
         "Excluded: job location is not explicitly in Egypt": 18,
         "Uncertain: early-career level not confirmed by source": 1
       },
-      "checked_at": "2026-11-17T20:51:44.609196+00:00"
+      "checked_at": "2026-11-17T20:56:55.277595+00:00"
     },
     {
       "name": "econstruct",
       "url": "https://jobs.lever.co/econstruct",
-      "status": "error",
-      "message": "The read operation timed out",
-      "parsed_jobs": 0,
+      "status": "monitoring",
+      "message": "20 jobs parsed from lever",
+      "parsed_jobs": 20,
       "matched_jobs": 0,
-      "public_jobs": 0,
-      "excluded_jobs": 0,
-      "exclusion_reasons": {},
-      "checked_at": "2026-11-17T20:51:44.610757+00:00"
+      "public_jobs": 20,
+      "excluded_jobs": 20,
+      "exclusion_reasons": {
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 8,
+        "Excluded: job location is not explicitly in Egypt": 11,
+        "Excluded: explicit senior title": 1
+      },
+      "checked_at": "2026-11-17T20:56:55.280794+00:00"
     },
     {
       "name": "PetroApp",
@@ -38212,7 +38212,7 @@
       "exclusion_reasons": {
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-17T20:51:44.611060+00:00"
+      "checked_at": "2026-11-17T20:56:55.282791+00:00"
     },
     {
       "name": "SSC HR Solutions",
@@ -38230,7 +38230,7 @@
         "Excluded: explicit minimum experience exceeds 2 years": 1,
         "Excluded: explicit senior title": 9
       },
-      "checked_at": "2026-11-17T20:51:44.616233+00:00"
+      "checked_at": "2026-11-17T20:56:55.285947+00:00"
     },
     {
       "name": "Mondia Group",
@@ -38245,7 +38245,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-17T20:51:44.620503+00:00"
+      "checked_at": "2026-11-17T20:56:55.289327+00:00"
     },
     {
       "name": "mylo by B.TECH",
@@ -38261,7 +38261,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 2,
         "Excluded: explicit senior title": 3
       },
-      "checked_at": "2026-11-17T20:51:44.621065+00:00"
+      "checked_at": "2026-11-17T20:56:55.289750+00:00"
     },
     {
       "name": "Infomineo",
@@ -38275,7 +38275,7 @@
       "exclusion_reasons": {
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-17T20:51:44.626454+00:00"
+      "checked_at": "2026-11-17T20:56:55.294150+00:00"
     },
     {
       "name": "ArpuPlus",
@@ -38290,7 +38290,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 2,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-17T20:51:44.631795+00:00"
+      "checked_at": "2026-11-17T20:56:55.298523+00:00"
     },
     {
       "name": "Madar",
@@ -38304,7 +38304,7 @@
       "exclusion_reasons": {
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-17T20:51:44.631965+00:00"
+      "checked_at": "2026-11-17T20:56:55.298651+00:00"
     },
     {
       "name": "EY Egypt",
@@ -38319,7 +38319,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 19,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-17T20:51:44.633191+00:00"
+      "checked_at": "2026-11-17T20:56:55.299580+00:00"
     },
     {
       "name": "PwC Egypt",
@@ -38331,7 +38331,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-17T20:51:44.634273+00:00"
+      "checked_at": "2026-11-17T20:56:55.300431+00:00"
     },
     {
       "name": "Blink22",
@@ -38345,7 +38345,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 16
       },
-      "checked_at": "2026-11-17T20:51:44.634716+00:00"
+      "checked_at": "2026-11-17T20:56:55.300941+00:00"
     },
     {
       "name": "Amazon Egypt",
@@ -38360,7 +38360,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 85,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-17T20:51:44.642961+00:00"
+      "checked_at": "2026-11-17T20:56:55.307229+00:00"
     },
     {
       "name": "AWS Egypt",
@@ -38372,7 +38372,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-17T20:51:44.650487+00:00"
+      "checked_at": "2026-11-17T20:56:55.313187+00:00"
     },
     {
       "name": "Talabat Egypt",
@@ -38387,7 +38387,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 39,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-17T20:51:44.651936+00:00"
+      "checked_at": "2026-11-17T20:56:55.314257+00:00"
     },
     {
       "name": "Uber Egypt",
@@ -38399,7 +38399,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-17T20:51:44.653168+00:00"
+      "checked_at": "2026-11-17T20:56:55.315174+00:00"
     },
     {
       "name": "Teleperformance Egypt",
@@ -38413,7 +38413,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 4
       },
-      "checked_at": "2026-11-17T20:51:44.653298+00:00"
+      "checked_at": "2026-11-17T20:56:55.315269+00:00"
     },
     {
       "name": "Finaira",
@@ -38427,7 +38427,7 @@
       "exclusion_reasons": {
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-17T20:51:44.653443+00:00"
+      "checked_at": "2026-11-17T20:56:55.315379+00:00"
     },
     {
       "name": "CIB Egypt",
@@ -38442,7 +38442,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 22,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-17T20:51:44.654473+00:00"
+      "checked_at": "2026-11-17T20:56:55.316142+00:00"
     },
     {
       "name": "Konecta Egypt",
@@ -38456,7 +38456,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 39
       },
-      "checked_at": "2026-11-17T20:51:44.657531+00:00"
+      "checked_at": "2026-11-17T20:56:55.318567+00:00"
     },
     {
       "name": "ADCB Egypt",
@@ -38470,7 +38470,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 7
       },
-      "checked_at": "2026-11-17T20:51:44.659870+00:00"
+      "checked_at": "2026-11-17T20:56:55.320226+00:00"
     },
     {
       "name": "Fab Minds Egypt",
@@ -38484,7 +38484,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3
       },
-      "checked_at": "2026-11-17T20:51:44.660197+00:00"
+      "checked_at": "2026-11-17T20:56:55.320483+00:00"
     }
   ]
 }
