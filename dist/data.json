@@ -1,6 +1,6 @@
 {
   "mode": "snapshot",
-  "generated_at": "2026-11-19T00:51:34.090015+00:00",
+  "generated_at": "2026-11-19T00:56:39.886292+00:00",
   "sources": [
     {
       "id": 1,
@@ -4633,6 +4633,33 @@
       "careers_url": "https://jobs.vodafone.com/careers?domain=vodafone.com&start=0&location=Egypt&pid=563018698305416&sort_by=match&filter_include_remote=1&filter_include_relocation=0&filter_seniority=1%2C0"
     },
     {
+      "id": "custom-vois-563018698349029",
+      "company": "VOIS",
+      "title": "Facilities Specialist - VOIS",
+      "location": "Alexandria, Egypt",
+      "url": "https://jobs.vodafone.com/careers/job/563018698349029",
+      "description": "",
+      "published_at": "2026-11-10",
+      "employment": "",
+      "source": "Custom Careers",
+      "source_detail_status": "not-fetched",
+      "external_id": "292559",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.504987+00:00",
+      "apply_url": "https://jobs.vodafone.com/careers/job/563018698349029",
+      "link": "https://jobs.vodafone.com/careers/job/563018698349029",
+      "careers_url": "https://jobs.vodafone.com/careers?domain=vodafone.com&start=0&location=Egypt&pid=563018698305416&sort_by=match&filter_include_remote=1&filter_include_relocation=0&filter_seniority=1%2C0"
+    },
+    {
       "id": "custom-vois-563018698416981",
       "company": "VOIS",
       "title": "Senior Pricing Specialist-VOIS",
@@ -4684,33 +4711,6 @@
       "discovered_at": "2026-11-18T12:07:00.626610+00:00",
       "apply_url": "https://jobs.vodafone.com/careers/job/563018698419805",
       "link": "https://jobs.vodafone.com/careers/job/563018698419805",
-      "careers_url": "https://jobs.vodafone.com/careers?domain=vodafone.com&start=0&location=Egypt&pid=563018698305416&sort_by=match&filter_include_remote=1&filter_include_relocation=0&filter_seniority=1%2C0"
-    },
-    {
-      "id": "custom-vois-563018698349029",
-      "company": "VOIS",
-      "title": "Facilities Specialist - VOIS",
-      "location": "Alexandria, Egypt",
-      "url": "https://jobs.vodafone.com/careers/job/563018698349029",
-      "description": "",
-      "published_at": "2026-11-10",
-      "employment": "",
-      "source": "Custom Careers",
-      "source_detail_status": "not-fetched",
-      "external_id": "292559",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.504987+00:00",
-      "apply_url": "https://jobs.vodafone.com/careers/job/563018698349029",
-      "link": "https://jobs.vodafone.com/careers/job/563018698349029",
       "careers_url": "https://jobs.vodafone.com/careers?domain=vodafone.com&start=0&location=Egypt&pid=563018698305416&sort_by=match&filter_include_remote=1&filter_include_relocation=0&filter_seniority=1%2C0"
     },
     {
@@ -9648,33 +9648,6 @@
       "careers_url": "https://www.ibm.com/careers/search?"
     },
     {
-      "id": "custom-ibm-140861",
-      "company": "IBM",
-      "title": "Data Engineer-Data Integration",
-      "location": "Giza, EG",
-      "url": "https://careers.ibm.com/careers/JobDetail?jobId=140861",
-      "description": "A career in IBM Consulting is built on long-term client relationships and close collaboration worldwide. You'll work with leading companies across industries, helping them shape their hybrid cloud and AI journeys. With support from our strategic...",
-      "published_at": "",
-      "employment": "",
-      "source": "Custom Careers",
-      "seniority": "Professional",
-      "category": "Data & Analytics",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.513754+00:00",
-      "apply_url": "https://careers.ibm.com/careers/JobDetail?jobId=140861",
-      "link": "https://careers.ibm.com/careers/JobDetail?jobId=140861",
-      "careers_url": "https://www.ibm.com/careers/search?"
-    },
-    {
       "id": "custom-ibm-140847",
       "company": "IBM",
       "title": "Data Engineer-Data Integration",
@@ -9702,11 +9675,11 @@
       "careers_url": "https://www.ibm.com/careers/search?"
     },
     {
-      "id": "custom-ibm-140850",
+      "id": "custom-ibm-140861",
       "company": "IBM",
       "title": "Data Engineer-Data Integration",
       "location": "Giza, EG",
-      "url": "https://careers.ibm.com/careers/JobDetail?jobId=140850",
+      "url": "https://careers.ibm.com/careers/JobDetail?jobId=140861",
       "description": "A career in IBM Consulting is built on long-term client relationships and close collaboration worldwide. You'll work with leading companies across industries, helping them shape their hybrid cloud and AI journeys. With support from our strategic...",
       "published_at": "",
       "employment": "",
@@ -9723,9 +9696,9 @@
       "match_reasons": [
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
       ],
-      "discovered_at": "2026-11-14T11:46:34.513788+00:00",
-      "apply_url": "https://careers.ibm.com/careers/JobDetail?jobId=140850",
-      "link": "https://careers.ibm.com/careers/JobDetail?jobId=140850",
+      "discovered_at": "2026-11-14T11:46:34.513754+00:00",
+      "apply_url": "https://careers.ibm.com/careers/JobDetail?jobId=140861",
+      "link": "https://careers.ibm.com/careers/JobDetail?jobId=140861",
       "careers_url": "https://www.ibm.com/careers/search?"
     },
     {
@@ -9784,6 +9757,33 @@
       "discovered_at": "2026-11-14T11:46:34.513834+00:00",
       "apply_url": "https://careers.ibm.com/careers/JobDetail?jobId=140852",
       "link": "https://careers.ibm.com/careers/JobDetail?jobId=140852",
+      "careers_url": "https://www.ibm.com/careers/search?"
+    },
+    {
+      "id": "custom-ibm-140850",
+      "company": "IBM",
+      "title": "Data Engineer-Data Integration",
+      "location": "Giza, EG",
+      "url": "https://careers.ibm.com/careers/JobDetail?jobId=140850",
+      "description": "A career in IBM Consulting is built on long-term client relationships and close collaboration worldwide. You'll work with leading companies across industries, helping them shape their hybrid cloud and AI journeys. With support from our strategic...",
+      "published_at": "",
+      "employment": "",
+      "source": "Custom Careers",
+      "seniority": "Professional",
+      "category": "Data & Analytics",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.513788+00:00",
+      "apply_url": "https://careers.ibm.com/careers/JobDetail?jobId=140850",
+      "link": "https://careers.ibm.com/careers/JobDetail?jobId=140850",
       "careers_url": "https://www.ibm.com/careers/search?"
     },
     {
@@ -13362,33 +13362,6 @@
       "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
     },
     {
-      "id": "custom-88110a8705f06f95e65446a1",
-      "company": "Capgemini Egypt",
-      "title": "Senior Data Scientist - AI & ML Engineer",
-      "location": "Cairo, Egypt",
-      "url": "https://careers.capgemini.com/job/Cairo-Senior-Data-Scientist-AI-&-ML-Engineer/1376895633/",
-      "description": "About CapgeminiCapgemini is a global business and technology transformation partner, helping organizations to accelerate their dual transition to a digital and sustainable world, while creating tangible impact for enterprises and society. It is a responsible and diverse group of 340,000 team members in more than 50 countries. With its strong over 55-year heritage, Capgemini is trusted by its clients to unlock the value of technology to address the entire breadth of their business needs. It delivers end-to-end services and solutions leveraging strengths from strategy and design to engineering, all fueled by its market leading capabilities in AI, generative AI, cloud and data, combined with its deep industry expertise and partner ecosystem. The Group reported 2024 global revenues of €22.1 billion. Job Description: Design and implement Agentic AI solutions and applications.Lead the end-to-end lifecycle of machine learning and data science delivery engagements, from data ingestion and feature engineering to model training, evaluation, and deployment.Monitor model performance and implement retraining strategies to ensure long-term accuracy and relevance.Architect and optimize scalable data pipelines and cloud-based infrastructures (Azure, AWS, GCP) to support ML workloads.Collaborate with data engineers to ensure robust data preprocessing, transformation, and storage strategies.Develop and maintain CI/CD pipelines tailored for ML workflows, including automated testing, model versioning, and deployment.Integrate monitoring and alerting systems to track model drift, data quality, and system performance.Work closely with cross-functional teams including data scientists, product managers, and business stakeholders to translate business needs into technical solutions.Mentor junior engineers and contribute to knowledge sharing and best practices across the team. Job Requirements: 6-10 years of experience working with complex datasets and solving real-world business problems using AIProven track record of deploying and maintaining ML models in production environments and delivering AI solution architecture.Strong proficiency in Python, data science and machine learning libraries (e.g., scikit-learn, TensorFlow, PyTorch) and agentic application development libraries (e.g. LangChain, LangGraph).Strong command of SQL and experience with large-scale data processing tools (e.g., Spark, Pandas).Deep understanding of cloud platforms (Azure, AWS, GCP) and their ML services.Skilled in MLOps practices including CI/CD, containerization (e.g. Docker), and orchestration (Kubernetes).Strong command of Git and collaborative development workflows.Excellent written and verbal communication skills, capable of conveying complex concepts to a variety of audiences.Fluent in Arabic & English, both spoken and written (German is a plus!)Able to listen to and understand customer needs and articulate them as technical requirements to the team.Strong problem-solving abilities and attention to detail.Strategic thinking with the ability to align data science initiatives with business objectives.Strong leadership and team management skills with the ability to inspire and motivate.Ability to work collaboratively in a team environment.Self-motivated with a strong growth mindset.",
-      "published_at": "",
-      "employment": "Permanent",
-      "source": "Custom Careers",
-      "seniority": "Experienced Professionals",
-      "department": "",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: explicit senior title"
-      ],
-      "match_reasons": [
-        "Excluded: explicit senior title"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.521265+00:00",
-      "apply_url": "https://careers.capgemini.com/job/Cairo-Senior-Data-Scientist-AI-&-ML-Engineer/1376895633/",
-      "link": "https://careers.capgemini.com/job/Cairo-Senior-Data-Scientist-AI-&-ML-Engineer/1376895633/",
-      "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
-    },
-    {
       "id": "custom-f86127b22f0d05e519e87530",
       "company": "Capgemini Egypt",
       "title": "Global Buyer - Facility - French Speaker",
@@ -13413,6 +13386,33 @@
       "discovered_at": "2026-11-14T11:46:34.521297+00:00",
       "apply_url": "https://careers.capgemini.com/job/Cairo-Global-Buyer-Facility-French-Speaker/1440827833/",
       "link": "https://careers.capgemini.com/job/Cairo-Global-Buyer-Facility-French-Speaker/1440827833/",
+      "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
+    },
+    {
+      "id": "custom-88110a8705f06f95e65446a1",
+      "company": "Capgemini Egypt",
+      "title": "Senior Data Scientist - AI & ML Engineer",
+      "location": "Cairo, Egypt",
+      "url": "https://careers.capgemini.com/job/Cairo-Senior-Data-Scientist-AI-&-ML-Engineer/1376895633/",
+      "description": "About CapgeminiCapgemini is a global business and technology transformation partner, helping organizations to accelerate their dual transition to a digital and sustainable world, while creating tangible impact for enterprises and society. It is a responsible and diverse group of 340,000 team members in more than 50 countries. With its strong over 55-year heritage, Capgemini is trusted by its clients to unlock the value of technology to address the entire breadth of their business needs. It delivers end-to-end services and solutions leveraging strengths from strategy and design to engineering, all fueled by its market leading capabilities in AI, generative AI, cloud and data, combined with its deep industry expertise and partner ecosystem. The Group reported 2024 global revenues of €22.1 billion. Job Description: Design and implement Agentic AI solutions and applications.Lead the end-to-end lifecycle of machine learning and data science delivery engagements, from data ingestion and feature engineering to model training, evaluation, and deployment.Monitor model performance and implement retraining strategies to ensure long-term accuracy and relevance.Architect and optimize scalable data pipelines and cloud-based infrastructures (Azure, AWS, GCP) to support ML workloads.Collaborate with data engineers to ensure robust data preprocessing, transformation, and storage strategies.Develop and maintain CI/CD pipelines tailored for ML workflows, including automated testing, model versioning, and deployment.Integrate monitoring and alerting systems to track model drift, data quality, and system performance.Work closely with cross-functional teams including data scientists, product managers, and business stakeholders to translate business needs into technical solutions.Mentor junior engineers and contribute to knowledge sharing and best practices across the team. Job Requirements: 6-10 years of experience working with complex datasets and solving real-world business problems using AIProven track record of deploying and maintaining ML models in production environments and delivering AI solution architecture.Strong proficiency in Python, data science and machine learning libraries (e.g., scikit-learn, TensorFlow, PyTorch) and agentic application development libraries (e.g. LangChain, LangGraph).Strong command of SQL and experience with large-scale data processing tools (e.g., Spark, Pandas).Deep understanding of cloud platforms (Azure, AWS, GCP) and their ML services.Skilled in MLOps practices including CI/CD, containerization (e.g. Docker), and orchestration (Kubernetes).Strong command of Git and collaborative development workflows.Excellent written and verbal communication skills, capable of conveying complex concepts to a variety of audiences.Fluent in Arabic & English, both spoken and written (German is a plus!)Able to listen to and understand customer needs and articulate them as technical requirements to the team.Strong problem-solving abilities and attention to detail.Strategic thinking with the ability to align data science initiatives with business objectives.Strong leadership and team management skills with the ability to inspire and motivate.Ability to work collaboratively in a team environment.Self-motivated with a strong growth mindset.",
+      "published_at": "",
+      "employment": "Permanent",
+      "source": "Custom Careers",
+      "seniority": "Experienced Professionals",
+      "department": "",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: explicit senior title"
+      ],
+      "match_reasons": [
+        "Excluded: explicit senior title"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.521265+00:00",
+      "apply_url": "https://careers.capgemini.com/job/Cairo-Senior-Data-Scientist-AI-&-ML-Engineer/1376895633/",
+      "link": "https://careers.capgemini.com/job/Cairo-Senior-Data-Scientist-AI-&-ML-Engineer/1376895633/",
       "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
     },
     {
@@ -15982,33 +15982,6 @@
       "careers_url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com"
     },
     {
-      "id": "custom-orange-MNT-W339V75W",
-      "company": "Orange Egypt",
-      "title": "Call Center Representative - Assiut",
-      "location": "ASSIUT GOVERNORATE, Egypt",
-      "url": "https://www.careers-page.com/orange-eg/job/W339V75W/apply",
-      "description": "",
-      "published_at": "2026-11-19T00:10:42.000+0000",
-      "employment": "Regular",
-      "source": "Custom Careers",
-      "seniority": "Full-time",
-      "source_detail_status": "official-detail-unavailable",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.525030+00:00",
-      "apply_url": "https://www.careers-page.com/orange-eg/job/W339V75W/apply",
-      "link": "https://www.careers-page.com/orange-eg/job/W339V75W/apply",
-      "careers_url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com"
-    },
-    {
       "id": "custom-orange-MNT-V6YXVX9R",
       "company": "Orange Egypt",
       "title": "Engineer Radio Capacity F/H",
@@ -16036,11 +16009,11 @@
       "careers_url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com"
     },
     {
-      "id": "custom-orange-MNT-L67YY7R5",
+      "id": "custom-orange-MNT-V66XVV86",
       "company": "Orange Egypt",
-      "title": "Representative, Call Center - Enterprise",
-      "location": "CAIRO, Egypt",
-      "url": "https://www.careers-page.com/orange-eg/job/L67YY7R5/apply",
+      "title": "Telemarketing Agent",
+      "location": "6TH OF OCTOBER CITY, Egypt",
+      "url": "https://www.careers-page.com/orange-eg/job/V66XVV86/apply",
       "description": "",
       "published_at": "2026-11-19T00:10:42.000+0000",
       "employment": "Regular",
@@ -16057,9 +16030,9 @@
       "match_reasons": [
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
       ],
-      "discovered_at": "2026-11-14T11:46:34.524997+00:00",
-      "apply_url": "https://www.careers-page.com/orange-eg/job/L67YY7R5/apply",
-      "link": "https://www.careers-page.com/orange-eg/job/L67YY7R5/apply",
+      "discovered_at": "2026-11-14T11:46:34.524962+00:00",
+      "apply_url": "https://www.careers-page.com/orange-eg/job/V66XVV86/apply",
+      "link": "https://www.careers-page.com/orange-eg/job/V66XVV86/apply",
       "careers_url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com"
     },
     {
@@ -16144,11 +16117,11 @@
       "careers_url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com"
     },
     {
-      "id": "custom-orange-MNT-V66XVV86",
+      "id": "custom-orange-MNT-W339V75W",
       "company": "Orange Egypt",
-      "title": "Telemarketing Agent",
-      "location": "6TH OF OCTOBER CITY, Egypt",
-      "url": "https://www.careers-page.com/orange-eg/job/V66XVV86/apply",
+      "title": "Call Center Representative - Assiut",
+      "location": "ASSIUT GOVERNORATE, Egypt",
+      "url": "https://www.careers-page.com/orange-eg/job/W339V75W/apply",
       "description": "",
       "published_at": "2026-11-19T00:10:42.000+0000",
       "employment": "Regular",
@@ -16165,9 +16138,36 @@
       "match_reasons": [
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
       ],
-      "discovered_at": "2026-11-14T11:46:34.524962+00:00",
-      "apply_url": "https://www.careers-page.com/orange-eg/job/V66XVV86/apply",
-      "link": "https://www.careers-page.com/orange-eg/job/V66XVV86/apply",
+      "discovered_at": "2026-11-14T11:46:34.525030+00:00",
+      "apply_url": "https://www.careers-page.com/orange-eg/job/W339V75W/apply",
+      "link": "https://www.careers-page.com/orange-eg/job/W339V75W/apply",
+      "careers_url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com"
+    },
+    {
+      "id": "custom-orange-MNT-L67YY7R5",
+      "company": "Orange Egypt",
+      "title": "Representative, Call Center - Enterprise",
+      "location": "CAIRO, Egypt",
+      "url": "https://www.careers-page.com/orange-eg/job/L67YY7R5/apply",
+      "description": "",
+      "published_at": "2026-11-19T00:10:42.000+0000",
+      "employment": "Regular",
+      "source": "Custom Careers",
+      "seniority": "Full-time",
+      "source_detail_status": "official-detail-unavailable",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.524997+00:00",
+      "apply_url": "https://www.careers-page.com/orange-eg/job/L67YY7R5/apply",
+      "link": "https://www.careers-page.com/orange-eg/job/L67YY7R5/apply",
       "careers_url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com"
     },
     {
@@ -18899,9 +18899,9 @@
       "url": "https://careers.4dxventures.com/companies/breadfast/jobs/99615405-senior-people-advisor",
       "description": "Role Objectives: The Senior People Advisor acts as a trusted People partner to managers and employees, overseeing People operations, employee relations, engagement and performance initiatives. This role provides advisory support to line managers, resolves complex People issues, and ensures alignment of People programs with organizational priorities. Key Responsibilities: People Operations & Reporting Oversee the execution of People operations including workforce scheduling, payroll data validation, and system accuracy. Deliver People reports and workforce analytics (e.g., turnover trends, engagement data) for decision-making purposes. Ensure data integrity across HRIS and prepare monthly headcount reports. Recruitment & Onboarding Partner with Talent Acquisition to support mid-level hiring, participating in interview panels when needed. Ensure a seamless onboarding experience for new hires, aligning with managers to ensure full role integration. Evaluate probationary outcomes and ensure consistent feedback loops with managers. Employee Relations (ER) Act as a senior contact for employee relations, managing escalated cases and initial investigations. Ensure consistent and fair application of policies while maintaining compliance with labor law. Provide guidance to managers on resolving performance or behavioral concerns. Engagement & Culture Lead employee engagement initiatives, from planning recognition programs to conducting pulse checks. Monitor engagement KPIs (e.g., participation rates) and recommend interventions to address gaps. Promote a culture of inclusion and recognition across all levels. Performance and Development Oversee performance review processes including PDPs and PIPs, ensuring timely completion. Coordinate training programs based on team-specific needs and track completion rates. Coach managers on feedback and employee development conversations. Provide insights and recommendations to management on workforce trends, retention, and organizational improvements. Required Education, Knowledge, And Skills: Bachelor’s degree in Human Resources or Business Administration. 3 to 5 years of progressive HR experience, with exposure to employee relations and performance management. Strong knowledge of HR policies, labor law, and compliance. Solid analytical, communication, and problem-solving skills.",
       "published_at": "2026-11-11T14:42:16.830Z",
-      "employment": "['FULL_TIME']",
+      "employment": "",
       "source": "Custom Careers",
-      "source_detail_status": "official-jsonld-detail",
+      "source_detail_status": "retained-official-detail",
       "score": 0,
       "match_score": 0,
       "relevance_score": 0,
@@ -37497,7 +37497,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 20
       },
-      "checked_at": "2026-11-19T00:51:33.822765+00:00"
+      "checked_at": "2026-11-19T00:56:39.501930+00:00"
     },
     {
       "name": "Bosta",
@@ -37512,7 +37512,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 68,
         "Excluded: job location is not explicitly in Egypt": 10
       },
-      "checked_at": "2026-11-19T00:51:33.853545+00:00"
+      "checked_at": "2026-11-19T00:56:39.549420+00:00"
     },
     {
       "name": "Thndr",
@@ -37528,7 +37528,7 @@
         "Excluded: job location is not explicitly in Egypt": 6,
         "Excluded: explicit senior title": 3
       },
-      "checked_at": "2026-11-19T00:51:33.856430+00:00"
+      "checked_at": "2026-11-19T00:56:39.553131+00:00"
     },
     {
       "name": "Klivvr",
@@ -37542,7 +37542,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 11
       },
-      "checked_at": "2026-11-19T00:51:33.857178+00:00"
+      "checked_at": "2026-11-19T00:56:39.554071+00:00"
     },
     {
       "name": "Emergence",
@@ -37557,7 +37557,7 @@
         "Excluded: job location is not explicitly in Egypt": 7,
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 1
       },
-      "checked_at": "2026-11-19T00:51:33.857734+00:00"
+      "checked_at": "2026-11-19T00:56:39.554783+00:00"
     },
     {
       "name": "Lean Technologies",
@@ -37571,7 +37571,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 8
       },
-      "checked_at": "2026-11-19T00:51:33.858397+00:00"
+      "checked_at": "2026-11-19T00:56:39.555643+00:00"
     },
     {
       "name": "Chatbase",
@@ -37586,7 +37586,7 @@
         "Excluded: job location is not explicitly in Egypt": 12,
         "Uncertain: early-career level not confirmed by source": 1
       },
-      "checked_at": "2026-11-19T00:51:33.859618+00:00"
+      "checked_at": "2026-11-19T00:56:39.557262+00:00"
     },
     {
       "name": "Lua Global",
@@ -37598,7 +37598,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-19T00:51:33.860391+00:00"
+      "checked_at": "2026-11-19T00:56:39.558305+00:00"
     },
     {
       "name": "IBM",
@@ -37613,7 +37613,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 5,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-19T00:51:33.861313+00:00"
+      "checked_at": "2026-11-19T00:56:39.559517+00:00"
     },
     {
       "name": "Schneider Electric",
@@ -37629,7 +37629,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 3
       },
-      "checked_at": "2026-11-19T00:51:33.863866+00:00"
+      "checked_at": "2026-11-19T00:56:39.563047+00:00"
     },
     {
       "name": "Ericsson",
@@ -37643,7 +37643,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 18
       },
-      "checked_at": "2026-11-19T00:51:33.865890+00:00"
+      "checked_at": "2026-11-19T00:56:39.565782+00:00"
     },
     {
       "name": "Capgemini Egypt",
@@ -37659,7 +37659,7 @@
         "Excluded: ATS explicitly labels career level as senior": 4,
         "Excluded: explicit senior title": 4
       },
-      "checked_at": "2026-11-19T00:51:33.873963+00:00"
+      "checked_at": "2026-11-19T00:56:39.578151+00:00"
     },
     {
       "name": "DXC Technology",
@@ -37675,7 +37675,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-19T00:51:33.883198+00:00"
+      "checked_at": "2026-11-19T00:56:39.592089+00:00"
     },
     {
       "name": "Luxoft Egypt",
@@ -37690,7 +37690,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 16,
         "Uncertain: early-career level not confirmed by source": 1
       },
-      "checked_at": "2026-11-19T00:51:33.885190+00:00"
+      "checked_at": "2026-11-19T00:56:39.594830+00:00"
     },
     {
       "name": "Nokia",
@@ -37702,7 +37702,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-19T00:51:33.885619+00:00"
+      "checked_at": "2026-11-19T00:56:39.595576+00:00"
     },
     {
       "name": "SAP",
@@ -37716,7 +37716,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3
       },
-      "checked_at": "2026-11-19T00:51:33.885713+00:00"
+      "checked_at": "2026-11-19T00:56:39.595702+00:00"
     },
     {
       "name": "Orange Egypt",
@@ -37730,7 +37730,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 11
       },
-      "checked_at": "2026-11-19T00:51:33.886102+00:00"
+      "checked_at": "2026-11-19T00:56:39.596224+00:00"
     },
     {
       "name": "e& / Etisalat",
@@ -37744,7 +37744,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 25
       },
-      "checked_at": "2026-11-19T00:51:33.887186+00:00"
+      "checked_at": "2026-11-19T00:56:39.597632+00:00"
     },
     {
       "name": "Telecom Egypt (WE)",
@@ -37756,7 +37756,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-19T00:51:33.887934+00:00"
+      "checked_at": "2026-11-19T00:56:39.598616+00:00"
     },
     {
       "name": "Paymob",
@@ -37770,19 +37770,21 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 66
       },
-      "checked_at": "2026-11-19T00:51:33.890559+00:00"
+      "checked_at": "2026-11-19T00:56:39.601966+00:00"
     },
     {
       "name": "Breadfast",
       "url": "https://www.breadfast.com/careers/?utm_source=chatgpt.com",
-      "status": "error",
-      "message": "The read operation timed out",
-      "parsed_jobs": 0,
+      "status": "partial",
+      "message": "12 employer-related portfolio listings; original Breadfast Freshteam feed unavailable",
+      "parsed_jobs": 12,
       "matched_jobs": 0,
-      "public_jobs": 0,
-      "excluded_jobs": 0,
-      "exclusion_reasons": {},
-      "checked_at": "2026-11-19T00:51:33.893020+00:00"
+      "public_jobs": 12,
+      "excluded_jobs": 12,
+      "exclusion_reasons": {
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 12
+      },
+      "checked_at": "2026-11-19T00:56:39.605495+00:00"
     },
     {
       "name": "ITWorx",
@@ -37797,7 +37799,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 2,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-19T00:51:33.893417+00:00"
+      "checked_at": "2026-11-19T00:56:39.605943+00:00"
     },
     {
       "name": "Sumerge",
@@ -37812,7 +37814,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 5,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-19T00:51:33.894988+00:00"
+      "checked_at": "2026-11-19T00:56:39.607949+00:00"
     },
     {
       "name": "Luciq (formerly Instabug)",
@@ -37826,7 +37828,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 2
       },
-      "checked_at": "2026-11-19T00:51:33.896530+00:00"
+      "checked_at": "2026-11-19T00:56:39.609932+00:00"
     },
     {
       "name": "Breadfast Technology",
@@ -37840,7 +37842,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3
       },
-      "checked_at": "2026-11-19T00:51:33.896673+00:00"
+      "checked_at": "2026-11-19T00:56:39.610112+00:00"
     },
     {
       "name": "Link Development",
@@ -37856,21 +37858,19 @@
         "Excluded: explicit senior title": 1,
         "Uncertain: early-career level not confirmed by source": 1
       },
-      "checked_at": "2026-11-19T00:51:33.897274+00:00"
+      "checked_at": "2026-11-19T00:56:39.610869+00:00"
     },
     {
       "name": "Fawry",
       "url": "https://www.fawry.com/jobs/?utm_source=chatgpt.com",
-      "status": "partial",
-      "message": "4 public Fawry index postings; full pagination and freshness not verified",
-      "parsed_jobs": 4,
+      "status": "access_blocked",
+      "message": "Careers website returned HTTP 403",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "public_jobs": 4,
-      "excluded_jobs": 4,
-      "exclusion_reasons": {
-        "Excluded: job location is not explicitly in Egypt": 4
-      },
-      "checked_at": "2026-11-19T00:51:33.897875+00:00"
+      "public_jobs": 0,
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-19T00:56:39.611490+00:00"
     },
     {
       "name": "Siemens",
@@ -37885,7 +37885,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 15,
         "Uncertain: early-career level not confirmed by source": 7
       },
-      "checked_at": "2026-11-19T00:51:33.900979+00:00"
+      "checked_at": "2026-11-19T00:56:39.615937+00:00"
     },
     {
       "name": "Deloitte",
@@ -37900,7 +37900,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 43,
         "Excluded: explicit senior title": 6
       },
-      "checked_at": "2026-11-19T00:51:33.905964+00:00"
+      "checked_at": "2026-11-19T00:56:39.622530+00:00"
     },
     {
       "name": "BlackStone eIT",
@@ -37916,7 +37916,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 6,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-19T00:51:33.908148+00:00"
+      "checked_at": "2026-11-19T00:56:39.625223+00:00"
     },
     {
       "name": "Lamdax",
@@ -37931,7 +37931,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-19T00:51:33.911283+00:00"
+      "checked_at": "2026-11-19T00:56:39.629407+00:00"
     },
     {
       "name": "Yassir",
@@ -37948,7 +37948,7 @@
         "Uncertain: early-career level not confirmed by source": 2,
         "Excluded: explicit senior title": 19
       },
-      "checked_at": "2026-11-19T00:51:33.919304+00:00"
+      "checked_at": "2026-11-19T00:56:39.639807+00:00"
     },
     {
       "name": "Integrant",
@@ -37963,7 +37963,7 @@
         "Excluded: explicit senior title": 7,
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 12
       },
-      "checked_at": "2026-11-19T00:51:33.924525+00:00"
+      "checked_at": "2026-11-19T00:56:39.646405+00:00"
     },
     {
       "name": "inDrive",
@@ -37979,7 +37979,7 @@
         "Uncertain: early-career level not confirmed by source": 2,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-19T00:51:33.925194+00:00"
+      "checked_at": "2026-11-19T00:56:39.647225+00:00"
     },
     {
       "name": "robusta / RTG",
@@ -37995,7 +37995,7 @@
         "Uncertain: early-career level not confirmed by source": 2,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-19T00:51:33.926190+00:00"
+      "checked_at": "2026-11-19T00:56:39.648489+00:00"
     },
     {
       "name": "Incorta",
@@ -38011,7 +38011,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-19T00:51:33.927445+00:00"
+      "checked_at": "2026-11-19T00:56:39.650191+00:00"
     },
     {
       "name": "SOUM",
@@ -38027,7 +38027,7 @@
         "Excluded: job location is not explicitly in Egypt": 18,
         "Uncertain: early-career level not confirmed by source": 1
       },
-      "checked_at": "2026-11-19T00:51:33.929002+00:00"
+      "checked_at": "2026-11-19T00:56:39.652272+00:00"
     },
     {
       "name": "econstruct",
@@ -38043,7 +38043,7 @@
         "Excluded: job location is not explicitly in Egypt": 11,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-19T00:51:33.931800+00:00"
+      "checked_at": "2026-11-19T00:56:39.656344+00:00"
     },
     {
       "name": "PetroApp",
@@ -38057,7 +38057,7 @@
       "exclusion_reasons": {
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-19T00:51:33.933553+00:00"
+      "checked_at": "2026-11-19T00:56:39.659071+00:00"
     },
     {
       "name": "SSC HR Solutions",
@@ -38075,7 +38075,7 @@
         "Excluded: explicit minimum experience exceeds 2 years": 1,
         "Excluded: explicit senior title": 9
       },
-      "checked_at": "2026-11-19T00:51:33.936244+00:00"
+      "checked_at": "2026-11-19T00:56:39.662928+00:00"
     },
     {
       "name": "Mondia Group",
@@ -38090,7 +38090,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-19T00:51:33.939073+00:00"
+      "checked_at": "2026-11-19T00:56:39.667022+00:00"
     },
     {
       "name": "mylo by B.TECH",
@@ -38106,7 +38106,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 2,
         "Excluded: explicit senior title": 3
       },
-      "checked_at": "2026-11-19T00:51:33.939425+00:00"
+      "checked_at": "2026-11-19T00:56:39.667522+00:00"
     },
     {
       "name": "Infomineo",
@@ -38120,7 +38120,7 @@
       "exclusion_reasons": {
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-19T00:51:33.939552+00:00"
+      "checked_at": "2026-11-19T00:56:39.667672+00:00"
     },
     {
       "name": "ArpuPlus",
@@ -38135,7 +38135,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 2,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-19T00:51:33.939663+00:00"
+      "checked_at": "2026-11-19T00:56:39.667808+00:00"
     },
     {
       "name": "Madar",
@@ -38149,7 +38149,7 @@
       "exclusion_reasons": {
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-19T00:51:33.943056+00:00"
+      "checked_at": "2026-11-19T00:56:39.673514+00:00"
     },
     {
       "name": "EY Egypt",
@@ -38164,7 +38164,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 20,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-19T00:51:33.947179+00:00"
+      "checked_at": "2026-11-19T00:56:39.680180+00:00"
     },
     {
       "name": "PwC Egypt",
@@ -38178,7 +38178,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 4
       },
-      "checked_at": "2026-11-19T00:51:33.948077+00:00"
+      "checked_at": "2026-11-19T00:56:39.681298+00:00"
     },
     {
       "name": "Blink22",
@@ -38192,7 +38192,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 16
       },
-      "checked_at": "2026-11-19T00:51:33.948318+00:00"
+      "checked_at": "2026-11-19T00:56:39.681595+00:00"
     },
     {
       "name": "Amazon Egypt",
@@ -38207,7 +38207,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 83,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-19T00:51:33.955046+00:00"
+      "checked_at": "2026-11-19T00:56:39.689612+00:00"
     },
     {
       "name": "AWS Egypt",
@@ -38219,7 +38219,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-19T00:51:33.960181+00:00"
+      "checked_at": "2026-11-19T00:56:39.697157+00:00"
     },
     {
       "name": "Talabat Egypt",
@@ -38234,7 +38234,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 39,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-19T00:51:33.961109+00:00"
+      "checked_at": "2026-11-19T00:56:39.698326+00:00"
     },
     {
       "name": "Uber Egypt",
@@ -38246,7 +38246,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-19T00:51:33.961921+00:00"
+      "checked_at": "2026-11-19T00:56:39.699348+00:00"
     },
     {
       "name": "Teleperformance Egypt",
@@ -38260,7 +38260,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 4
       },
-      "checked_at": "2026-11-19T00:51:33.962004+00:00"
+      "checked_at": "2026-11-19T00:56:39.699446+00:00"
     },
     {
       "name": "Finaira",
@@ -38275,7 +38275,7 @@
         "Excluded: explicit senior title": 1,
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 1
       },
-      "checked_at": "2026-11-19T00:51:33.962134+00:00"
+      "checked_at": "2026-11-19T00:56:39.699593+00:00"
     },
     {
       "name": "CIB Egypt",
@@ -38290,7 +38290,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 22,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-19T00:51:33.962843+00:00"
+      "checked_at": "2026-11-19T00:56:39.700474+00:00"
     },
     {
       "name": "Konecta Egypt",
@@ -38304,7 +38304,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 37
       },
-      "checked_at": "2026-11-19T00:51:33.964846+00:00"
+      "checked_at": "2026-11-19T00:56:39.702984+00:00"
     },
     {
       "name": "ADCB Egypt",
@@ -38318,7 +38318,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 7
       },
-      "checked_at": "2026-11-19T00:51:33.966321+00:00"
+      "checked_at": "2026-11-19T00:56:39.704811+00:00"
     },
     {
       "name": "Fab Minds Egypt",
@@ -38332,7 +38332,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3
       },
-      "checked_at": "2026-11-19T00:51:33.966535+00:00"
+      "checked_at": "2026-11-19T00:56:39.705079+00:00"
     }
   ]
 }
