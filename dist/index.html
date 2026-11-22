@@ -559,7 +559,7 @@ a:hover{color:var(--ink)}
     const node=el('#nav-job-count');
     // A changed account or preference set must not preserve an invalid role filter.
     if(state.role!=='all'&&!availableRoleOptions().some(c=>c.key===state.role))state.role='all';
-    if(node)node.textContent=state.memberLoading||state.watchFeedLoading&&!state.watchFeedLoaded?'…':String(filterJobs(validJobs()).length);
+    if(node)node.textContent=state.memberLoading?'…':state.watchFeedLoading&&!state.watchFeedLoaded?'…':String(filterJobs(validJobs()).length);
   }
   async function json(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);return r.json();}
   async function companyApi(method='GET',payload,admin){
