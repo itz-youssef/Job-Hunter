@@ -5,7 +5,7 @@ const fs=require('node:fs');
 const gates=require('../lib/secretj/three-stage-qualification');
 const monitor=require('../lib/secretj/native-preference-monitor');
 const p={egypt_only:true,role_families:['ai_ml','software'],
- career_levels:['entry','internship'],max_experience_years:null,internships:false};
+ career_levels:['entry','junior','internship'],max_experience_years:null,internships:false};
 const job=title=>({title,company:'Example',location:'Cairo, Egypt',
  url:'https://example.com/jobs/'+encodeURIComponent(title)});
 test('dictionary gate excludes senior titles and unrelated fields',()=>{
