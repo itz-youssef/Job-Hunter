@@ -147,39 +147,48 @@
    /\b(?:own|ownership of|accountable for)\s+(?:the\s+)?(?:engineering|technical|technology)\s+(?:strategy|roadmap|organization|department)\b/i
  ];
  function assess(job,p){
-  const fields=classify(job);
-  if(!hasFilters(p))return {match:true,status:'unrestricted',reasons:[],
-    requiredYears:null,categories:fields,evidence:[]};
-  const reasons=[];
-  const selected=Array.isArray(p.role_families)?p.role_families:[];
-  const title=String(job?.title||job?.position||job?.job_title||'');
-  const company=String(job?.company||job?.company_name||'');
-  const location=String(job?.location||job?.job_location||'');
-  if(p.egypt_only===true&&!egypt.test(location))reasons.push('Outside selected location');
-  if(selected.length&&!fields.some(key=>selected.includes(key)))
-    reasons.push('Outside selected career fields');
-  const chosen=Array.isArray(p.career_levels)?p.career_levels:[];
-  let requiredYears=null,evidence=[];
-  if(chosen.length&&careerLevel){
-    const result=careerLevel.match(job,chosen,eligibilityCore);
-    requiredYears=result.requiredYears;
-    evidence=result.evidence;
-    if(!result.match)reasons.push('Outside selected career levels');
-  }else if(p.internships===true&&careerLevel){
-    const result=careerLevel.match(job,['internship'],eligibilityCore);
-    if(!result.match)reasons.push('Not an internship title');
-    requiredYears=result.requiredYears;evidence=result.evidence;
-  }
-  // Legacy experience-only settings still use deterministic mandatory-year evidence.
-  const limit=p.max_experience_years==null||p.max_experience_years===''?null:Number(p.max_experience_years);
-  if(!chosen.length&&limit!==null&&Number.isFinite(limit)){
-    requiredYears=yearsRequired(job);
-    if(requiredYears!==null&&requiredYears>limit)
-      reasons.push('Requires '+requiredYears+' years; maximum '+limit);
-  }
-  const unique=[...new Set(reasons)];
-  return {match:!unique.length,status:unique.length?'excluded':'matched',
-    reasons:unique,requiredYears,categories:fields,evidence};
+   if(!hasFilters(p))return {match:true,status:'unrestricted',reasons:[],requiredYears:null,categories:classify(job),evidence:[]};
+   const title=String(job.title||job.position||job.job_title||'');
+   const location=String(job.location||job.job_location||'');
+   const selected=Array.isArray(p.role_families)?p.role_families:[];
+   const fields=classify(job);
+   const reasons=[],evidence=[];
+   let review=false,required=null;
+   if(p.egypt_only===true&&!egypt.test(location))reasons.push('Outside selected location');
+   // New multi-level selections supersede legacy internship-only switch.
+   const chosenLevels=Array.isArray(p.career_levels)?p.career_levels:[];
+   if(!chosenLevels.length&&p.internships===true&&careerLevel&&!careerLevel.match(job,['internship'],eligibilityCore).match)reasons.push('Not an internship');
+   if(selected.length&&!fields.some(key=>selected.includes(key)))
+     reasons.push('Outside selected career fields');
+   const limit=p.max_experience_years===null||p.max_experience_years===undefined||p.max_experience_years===''?null:Number(p.max_experience_years);
+   if(chosenLevels.length&&careerLevel){
+     const levelResult=careerLevel.match(job,chosenLevels,eligibilityCore);
+     required=levelResult.requiredYears;
+     evidence.push(...levelResult.evidence);
+     if(!levelResult.match)reasons.push('Outside selected career levels');
+   }
+   if(!chosenLevels.length&&limit!==null&&Number.isFinite(limit)){
+     if(limit<=2&&eligibilityCore){
+       // Selected on a frozen, independently labeled comparison of six models.
+       // REVIEW stays visible; it is never called a confirmed match.
+       const result=eligibilityCore.evaluate(job,limit);
+       required=result.requiredYears;
+       evidence.push(...result.evidence,...result.sourceSpans.slice(0,2));
+       if(result.decision==='exclude')reasons.push(...result.reasons);
+       if(result.decision==='review')review=true;
+     }else{
+       required=yearsRequired(job);
+       if(required!==null&&required>limit)reasons.push('Requires '+required+' years; maximum '+limit);
+       if(required===null)review=true;
+     }
+   }
+   if(chosenLevels.length)review=false;
+   const unique=[...new Set(reasons)];
+   return {
+     match:unique.length===0,
+     status:unique.length?'excluded':review?'experience-unverified':'matched',
+     reasons:unique,requiredYears:required,categories:fields,evidence
+   };
  }
  function isMatch(job,p){return assess(job,p).match;}
  function explain(job,p){return assess(job,p);}
