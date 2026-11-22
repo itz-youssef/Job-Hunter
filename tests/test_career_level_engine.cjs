@@ -18,9 +18,9 @@ test('selected internship and entry roles match only explicit title triggers',()
 });
 test('all levels have deterministic precedence in source dictionary',()=>{
  for(const [title,expected] of [
-  ['Senior Backend Developer','senior'],['Staff Data Engineer','senior'],
-  ['Principal Software Engineer','senior'],['Engineering Manager','manager'],
-  ['Director of Engineering','director'],['Chief Technology Officer','director'],
+  ['Senior Backend Developer','senior'],['Staff Data Engineer','lead'],
+  ['Principal Software Engineer','lead'],['Engineering Manager','manager'],
+  ['Director of Engineering','director'],['Chief Technology Officer','executive'],
   ['Software Development Intern','internship'],['Junior QA Engineer','entry'],
   ['Mid-level Software Engineer','mid']
  ]){
@@ -48,4 +48,32 @@ test('site and account both load dictionary before level and category rules',()=
  }
  const js=fs.readFileSync('dist/assets/secretj-account.js','utf8');
  assert.match(js,/name="career_levels"/);
+});
+
+test('all eight checkbox keys correspond to their title dictionary semantics',()=>{
+ const options=[
+  ['internship','Software Engineering Intern'],
+  ['entry','Junior Software Engineer'],
+  ['mid','Mid-level Software Engineer'],
+  ['senior','Senior Software Engineer'],
+  ['lead','Staff Data Engineer'],
+  ['manager','Engineering Manager'],
+  ['director','Head of Engineering'],
+  ['executive','Chief Technology Officer']
+ ];
+ for(const [key,title] of options){
+  assert.equal(levels.evaluate({title}).level,key,title);
+  assert.equal(levels.match({title},[key]).match,true,key+' must match');
+ }
+});
+test('senior checkbox excludes staff principal and executive, multi-select includes either',()=>{
+ for(const title of ['Staff Data Engineer','Principal Software Engineer']){
+  assert.equal(levels.match({title},['senior']).match,false,title);
+  assert.equal(levels.match({title},['lead']).match,true,title);
+ }
+ assert.equal(levels.match({title:'Senior Software Engineer'},['senior','entry']).match,true);
+ assert.equal(levels.match({title:'Junior Software Engineer'},['senior','entry']).match,true);
+ assert.equal(levels.match({title:'Chief Technology Officer'},['director']).match,false);
+ assert.equal(levels.match({title:'Director of Engineering'},['executive']).match,false);
+ assert.equal(levels.match({title:'Sales Executive'},['executive']).match,false);
 });
