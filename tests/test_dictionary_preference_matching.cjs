@@ -56,3 +56,18 @@ test('Big4 associate trigger is employer-scoped, not globally applied',()=>{
  assert.equal(career.match(job(assoc,'Deloitte'),['entry']).match,true);
  assert.equal(career.match(job(assoc,'NonBig4 Enterprises'),['entry']).match,false);
 });
+
+test('software engineering field synonyms are recognized with the internship dictionary',()=>{
+ for(const title of [
+   'Software Engineering Intern',
+   'Software Engineering Internship',
+   'Software Engineering Trainee',
+   'Working Student - Software Engineering',
+   'Summer Internship - Software Engineering'
+ ]){
+   assert.equal(prefs.classify(job(title)).includes('software'),true,title+' should be software');
+   assert.equal(prefs.isMatch(job(title),filter),true,title+' should reach the personalized job feed');
+ }
+ assert.equal(prefs.isMatch(job('HR Internship'),filter),false);
+ assert.equal(prefs.isMatch(job('International Software Engineering Role'),filter),false);
+});
