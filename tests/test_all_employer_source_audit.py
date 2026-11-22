@@ -34,7 +34,7 @@ def test_missing_requirements_are_not_misreported_as_complete():
       "monitoring","read"),1.5)
     assert report["fields"]["requirements"]["present"]==0
     assert report["fields"]["description"]["present"]==1
-    assert report["audit_state"]=="parsed-unverified-completeness"
+    assert report["audit_state"]=="missing-detail-evidence"
     assert report["fields"]["seniority"]["missing"]==1
 
 def test_inaccessible_company_is_reported_not_silently_omitted():
@@ -52,3 +52,25 @@ def test_json_structured_detail_evidence_requires_recorded_provenance():
       "source_detail_status":"jsonld-jobposting"}
     report=summarize(company,([job],"monitoring","ok"),2.0)
     assert report["detail_verified_rows"]==1
+
+
+def test_monitoring_with_empty_details_needs_review():
+    company={"name":"Example","url":"https://example.com/careers"}
+    job={"title":"Backend Engineer","company":"Example",
+         "url":"https://example.com/job/1","description":""}
+    report=summarize(company,([job],"monitoring","ok"),1)
+    assert report["audit_state"]=="missing-detail-evidence"
+    assert report["substantive_description_rows"]==0
+    assert report["non_substantive_description_rows"]==1
+
+
+def test_original_job_article_evidence_is_recognized():
+    company={"name":"Example","url":"https://example.com/careers"}
+    job={"title":"Backend Engineer","company":"Example",
+         "url":"https://example.com/job/1",
+         "description":"Develop Python backend services and reliable APIs. "*5,
+         "source_detail_status":"official-article-sections"}
+    report=summarize(company,([job],"monitoring","ok"),1)
+    assert report["detail_verified_rows"]==1
+    assert report["substantive_description_rows"]==1
+    assert report["audit_state"]=="parsed-unverified-completeness"
