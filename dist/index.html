@@ -313,8 +313,19 @@ a:hover{color:var(--ink)}
   const liveFile = name => RAW + name + '?v=' + Date.now();
   const el = (selector) => document.querySelector(selector);
   const esc = (x) => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const state = { member:null, memberLoading:true, memberPrefs:null, memberPrefsConfigured:false, reviewExcluded:false, watchFeed:[], watchFeedLoaded:false, watchFeedError:'', snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'recent', jobType:'all', feedLimit:40, companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
-  const FEED_PAGE_SIZE=40;
+  const state = { member:null, memberLoading:true, memberPrefs:null, memberPrefsConfigured:false, reviewExcluded:false, watchFeed:[], watchFeedLoaded:false, watchFeedLoading:false, watchFeedError:'', snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'recent', jobType:'all', feedLimit:40, companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
+  // Skeletons make authenticated feed/profile hydration obvious, not a fake zero.
+  function loadingSkeleton(message='Loading matching opportunities…',detail='Retrieving your saved preferences and job feed.',count=4){
+    return '<section class="sj-loading-shell" role="status" aria-live="polite" aria-busy="true">'+
+      '<div class="sj-loading-heading"><span class="sj-loading-ring" aria-hidden="true"></span>'+
+      '<div><strong>'+esc(message)+'</strong><small>'+esc(detail)+'</small></div></div>'+
+      '<div class="sj-skeleton-grid" aria-hidden="true">'+Array.from({length:count},()=>(
+        '<div class="sj-skeleton-card"><span class="sj-skeleton-line sj-short"></span>'+
+        '<span class="sj-skeleton-line sj-wide"></span><span class="sj-skeleton-line sj-medium"></span>'+
+        '<span class="sj-skeleton-chip"></span></div>'
+      )).join('')+'</div></section>';
+  }
+    const FEED_PAGE_SIZE=40;
   let searchTimer=null;
   const names = {home:'Home',radar:'Job Hunter',resume:'Resume Updater',cv:'CV Holder',profile:'My Profile', jobs:'Job Feed', saved:'Saved Jobs', companies:'My Companies', alerts:'Email Alerts'};
   const where = (value) => String(value || '').toLowerCase().trim();
@@ -368,8 +379,10 @@ a:hover{color:var(--ink)}
     throw Error('Personalized feed exceeded safe pagination limit');
   }
   async function refreshMatchingFeed(){
-    if(!state.member||!state.memberPrefsConfigured||state.memberLoading)return;
+    if(!state.member||!state.memberPrefsConfigured||state.memberLoading||state.watchFeedLoading)return;
     const userId=state.member.id,sequence=memberSequence;
+    state.watchFeedLoading=true;
+    if(!state.watchFeedLoaded&&state.page==='jobs')render();
     try{
       const feed=await loadMatchingFeed(userId,sequence);
       if(!feed||sequence!==memberSequence||state.member?.id!==userId)return;
@@ -379,12 +392,15 @@ a:hover{color:var(--ink)}
     }catch(error){
       if(sequence!==memberSequence||state.member?.id!==userId)return;
       state.watchFeedError=error.message||'Monitoring feed refresh failed';
+    }finally{
+      state.watchFeedLoading=false;
     }
     syncFeedCount();render();
   }
   async function hydrateMember(){
     const sequence=++memberSequence;
     state.memberLoading=true;
+    if(['jobs','profile','cv','saved'].includes(state.page))render();
     try{
       const result=await memberRequest('/api/secretj-auth?action=session');
       if(sequence!==memberSequence)return;
@@ -543,7 +559,7 @@ a:hover{color:var(--ink)}
     const node=el('#nav-job-count');
     // A changed account or preference set must not preserve an invalid role filter.
     if(state.role!=='all'&&!availableRoleOptions().some(c=>c.key===state.role))state.role='all';
-    if(node)node.textContent=state.memberLoading?'…':String(filterJobs(validJobs()).length);
+    if(node)node.textContent=state.memberLoading||state.watchFeedLoading&&!state.watchFeedLoaded?'…':String(filterJobs(validJobs()).length);
   }
   async function json(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);return r.json();}
   async function companyApi(method='GET',payload,admin){
@@ -1141,6 +1157,11 @@ a:hover{color:var(--ink)}
   // The navbar's count is the same filtered list used to render job cards.
   // Recompute on auth completion, periodic snapshot refresh, and each filter.
   function jobsPage(saved=false){
+    if(!saved&&state.memberLoading)return top('YOUR JOB FEED','Loading your opportunities','We are securely loading your preferences.')+
+      loadingSkeleton('Preparing your personalized feed','Checking your account and saved filters…',6);
+    if(!saved&&state.member&&state.memberPrefsConfigured&&state.watchFeedLoading&&!state.watchFeedLoaded)
+      return top('YOUR JOB FEED','Matching opportunities','Your filters are being applied.')+
+        loadingSkeleton('Loading matching opportunities','Retrieving your latest private job results…',6);
     const all=validJobs(), whole=saved?(state.member?(state.savedRecords||[]).map(row=>({...(row.job_snapshot||{}),id:row.job_key})):all.filter(j=>state.saved.has(jobKey(j)))):all;
     const list=filterJobs(whole);
     const visible=list.slice(0,state.feedLimit);
@@ -1154,6 +1175,8 @@ a:hover{color:var(--ink)}
     const personalizedView=personalized&&!state.reviewExcluded&&!globalSearch&&state.jobType!=='internship';
     const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':globalSearch?'Search all detected opportunities':personalized?'Your personalized job feed':'All detected opportunities',saved?(state.member?'Jobs saved to your account.':'Jobs you’ve bookmarked on this device.'):globalSearch?'Searching all published listings, including those outside your saved preferences. Email alerts remain personalized.':personalized?'Opportunities detected by your personalized monitoring system, the same source used for email alerts.':'Explore every discovered opening with a valid application link. Sign in and save preferences to personalize your feed and alerts.');
     return h+
+      `${personalizedView&&state.watchFeedLoading?
+        '<div class="sj-loading-inline" role="status" aria-live="polite"><span class="sj-loading-ring" aria-hidden="true"></span>Refreshing your matching jobs…</div>':''}`+
       `${personalized&&!saved?`<section class="job-filter-panel" aria-label="Matching transparency"><p class="tiny"><strong>Personalized preference monitoring</strong> runs independently from <strong>All Detected Jobs</strong>. Company-native filters are used where verified, with other sources clearly handled through catalog fallback. The general discovery catalog is never reduced by your preferences.</p><p class="tiny">The general catalog currently contains ${hiddenCount} detected jobs, available separately under Review All Jobs and global Search. Your personalized feed reads the same private monitoring records as your email alerts, including the initial baseline of existing opportunities.</p>${personalizedView&&!state.watchFeedLoaded?`<p class="tiny"><strong>Monitoring status:</strong> ${esc(state.watchFeedError||'Waiting for the source monitor to finish its initial scan.')} Your personalized feed only shows jobs accepted by the configured verification pipeline. While the scan is pending, Review All Jobs remains available without falsely marking unverified postings as matches.</p>`:''}<button class="btn secondary" type="button" data-review-excluded aria-pressed="${state.reviewExcluded}">${state.reviewExcluded?'Return to personalized feed':'Review all detected jobs ('+allPublicJobs().length+')'}</button></section>`:''}
       <section class="job-filter-panel" aria-label="Job search filters">
         <div class="job-filter-row"><label class="filter-field filter-search">Search<input class="search-box" id="job-search" type="search" placeholder="Title, company or skills" value="${esc(state.query)}" aria-label="Search jobs"></label>
@@ -1329,7 +1352,9 @@ a:hover{color:var(--ink)}
     return message?'<p role="alert">'+esc(message)+'</p><button class="btn secondary" data-account-refresh>Retry account sync</button>':'';
   }
   function profilePage(){
-    if(!state.member || state.memberLoading)return accountGate('My Profile');
+    if(state.memberLoading)return top('YOUR ACCOUNT','My Profile','Loading your account information.')+
+      loadingSkeleton('Loading your profile','Retrieving your saved details and photo…',3);
+    if(!state.member)return accountGate('My Profile');
     const fields=[['headline','Headline'],['location','Location'],['summary','About me'],['skills','Skills'],['experience','Experience'],['education','Education']];
     return top('YOUR ACCOUNT','My Profile','The same profile you save in your account.',
       '<a class="btn primary" href="/account.html?view=profile">Edit my profile</a>')+
@@ -1341,7 +1366,9 @@ a:hover{color:var(--ink)}
       '</section>';
   }
   function cvPage(){
-    if(!state.member || state.memberLoading)return accountGate('CV Holder');
+    if(state.memberLoading)return top('YOUR ACCOUNT','CV Holder','Loading your secure documents.')+
+      loadingSkeleton('Loading your CV','Retrieving your saved documents…',2);
+    if(!state.member)return accountGate('CV Holder');
     return top('YOUR ACCOUNT','CV Holder','Your saved account CV, available across your devices.')+
       '<section class="panel cv-vault">'+accountError('cv')+'<h2>Your primary CV</h2>'+
       (cvEntry?'<p><strong>'+esc(cvEntry.name)+'</strong> · '+Math.round(cvEntry.blob.size/1024)+' KB</p><button class="btn secondary" data-cv-preview>View CV</button> <button class="btn secondary" data-cv-download>Download CV</button> <button class="btn secondary" data-cv-remove>Delete CV</button>':'<p>No CV saved to your account yet.</p>')+
