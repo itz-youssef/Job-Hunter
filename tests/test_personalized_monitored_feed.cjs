@@ -168,3 +168,27 @@ test('subscriber queue has no AI provenance gate',()=>{
  assert.doesNotMatch(src,/qualification\.aiReview\(/);
  assert.match(src,/job_snapshot->>'qualification_status'='accepted'/);
 });
+
+test('Senior-only preference returns qualifying baseline jobs through feed API',async()=>{
+ const rows=[
+  {job_key:'https://example.com/senior',job_snapshot:{
+   title:'Senior Software Engineer',company:'Example',location:'Cairo, Egypt',
+   url:'https://example.com/senior',qualification_status:'accepted',
+   qualification_mode:'dictionary-title-v1'},status:'baseline'},
+  {job_key:'https://example.com/intern',job_snapshot:{
+   title:'Software Engineering Intern',company:'Example',location:'Cairo, Egypt',
+   url:'https://example.com/intern',qualification_status:'accepted',
+   qualification_mode:'dictionary-title-v1'},status:'baseline'}
+ ];
+ const pref={role_families:[],career_levels:['senior'],egypt_only:true,
+   max_experience_years:null,internships:false};
+ const {status,result}=await request({action:'feed'},(sql)=>{
+  if(sql.includes('sj_native_watch_state'))return [{preferences_current:true}];
+  if(sql.includes('FROM public.sj_native_watch_jobs'))return rows;
+  if(sql.includes('FROM public.sj_preferences WHERE user_id=$1'))return [pref];
+  throw Error('Unexpected SQL: '+sql);
+ });
+ assert.equal(status,200);
+ assert.equal(result.ready,true);
+ assert.deepEqual(result.jobs.map(j=>j.title),['Senior Software Engineer']);
+});
