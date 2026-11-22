@@ -40,7 +40,14 @@
   function triggers(title,company,sourceKey){
     const source=dictionary?.[sourceKey]||{};
     const keywords=Array.isArray(source.keywords)?source.keywords:[];
-    const found=keywords.map(term).filter(x=>phrase(title,x));
+    const found=keywords.filter(raw=>{
+      // Parenthesized author notes constrain the trigger; they are not part
+      // of the literal advertised title.
+      if(/big4 context/i.test(raw)&&!employerMatch('Big4',company))return false;
+      if(/grad context/i.test(raw)&&!/\\b(?:grad|graduate)\\b/i.test(title))return false;
+      if(/student context/i.test(raw)&&!/\\b(?:student|intern|internship)\\b/i.test(title))return false;
+      return phrase(title,term(raw));
+    }).map(term);
     // The authored regex is an additional title trigger, never a description
     // search. This covers exact aliases such as Principal Software Engineer.
     if(source.regex){
