@@ -56,7 +56,7 @@ async function fixture(task,{mailFails=false}={}){
     record.code_hash=args[1];record.code_salt=args[2];record.send_count++;
     return [{email:'user@example.org'}];
   }
-  if(sql.startsWith('DELETE FROM public.sj_login_challenges WHERE token_hash=')){
+  if(sql.startsWith('DELETE FROM public.sj_login_challenges')&&sql.includes('WHERE token_hash=')){
     if(!record||record.token_hash!==args[0]||args[1]&&record.code_hash!==args[1])return [];
     record=null;return sql.includes('RETURNING user_id')?[{user_id:UID}]:[];
   }
