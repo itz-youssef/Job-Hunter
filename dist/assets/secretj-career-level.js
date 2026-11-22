@@ -1,10 +1,11 @@
 'use strict';
-/* Shared, explainable career-level inference. No fabricated certainty on missing ATS fields. */
+/* Exact title-token career matching. No AI, no description guessing. */
 (function(root,factory){
-  const api=factory();
+  const api=factory(typeof module==='object'&&module.exports
+    ?require('./secretj-career-dictionary'):root?.SecretJCareerDictionary);
   if(typeof module==='object'&&module.exports)module.exports=api;
   if(root)root.SecretJCareerLevel=api;
-})(typeof window!=='undefined'?window:null,function(){
+})(typeof window!=='undefined'?window:null,function(dictionary){
   const levels=[
     {key:'internship',label:'Internship / Trainee'},
     {key:'entry',label:'Entry / Junior (0–2 years)'},
@@ -16,77 +17,83 @@
     {key:'executive',label:'Executive / VP / C-level'}
   ];
   const keys=new Set(levels.map(x=>x.key));
-  const norm=x=>String(x||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
-  const patterns=[
-    ['executive',/\b(?:chief (?:executive|technology|financial|operating|product|information|people) officer|ceo|cto|cfo|coo|cio|cpo|ciso|executive vice president|svp|vice president|v[. ]?p[. ]?|general manager|managing director)\b/i],
-    ['director',/\b(?:director|head of|head,|department head)\b/i],
-    ['manager',/\b(?:engineering manager|product manager|project manager|program manager|people manager|team manager|development manager|marketing manager|operations manager|hr manager|finance manager|sales manager|customer success manager|line manager|manager of)\b/i],
-    ['lead',/\b(?:tech(?:nical)? lead|team lead|lead (?:software|backend|frontend|full.?stack|data|machine learning|ai|ml|security|devops|cloud|qa|engineer|developer|designer|analyst|scientist)|staff (?:\w+[ -]+){0,3}(?:engineer|developer|scientist|designer|architect)|principal (?:\w+[ -]+){0,3}(?:engineer|developer|scientist|designer|architect))\b/i],
-    ['senior',/\b(?:senior|sr[.]?)\b/i],
-    ['mid',/\b(?:mid[ -]?level|mid[ -]?senior|intermediate)\b/i],
-    ['internship',/\b(?:interns?|internship|trainee|traineeship|apprentice(?:ship)?|student placement|co[ -]?op|summer training|winter training)\b/i],
-    ['entry',/\b(?:junior|jr[.]?|entry[ -]?level|early professional|early[ -]?career|graduate(?: program(?:me)?| scheme)?|new grad|fresh graduate|fresher|associate engineer|associate developer)\b/i]
+  const normalize=value=>String(value||'').normalize('NFKC').toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu,' ').replace(/\s+/g,' ').trim();
+  function phrase(haystack,needle){
+    const h=normalize(haystack),n=normalize(needle);
+    return Boolean(n)&&(' '+h+' ').includes(' '+n+' ');
+  }
+  // Context explanations in the authored reference aren't title triggers.
+  const term=x=>String(x).replace(/\s*\([^)]*\)\s*$/,'').trim();
+  const groups=[
+    ['director','director_head_executive'],['manager','manager'],
+    ['lead','lead'],['senior','senior'],['internship','internship'],
+    ['entry','entry'],['entry','junior'],['mid','mid']
   ];
-  function marker(raw){
-    const text=norm(raw);
-    for(const [level,re] of patterns)if(re.test(text))return level;
-    if(/\b(?:management|managerial)\b/i.test(text))return 'manager';
-    return null;
+  function employerMatch(brand,company){
+    const a=normalize(brand).replace(/\b(?:egypt|egyptian)\b/g,'').trim();
+    const b=normalize(company).replace(/\b(?:egypt|egyptian)\b/g,'').trim();
+    if(!a||!b)return false;
+    if(a==='big4'||a.startsWith('big4 ')||a.includes(' ey deloitte pwc'))return /\b(?:ey|deloitte|pwc|kpmg)\b/.test(b);
+    return a===b||(' '+b+' ').includes(' '+a+' ')||(' '+a+' ').includes(' '+b+' ');
+  }
+  function triggers(title,company,sourceKey){
+    const source=dictionary?.[sourceKey]||{};
+    const keywords=Array.isArray(source.keywords)?source.keywords:[];
+    const found=keywords.map(term).filter(x=>phrase(title,x));
+    for(const [brand,phrases] of Object.entries(source.company_brand_names||{})){
+      if(!employerMatch(brand,company))continue;
+      for(const name of phrases){
+        const literal=term(name);
+        if(phrase(title,literal))found.push(literal);
+      }
+    }
+    return [...new Set(found)];
   }
   function evaluate(job,experienceCore){
-    const title=norm(job.title||job.position||job.job_title);
-    const ats=norm([job.seniority,job.career_level,job.experience_level,job.level].filter(Boolean).join(' '));
-    const postingType=norm([job.employment,job.job_type,job.program_type].filter(Boolean).join(' '));
-    const titleLevel=marker(title);
-    const atsLevel=marker(ats);
-    const typeLevel=/\b(?:internship|intern|trainee|apprentice|student placement)\b/i.test(postingType)?'internship':null;
+    const title=String(job?.title||job?.position||job?.job_title||'');
+    const company=String(job?.company||job?.company_name||job?.employer||'');
+    const official=String(job?.seniority||job?.career_level||job?.experience_level||job?.level||'');
+    const employment=String(job?.employment||job?.job_type||job?.program_type||'');
+    const context=[title,official,employment].filter(Boolean).join(' ');
+    const hits=new Map();
+    for(const [key,source] of groups){
+      const found=triggers(context,company,source);
+      if(found.length)hits.set(key,[...(hits.get(key)||[]),...found]);
+    }
+    // Guard against high-level titles being accepted because they contain
+    // words like "engineer" or "associate" from the mid/entry reference.
+    const high=['director','manager','lead','senior'].find(k=>hits.has(k));
+    const low=['internship','entry'].find(k=>hits.has(k));
+    let level=high||low|| (hits.has('mid')?'mid':null);
+    // Management trainee is graduate/entry, not student internship by default.
+    if(!high&&phrase(title,'management trainee'))level='entry';
+    // "Lead Generation" is a sales term, not a technical lead role.
+    if(!high||high==='lead'){
+      if(phrase(title,'lead generation')&&!/\b(?:team|technical|tech|engineering)\s+lead\b/i.test(title))
+        level=hits.has('entry')?'entry':hits.has('internship')?'internship':null;
+    }
+    // Program title "Go Green" describes a contest pipeline, not proof of an internship.
+    if(level==='internship'&&phrase(title,'go green')&&
+       !/\b(?:intern|internship|trainee)\b/i.test(title))level=null;
     const ext=experienceCore?.extractExperience?.(job);
     const years=ext?.minimum??null;
-    const evidence=[];
-    if(titleLevel)evidence.push('Title: '+titleLevel);
-    if(atsLevel)evidence.push('Employer/ATS level: '+atsLevel);
+    const contradiction=years!==null&&years>2&&['entry','internship'].includes(level);
+    if(contradiction)level=null;
+    const evidence=[...new Set(hits.get(level)||[])].map(x=>'Title dictionary: '+x);
+    if(contradiction)evidence.push('Mandatory experience contradicts early-career title');
     if(years!==null)evidence.push('Applicant minimum: '+years+' years');
-    let level=atsLevel||titleLevel||typeLevel;
-    let confidence=atsLevel?'explicit-ats':titleLevel?'title':typeLevel?'employment-type':'unknown';
-    if(typeLevel)evidence.push('Employment type: internship');
-    let conflict=false;
-    if((atsLevel&&titleLevel&&atsLevel!==titleLevel) || (typeLevel&&atsLevel&&atsLevel!=='internship')){
-      // Explicit contradictory employer metadata must not silently override title.
-      conflict=true;level=null;confidence='conflict';
-      evidence.push('Title and ATS level conflict');
-    }
-    if(level==='entry'&&years!==null&&years>2){
-      conflict=true;level=null;confidence='conflict';evidence.push('Junior title contradicts required experience');
-    }
-    if(level==='internship'&&years!==null&&years>2){
-      conflict=true;level=null;confidence='conflict';evidence.push('Intern title contradicts required experience');
-    }
-    if(!level&&!conflict&&years!==null&&years<=2){
-      level='entry';confidence='years-inferred';
-    }
-    if(!conflict&&level&&['entry','internship'].includes(level)&&
-       /\b(?:senior|principal|staff|director|executive|leadership|mid[ -]?senior)\b/i.test(ats)){
-      conflict=true;level=null;confidence='conflict';
-      evidence.push('Employer seniority conflicts with early-career evidence');
-    }
-    // A 5+ year requirement is unambiguously not entry, but does not prove
-    // Senior vs Lead vs Manager without source evidence.
-    return {level,confidence,conflict,requiredYears:years,evidence,
+    return {level,confidence:level?'dictionary-title':'unknown',
+      conflict:contradiction,requiredYears:years,evidence,
       advancedRequirement:years!==null&&years>2};
   }
   function match(job,selected,experienceCore){
     const chosen=(Array.isArray(selected)?selected:[]).filter(x=>keys.has(x));
-    if(!chosen.length)return {match:true,review:false,...evaluate(job,experienceCore)};
     const result=evaluate(job,experienceCore);
-    if(result.conflict)return {match:true,review:true,...result};
-    if(result.level){
-      const ok=chosen.includes(result.level);
-      return {match:ok,review:result.confidence==='years-inferred',...result};
-    }
-    if(result.advancedRequirement && chosen.every(x=>x==='entry'||x==='internship'))
-      return {match:false,review:false,...result};
-    // No reliable level: keep discoverable, flag for human confirmation.
-    return {match:true,review:true,...result};
+    if(!chosen.length)return {match:true,review:false,...result};
+    const yes=Boolean(result.level&&chosen.includes(result.level));
+    // Exact selection does not silently accept unknown categories.
+    return {match:yes,review:false,...result};
   }
-  return {levels,evaluate,match};
+  return {levels,normalize,phrase,triggers,evaluate,match};
 });
