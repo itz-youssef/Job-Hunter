@@ -113,8 +113,8 @@ module.exports=async function handler(req,res){
     await core.allowAuthAttempt(req,address);
 
     if(action==='register'){
-      if(body.accept_terms!==true||body.terms_version!=='2026-11-14'||
-        body.privacy_version!=='2026-11-14')
+      if(body.accept_terms !== true||body.terms_version !== '2026-11-14'||
+        body.privacy_version !== '2026-11-14')
         throw core.fail(400,'Please accept the current Terms and Privacy Policy to create an account');
       const name=core.validateText(body.name||'',120,'Name');
       const id=core.randomUUID();
