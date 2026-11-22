@@ -313,7 +313,7 @@ a:hover{color:var(--ink)}
   const liveFile = name => RAW + name + '?v=' + Date.now();
   const el = (selector) => document.querySelector(selector);
   const esc = (x) => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const state = { member:null, memberLoading:true, memberPrefs:null, memberPrefsConfigured:false, reviewExcluded:false, watchFeed:[], watchFeedLoaded:false, watchFeedLoading:false, watchFeedError:'', snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'recent', jobType:'all', feedLimit:40, companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
+  const state = { member:null, memberLoading:true, memberPrefs:null, memberPrefsConfigured:false, reviewExcluded:false, watchFeed:[], watchFeedLoaded:false, watchFeedLoading:false, watchFeedPendingSince:0, watchFeedError:'', snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'recent', jobType:'all', feedLimit:40, companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
   // Skeletons make authenticated feed/profile hydration obvious, not a fake zero.
   function loadingSkeleton(message='Loading matching opportunities…',detail='Retrieving your saved preferences and job feed.',count=4){
     return '<section class="sj-loading-shell" role="status" aria-live="polite" aria-busy="true">'+
@@ -388,10 +388,12 @@ a:hover{color:var(--ink)}
       if(!feed||sequence!==memberSequence||state.member?.id!==userId)return;
       state.watchFeed=feed.jobs||[];
       state.watchFeedLoaded=feed.ready===true;
+      state.watchFeedPendingSince=feed.ready===false?(state.watchFeedPendingSince||Date.now()):0;
       state.watchFeedError=feed.error||'';
     }catch(error){
       if(sequence!==memberSequence||state.member?.id!==userId)return;
       state.watchFeedError=error.message||'Monitoring feed refresh failed';
+      state.watchFeedPendingSince=0;
     }finally{
       state.watchFeedLoading=false;
     }
@@ -433,13 +435,14 @@ a:hover{color:var(--ink)}
       state.memberEmail=value(4);
       state.memberPrefsConfigured=value(5)?.configured===true;
       state.memberPrefs=state.memberPrefsConfigured?value(5)?.preferences:null;
-      state.watchFeed=[];state.watchFeedLoaded=false;state.watchFeedError='';
+      state.watchFeed=[];state.watchFeedLoaded=false;state.watchFeedPendingSince=0;state.watchFeedError='';
       if(state.memberPrefsConfigured){
         try{
           const feed=await loadMatchingFeed(userId,sequence);
           if(sequence!==memberSequence||state.member?.id!==userId)return;
           state.watchFeed=feed?.jobs||[];
           state.watchFeedLoaded=feed?.ready===true;
+          state.watchFeedPendingSince=feed?.ready===false?Date.now():0;
           state.watchFeedError=feed?.error||'';
         }catch(error){
           state.watchFeedError=error.message||'Could not load personalized monitoring feed';
@@ -1159,9 +1162,12 @@ a:hover{color:var(--ink)}
   function jobsPage(saved=false){
     if(!saved&&state.memberLoading)return top('YOUR JOB FEED','Loading your opportunities','We are securely loading your preferences.')+
       loadingSkeleton('Preparing your personalized feed','Checking your account and saved filters…',6);
-    if(!saved&&state.member&&state.memberPrefsConfigured&&state.watchFeedLoading&&!state.watchFeedLoaded)
+    if(!saved&&state.member&&state.memberPrefsConfigured&&!state.watchFeedLoaded&&
+       (state.watchFeedLoading||state.watchFeedPendingSince>0&&Date.now()-state.watchFeedPendingSince<45000))
       return top('YOUR JOB FEED','Matching opportunities','Your filters are being applied.')+
-        loadingSkeleton('Loading matching opportunities','Retrieving your latest private job results…',6);
+        loadingSkeleton(state.watchFeedPendingSince?'Applying updated preferences…':'Loading matching opportunities',
+          state.watchFeedPendingSince?'The scanner is updating your personalized jobs. This page checks again automatically.':
+          'Retrieving your latest private job results…',6);
     const all=validJobs(), whole=saved?(state.member?(state.savedRecords||[]).map(row=>({...(row.job_snapshot||{}),id:row.job_key})):all.filter(j=>state.saved.has(jobKey(j)))):all;
     const list=filterJobs(whole);
     const visible=list.slice(0,state.feedLimit);
@@ -1707,6 +1713,14 @@ a:hover{color:var(--ink)}
     refresh(true);
     // Public catalog and private source-watch results refresh independently.
     setInterval(()=>{refresh(true);refreshMatchingFeed();},60000);
+    // Quick follow-up only while the user's saved preferences are still
+    // awaiting their FIRST matching feed. Never poll continuously when ready.
+    setInterval(()=>{
+      if(state.member&&state.memberPrefsConfigured&&!state.memberLoading&&
+         !state.watchFeedLoaded&&state.watchFeedPendingSince>0&&
+         Date.now()-state.watchFeedPendingSince<90000)
+        refreshMatchingFeed();
+    },5000);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
 })();
