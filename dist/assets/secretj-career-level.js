@@ -6,15 +6,17 @@
   if(typeof module==='object'&&module.exports)module.exports=api;
   if(root)root.SecretJCareerLevel=api;
 })(typeof window!=='undefined'?window:null,function(dictionary){
+  // Checkbox options mirror the authored dictionary categories exactly.
+  // negative_keywords_global is an exclusion rule, not a selectable level.
   const levels=[
     {key:'internship',label:'Internship / Trainee'},
-    {key:'entry',label:'Entry / Junior (0–2 years)'},
+    {key:'entry',label:'Entry / Graduate'},
+    {key:'junior',label:'Junior'},
     {key:'mid',label:'Mid-level'},
-    {key:'senior',label:'Senior'},
-    {key:'lead',label:'Lead / Staff / Principal'},
+    {key:'senior',label:'Senior / Staff / Principal'},
+    {key:'lead',label:'Lead'},
     {key:'manager',label:'Manager'},
-    {key:'director',label:'Director / Head'},
-    {key:'executive',label:'Executive / VP / C-level'}
+    {key:'director_head_executive',label:'Director / Head / Executive / VP / C-level'}
   ];
   const keys=new Set(levels.map(x=>x.key));
   const normalize=value=>String(value||'').normalize('NFKC').toLowerCase()
@@ -26,9 +28,10 @@
   // Context explanations in the authored reference aren't title triggers.
   const term=x=>String(x).replace(/\s*\([^)]*\)\s*$/,'').trim();
   const groups=[
-    ['director','director_head_executive'],['manager','manager'],
-    ['lead','lead'],['senior','senior'],['internship','internship'],
-    ['entry','entry'],['entry','junior'],['mid','mid']
+    ['director_head_executive','director_head_executive'],
+    ['manager','manager'],['lead','lead'],['senior','senior'],
+    ['internship','internship'],['junior','junior'],
+    ['entry','entry'],['mid','mid']
   ];
   function employerMatch(brand,company){
     const a=normalize(brand).replace(/\b(?:egypt|egyptian)\b/g,'').trim();
@@ -76,11 +79,11 @@
       const found=triggers(context,company,source);
       if(found.length)hits.set(key,[...(hits.get(key)||[]),...found]);
     }
-    // Guard against high-level titles being accepted because they contain
-    // words like "engineer" or "associate" from the mid/entry reference.
-    const high=['director','manager','lead','senior'].find(k=>hits.has(k));
-    const low=['internship','entry'].find(k=>hits.has(k));
-    let level=high||low|| (hits.has('mid')?'mid':null);
+    // Precedence prevents generic mid words such as 'engineer' from
+    // overriding an explicit senior, junior, entry or internship title.
+    const high=['director_head_executive','manager','lead','senior'].find(k=>hits.has(k));
+    const low=['internship','junior','entry'].find(k=>hits.has(k));
+    let level=high||low||(hits.has('mid')?'mid':null);
     // Management trainee is graduate/entry, not student internship by default.
     if(!high&&phrase(title,'management trainee'))level='entry';
     // Generic role-specific trainee titles are training placements; graduate
@@ -108,11 +111,15 @@
       advancedRequirement:years!==null&&years>2};
   }
   function match(job,selected,experienceCore){
-    const chosen=(Array.isArray(selected)?selected:[]).filter(x=>keys.has(x));
+    // Keep legacy director/executive saved values readable until the account
+    // owner saves the merged dictionary option. These keys are not rendered.
+    const aliases={director:'director_head_executive',executive:'director_head_executive'};
+    const chosen=(Array.isArray(selected)?selected:[])
+      .map(x=>aliases[x]||x).filter(x=>keys.has(x));
     const result=evaluate(job,experienceCore);
     if(!chosen.length)return {match:true,review:false,...result};
+    // Multiple checkbox selections are OR across category levels.
     const yes=Boolean(result.level&&chosen.includes(result.level));
-    // Exact selection does not silently accept unknown categories.
     return {match:yes,review:false,...result};
   }
   return {levels,normalize,phrase,triggers,evaluate,match};

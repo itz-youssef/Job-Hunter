@@ -36,7 +36,7 @@ test('personal feed includes baseline, new and already alerted jobs for the sign
        discovered_at:'2026-11-16'}
    ];
    if(sql.includes('FROM public.sj_preferences WHERE user_id=$1'))return [{
-     role_families:['ai_ml'],career_levels:['entry','internship'],egypt_only:false,
+     role_families:['ai_ml'],career_levels:['entry','junior','internship'],egypt_only:false,
      max_experience_years:null,internships:false}];
    throw Error('Unexpected SQL');
  });
@@ -125,7 +125,7 @@ test('legacy watch data is not treated as qualified until revalidated against st
    title:'Junior AI Engineer',location:'Cairo, Egypt',company:'Example',
    url:'https://example.com/junior'},status:'baseline'}
  ];
- const p={role_families:['ai_ml'],career_levels:['entry','internship'],
+ const p={role_families:['ai_ml'],career_levels:['entry','junior','internship'],
    egypt_only:true,internships:false,max_experience_years:2};
  const query=sql=>{
    if(sql.includes('sj_native_watch_state'))return [{preferences_current:true}];
@@ -153,7 +153,7 @@ test('strict AI feed exposes ONLY actual ai-reviewed results, never historical r
    if(statement.includes('sj_native_watch_state'))return [{preferences_current:true}];
    if(statement.includes('FROM public.sj_native_watch_jobs'))return records;
    if(statement.includes('FROM public.sj_preferences WHERE user_id=$1'))return [{
-     role_families:['ai_ml'],career_levels:['entry'],egypt_only:false,max_experience_years:null}];
+     role_families:['ai_ml'],career_levels:['junior'],egypt_only:false,max_experience_years:null}];
    throw Error('Unexpected SQL: '+statement);
  };
  const strict=await request({action:'feed'},sql,{SECRETJ_AI_VERIFICATION_ENABLED:'true'});
@@ -167,4 +167,28 @@ test('subscriber queue has no AI provenance gate',()=>{
  assert.doesNotMatch(src,/job_snapshot->>'qualification_mode'='ai-reviewed'/);
  assert.doesNotMatch(src,/qualification\.aiReview\(/);
  assert.match(src,/job_snapshot->>'qualification_status'='accepted'/);
+});
+
+test('Senior-only preference returns qualifying baseline jobs through feed API',async()=>{
+ const rows=[
+  {job_key:'https://example.com/senior',job_snapshot:{
+   title:'Senior Software Engineer',company:'Example',location:'Cairo, Egypt',
+   url:'https://example.com/senior',qualification_status:'accepted',
+   qualification_mode:'dictionary-title-v1'},status:'baseline'},
+  {job_key:'https://example.com/intern',job_snapshot:{
+   title:'Software Engineering Intern',company:'Example',location:'Cairo, Egypt',
+   url:'https://example.com/intern',qualification_status:'accepted',
+   qualification_mode:'dictionary-title-v1'},status:'baseline'}
+ ];
+ const pref={role_families:[],career_levels:['senior'],egypt_only:true,
+   max_experience_years:null,internships:false};
+ const {status,result}=await request({action:'feed'},(sql)=>{
+  if(sql.includes('sj_native_watch_state'))return [{preferences_current:true}];
+  if(sql.includes('FROM public.sj_native_watch_jobs'))return rows;
+  if(sql.includes('FROM public.sj_preferences WHERE user_id=$1'))return [pref];
+  throw Error('Unexpected SQL: '+sql);
+ });
+ assert.equal(status,200);
+ assert.equal(result.ready,true);
+ assert.deepEqual(result.jobs.map(j=>j.title),['Senior Software Engineer']);
 });

@@ -257,10 +257,10 @@ async function preferences(root){
   <form id="preferences-form">
   <label><span><input type="checkbox" name="egypt_only" style="width:auto" ${p.egypt_only?'checked':''}> Egypt-based opportunities</span></label>
   <h3>Target career levels</h3>
-  <p class="small">Select all acceptable levels. For example, Entry + Internship includes both junior full-time jobs and training. Unknown seniority stays visible as a Potential Match. Leave all levels unchecked to use legacy experience filters.</p>
+  <p class="small">Select any dictionary levels you want. For example, select Entry + Junior + Internship to include graduate, junior and training vacancies. Unknown seniority stays visible as a Potential Match. Leave all levels unchecked to use legacy experience filters.</p>
   <div class="grid" id="career-level-options">
     ${(window.SecretJJobPreferences?.careerLevels||[]).map(({key,label})=>
-      `<label><span><input type="checkbox" style="width:auto" name="career_levels" value="${key}" ${(p.career_levels||[]).includes(key)?'checked':''}> ${label}</span></label>`).join('')}
+      `<label><span><input type="checkbox" style="width:auto" name="career_levels" value="${key}" ${((p.career_levels||[]).includes(key)||(key==='director_head_executive'&&(p.career_levels||[]).some(x=>x==='director'||x==='executive')))?'checked':''}> ${label}</span></label>`).join('')}
   </div>
   <label><span><input type="checkbox" name="internships" style="width:auto" ${p.internships?'checked':''}> Legacy: internships only (used when no career levels are selected)</span></label>
   <label>Maximum required experience (years) — optional<input name="max_experience_years" type="number" min="0" max="30" placeholder="Any experience" value="${p.max_experience_years==null?'':Number(p.max_experience_years)}"></label>

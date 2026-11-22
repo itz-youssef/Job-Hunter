@@ -19,10 +19,10 @@ async function execute(opts={}){
     if(sql.includes('INSERT INTO public.sj_native_scan_requests'))
       return opts.running?[]:[{started_at:'2026-11-16T00:00:00.000Z'}];
     if(sql.includes('FROM public.sj_preferences p JOIN public.sj_users u'))
-      return [{id:UID,role_families:['software'],career_levels:['entry'],
+      return [{id:UID,role_families:['software'],career_levels:['junior'],
         egypt_only:true,internships:false,max_experience_years:null}];
     if(sql.includes('FROM public.sj_preferences p WHERE p.user_id'))
-      return [{id:UID,role_families:['software'],career_levels:['entry'],
+      return [{id:UID,role_families:['software'],career_levels:['junior'],
         egypt_only:true,internships:false,max_experience_years:null}];
     if(sql.startsWith('SELECT preference_signature'))return [];
     if(sql.includes('FROM jsonb_to_recordset'))return [];
