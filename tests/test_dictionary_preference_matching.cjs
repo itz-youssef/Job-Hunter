@@ -71,3 +71,9 @@ test('software engineering field synonyms are recognized with the internship dic
  assert.equal(prefs.isMatch(job('HR Internship'),filter),false);
  assert.equal(prefs.isMatch(job('International Software Engineering Role'),filter),false);
 });
+
+test('management and graduate trainee stay entry, occupational trainee is internship',()=>{
+ assert.equal(career.evaluate(job('Software Engineering Trainee')).level,'internship');
+ assert.equal(career.evaluate(job('Graduate Trainee Software Engineer')).level,'entry');
+ assert.equal(career.evaluate(job('Management Trainee')).level,'entry');
+});
