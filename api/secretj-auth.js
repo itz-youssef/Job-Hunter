@@ -1,78 +1,171 @@
 'use strict';
 
-/** Cookie-based member auth. Admin roles can NEVER be set by this endpoint. */
-const core = require('../lib/secretj/core');
-
-module.exports = async function handler(req,res) {
-  try {
+/**
+ * Account login with email verification before creating a session cookie.
+ * No plaintext code or bearer challenge is stored in Neon.
+ */
+const {randomBytes,randomInt,timingSafeEqual}=require('node:crypto');
+const core=require('../lib/secretj/core');
+const emailService=require('./secretj-email');
+const CODE_LIFETIME_MINUTES=10;
+const challengePattern=/^[A-Za-z0-9_-]{42,44}$/;
+const codePattern=/^\d{6}$/;
+const tokenHash=token=>core.hash('secretj-login-challenge:'+token);
+const codeDigest=(token,code,salt)=>core.hash('secretj-login-otp:'+token+':'+code+':'+salt);
+function equalHash(a,b){
+  return /^[a-f0-9]{64}$/.test(String(a||''))&&/^[a-f0-9]{64}$/.test(String(b||''))&&
+    timingSafeEqual(Buffer.from(a,'hex'),Buffer.from(b,'hex'));
+}
+function requireEmailDelivery(){
+  if(!emailService.configured())
+    throw core.fail(503,'Email sign-in verification is not configured. Please contact support.');
+}
+async function dispatchCode(to,code){
+  await emailService.send(to,'Secret J: Your sign-in verification code',
+    'Your Secret J sign-in code is: '+code+
+    '\n\nThis code expires in '+CODE_LIFETIME_MINUTES+
+    ' minutes. Never share it with anyone. If you did not try to sign in, ignore this message.');
+}
+module.exports=async function handler(req,res){
+  try{
     core.allowedMethod(req,['GET','POST']);
-    const action = req.query?.action || (req.method==='GET' ? 'session' : '');
-    if (req.method==='GET') {
-      if (action !== 'session') throw core.fail(404,'Unknown action');
-      const user = await core.userForRequest(req);
+    const action=req.query?.action||(req.method==='GET'?'session':'');
+    if(req.method==='GET'){
+      if(action!=='session')throw core.fail(404,'Unknown action');
+      const user=await core.userForRequest(req);
       return core.reply(res,200,{ok:true,user:user?core.publicUser(user):null});
     }
-    if (action==='logout') {
-      const token = core.cookies(req).sj_session;
-      if (token && /^[A-Za-z0-9_-]{40,60}$/.test(token)) {
+    if(action==='logout'){
+      const token=core.cookies(req).sj_session;
+      if(token&&/^[A-Za-z0-9_-]{40,60}$/.test(token))
         await core.query('DELETE FROM public.sj_sessions WHERE token_hash=$1',[core.hash(token)]);
-      }
       res.setHeader('Set-Cookie',core.sessionCookie('',true));
       return core.reply(res,200,{ok:true});
     }
-
-    if (!['register','login'].includes(action)) throw core.fail(404,'Unknown action');
-    const body=core.parseBody(req);
-    const email=core.cleanEmail(body.email);
-    const password=body.password;
-    if (typeof password!=='string' || password.length < 12 || password.length > 128) {
-      throw core.fail(400,'Password must be between 12 and 128 characters');
+    if(action==='verify-login'){
+      const body=core.parseBody(req);
+      const challenge=String(body.challenge||'');
+      const code=String(body.code||'').trim();
+      if(!challengePattern.test(challenge)||!codePattern.test(code))
+        throw core.fail(400,'Invalid or expired sign-in code');
+      // Atomically count wrong attempts, including concurrent submissions.
+      const rows=await core.query(
+        `UPDATE public.sj_login_challenges
+         SET attempts=attempts+1
+         WHERE token_hash=$1 AND expires_at>now() AND attempts<5
+         RETURNING user_id,code_hash,code_salt`,
+        [tokenHash(challenge)]);
+      if(!rows[0])throw core.fail(400,'Code expired or too many attempts. Sign in again.');
+      const digest=codeDigest(challenge,code,rows[0].code_salt);
+      if(!equalHash(digest,rows[0].code_hash))
+        throw core.fail(400,'Incorrect sign-in code');
+      // The code may be consumed at most once, even with parallel requests.
+      const consumed=await core.query(
+        `DELETE FROM public.sj_login_challenges
+         WHERE token_hash=$1 AND code_hash=$2 AND expires_at>now()
+         RETURNING user_id`,[tokenHash(challenge),digest]);
+      if(!consumed[0])throw core.fail(400,'Code already used or expired');
+      const active=await core.query(
+        'SELECT id,email,role FROM public.sj_users WHERE id=$1 AND is_active=true',
+        [consumed[0].user_id]);
+      if(!active[0])throw core.fail(401,'Account is not active');
+      await core.issueSession(res,active[0].id);
+      return core.reply(res,200,{ok:true,user:core.publicUser(active[0])});
     }
-    if (action==='register' && process.env.SECRETJ_REGISTRATION_ENABLED !== 'true') {
-      throw core.fail(503,'Registration is not enabled yet');
-    }
-    await core.allowAuthAttempt(req,email);
-
-    if (action==='register') {
-      // Consent must be explicit and verified by the server, not just a UI checkbox.
-      if (body.accept_terms !== true ||
-          body.terms_version !== '2026-11-14' ||
-          body.privacy_version !== '2026-11-14') {
-        throw core.fail(400,'Please accept the current Terms and Privacy Policy to create an account');
+    if(action==='resend-login'){
+      requireEmailDelivery();
+      const challenge=String(core.parseBody(req).challenge||'');
+      if(!challengePattern.test(challenge))
+        throw core.fail(400,'Invalid sign-in challenge');
+      const code=String(randomInt(100000,1000000));
+      const salt=randomBytes(16).toString('hex');
+      const digest=codeDigest(challenge,code,salt);
+      // One resend per minute, 3 deliveries total; attempts never reset.
+      const rows=await core.query(
+        `WITH updated AS (
+           UPDATE public.sj_login_challenges
+           SET code_hash=$2,code_salt=$3,sent_at=now(),send_count=send_count+1
+           WHERE token_hash=$1 AND expires_at>now() AND attempts<5
+             AND send_count<3 AND sent_at<now()-interval '60 seconds'
+           RETURNING user_id
+         )
+         SELECT u.email FROM updated JOIN public.sj_users u ON u.id=updated.user_id
+         WHERE u.is_active=true`,
+        [tokenHash(challenge),digest,salt]);
+      if(!rows[0])throw core.fail(429,'Please wait before requesting another code, or sign in again.');
+      try{await dispatchCode(rows[0].email,code);}
+      catch(error){
+        // A failed email must not leave an unusable pending challenge.
+        await core.query('DELETE FROM public.sj_login_challenges WHERE token_hash=$1 AND code_hash=$2',
+          [tokenHash(challenge),digest]).catch(()=>{});
+        throw error;
       }
+      return core.reply(res,200,{ok:true,message:'A new sign-in code has been sent.'});
+    }
+    if(!['register','login'].includes(action))throw core.fail(404,'Unknown action');
+    const body=core.parseBody(req);
+    const address=core.cleanEmail(body.email);
+    const password=body.password;
+    if(typeof password!=='string'||password.length<12||password.length>128)
+      throw core.fail(400,'Password must be between 12 and 128 characters');
+    if(action==='register'&&process.env.SECRETJ_REGISTRATION_ENABLED!=='true')
+      throw core.fail(503,'Registration is not enabled yet');
+    await core.allowAuthAttempt(req,address);
+
+    if(action==='register'){
+      if(body.accept_terms!==true||body.terms_version!=='2026-11-14'||
+        body.privacy_version!=='2026-11-14')
+        throw core.fail(400,'Please accept the current Terms and Privacy Policy to create an account');
       const name=core.validateText(body.name||'',120,'Name');
       const id=core.randomUUID();
       const passhash=await core.hashPassword(password);
-      // Atomic CTE: an account cannot exist without its initial profile.
-      const rows=await core.query(
+      const created=await core.query(
         `WITH created AS (
            INSERT INTO public.sj_users(id,email,password_hash,terms_accepted_at,terms_version,privacy_version)
-           VALUES($1,$2,$3,now(),$5,$6)
-           RETURNING id,email,role
+           VALUES($1,$2,$3,now(),$5,$6) RETURNING id,email,role
          ), profile AS (
            INSERT INTO public.sj_profiles(user_id,display_name)
            SELECT id,$4 FROM created RETURNING user_id
          )
          SELECT created.id,created.email,created.role FROM created
          JOIN profile ON profile.user_id=created.id`,
-        [id,email,passhash,name,'2026-11-14','2026-11-14']
-      );
+        [id,address,passhash,name,'2026-11-14','2026-11-14']);
+      // Initial registration retains existing onboarding. Future logins
+      // require the email code before any session is established.
       await core.issueSession(res,id);
-      return core.reply(res,201,{ok:true,user:core.publicUser(rows[0])});
+      return core.reply(res,201,{ok:true,user:core.publicUser(created[0])});
     }
-
-    const rows=await core.query(
+    const users=await core.query(
       'SELECT id,email,role,password_hash,is_active FROM public.sj_users WHERE email=$1 LIMIT 1',
-      [email]
-    );
-    const user=rows[0];
+      [address]);
+    const user=users[0];
     const valid=await core.checkPassword(password,user?.password_hash||'');
-    if (!user || !valid || !user.is_active) {
-      throw core.fail(401,'Incorrect email or password');
+    if(!user||!valid||!user.is_active)throw core.fail(401,'Incorrect email or password');
+    // Rollout switch deliberately guards against locking existing users out
+    // until the Neon migration and verified sender are both ready.
+    if(process.env.SECRETJ_LOGIN_OTP_ENABLED!=='true'){
+      await core.issueSession(res,user.id);
+      return core.reply(res,200,{ok:true,user:core.publicUser(user)});
     }
-    await core.issueSession(res,user.id);
-    return core.reply(res,200,{ok:true,user:core.publicUser(user)});
-  } catch(error) {
-    return core.safeError(res,error);
-  }
+    requireEmailDelivery();
+    const challenge=randomBytes(32).toString('base64url');
+    const code=String(randomInt(100000,1000000));
+    const salt=randomBytes(16).toString('hex');
+    const digest=codeDigest(challenge,code,salt);
+    await core.query('DELETE FROM public.sj_login_challenges WHERE user_id=$1',[user.id]);
+    await core.query(
+      `INSERT INTO public.sj_login_challenges
+       (token_hash,user_id,code_hash,code_salt,expires_at)
+       VALUES($1,$2,$3,$4,now()+interval '10 minutes')`,
+      [tokenHash(challenge),user.id,digest,salt]);
+    try{await dispatchCode(user.email,code);}
+    catch(error){
+      await core.query('DELETE FROM public.sj_login_challenges WHERE token_hash=$1',
+        [tokenHash(challenge)]).catch(()=>{});
+      throw error;
+    }
+    // The initial response contains NO user and creates NO authenticated cookie.
+    return core.reply(res,200,{ok:true,requires_otp:true,challenge,
+      expires_in_seconds:600,message:'Check your account email for a six-digit sign-in code.'});
+  }catch(error){return core.safeError(res,error);}
 };
