@@ -50,3 +50,9 @@ test('dictionary available before career matcher on all pages',()=>{
     assert.ok(html.indexOf('secretj-career-dictionary.js')<html.indexOf('secretj-career-level.js'));
   }
 });
+
+test('Big4 associate trigger is employer-scoped, not globally applied',()=>{
+ const assoc='Associate Cloud Engineer';
+ assert.equal(career.match(job(assoc,'Deloitte'),['entry']).match,true);
+ assert.equal(career.match(job(assoc,'NonBig4 Enterprises'),['entry']).match,false);
+});
