@@ -78,7 +78,13 @@
     }
     // Guard against high-level titles being accepted because they contain
     // words like "engineer" or "associate" from the mid/entry reference.
-    const high=['director','manager','lead','senior'].find(k=>hits.has(k));
+    // One-to-one mapping from title signals to the actual UI checkboxes.
+    // The reference groups Director/Head/Executive, but the UI separates them.
+    // Staff/Principal technical titles map to Lead/Staff/Principal.
+    const executiveTitle=/\b(?:vp|svp|evp|vice[ -]?president|chief|ceo|coo|cfo|cto|cio|cmo|cpo|ciso)\b/i.test(title);
+    const staffPrincipalTitle=/\b(?:staff|principal)\s+(?:(?:software|data|ai|ml|backend|frontend|full[ -]?stack|platform|cloud|devops|security|mobile|embedded|systems?|network|hardware|product|qa)\s+){0,3}(?:engineer|developer|scientist|architect|analyst|consultant|designer|researcher)\b/i.test(title);
+    const high=executiveTitle?'executive':staffPrincipalTitle?'lead':
+      ['director','manager','lead','senior'].find(k=>hits.has(k));
     const low=['internship','entry'].find(k=>hits.has(k));
     let level=high||low|| (hits.has('mid')?'mid':null);
     // Management trainee is graduate/entry, not student internship by default.
