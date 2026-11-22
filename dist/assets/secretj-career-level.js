@@ -44,8 +44,8 @@
       // Parenthesized author notes constrain the trigger; they are not part
       // of the literal advertised title.
       if(/big4 context/i.test(raw)&&!employerMatch('Big4',company))return false;
-      if(/grad context/i.test(raw)&&!/\\b(?:grad|graduate)\\b/i.test(title))return false;
-      if(/student context/i.test(raw)&&!/\\b(?:student|intern|internship)\\b/i.test(title))return false;
+      if(/grad context/i.test(raw)&&!/\b(?:grad|graduate)\b/i.test(title))return false;
+      if(/student context/i.test(raw)&&!/\b(?:student|intern|internship)\b/i.test(title))return false;
       return phrase(title,term(raw));
     }).map(term);
     // The authored regex is an additional title trigger, never a description
