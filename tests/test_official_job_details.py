@@ -81,3 +81,29 @@ def test_luxoft_article_without_matching_h1_is_not_valid_job_evidence():
     <h5>Project description</h5><p>Build software for banking and telecom.</p>
     <h5>Responsibilities</h5><p>Develop REST APIs and backend systems.</p></main>"""
     assert parse_detail(j,html) is None
+
+
+def test_expanded_detail_budget_and_job_details_path():
+    from app.official_job_details import MAX_DETAILS_PER_COMPANY
+    assert MAX_DETAILS_PER_COMPANY == 32
+    job={"title":"Junior Platform Engineer","company":"Example",
+         "url":"https://careers.example.com/job-details/1234","description":""}
+    html=b"""<main><h1>Junior Platform Engineer</h1>
+      <article class='job-description'><h2>Responsibilities</h2>
+      Maintain Python services, design backend APIs, implement automated tests,
+      collaborate with software engineers and monitor production performance.
+      <h2>Qualifications</h2>Minimum one year experience.</article></main>"""
+    calls=[]
+    result=enrich_missing([job],"html",lambda url:(calls.append(url),html)[1])
+    assert len(calls)==1
+    assert "Python services" in result[0]["description"]
+
+
+def test_mismatched_detail_never_enriches_listing():
+    job={"title":"Junior AI Engineer","company":"Example",
+         "url":"https://careers.example.com/job-details/1234","description":""}
+    html=b"""<main><h1>Senior Sales Manager</h1>
+      <article class='job-description'><h2>Responsibilities</h2>
+      Manage accounts and sell subscriptions to commercial clients across the region.
+      <h2>Requirements</h2>Five years experience in sales.</article></main>"""
+    assert enrich_missing([job],"html",lambda _:html)[0]["description"]==""

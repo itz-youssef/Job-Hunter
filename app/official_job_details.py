@@ -13,14 +13,14 @@ from urllib.parse import urlsplit
 from bs4 import BeautifulSoup
 
 # Only providers demonstrably returned vacancies without descriptions in the
-# live source audit on 2026-11-16. 12 original detail pages per company max.
+# live source audit on 2026-11-16. 32 original detail pages per company max.
 SPARSE_ADAPTERS=frozenset({
   "ey_egypt","pwc_egypt","luxoft_egypt","orange_egypt",
   "tp_egypt","cib_egypt","etisalat_egypt","fawry_partial",
   "deloitte_partial","indrive_egypt","linkdevelopment",
-  "breadfast_egypt","ericsson_egypt","html"
+  "breadfast_egypt","ericsson_egypt","html","vois_egypt"
 })
-MAX_DETAILS_PER_COMPANY=12
+MAX_DETAILS_PER_COMPANY=32
 SELECTORS=(
   '[itemprop="description"]', '#jobDescriptionText','.jobDescriptionText',
   '#job-description','.job-description','.jobDescription','.job_description',
@@ -34,7 +34,8 @@ JOBS_TEXT=re.compile(
 )
 DETAIL_PAGE=re.compile(
  r"(?:/job/|/jobs/[^/?]+|/careers/job/|/vacanc(?:y|ies)/|"
- r"/careers/[^/?]+|/position/|/opportunit(?:y|ies)/)",re.I
+ r"/careers/[^/?]+|/position/|/opportunit(?:y|ies)/|"
+ r"/jobdetails?/|/job-details?/|/jobdescription/)",re.I
 )
 
 def _normalize(s):

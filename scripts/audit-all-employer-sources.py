@@ -21,7 +21,9 @@ from app.native_preference_sources import capabilities
 DETAIL_PROOF={
     "official-jsonld-detail", "jsonld-jobposting",
     "official-page-section", "official-detail-level",
-    "retained-official-detail",
+    "retained-official-detail", "official-job-section",
+    "official-article-sections", "official-jsonld-detail",
+    "workday-official-detail",
 }
 MANDATORY_FIELDS=("title","url","company","location","description",
                   "published_at","employment","seniority","department","requirements")
@@ -50,6 +52,7 @@ def summarize(company, result, scan_duration):
     jobs,status,message=result
     counts={k:0 for k in MANDATORY_FIELDS}
     description_lengths=[]
+    substantive_descriptions=0
     distinct_links=set()
     failures=[]
     samples=[]
@@ -63,6 +66,7 @@ def summarize(company, result, scan_duration):
             if str(value or "").strip():counts[field]+=1
         desc=str(j.get("description") or "")
         description_lengths.append(len(desc))
+        if len(desc.strip())>=100:substantive_descriptions+=1
         link=public_url(j.get("url") or j.get("apply_url"))
         if not link:
             failures.append("invalid-apply-url")
@@ -91,7 +95,7 @@ def summarize(company, result, scan_duration):
         audit_state="partial-coverage"
     elif n==0:
         audit_state="empty-board-unconfirmed"
-    elif counts["description"]<n:
+    elif substantive_descriptions<n:
         audit_state="missing-detail-evidence"
     else:
         audit_state="parsed-unverified-completeness"
@@ -105,6 +109,8 @@ def summarize(company, result, scan_duration):
        "jobs_found":n,"scan_duration_seconds":round(scan_duration,1),
        "fields":coverage,
        "description_chars_max":max(description_lengths,default=0),
+       "substantive_description_rows":substantive_descriptions,
+       "non_substantive_description_rows":n-substantive_descriptions,
        "distinct_apply_urls":len(distinct_links),
        "detail_verified_rows":sum(str(j.get("source_detail_status") or "") in DETAIL_PROOF for j in jobs),
        "issues":sorted(set(failures)),

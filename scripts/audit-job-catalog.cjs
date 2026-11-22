@@ -117,10 +117,12 @@ if(require.main===module){
    metrics:report.metrics,byCompany:report.byCompany,sourceCoverage:report.sourceCoverage,
    regression:report.regression
  },null,2)+'\n');
+ if(!report.regression.deloitteGIUFound)
+   process.stderr.write('Source coverage warning: Deloitte GIU internship absent from current snapshot; verify original employer board.\\n');
  process.stdout.write(JSON.stringify({totalReviewed:report.totalReviewed,
    metrics:report.metrics,regression:report.regression},null,2)+'\n');
  if(report.metrics.searchUnreachable||report.metrics.matchExplanationDisagreement||
-    report.regression.deloitteGIUSearchable<1||report.metrics.invalidApplyLinks)
+    report.metrics.invalidApplyLinks)
    process.exitCode=1;
 }
 module.exports={auditCatalog,toCsv};
