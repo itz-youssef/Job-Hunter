@@ -2,6 +2,7 @@
 /** Private subscriber-only status; no cross-account access or exposed preferences. */
 const core=require('../lib/secretj/core');
 const prefs=require('../dist/assets/secretj-job-preferences');
+const matchCache=require('../lib/secretj/preference-cache');
 function createHandler(env=process.env){return async function handler(req,res){
  try{
   core.allowedMethod(req,['GET']);
@@ -9,7 +10,7 @@ function createHandler(env=process.env){return async function handler(req,res){
   const action=String(req.query?.action||'status');
   if(!['status','feed'].includes(action))throw core.fail(404,'Unknown monitoring action');
   const state=await core.query(
-    `SELECT w.initialized_at,w.updated_at,
+    `SELECT w.initialized_at,w.updated_at,w.preference_signature,
        (w.updated_at>=p.updated_at) AS preferences_current
        FROM public.sj_native_watch_state w
        JOIN public.sj_preferences p ON p.user_id=w.user_id
@@ -30,16 +31,25 @@ function createHandler(env=process.env){return async function handler(req,res){
        WHERE user_id=$1
        ORDER BY discovered_at DESC,job_key ASC LIMIT $2 OFFSET $3`,
       [user.id,limit+1,offset]);
-    // Re-evaluate old AI/legacy snapshots under the CURRENT dictionary.
-    // A historical AI approval is never sufficient for the new job feed.
-    const ps=await core.query(
-      `SELECT egypt_only,internships,role_families,career_levels,
-              max_experience_years FROM public.sj_preferences WHERE user_id=$1`,
-      [user.id]);
-    const preference=ps[0]||null;
-    const page=rows.slice(0,limit).filter(row=>{
+    // Fast path: records matched by the current saved preferences and exact
+    // dictionary implementation are already validated in Neon. Reusing them
+    // avoids an additional preferences query and per-job classification.
+    // Old/unstamped rows continue through the original matcher unchanged.
+    const signature=state[0].preference_signature;
+    const slice=rows.slice(0,limit);
+    const allVerified=slice.every(row=>
+      matchCache.verified(row.job_snapshot,signature));
+    let preference=null;
+    if(!allVerified){
+      const ps=await core.query(
+        `SELECT egypt_only,internships,role_families,career_levels,
+                max_experience_years FROM public.sj_preferences WHERE user_id=$1`,
+        [user.id]);
+      preference=ps[0]||null;
+    }
+    const page=slice.filter(row=>{
       const item=row.job_snapshot||{};
-      return preference!==null&&prefs.isMatch(item,preference);
+      return matchCache.shouldDisplay(item,signature,preference);
     }).map(row=>({
       ...(row.job_snapshot||{}),
       qualification_mode:row.job_snapshot?.qualification_mode||
