@@ -231,6 +231,21 @@ html[data-theme="light"] .nav button.active *{
 <div style="text-align:center;color:var(--muted);font-size:12px">or</div>
 <p class="small muted">Use your email and password to sign in. Google sign-in is not connected.</p>
 </form>
+<section id="login-code-panel" hidden aria-live="polite">
+  <div class="sj-loading-feedback" style="display:flex;margin:14px 0">
+    <span aria-hidden="true" style="font-size:22px">🔐</span>
+    <div><strong>Verify your sign-in</strong><small>We sent a six-digit code to your account email. It expires in 10 minutes.</small></div>
+  </div>
+  <form id="login-code-form" autocomplete="off">
+    <label for="sj-login-code">Email verification code
+      <input id="sj-login-code" name="code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+        autocomplete="one-time-code" placeholder="6-digit code" required>
+    </label>
+    <button class="btn" id="sj-login-code-submit" type="submit">Verify &amp; sign in</button>
+  </form>
+  <div class="actions"><button id="sj-login-code-resend" class="btn secondary" type="button">Resend code</button>
+    <button id="sj-login-code-cancel" class="btn subtle" type="button">Back to sign in</button></div>
+</section>
 <p class="small muted">Never reuse a password from another service. Your private data stays in Neon, not in the public GitHub repository.</p>
 <p class="small muted">Read our <a href="/terms.html">Terms &amp; Conditions</a> and <a href="/privacy.html">Privacy Policy</a>.</p>
 </section>

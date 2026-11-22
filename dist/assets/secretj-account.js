@@ -75,6 +75,7 @@ function showAuth() {
   $('#admin-nav').hidden=true;
   $('#account-admin-profile-link').hidden=true;
   $('#auth-panel').hidden=false;
+  cancelLoginCode();
   $('#member-panel').hidden=true;
   $('#logout').hidden=true;
 }
@@ -114,7 +115,22 @@ async function signedIn(user) {
   if(new URLSearchParams(location.search).get('after')==='home')location.assign('/');
 }
 let isRegistration=false;
+let loginChallenge=null;
+function showLoginCode(challenge){
+  loginChallenge=challenge;
+  $('#auth-form').hidden=true;
+  $('#login-code-panel').hidden=false;
+  $('#sj-login-code').value='';
+  $('#sj-login-code').focus();
+}
+function cancelLoginCode(){
+  loginChallenge=null;
+  $('#login-code-panel').hidden=true;
+  $('#auth-form').hidden=false;
+}
+
 function authMode(register) {
+  cancelLoginCode();
   isRegistration=register;
   $('#tab-register').classList.toggle('active',register);
   $('#tab-login').classList.toggle('active',!register);
@@ -407,9 +423,45 @@ $('#auth-form').addEventListener('submit',async event=>{
   try{
     const result=await api(authUrl(isRegistration?'register':'login'),'POST',values);
     form.reset();$('#message').hidden=true;
+    if(result.requires_otp){
+      if(!result.challenge)throw Error('Sign-in code challenge was not returned');
+      showLoginCode(result.challenge);
+      banner('We sent a verification code to your email. Enter it to finish signing in.');
+      return;
+    }
     await signedIn(result.user);
   }catch(e){banner(e.message,true);}
   finally{button.disabled=false;}
+});
+$('#login-code-form').addEventListener('submit',async event=>{
+  event.preventDefault();
+  if(!loginChallenge)return banner('Start by signing in with your password.',true);
+  const button=$('#sj-login-code-submit');
+  busyButton(button,true,'Verifying…');
+  try{
+    const code=String($('#sj-login-code').value||'').trim();
+    const result=await api(authUrl('verify-login'),'POST',{challenge:loginChallenge,code});
+    loginChallenge=null;
+    $('#login-code-panel').hidden=true;
+    $('#message').hidden=true;
+    await signedIn(result.user);
+  }catch(error){banner(error.message,true);}
+  finally{busyButton(button,false);}
+});
+$('#sj-login-code-resend').addEventListener('click',async()=>{
+  if(!loginChallenge)return;
+  const button=$('#sj-login-code-resend');
+  busyButton(button,true,'Sending…');
+  try{
+    await api(authUrl('resend-login'),'POST',{challenge:loginChallenge});
+    $('#sj-login-code').value='';
+    banner('A new code was sent. Check your inbox.');
+  }catch(error){banner(error.message,true);}
+  finally{busyButton(button,false);}
+});
+$('#sj-login-code-cancel').addEventListener('click',()=>{
+  cancelLoginCode();
+  $('#message').hidden=true;
 });
 $('#logout').addEventListener('click',async()=>{
   try{await api(authUrl('logout'),'POST');state.user=null;showAuth();banner('Signed out successfully.');}
