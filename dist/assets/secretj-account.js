@@ -5,6 +5,41 @@ const $ = q => document.querySelector(q);
 const esc = value => String(value ?? '').replace(/[&<>"']/g,
   c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const state = {user:null, view:'overview', profile:null};
+let accountProgressDepth=0;
+function loadingCards(message='Loading your account information…',count=3){
+  return '<section class="sj-loading-shell" role="status" aria-live="polite" aria-busy="true">'+
+   '<div class="sj-loading-heading"><span class="sj-loading-ring" aria-hidden="true"></span>'+
+   '<div><strong>'+esc(message)+'</strong><small>Retrieving your secure account data…</small></div></div>'+
+   '<div class="sj-skeleton-grid" aria-hidden="true">'+Array.from({length:count},()=>(
+     '<div class="sj-skeleton-card"><span class="sj-skeleton-line sj-short"></span>'+
+     '<span class="sj-skeleton-line sj-wide"></span><span class="sj-skeleton-line sj-medium"></span>'+
+     '<span class="sj-skeleton-chip"></span></div>'
+   )).join('')+'</div></section>';
+}
+function setAccountProgress(active,label='Saving changes securely…'){
+  const progress=$('#sj-account-progress');
+  if(!progress)return;
+  accountProgressDepth=Math.max(0,accountProgressDepth+(active?1:-1));
+  progress.hidden=accountProgressDepth===0;
+  if(active)$('#sj-account-progress-label').textContent=label;
+}
+function busyButton(button,active,label='Saving…'){
+  if(!button)return;
+  if(active){
+    if(button.dataset.sjBusy==='true')return;
+    button.dataset.sjBusy='true';
+    button.dataset.sjPreviousLabel=button.innerHTML;
+    button.disabled=true;
+    button.classList.add('sj-loading-button');
+    button.innerHTML='<span class="sj-loading-ring" aria-hidden="true"></span>'+esc(label);
+  }else if(button.dataset.sjBusy==='true'){
+    button.innerHTML=button.dataset.sjPreviousLabel||'Save';
+    button.disabled=false;
+    button.classList.remove('sj-loading-button');
+    delete button.dataset.sjBusy;
+    delete button.dataset.sjPreviousLabel;
+  }
+}
 const types = {
   pdf:'application/pdf',
   docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
@@ -102,7 +137,13 @@ async function showView(view) {
   for(const button of document.querySelectorAll('[data-view]'))
     button.classList.toggle('active',button.dataset.view===view);
   const root=$('#account-content');
-  root.textContent='Loading...';
+  root.innerHTML=loadingCards(view==='preferences'?'Loading preferences and alerts…':
+    view==='documents'?'Loading your CV and photo…':
+    view==='profile'?'Loading your profile…':
+    view==='saved'?'Loading saved opportunities…':
+    view==='applications'?'Loading your applications…':
+    'Preparing your dashboard…',view==='profile'?4:3);
+  root.setAttribute('aria-busy','true');
   try {
     if(view==='overview')return await overview(root);
     if(view==='profile')return await profile(root);
@@ -112,6 +153,7 @@ async function showView(view) {
     if(view==='documents')return await documents(root);
     if(view==='admin')return await admin(root);
   }catch(e){root.textContent='Could not load this section. '+e.message;}
+  finally{root.removeAttribute('aria-busy');}
 }
 async function overview(root) {
   const [savedData,apps,cv,profileData]=await Promise.all([
@@ -249,7 +291,7 @@ async function preferences(root){
   <div class="notice"><strong>Personalized company monitoring</strong>
     <p class="small">A separate five-minute source watch checks your selected career fields and levels. It prefers official employer-side filters when available; other employers use a clearly identified catalog fallback. The All Detected Jobs catalog stays independent and unfiltered.</p>
     <p class="small"><strong>Subscription status:</strong> ${esc(nativeProgress)}</p>
-    <p class="small"><strong>Latest immediate scan:</strong> ${esc(scanLabel)}
+    <p class="small"><strong>Latest immediate scan:</strong> ${currentScan?.status==='running'?'<span class="sj-loading-ring" aria-hidden="true" style="width:12px;height:12px;border-width:2px;margin:0 6px;vertical-align:middle"></span>':''}${esc(scanLabel)}
     ${currentScan?.completed_at?' · '+esc(new Date(currentScan.completed_at).toLocaleString()):''}</p>
     <p class="small">Changing your saved preferences establishes a fresh baseline; only subsequently detected jobs trigger new messages. Source failures and incomplete career pages can delay alerts.</p>
   </div>
@@ -380,7 +422,9 @@ $('#account-nav').addEventListener('click',event=>{
 $('#account-content').addEventListener('submit',async event=>{
   event.preventDefault();const form=event.target;const values=Object.fromEntries(new FormData(form));
   const button=form.querySelector('button[type=submit]');
-  if(button)button.disabled=true;
+  if(button)busyButton(button,true,form.id==='preferences-form'?'Saving preferences…':'Saving securely…');
+  setAccountProgress(true,form.id==='preferences-form'?
+    'Saving your preferences and requesting a fresh job scan…':'Saving your account changes securely…');
   try{
     if(form.id==='email-verify-form'){
       await api('/api/secretj-email?action=verify','POST',{code:String(values.code||'')});
@@ -441,10 +485,16 @@ $('#account-content').addEventListener('submit',async event=>{
     banner('Saved securely to your account.');
     await showView(state.view);
   }catch(e){banner(e.message,true);}
-  finally{if(button)button.disabled=false;}
+  finally{
+    busyButton(button,false);
+    setAccountProgress(false);
+  }
 });
 $('#account-content').addEventListener('click',async event=>{
   const b=event.target.closest('button');if(!b)return;
+  if(b.dataset.sjBusy==='true')return;
+  const tracked=!b.dataset.go&&!b.hasAttribute('data-preview-cv')&&!b.hasAttribute('data-download-cv');
+  if(tracked){busyButton(b,true,'Working…');setAccountProgress(true,'Updating your account…');}
   try {
     if(b.dataset.go)return showView(b.dataset.go);
     if(b.hasAttribute('data-email-test')){
@@ -508,9 +558,15 @@ $('#account-content').addEventListener('click',async event=>{
     banner('Change saved successfully.');
     await showView(state.view);
   }catch(e){banner(e.message,true);}
+  finally{if(tracked){busyButton(b,false);setAccountProgress(false);}}
 });
 $('#account-content').addEventListener('change',async event=>{
   const input=event.target;
+  const tracked=input.matches('[data-stage]')||
+    (input.id==='cv-upload'||input.id==='avatar-upload')&&Boolean(input.files?.[0]);
+  if(tracked)setAccountProgress(true,
+    input.id==='cv-upload'?'Uploading and processing your CV…':
+    input.id==='avatar-upload'?'Preparing your profile photo…':'Updating application status…');
   try{
     if(input.matches('[data-stage]')){
       await api(dataUrl('applications'),'PUT',{key:input.dataset.stage,stage:input.value});
@@ -544,6 +600,7 @@ $('#account-content').addEventListener('change',async event=>{
       banner('Your centered profile photo was saved to Neon.');
     }
   }catch(e){banner(e.message,true);}
+  finally{if(tracked)setAccountProgress(false);}
 });
 (async()=>{
   authMode(new URLSearchParams(location.search).get('mode')==='register');
