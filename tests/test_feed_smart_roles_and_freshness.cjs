@@ -37,7 +37,7 @@ test('smart matching recognizes employer aliases and does not classify unrelated
  assert.ok(prefs.classify({title:'ETL Developer'}).includes('data_engineering'));
  assert.ok(prefs.classify({title:'Hiring Specialist'}).includes('talent_acquisition'));
  assert.ok(prefs.classify({title:'Security Operations Associate'}).includes('cybersecurity'));
- assert.ok(prefs.classify({title:'Technology Analyst',description:'Build REST APIs and microservices'}).includes('backend'));
+ assert.equal(prefs.classify({title:'Technology Analyst',description:'Build REST APIs and microservices'}).includes('backend'),false);
  assert.deepEqual(prefs.classify({title:'HR Business Partner',description:'Our company develops AI software'}),['hr']);
  const chosen={role_families:['backend'],egypt_only:false,internships:false,max_experience_years:null};
  assert.equal(prefs.isMatch({title:'API Engineer',location:'Egypt'},chosen),true);

@@ -35,6 +35,9 @@ test('personal feed includes baseline, new and already alerted jobs for the sign
        company:'B',url:'https://company.com/two',qualification_status:'accepted'},status:'sent',
        discovered_at:'2026-11-16'}
    ];
+   if(sql.includes('FROM public.sj_preferences WHERE user_id=$1'))return [{
+     role_families:['ai_ml'],career_levels:['entry','internship'],egypt_only:false,
+     max_experience_years:null,internships:false}];
    throw Error('Unexpected SQL');
  });
  assert.equal(status,200);assert.equal(result.ready,true);
@@ -61,6 +64,8 @@ test('feed pagination remains deterministic and rejects invalid offsets',async()
  let called;
  const valid=await request({action:'feed',offset:'250'},(sql,args)=>{
    if(sql.includes('sj_native_watch_state'))return [{preferences_current:true}];
+   if(sql.includes('FROM public.sj_preferences WHERE user_id=$1'))return [{
+     role_families:[],career_levels:[],egypt_only:false,max_experience_years:null}];
    if(sql.includes('FROM public.sj_native_watch_jobs'))called=args;
    return [{job_key:'https://company.com/new',job_snapshot:{title:'AI Engineer',qualification_status:'accepted'},
      status:'pending',discovered_at:'2026-11-16'}];
@@ -130,9 +135,9 @@ test('legacy watch data is not treated as qualified until revalidated against st
  };
  const enabled=await request({action:'feed'},query,{SECRETJ_AI_VERIFICATION_ENABLED:'false'});
  assert.deepEqual(enabled.result.jobs.map(j=>j.title),['Junior AI Engineer']);
- assert.equal(enabled.result.jobs[0].qualification_mode,'legacy-rules-only');
+ assert.equal(enabled.result.jobs[0].qualification_mode,'dictionary-title-v1');
  const strict=await request({action:'feed'},query,{SECRETJ_AI_VERIFICATION_ENABLED:'true'});
- assert.equal(strict.result.jobs.length,0,'Strict AI must never reintroduce unreviewed legacy jobs');
+ assert.deepEqual(strict.result.jobs.map(j=>j.title),['Junior AI Engineer'], 'The old AI environment toggle is ignored');
 });
 
 test('strict AI feed exposes ONLY actual ai-reviewed results, never historical rules-only accepted records',async()=>{
@@ -147,17 +152,19 @@ test('strict AI feed exposes ONLY actual ai-reviewed results, never historical r
  const sql=statement=>{
    if(statement.includes('sj_native_watch_state'))return [{preferences_current:true}];
    if(statement.includes('FROM public.sj_native_watch_jobs'))return records;
+   if(statement.includes('FROM public.sj_preferences WHERE user_id=$1'))return [{
+     role_families:['ai_ml'],career_levels:['entry'],egypt_only:false,max_experience_years:null}];
    throw Error('Unexpected SQL: '+statement);
  };
  const strict=await request({action:'feed'},sql,{SECRETJ_AI_VERIFICATION_ENABLED:'true'});
  assert.equal(strict.status,200);
- assert.deepEqual(strict.result.jobs.map(x=>x.url),['https://example.com/ai']);
+ assert.deepEqual(strict.result.jobs.map(x=>x.url),['https://example.com/rules','https://example.com/ai']);
  const simple=await request({action:'feed'},sql,{SECRETJ_AI_VERIFICATION_ENABLED:'false'});
  assert.equal(simple.result.jobs.length,2);
 });
-test('strict email queue includes mandatory AI provenance on both priority and atomic claim',()=>{
+test('subscriber queue has no AI provenance gate',()=>{
  const src=fs.readFileSync('lib/secretj/native-preference-monitor.js','utf8');
- const matches=src.match(/job_snapshot->>'qualification_mode'='ai-reviewed'/g)||[];
- assert.ok(matches.length>=2,'Both pending priorities and claimed alerts must require AI review');
- assert.match(src,/STRICT_AI_VERIFICATION:env.SECRETJ_AI_VERIFICATION_ENABLED==='true'/);
+ assert.doesNotMatch(src,/job_snapshot->>'qualification_mode'='ai-reviewed'/);
+ assert.doesNotMatch(src,/qualification\.aiReview\(/);
+ assert.match(src,/job_snapshot->>'qualification_status'='accepted'/);
 });

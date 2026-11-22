@@ -86,15 +86,15 @@
   ['cloud',/cloud infrastructure|aws cloud|azure cloud|cloud computing/i]
  ];
  function classify(job){
-  const title=String(job.title||job.position||job.job_title||'').trim();
+  const title=String(job?.title||job?.position||job?.job_title||'').trim();
   const values=new Set(categories.slice(0,-1).filter(([, ,re])=>re.test(title)).map(([key])=>key));
   for(const [key,re] of titleAliases)if(re.test(title))values.add(key);
-  // Description helps only for genuinely ambiguous titles; never infer that
-  // an HR manager is an AI engineer merely because an HR posting mentions AI.
-  if(!values.size && genericTitle.test(title)){
-    const desc=String(job.description||job.summary||'').slice(0,1600);
-    for(const [key,re] of descriptorSignals)if(re.test(desc))values.add(key);
-  }
+  // Selected Software Engineering includes explicit software specializations,
+  // but not unrelated jobs merely mentioning programming in descriptions.
+  if(values.size&&['backend','frontend','fullstack','mobile','web'].some(k=>values.has(k)))
+    values.add('software');
+  if(/\\bsoftware\\s+(?:engineering|development|intern|internship|trainee|graduate|associate)\\b/i.test(title))
+    values.add('software');
   return values.size?[...values]:['other'];
  }
  function hasFilters(p){
@@ -157,22 +157,15 @@
    if(p.egypt_only===true&&!egypt.test(location))reasons.push('Outside selected location');
    // New multi-level selections supersede legacy internship-only switch.
    const chosenLevels=Array.isArray(p.career_levels)?p.career_levels:[];
-   if(!chosenLevels.length&&p.internships===true&&!internships.test(title+' '+String(job.employment||'')))reasons.push('Not an internship');
-   if(selected.length&&!fields.some(key=>selected.includes(key))){
-     if(fields.includes('other')){
-       // Never silently discard a plausible vacancy whose field has no usable
-       // evidence; expose it as uncertain instead of asserting a false mismatch.
-       review=true;
-       evidence.push('Career field unavailable or ambiguous');
-     }else reasons.push('Outside selected career fields');
-   }
+   if(!chosenLevels.length&&p.internships===true&&careerLevel&&!careerLevel.match(job,['internship'],eligibilityCore).match)reasons.push('Not an internship');
+   if(selected.length&&!fields.some(key=>selected.includes(key)))
+     reasons.push('Outside selected career fields');
    const limit=p.max_experience_years===null||p.max_experience_years===undefined||p.max_experience_years===''?null:Number(p.max_experience_years);
    if(chosenLevels.length&&careerLevel){
      const levelResult=careerLevel.match(job,chosenLevels,eligibilityCore);
      required=levelResult.requiredYears;
      evidence.push(...levelResult.evidence);
      if(!levelResult.match)reasons.push('Outside selected career levels');
-     if(levelResult.review)review=true;
    }
    if(!chosenLevels.length&&limit!==null&&Number.isFinite(limit)){
      if(limit<=2&&eligibilityCore){
@@ -189,6 +182,7 @@
        if(required===null)review=true;
      }
    }
+   if(chosenLevels.length)review=false;
    const unique=[...new Set(reasons)];
    return {
      match:unique.length===0,

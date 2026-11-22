@@ -1,7 +1,7 @@
 'use strict';
 /** Private subscriber-only status; no cross-account access or exposed preferences. */
 const core=require('../lib/secretj/core');
-const qualification=require('../lib/secretj/three-stage-qualification');
+const prefs=require('../dist/assets/secretj-job-preferences');
 function createHandler(env=process.env){return async function handler(req,res){
  try{
   core.allowedMethod(req,['GET']);
@@ -30,31 +30,20 @@ function createHandler(env=process.env){return async function handler(req,res){
        WHERE user_id=$1
        ORDER BY discovered_at DESC,job_key ASC LIMIT $2 OFFSET $3`,
       [user.id,limit+1,offset]);
-    // Rollout compatibility: legacy records predate the unified validator.
-    // Until the scheduled monitor safely backfills qualification provenance,
-    // re-check them on the SERVER using today's stored preferences; do not
-    // blindly expose old jobs, and never bypass strict AI mode.
-    const legacy=rows.some(row=>!row.job_snapshot?.qualification_status);
-    let preference=null;
-    if(legacy&&env.SECRETJ_AI_VERIFICATION_ENABLED!=='true'){
-      const ps=await core.query(
-        `SELECT egypt_only,internships,role_families,career_levels,
-                max_experience_years FROM public.sj_preferences WHERE user_id=$1`,
-        [user.id]);
-      preference=ps[0]||null;
-    }
+    // Re-evaluate old AI/legacy snapshots under the CURRENT dictionary.
+    // A historical AI approval is never sufficient for the new job feed.
+    const ps=await core.query(
+      `SELECT egypt_only,internships,role_families,career_levels,
+              max_experience_years FROM public.sj_preferences WHERE user_id=$1`,
+      [user.id]);
+    const preference=ps[0]||null;
     const page=rows.slice(0,limit).filter(row=>{
       const item=row.job_snapshot||{};
-      if(item.qualification_status==='accepted')return (
-        env.SECRETJ_AI_VERIFICATION_ENABLED!=='true'||
-        item.qualification_mode==='ai-reviewed'
-      );
-      return !item.qualification_status&&preference!==null&&
-        qualification.reject(item,preference).ok;
+      return preference!==null&&prefs.isMatch(item,preference);
     }).map(row=>({
       ...(row.job_snapshot||{}),
       qualification_mode:row.job_snapshot?.qualification_mode||
-        'legacy-rules-only',
+        'dictionary-title-v1',
       id:row.job_key,
       watch_status:row.status,
       discovered_at:row.discovered_at,
@@ -78,7 +67,7 @@ function createHandler(env=process.env){return async function handler(req,res){
     configured:state.length>0,initialized_at:state[0]?.initialized_at||null,
     last_preference_reset_at:state[0]?.updated_at||null,counts,
     immediate_scan:scanRows[0]||null,
-    note:'Only native-query supported sources use employer API filters. Other sources rely on explicit fallback classification.'});
+    note:'Personalized feed uses deterministic title dictionary plus explicit preference intersection; employer APIs remain the discovery source.'});
  }catch(error){return core.safeError(res,error);}
 };}
 module.exports=createHandler();
