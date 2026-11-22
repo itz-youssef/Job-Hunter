@@ -46,7 +46,7 @@ test('animations respect accessibility and mobile layout',()=>{
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
   assert.match(css,/@media\(max-width:640px\)/);
   assert.match(css,/html\[data-theme="dark"\]/);
-  assert.match(css,/aria-hidden="true"/);
+  assert.match(home,/aria-hidden="true"/);
 });
 test('loading UI never changes dictionary or preference matching modules',()=>{
   assert.doesNotMatch(css,/(?:jobs\.db|career_levels\s*=)/);
