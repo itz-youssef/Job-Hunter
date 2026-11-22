@@ -18,6 +18,7 @@ test('skeleton is only active during a real feed fetch or account hydration',()=
   assert.match(home,/if\(!saved&&state\.memberLoading\)/);
   assert.match(home,/state\.watchFeedLoading&&!state\.watchFeedLoaded/);
   assert.match(home,/state\.watchFeedLoading=false;/);
+  assert.match(home,/watchFeedPendingSince/);
   assert.match(home,/role="status" aria-live="polite" aria-busy="true"/);
 });
 test('background refresh keeps matching jobs visible and restores state after errors',()=>{
@@ -51,4 +52,11 @@ test('animations respect accessibility and mobile layout',()=>{
 test('loading UI never changes dictionary or preference matching modules',()=>{
   assert.doesNotMatch(css,/(?:jobs\.db|career_levels\s*=)/);
   assert.match(home,/\/api\/secretj-native-status\?action=feed&offset=/);
+});
+
+test('preference scan has bounded skeleton display and short readiness polling',()=>{
+  assert.match(home,/Date\.now\(\)-state\.watchFeedPendingSince<45000/);
+  assert.match(home,/Date\.now\(\)-state\.watchFeedPendingSince<90000/);
+  assert.match(home,/refreshMatchingFeed\(\);\s*},5000\)/);
+  assert.match(home,/state\.watchFeedPendingSince=feed\.ready===false/);
 });
