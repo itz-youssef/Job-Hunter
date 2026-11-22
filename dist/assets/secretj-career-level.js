@@ -44,8 +44,8 @@
       // Parenthesized author notes constrain the trigger; they are not part
       // of the literal advertised title.
       if(/big4 context/i.test(raw)&&!employerMatch('Big4',company))return false;
-      if(/grad context/i.test(raw)&&!/\\b(?:grad|graduate)\\b/i.test(title))return false;
-      if(/student context/i.test(raw)&&!/\\b(?:student|intern|internship)\\b/i.test(title))return false;
+      if(/grad context/i.test(raw)&&!/\b(?:grad|graduate)\b/i.test(title))return false;
+      if(/student context/i.test(raw)&&!/\b(?:student|intern|internship)\b/i.test(title))return false;
       return phrase(title,term(raw));
     }).map(term);
     // The authored regex is an additional title trigger, never a description
@@ -83,6 +83,11 @@
     let level=high||low|| (hits.has('mid')?'mid':null);
     // Management trainee is graduate/entry, not student internship by default.
     if(!high&&phrase(title,'management trainee'))level='entry';
+    // Generic role-specific trainee titles are training placements; graduate
+    // and management trainee tracks remain entry programs.
+    if(!high&&phrase(title,'trainee')&&
+       !phrase(title,'management trainee')&&!phrase(title,'graduate trainee'))
+      level='internship';
     // "Lead Generation" is a sales term, not a technical lead role.
     if(!high||high==='lead'){
       if(phrase(title,'lead generation')&&!/\b(?:team|technical|tech|engineering)\s+lead\b/i.test(title))

@@ -93,7 +93,7 @@
   // but not unrelated jobs merely mentioning programming in descriptions.
   if(values.size&&['backend','frontend','fullstack','mobile','web'].some(k=>values.has(k)))
     values.add('software');
-  if(/\\bsoftware\\s+(?:engineering|development|intern|internship|trainee|graduate|associate)\\b/i.test(title))
+  if(/\bsoftware\s+(?:engineering|development|intern|internship|trainee|graduate|associate)\b/i.test(title))
     values.add('software');
   return values.size?[...values]:['other'];
  }
