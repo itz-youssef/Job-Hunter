@@ -83,6 +83,11 @@
     let level=high||low|| (hits.has('mid')?'mid':null);
     // Management trainee is graduate/entry, not student internship by default.
     if(!high&&phrase(title,'management trainee'))level='entry';
+    // Generic role-specific trainee titles are training placements; graduate
+    // and management trainee tracks remain entry programs.
+    if(!high&&phrase(title,'trainee')&&
+       !phrase(title,'management trainee')&&!phrase(title,'graduate trainee'))
+      level='internship';
     // "Lead Generation" is a sales term, not a technical lead role.
     if(!high||high==='lead'){
       if(phrase(title,'lead generation')&&!/\b(?:team|technical|tech|engineering)\s+lead\b/i.test(title))
