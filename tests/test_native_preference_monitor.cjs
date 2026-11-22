@@ -10,7 +10,7 @@ const other=(id,title,description='')=>({id,company:'Example',title,description,
   location:'Cairo, Egypt',url:'https://example.com/jobs/'+id});
 function fixture(){
  let state=null,settings={egypt_only:false,internships:false,
-   career_levels:['entry','internship'],role_families:['ai_ml'],max_experience_years:2};
+   career_levels:['entry','junior','internship'],role_families:['ai_ml'],max_experience_years:2};
  const queue=new Map(),sent=[];
  let jobs=[other('old','Junior AI Engineer','Internship machine learning models')];
  const responses=[];
@@ -92,7 +92,7 @@ test('official board URL is pinned to known Lever host and native filters are no
  assert.equal(monitor.leverSlug({source_kind:'lever',source_url:'https://jobs.lever.co/Bosta/'}),'Bosta');
  assert.equal(monitor.leverSlug({source_kind:'lever',source_url:'https://evil.example/Bosta/'}),'');
  const job={title:'Junior AI Engineer',source_facets:{level:'Junior'}};
- assert.deepEqual(monitor.supportedLevelFacets([job],{career_levels:['entry']}),['Junior']);
+ assert.deepEqual(monitor.supportedLevelFacets([job],{career_levels:['junior']}),['Junior']);
  assert.deepEqual(monitor.supportedLevelFacets([job],{career_levels:['senior']}),[]);
 });
 test('public catalog and account-only monitor maintain separate data stores',()=>{
@@ -142,7 +142,7 @@ test('official Lever field, seniority and internship facets are used by source q
  {title:'HR Manager',source_facets:{team:'Human Resources',level:'Manager'}}
  ];
  const matched=monitor.supportedNativeFacets(rows,{
-   career_levels:['internship','entry'],role_families:['ai_ml']});
+   career_levels:['internship','entry','junior'],role_families:['ai_ml']});
  assert.ok(matched.some(f=>f.parameter==='team'&&f.value==='Machine Learning'));
  assert.ok(matched.some(f=>f.parameter==='commitment'&&f.value==='Internship'));
  assert.ok(matched.some(f=>f.parameter==='level'&&f.value==='Junior'));
