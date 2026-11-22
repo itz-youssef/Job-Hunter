@@ -20,22 +20,10 @@ SECRETJ_REGISTRATION_ENABLED = "true"
 SECRETJ_ALERTS_ENABLED = "true"
 # Independent source-aware personalized monitoring supersedes snapshot-only alerts.
 SECRETJ_NATIVE_MONITOR_ENABLED = "true"
-# Real Llama 3.3 70B remote-binding test: 30 reviewed job listings,
-# precision 100%, recall 83.3%. Enable strict AI qualification on new jobs,
-# with bounded progressive review of previously monitored listings.
-SECRETJ_AI_VERIFICATION_ENABLED = "true"
-SECRETJ_AI_CONFIDENCE_THRESHOLD = "0.85"
-SECRETJ_AI_MAX_PER_RUN = "8"
-SECRETJ_AI_DAILY_REVIEW_LIMIT = "90"
-SECRETJ_CF_AI_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
-# GPT-OSS is selectively used for occupations with uncertain titles/teams.
-SECRETJ_SEMANTIC_AI_MODEL = "@cf/openai/gpt-oss-120b"
+# Saved preference matching uses the deterministic title dictionary (no AI binding).
 
 # Separate from the existing scanner scheduler. The site worker only handles
 # opted-in, email-confirmed members. Requires configured Resend secrets and verified opt-in.
 [triggers]
 crons = ["* * * * *"]
 
-# Free allocation and usage limits depend on the Cloudflare account.
-[ai]
-binding = "AI"
