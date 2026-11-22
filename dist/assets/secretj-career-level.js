@@ -41,6 +41,14 @@
     const source=dictionary?.[sourceKey]||{};
     const keywords=Array.isArray(source.keywords)?source.keywords:[];
     const found=keywords.map(term).filter(x=>phrase(title,x));
+    // The authored regex is an additional title trigger, never a description
+    // search. This covers exact aliases such as Principal Software Engineer.
+    if(source.regex){
+      try{
+        const match=String(title).match(new RegExp(source.regex,'iu'));
+        if(match?.[0]&&!found.includes(match[0]))found.push(match[0]);
+      }catch{ /* An invalid optional regex never disables exact keyword checks. */ }
+    }
     for(const [brand,phrases] of Object.entries(source.company_brand_names||{})){
       if(!employerMatch(brand,company))continue;
       for(const name of phrases){
