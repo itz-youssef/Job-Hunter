@@ -11,13 +11,13 @@ else if(scope==='saved')data.jobs=[{job_key:'x'.repeat(100),job_snapshot:{title:
 else if(scope==='applications')data.applications=[{job_key:'https://example.com/'+ 'x'.repeat(100),title:'A long software engineering opportunity for mobile layouts',company:'Example',stage:'applied'}];
 else data.found=false;
 await route.fulfill({json:data});});
-let failures=[];for(const w of [320,375,390,430,768,1024,1440]){await page.setViewportSize({width:w,height:812});for(const path of ['/#home','/#jobs','/#companies','/#alerts','/#radar','/#resume','/#cv','/#profile','/#saved','/account.html?view=overview','/account.html?view=saved','/account.html?view=admin','/account.html?view=preferences','/account.html?view=documents','/account.html?view=applications','/account.html?view=profile','/manage-companies.html']){await page.goto('http://127.0.0.1:8765'+path);await page.waitForTimeout(250);let result=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,bad:[...document.querySelectorAll('body *')].filter(e=>{let r=e.getBoundingClientRect();return r.width&&r.right>innerWidth+1&&getComputedStyle(e).position!=='absolute'&&!e.closest('nav')}).slice(0,5).map(e=>e.tagName+'.'+e.className)}));if(result.scroll>w+1)failures.push({w,path,...result});} }
+let failures=[];for(const w of [320,375,390,430,768,1024,1440]){await page.setViewportSize({width:w,height:812});for(const path of ['/#home','/#hunter','/#jobs','/#companies','/#alerts','/#radar','/#resume','/#cv','/#profile','/#saved','/account.html?view=overview','/account.html?view=saved','/account.html?view=admin','/account.html?view=preferences','/account.html?view=documents','/account.html?view=applications','/account.html?view=profile','/manage-companies.html']){await page.goto('http://127.0.0.1:8765'+path);await page.waitForTimeout(250);let result=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,bad:[...document.querySelectorAll('body *')].filter(e=>{let r=e.getBoundingClientRect();return r.width&&r.right>innerWidth+1&&getComputedStyle(e).position!=='absolute'&&!e.closest('nav')}).slice(0,5).map(e=>e.tagName+'.'+e.className)}));if(result.scroll>w+1)failures.push({w,path,...result});} }
 // Verify the brand never turns into an inverse-color tile on real browsers.
 // Include both page headers, both themes, and narrow/wide pointer viewports.
 const hoverFailures=[];
 for(const width of [375,1024]){
  for(const theme of ['light','dark']){
-  for(const path of ['/#home','/account.html?view=overview']){
+  for(const path of ['/#home','/#hunter','/account.html?view=overview']){
    await page.setViewportSize({width,height:812});
    await page.goto('http://127.0.0.1:8765'+path);
    await page.evaluate(t=>localStorage.setItem('jh-theme',t),theme);
@@ -25,7 +25,7 @@ for(const width of [375,1024]){
    // Wait for the app's asynchronous initial theme setup before comparing hover.
    await page.waitForFunction(expected=>document.documentElement.dataset.theme===expected,theme,{timeout:10000});
    // The editorial homepage intentionally hides the legacy sidebar brand.
-   const brand=page.locator(path==='/#home'?'a.sj-land-logo':'a.brand').first();
+   const brand=page.locator(['/#home','/#hunter'].includes(path)?'a.sj-land-logo':'a.brand').first();
    const style=()=>brand.evaluate(el=>{
      function visibleBg(node){
        while(node){
