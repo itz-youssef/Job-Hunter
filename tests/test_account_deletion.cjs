@@ -85,3 +85,20 @@ test('LinkedIn button branding is explicitly enforced in rendered markup',()=>{
  assert.match(js,/sj-linkedin-connect" style="background:#0a66c2!important;color:#fff!important/);
  assert.match(js,/sj-linkedin-disconnect" style="background:#c62828!important;color:#fff!important/);
 });
+
+test('LinkedIn brand colors override monochrome controls inside the theme layer',()=>{
+ const theme=fs.readFileSync('dist/assets/secretj-global-theme.css','utf8');
+ const html=fs.readFileSync('dist/account.html','utf8');
+ const block=theme.slice(theme.indexOf('/* Provider-specific brand controls'));
+ assert.ok(block.length>100);
+ assert.match(block,/body #account-content \.provider-row :is\(a\.sj-linkedin-connect,button\.sj-linkedin-connect\)/);
+ assert.match(block,/background-color:#0a66c2!important/);
+ assert.match(block,/background-color:#004182!important/);
+ assert.match(block,/body #account-content \.provider-row button\.sj-linkedin-disconnect/);
+ assert.match(block,/background-color:#c62828!important/);
+ assert.match(block,/background-color:#a91f1f!important/);
+ assert.match(block,/color:#fff!important/);
+ assert.ok(theme.indexOf('/* Provider-specific brand controls')<theme.lastIndexOf('} /* secretj-theme */'),
+  'brand rules must remain inside the important cascade layer');
+ assert.match(html,/secretj-global-theme\.css\?v=linkedin-theme-layer-20261124/);
+});
