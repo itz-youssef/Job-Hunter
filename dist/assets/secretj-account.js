@@ -210,6 +210,7 @@ async function profile(root) {
     api('/api/secretj-linkedin?action=status').catch(()=>({configured:false,connected:false}))
   ]);
   state.profile=data.profile||{};
+  const detailedReady=data.details_ready!==false;
   const connection=linked.connection||null;
   const photo=linked.connected&&connection?.picture_url?
      `<img class="linkedin-photo" src="${esc(connection.picture_url)}" alt="LinkedIn photo" referrerpolicy="no-referrer">`:'';
@@ -237,6 +238,7 @@ async function profile(root) {
       ${formField('summary','About me',state.profile,true)}
       ${formField('experience','Work experience',state.profile,true)}
       ${formField('education','Education',state.profile,true)}
+${detailedReady?`
       ${formField('projects','Projects — role, technologies and achievements',state.profile,true)}
       ${formField('certifications','Certifications and licences',state.profile,true)}
       ${formField('languages','Languages and proficiency',state.profile,true)}
@@ -244,6 +246,7 @@ async function profile(root) {
       ${formField('volunteering','Volunteering and leadership',state.profile,true)}
       ${formField('training','Courses and training',state.profile,true)}
       ${formField('publications','Publications and research',state.profile,true)}
+      `:'<p class="wide small muted">Advanced profile fields will become available when the database upgrade is applied. Your existing profile is safe.</p>'}
       ${formField('linkedin','LinkedIn profile URL',state.profile)}
       ${formField('github','GitHub URL',state.profile)}
       ${formField('portfolio','Portfolio URL',state.profile)}
@@ -406,13 +409,17 @@ async function previewCV(){
 async function importCVProfile(file){
   if(!window.SecretJCVParser)throw Error('The CV parser is unavailable.');
   const parsed=await window.SecretJCVParser.extract(file);
-  const current=(await api(dataUrl('profile'))).profile||{};
+  const profileResult=await api(dataUrl('profile'));
+  const current=profileResult.profile||{};
+  const supported=profileResult.details_ready===false?
+    window.SecretJCVParser.fields.filter(field=>!['projects','certifications','languages','awards','volunteering','training','publications'].includes(field)):
+    window.SecretJCVParser.fields;
   const merged={};
-  for(const field of window.SecretJCVParser.fields){
+  for(const field of supported){
     merged[field]=String(current[field]||'').trim()||
       String(parsed[field]||'').trim();
   }
-  const count=window.SecretJCVParser.fields.filter(k=>!String(current[k]||'').trim()&&String(parsed[k]||'').trim()).length;
+  const count=supported.filter(k=>!String(current[k]||'').trim()&&String(parsed[k]||'').trim()).length;
   if(count)await api(dataUrl('profile'),'PUT',merged);
   return count;
 }
