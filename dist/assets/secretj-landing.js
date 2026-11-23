@@ -149,7 +149,7 @@
     </div>`;
  }
  function syncAvatar(){
-   const link=document.querySelector('#sj-landing .sj-land-profile-link');
+   const link=document.querySelector('.sj-landing .sj-land-profile-link');
    if(!link)return;
    const source=document.getElementById('sj-profile-photo');
    const target=link.querySelector('.sj-land-profile-photo');
