@@ -33,7 +33,7 @@ const jsonHeaders={
 function json(status,body){return new Response(JSON.stringify(body),{status,headers:jsonHeaders});}
 
 /** Production Node handler shim. Exactly one HTTP response per invocation. */
-export async function runNodeHandler(handler,request){
+export async function runNodeHandler(handler,request,workerEnv){
   const url=new URL(request.url);
   const method=request.method.toUpperCase();
   if(!['GET','HEAD','POST','PUT','PATCH','DELETE'].includes(method))
@@ -56,7 +56,7 @@ export async function runNodeHandler(handler,request){
   // Do not trust a client-supplied X-Forwarded-For for login throttling.
   headers['x-forwarded-for']=request.headers.get('cf-connecting-ip')||'unknown';
   const query=Object.fromEntries(url.searchParams.entries());
-  const req={method,headers,query,body,socket:{remoteAddress:headers['x-forwarded-for']}};
+  const req={method,headers,query,body,env:workerEnv,socket:{remoteAddress:headers['x-forwarded-for']}};
   let response;
   const res={
     statusCode:200,
@@ -82,7 +82,7 @@ export async function handleRequest(request,env,ctx){
   if(pathname==='/api/secretj-native-status')
     return runNodeHandler(nativeStatusHandler.createHandler(env),request);
   const handler=handlers.get(pathname);
-  if(handler)return runNodeHandler(handler,request);
+  if(handler)return runNodeHandler(handler,request,env);
 
   if(url.pathname.startsWith('/api/')){
     // Do not silently proxy old administrative routes to Vercel.
