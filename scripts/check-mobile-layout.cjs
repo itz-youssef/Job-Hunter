@@ -24,7 +24,7 @@ for(const width of [375,1024]){
    await page.reload();
    await page.waitForTimeout(180);
    // The editorial homepage intentionally hides the legacy sidebar brand.
-   const brand=page.locator(path==='/#home'?'button.sj-land-logo':'a.brand').first();
+   const brand=page.locator(path==='/#home'?'a.sj-land-logo':'a.brand').first();
    const style=()=>brand.evaluate(el=>{
      function visibleBg(node){
        while(node){
