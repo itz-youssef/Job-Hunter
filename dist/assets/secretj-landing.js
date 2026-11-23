@@ -158,6 +158,5 @@
    if(valid){target.src=source.src;target.hidden=false;fallback.hidden=true;}
    else{target.hidden=true;target.removeAttribute('src');fallback.hidden=false;}
  }
- window.addEventListener('secretj:avatar-updated',syncAvatar);
  window.SecretJLanding=Object.freeze({render,syncAvatar});
 })();
