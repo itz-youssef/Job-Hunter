@@ -8,15 +8,21 @@ const accountJs=fs.readFileSync('dist/assets/secretj-account.js','utf8');
 const tour=fs.readFileSync('dist/assets/secretj-welcome-tour.js','utf8');
 const backend=fs.readFileSync('api/secretj-auth.js','utf8');
 const migration=fs.readFileSync('database/migrations/005_registration_legal_consent.sql','utf8');
-test('every entry page loads the first-visit tour independently of login',()=>{
+test('welcome tour is signup-only, not an automatic guest or login experience',()=>{
  assert.match(home,/secretj-welcome-tour\.js/);
  assert.match(account,/secretj-welcome-tour\.js/);
- assert.match(tour,/sj-welcome-tour-seen-v1/);
- assert.match(tour,/localStorage\.getItem\(STORAGE_KEY\)/);
- assert.match(tour,/localStorage\.setItem\(STORAGE_KEY,'1'\)/);
+ assert.match(tour,/sj-welcome-tour-new-account-v2:/);
+ assert.match(tour,/function showForNewAccount\(accountId,onClose\)/);
+ assert.match(tour,/window\.SecretJWelcomeTour=Object\.freeze\(\{showForNewAccount\}\)/);
+ assert.doesNotMatch(tour,/DOMContentLoaded.*init|else init\(\)/);
  assert.match(tour,/Skip tour/);
  assert.match(tour,/Start exploring/);
- assert.doesNotMatch(tour,/authUrl|userForRequest|sj_session/);
+ assert.match(accountJs,/if\(newAccount\)\{/);
+ assert.match(accountJs,/showForNewAccount\?\.\(user\.id/);
+ assert.match(accountJs,/newAccount:isRegistration/);
+ assert.match(accountJs,/const newAccount=signupChallengeActive/);
+ assert.match(accountJs,/await signedIn\(result\.user,\{newAccount\}\)/);
+ assert.match(accountJs,/if\(session\.user\)await signedIn\(session\.user\)/);
 });
 test('terms and privacy are linked on the registration form',()=>{
  assert.match(account,/id="registration-consent" hidden/);
