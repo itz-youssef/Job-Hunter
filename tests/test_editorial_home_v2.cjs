@@ -102,7 +102,7 @@ test('landing appearance control delegates to shared persistent theme switch',()
  assert.match(main,/event\.target\.closest\('\[data-home-theme-toggle\]'\)/);
  assert.match(main,/el\('#theme-toggle'\)\.click\(\)/);
  assert.match(main,/localStorage\.setItem\('jh-theme'/);
- assert.match(main,/if\(state\.page==='home'\)syncLandingTheme\(\)/);
+ assert.match(main,/if\(state\.page==='home'\|\|state\.page==='hunter'\)syncLandingTheme\(\)/);
  assert.match(style,/html\[data-theme="dark"\] \.sj-landing/);
 });
 
