@@ -49,7 +49,7 @@
          <button type="button" data-home-scroll="how">How It Works</button>
          <button type="button" data-home-scroll="about">About Us</button>
        </nav>
-       <div class="sj-land-account">${account}
+       <div class="sj-land-account"><button type="button" class="sj-land-theme-toggle" data-home-theme-toggle aria-label="Switch to dark mode" aria-pressed="false" title="Switch appearance"><span class="sj-land-theme-icon" aria-hidden="true">◐</span><span class="sj-land-theme-label">Dark</span></button>${account}
          <button type="button" class="sj-land-menu-btn" data-home-menu aria-label="Toggle navigation" aria-controls="sj-land-links" aria-expanded="false">☰</button>
        </div>
      </header>

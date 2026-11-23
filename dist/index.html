@@ -1452,11 +1452,26 @@ a:hover{color:var(--ink)}
       `<section class="panel"><div class="panel-head"><h2>Test your email delivery</h2></div><p class="muted">Run the manual GitHub Actions test, then inspect the workflow result and your inbox. SMTP acceptance alone does not guarantee inbox delivery.</p><div style="display:flex;gap:10px;flex-wrap:wrap">${!IS_CLOUDFLARE?'<button type="button" class="btn primary" data-email-test>Send test email</button><button type="button" class="btn secondary" data-email-status>Check latest test</button>':''}<a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/actions/workflows/test-email.yml">GitHub Actions ↗</a><a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/settings/secrets/actions">Email secrets ↗</a></div><p class="tiny">${IS_CLOUDFLARE?'Cloudflare does not host authenticated Vercel endpoints. Open the Vercel dashboard for one-click testing, or run the GitHub workflow manually.':'An admin token is required. The website queues a real SMTP test through GitHub Actions; success still requires checking the inbox.'}</p></section>`+
       `<section class="panel"><div class="panel-head"><h2>Matching preferences</h2></div><div class="job-info">${badge('Egypt only','green')}${badge('Junior / Entry')}${badge('Internships')}${badge('Software Engineering')}${badge('AI / ML')}${badge('Computer Vision')}${badge('MLOps')}</div><p class="tiny">These are the target rules in your Python filtering file, not editable settings on this static dashboard.</p></section>`;
   }
+  function syncLandingTheme(){
+      const button=el('[data-home-theme-toggle]');
+      if(!button)return;
+      const dark=document.documentElement?.dataset?.theme==='dark';
+      if(typeof button.setAttribute!=='function'||typeof button.querySelector!=='function')return;
+      button.setAttribute('aria-pressed',String(dark));
+      button.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');
+      button.setAttribute('title',dark?'Switch to light mode':'Switch to dark mode');
+      const label=button.querySelector('.sj-land-theme-label');
+      const icon=button.querySelector('.sj-land-theme-icon');
+      if(label)label.textContent=dark?'Light':'Dark';
+      if(icon)icon.textContent=dark?'☼':'◐';
+  }
+
   function render(){
     const root=el('#main-content');if(!root)return;
     document.body?.classList?.toggle('sj-editorial-home',state.page==='home'||state.page==='hunter');
     root.innerHTML=state.page==='home'?home():state.page==='hunter'?jobHunterIntro():state.page==='radar'?radarHome():state.page==='resume'?resumePage():state.page==='cv'?cvPage():state.page==='profile'?profilePage():state.page==='jobs'?jobsPage():state.page==='saved'?jobsPage(true):state.page==='companies'?companiesPage():alertsPage();
     if(state.page==='home')window.SecretJLanding?.syncAvatar?.();
+    if(state.page==='home')syncLandingTheme();
   }
   async function editCompany(url, changes){
     const token=window.prompt('Enter your admin token to update this company:');
@@ -1549,6 +1564,7 @@ a:hover{color:var(--ink)}
       const isDark=document.documentElement.dataset.theme!=='dark';
       setTheme(isDark);
       try { localStorage.setItem('jh-theme',isDark?'dark':'light'); } catch {}
+      syncLandingTheme();
     });
     el('#cv-preview-dialog').addEventListener('close',()=>{
       el('#cv-preview-content').replaceChildren();
@@ -1574,6 +1590,10 @@ a:hover{color:var(--ink)}
     window.addEventListener('hashchange',()=>go(location.hash.replace('#','')));
     el('#refresh-button').addEventListener('click',()=>Promise.all([refresh(),hydrateMember()]));
     document.addEventListener('click',event=>{
+      if(event.target.closest('[data-home-theme-toggle]')){
+        el('#theme-toggle').click();
+        return;
+      }
       const menu=event.target.closest('[data-home-menu]');
       if(menu){
         const open=menu.getAttribute('aria-expanded')==='true';
