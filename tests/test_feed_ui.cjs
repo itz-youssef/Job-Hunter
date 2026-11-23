@@ -56,7 +56,7 @@ test('invalid links and duplicate listings are not public jobs',()=>{
 test('new web app loads dedicated preference matcher and distinguishes configured status',()=>{
  assert.match(html,/secretj-job-preferences\.js/);
  assert.match(html,/memberPrefsConfigured=value\(5\)\?\.configured===true/);
- assert.match(html,/Explore all available jobs/);
+ assert.match(fs.readFileSync('dist/assets/secretj-landing.js','utf8'),/Discover opportunities/);
  assert.match(html,/All detected opportunities/);
 });
 test('employer publishing dates never fall back to discovery timestamps',()=>{
