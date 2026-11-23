@@ -124,7 +124,12 @@ test('Cloudflare signed-in session switches guest actions to the circular avatar
   assert.equal(u.get('sj-member-email').textContent,login.email);
   u.listeners.window.hashchange();
   await flush();
-  assert.ok(u.calls.filter(x=>x.includes('action=session')).length>=2);
+  assert.equal(u.calls.filter(x=>x.includes('action=session')).length,1,
+    'Returning to same page must not repeat session fetch');
+  u.listeners.window['secretj-account-changed']();
+  await flush();
+  assert.ok(u.calls.filter(x=>x.includes('action=session')).length>=2,
+    'Explicit account change must force fresh verification');
 });
 test('Vercel uses the same logged-in menu; admin only for verified role',async()=>{
   const u=harness({host:'www.jobsnow.tech',user:{...login,role:'admin'}});
@@ -153,7 +158,7 @@ test('PostgreSQL wrapped base64 renders in the header and deletion restores init
   assert.equal(u.get('sj-profile-photo').src,'data:image/png;base64,YWJjZA==');
   assert.equal(u.get('sj-profile-initial').hidden,true);
   options.avatar=null;
-  u.listeners.window.focus();await flush();
+  u.listeners.window['secretj-account-changed']();await flush();
   assert.equal(u.get('sj-profile-photo').hidden,true);
   assert.equal(u.get('sj-profile-initial').hidden,false);
 });
