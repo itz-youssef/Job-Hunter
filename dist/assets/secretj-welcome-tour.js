@@ -1,18 +1,26 @@
 'use strict';
-/* Welcome walkthrough: visitor/browser scoped; intentionally independent of auth. */
+/* Welcome walkthrough: shown only after a successful new-account creation. */
 (() => {
-  const STORAGE_KEY='sj-welcome-tour-seen-v1';
+  const STORAGE_PREFIX='sj-welcome-tour-new-account-v2:';
+  const shownInPage=new Set();
   const slides=[
     {eyebrow:'WELCOME',title:'Welcome to Secret J',desc:'Your space to discover career opportunities and organize your next move. Here is a quick tour.',icon:'✦'},
     {eyebrow:'DISCOVER',title:'Find opportunities that fit',desc:'Open Job Feed to search internships and full-time roles, then filter by company, job type and date.',icon:'⌕'},
-    {eyebrow:'PERSONALIZE',title:'Make Job Hunter yours',desc:'Create an account to set career preferences. Matching results and optional email alerts follow your selected criteria.',icon:'◎'},
+    {eyebrow:'PERSONALIZE',title:'Make Job Hunter yours',desc:'Set your career preferences. Matching results and optional email alerts follow your selected criteria.',icon:'◎'},
     {eyebrow:'STAY ORGANIZED',title:'Your CV and saved jobs',desc:'Save promising openings, track applications and keep your CV and profile in your private account workspace.',icon:'▤'},
-    {eyebrow:'YOU ARE READY',title:'Start exploring',desc:'You can always browse jobs without signing in. Create an account only when you want to save your progress.',icon:'✓'}
+    {eyebrow:'YOU ARE READY',title:'Start exploring',desc:'Your account is ready. Explore jobs, save your progress and update your preferences whenever you like.',icon:'✓'}
   ];
-  function init(){
-    try {if(localStorage.getItem(STORAGE_KEY))return;} catch {try{if(sessionStorage.getItem(STORAGE_KEY))return;}catch{}}
-    // A first visit is browser-specific; it does not require authentication.
-    try{localStorage.setItem(STORAGE_KEY,'1');}catch{try{sessionStorage.setItem(STORAGE_KEY,'1');}catch{}}
+  function showForNewAccount(accountId,onClose){
+    // Called only by the successful register/verify-signup path. Never by
+    // anonymous visits, session hydration, or an existing user's login.
+    const id=String(accountId||'');
+    if(!/^[0-9a-f-]{36}$/i.test(id))return false;
+    const key=STORAGE_PREFIX+id;
+    if(shownInPage.has(id)||document.querySelector('.sj-tour-shade'))return false;
+    try{if(localStorage.getItem(key))return false;}catch{}
+    shownInPage.add(id);
+    try{localStorage.setItem(key,'1');}catch{}
+
     const style=document.createElement('style');
     style.textContent=`
       .sj-tour-shade{position:fixed;inset:0;background:rgba(0,0,0,.83);z-index:2147483000;display:grid;place-items:center;padding:20px}
@@ -61,7 +69,7 @@
       if(event.shiftKey&&idx===0){event.preventDefault();items[items.length-1].focus();}
       else if(!event.shiftKey&&idx===items.length-1){event.preventDefault();items[0].focus();}
     };
-    function close(){document.removeEventListener('keydown',keyHandler,true);backdrop.remove();previousFocus?.focus?.();}
+    function close(){document.removeEventListener('keydown',keyHandler,true);backdrop.remove();previousFocus?.focus?.();if(typeof onClose==='function')onClose();}
     backdrop.addEventListener('click',event=>{
       const action=event.target.closest('[data-sj-tour]')?.dataset.sjTour;
       if(action==='skip')return close();
@@ -71,7 +79,7 @@
     document.body.append(backdrop);
     document.addEventListener('keydown',keyHandler,true);
     paint();
+    return true;
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
-  else init();
+  window.SecretJWelcomeTour=Object.freeze({showForNewAccount});
 })();
