@@ -99,7 +99,7 @@ async function syncHeaderPhoto() {
   photo.removeAttribute('src');
   initials.hidden=false;
 }
-async function signedIn(user) {
+async function signedIn(user,{newAccount=false}={}) {
   state.user=user;
   $('#auth-panel').hidden=true;
   $('#member-panel').hidden=false;
@@ -112,7 +112,15 @@ async function signedIn(user) {
   await syncHeaderPhoto();
   const target=new URLSearchParams(location.search).get('view');
   await showView(['overview','profile','saved','applications','preferences','documents','admin'].includes(target)?target:(user.role==='admin'?'admin':'overview'));
-  if(new URLSearchParams(location.search).get('after')==='home')location.assign('/');
+  const goHome=new URLSearchParams(location.search).get('after')==='home';
+  if(newAccount){
+    // Trigger onboarding only after the server has successfully created the
+    // new account (including verification for OTP signups).
+    const displayed=window.SecretJWelcomeTour?.showForNewAccount?.(user.id,()=>{
+      if(goHome)location.assign('/');
+    });
+    if(goHome&&!displayed)location.assign('/');
+  }else if(goHome)location.assign('/');
 }
 let isRegistration=false;
 let loginChallenge=null;
@@ -434,7 +442,7 @@ $('#auth-form').addEventListener('submit',async event=>{
       banner(result.otp_purpose==='signup'?'Enter the emailed code to activate your new account.':'We sent a verification code to your email. Enter it to finish signing in.');
       return;
     }
-    await signedIn(result.user);
+    await signedIn(result.user,{newAccount:isRegistration});
   }catch(e){banner(e.message,true);}
   finally{button.disabled=false;}
 });
@@ -445,11 +453,12 @@ $('#login-code-form').addEventListener('submit',async event=>{
   busyButton(button,true,'Verifying…');
   try{
     const code=String($('#sj-login-code').value||'').trim();
-    const result=await api(signupChallengeActive?authUrl('verify-signup'):authUrl('verify-login'),'POST',{challenge:loginChallenge,code});
+    const newAccount=signupChallengeActive;
+    const result=await api(newAccount?authUrl('verify-signup'):authUrl('verify-login'),'POST',{challenge:loginChallenge,code});
     loginChallenge=null;
     $('#login-code-panel').hidden=true;
     $('#message').hidden=true;
-    await signedIn(result.user);
+    await signedIn(result.user,{newAccount});
   }catch(error){banner(error.message,true);}
   finally{busyButton(button,false);}
 });
