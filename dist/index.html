@@ -1442,7 +1442,7 @@ a:hover{color:var(--ink)}
   }
   function render(){
     const root=el('#main-content');if(!root)return;
-    document.body.classList.toggle('sj-editorial-home',state.page==='home');
+    document.body?.classList?.toggle('sj-editorial-home',state.page==='home');
     root.innerHTML=state.page==='home'?home():state.page==='radar'?radarHome():state.page==='resume'?resumePage():state.page==='cv'?cvPage():state.page==='profile'?profilePage():state.page==='jobs'?jobsPage():state.page==='saved'?jobsPage(true):state.page==='companies'?companiesPage():alertsPage();
   }
   async function editCompany(url, changes){
