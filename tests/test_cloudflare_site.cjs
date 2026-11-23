@@ -94,3 +94,11 @@ test('Worker layer rejects excessive bodies and malformed JSON',async()=>{
   );
   assert.equal(malformed.status,400);
 });
+
+test('Cloudflare preview deployment has explicit Wrangler previews configuration',()=>{
+  const fs=require('node:fs');
+  const config=fs.readFileSync('cloudflare/site/wrangler.toml','utf8');
+  assert.match(config,/^\[previews\]\s*$/m);
+  assert.match(config,/^\[assets\]\s*$/m);
+  assert.match(config,/^name = "jobhunter-youssef"\s*$/m);
+});
