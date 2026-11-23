@@ -298,7 +298,7 @@ test('anonymous landing previews source-backed public jobs without exposing priv
  const landing=fs.readFileSync('dist/assets/secretj-landing.js','utf8');
  assert.match(html,/const latest=allPublicJobs\(\)\.slice\(\)/);
  assert.match(html,/matching=state\.member&&state\.memberPrefsConfigured\?list\.filter\(/);
- assert.match(landing,/sources:data\.sources\|\|\[\]/);
+ assert.match(landing,/Array\.isArray\(data\.sources\)\?data\.sources:\[\]/);
  assert.doesNotMatch(landing,/match_score|private_match/);
  assert.match(html,/state\.member&&state\.memberPrefsConfigured&&scoreOf\(j\)>=8\?/);
 });
