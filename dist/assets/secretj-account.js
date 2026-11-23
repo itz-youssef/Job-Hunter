@@ -694,7 +694,18 @@ $('#account-content').addEventListener('change',async event=>{
 (async()=>{
   authMode(new URLSearchParams(location.search).get('mode')==='register');
   const linkedin=new URLSearchParams(location.search).get('linkedin');
-  if(linkedin==='error')banner('LinkedIn authorization did not complete. No profile information was changed.',true);
+  if(linkedin==='error'){
+    const reason=new URLSearchParams(location.search).get('reason');
+    const message={
+      provider:'LinkedIn did not return an approval. Check app permissions and try again.',
+      session:'Your Secret J session was not recognized on the LinkedIn callback. Please sign in again on www.jobsnow.tech.',
+      response:'LinkedIn returned an incomplete authorization response. Try connecting again.',
+      state:'The LinkedIn security request expired or did not match this session. Start a fresh connection.',
+      exchange:'LinkedIn approval returned, but the server could not exchange the authorization code for profile access.',
+      storage:'LinkedIn approved access, but saving the connection in Neon failed.'
+    }[reason]||'LinkedIn authorization did not complete.';
+    banner(message+' No profile information was changed.',true);
+  }
   if(linkedin==='connected')banner('LinkedIn profile connected successfully. Your account information is saved in Neon.');
   try {
     const session=await api(authUrl('session'));
