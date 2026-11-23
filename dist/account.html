@@ -198,6 +198,13 @@ html[data-theme="light"] .nav button.active *{
 .top-profile .profile-dropdown-divider{height:1px;background:var(--border);margin:8px 0}
 .top-profile .account-profile-signout{display:block;width:100%;padding:11px 14px;border:0;background:transparent;text-align:left;color:#b44141;font:inherit;font-weight:700;cursor:pointer;border-radius:7px}
 .top-profile .account-profile-signout:hover,.top-profile .account-profile-signout:focus-visible{background:var(--soft)}
+
+/* Account dashboard theme switch uses the same saved preference as Job Hunter. */
+.top-links .account-theme-toggle{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:8px 13px;border:1px solid var(--border);border-radius:999px;background:var(--paper);color:var(--ink);font-weight:750;white-space:nowrap}
+.top-links .account-theme-toggle:hover{filter:brightness(.9)}
+.top-links .account-theme-toggle:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.top-links .account-theme-toggle #account-theme-icon{font-size:18px;line-height:1}
+@media(max-width:670px){.top-links{gap:9px}.top-links .account-theme-toggle{min-width:42px;padding:8px 10px}.top-links .account-theme-toggle #account-theme-label{display:none}}
 </style>
 <link rel="stylesheet" href="/assets/secretj-global-theme.css?v=linkedin-theme-layer-20261124">
 <script src="/assets/secretj-cv-parser.js" defer></script>
@@ -207,6 +214,7 @@ html[data-theme="light"] .nav button.active *{
 <script src="/assets/secretj-career-dictionary.js?v=dictionary-20261122" defer></script>
   <script src="/assets/secretj-career-level.js?v=level-classifier-1" defer></script>
   <script src="/assets/secretj-job-preferences.js?v=constraint-aware-f-1" defer></script>
+<script src="/assets/secretj-account-theme.js?v=dashboard-theme-20261124" defer></script>
 <script src="/assets/secretj-account.js?v=account-delete-linkedin-20261123" defer></script>
 <script src="/assets/secretj-welcome-tour.js?v=welcome-1" defer></script>
 <link rel="stylesheet" href="/assets/responsive.css?v=20261113-mobile-1">
@@ -241,7 +249,7 @@ html[data-theme="dark"] body .sj-delete-account:hover{
 </style>
 </head>
 <body>
-<header><a class="brand" href="/"><img src="/assets/secretj-mark.svg" alt="" width="35" height="35" style="vertical-align:middle;border-radius:9px;margin-right:9px">SECRET <span>J.</span> <span style="font-size:12px;color:var(--muted)">/ JOB HUNTER</span></a><div class="top-links"><a class="account-back" href="/" aria-label="Back to Secret J"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m14 6-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Back to Secret J</span></a>
+<header><a class="brand" href="/"><img src="/assets/secretj-mark.svg" alt="" width="35" height="35" style="vertical-align:middle;border-radius:9px;margin-right:9px">SECRET <span>J.</span> <span style="font-size:12px;color:var(--muted)">/ JOB HUNTER</span></a><div class="top-links"><button id="account-theme-toggle" class="account-theme-toggle" type="button" aria-label="Switch theme" aria-pressed="false"><span id="account-theme-icon" aria-hidden="true">◐</span><span id="account-theme-label">Dark</span></button><a class="account-back" href="/" aria-label="Back to Secret J"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m14 6-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Back to Secret J</span></a>
 <details id="account-profile-menu" class="top-profile" hidden>
 <summary aria-label="Open profile menu"><span class="profile-avatar-icon" id="account-profile-initial">SJ</span><img id="account-profile-photo" class="profile-avatar-picture" alt="Your profile photo" hidden><span class="account-menu-label">Profile</span><svg class="account-menu-chevron" aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
 <div class="profile-dropdown">

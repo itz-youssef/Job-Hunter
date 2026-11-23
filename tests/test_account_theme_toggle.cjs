@@ -1,0 +1,34 @@
+'use strict';
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const html=fs.readFileSync('dist/account.html','utf8');
+const js=fs.readFileSync('dist/assets/secretj-account-theme.js','utf8');
+test('account header includes a keyboard-accessible, responsive theme toggle',()=>{
+ assert.match(html,/id="account-theme-toggle"[^>]*type="button"/);
+ assert.match(html,/id="account-theme-label"/);
+ assert.match(html,/id="account-theme-icon"/);
+ assert.match(html,/secretj-account-theme\.js\?v=dashboard-theme-20261124/);
+ assert.match(html,/@media\(max-width:670px\)[\s\S]*?\.top-links \.account-theme-toggle/);
+});
+test('account switch shares jh-theme and updates theme without reload',()=>{
+ const map=new Map();
+ const button={attributes:{},handlers:{},setAttribute(k,v){this.attributes[k]=v;},addEventListener(k,fn){this.handlers[k]=fn;}};
+ const icon={textContent:''},label={textContent:''},meta={content:'',setAttribute(k,v){this[k]=v;}};
+ const doc={documentElement:{dataset:{theme:'light'}},getElementById(k){return ({'account-theme-toggle':button,'account-theme-icon':icon,'account-theme-label':label})[k];},querySelector(){return meta;}};
+ const handlers={};
+ const win={addEventListener(k,fn){handlers[k]=fn;}};
+ const localStorage={setItem(k,v){map.set(k,v);},getItem(k){return map.get(k)||null;}};
+ vm.runInNewContext(js,{document:doc,window:win,localStorage});
+ button.handlers.click();
+ assert.equal(doc.documentElement.dataset.theme,'dark');
+ assert.equal(map.get('jh-theme'),'dark');
+ assert.equal(meta.content,'#000000');
+ assert.equal(label.textContent,'Light');
+ assert.equal(button.attributes['aria-pressed'],'true');
+ handlers.storage({key:'jh-theme',newValue:'light'});
+ assert.equal(doc.documentElement.dataset.theme,'light');
+ assert.equal(label.textContent,'Dark');
+ assert.equal(meta.content,'#ffffff');
+});
