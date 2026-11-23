@@ -90,7 +90,7 @@ test('different vacancies sharing a title are preserved when their requirements 
 test('search input is debounced rather than synchronously rendering the entire page',()=>{
  assert.match(html,/clearTimeout\(searchTimer\);\s*searchTimer=setTimeout\(/);
  assert.match(html,/if\(!field\.isConnected \|\| field\.value!==value\)return/);
- assert.match(html,/\},250\);/);
+ assert.match(html,/\},440\);/);
  const handler=html.slice(html.indexOf("document.addEventListener('input',event=>{"),html.indexOf("document.addEventListener('submit',async event=>"));
  assert.doesNotMatch(handler,/syncFeedCount\(\);render\(\);/);
 });
