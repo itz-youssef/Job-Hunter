@@ -22,8 +22,10 @@ for(const width of [375,1024]){
    await page.goto('http://127.0.0.1:8765'+path);
    await page.evaluate(t=>localStorage.setItem('jh-theme',t),theme);
    await page.reload();
-   await page.waitForTimeout(180);
-   const brand=page.locator('a.brand').first();
+   // Wait for the app's asynchronous initial theme setup before comparing hover.
+   await page.waitForFunction(expected=>document.documentElement.dataset.theme===expected,theme,{timeout:10000});
+   // The editorial homepage intentionally hides the legacy sidebar brand.
+   const brand=page.locator(path==='/#home'?'a.sj-land-logo':'a.brand').first();
    const style=()=>brand.evaluate(el=>{
      function visibleBg(node){
        while(node){

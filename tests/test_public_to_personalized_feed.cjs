@@ -293,10 +293,12 @@ test('hard rejection is based on actual minimum and excludes Valeo, mylo, Deloit
  }
 });
 
-test('anonymous home shows zero matching jobs and generic latest opportunities',()=>{
+test('anonymous landing previews source-backed public jobs without exposing private matching scores',()=>{
  const html=fs.readFileSync('dist/index.html','utf8');
+ const landing=fs.readFileSync('dist/assets/secretj-landing.js','utf8');
+ assert.match(html,/const latest=allPublicJobs\(\)\.slice\(\)/);
  assert.match(html,/matching=state\.member&&state\.memberPrefsConfigured\?list\.filter\(/);
- assert.match(html,/matched=state\.member&&state\.memberPrefsConfigured\?validJobs\(\)\.filter\(/);
- assert.match(html,/state\.member\?'Your latest opportunities':'Latest opportunities'/);
+ assert.match(landing,/Array\.isArray\(data\.sources\)\?data\.sources:\[\]/);
+ assert.doesNotMatch(landing,/match_score|private_match/);
  assert.match(html,/state\.member&&state\.memberPrefsConfigured&&scoreOf\(j\)>=8\?/);
 });
