@@ -97,7 +97,11 @@ module.exports=async function handler(req,res){
     if(req.method==='POST'&&action!=='disconnect')throw core.fail(405,'Method not allowed');
     if(req.method==='GET'&&!['status','start','callback'].includes(action))
       throw core.fail(404,'Unknown action');
-    const user=await core.requireUser(req);
+    // Start/status/disconnect require an authenticated Secret J session.
+    // LinkedIn's cross-site callback is authenticated by the 256-bit, single-use
+    // OAuth state saved against the account, not a browser cookie that may be
+    // absent across www/apex domains or privacy-controlled redirects.
+    const user=action==='callback'?null:await core.requireUser(req);
     if(action==='status'){
       const enabled=configured(options);
       let rows=[],schemaReady=true;
@@ -165,14 +169,16 @@ module.exports=async function handler(req,res){
        code.length<4||code.length>2048)
       throw core.fail(400,'Invalid LinkedIn authorization response');
     callbackStage='state';
-    // An expiring, single-use state binds this callback to the logged-in user.
+    // OAuth state is an unguessable, one-time authorization grant tied to the
+    // initiating user. Atomically consume it; reject expired and replayed states.
     const ownership=await core.query(
       `DELETE FROM public.sj_linkedin_oauth_states
-       WHERE state_hash=$1 AND user_id=$2 AND expires_at>now()
+       WHERE state_hash=$1 AND expires_at>now()
        RETURNING user_id`,
-      [core.hash(state),user.id]
+      [core.hash(state)]
     );
-    if(!ownership[0])throw core.fail(403,'LinkedIn authorization expired or not owned by this user');
+    if(!ownership[0]?.user_id)throw core.fail(403,'LinkedIn authorization expired or already used');
+    const linkedUserId=ownership[0].user_id;
 
     callbackStage='exchange';
     const profile=await exchangeCode(code,options);
@@ -198,7 +204,7 @@ module.exports=async function handler(req,res){
             updated_at=now()
           RETURNING user_id
         ) SELECT user_id FROM imported`,
-      [user.id,profile.subject,profile.name,profile.email,profile.picture]
+      [linkedUserId,profile.subject,profile.name,profile.email,profile.picture]
     );
     return redirect(res,RETURN_OK);
   }catch(error){
