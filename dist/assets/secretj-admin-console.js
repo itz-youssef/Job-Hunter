@@ -41,7 +41,7 @@ async function render(root,api,state){
    '<div class="item-actions"><button class="btn secondary" data-admin-detail="'+html(u.id)+'">Details</button>'+
    (u.id===state.user.id?'<small>Your account</small>':
      '<button class="btn secondary" data-admin-id="'+html(u.id)+'" data-admin-field="role" data-admin-value="'+(u.role==='admin'?'member':'admin')+'">'+(u.role==='admin'?'Demote':'Make admin')+'</button>'+
-     '<button class="btn secondary" data-admin-id="'+html(u.id)+'" data-admin-field="is_active" data-admin-value="'+(u.is_active?'false':'true')+'">'+(u.is_active?'Suspend':'Activate')+'</button>'+ (u.role==='member'?'<button class="btn sj-delete-account" data-admin-delete="'+html(u.id)+'" data-admin-email="'+html(u.email)+'">Delete account</button>':''))
+     '<button class="btn secondary" data-admin-id="'+html(u.id)+'" data-admin-field="is_active" data-admin-value="'+(u.is_active?'false':'true')+'">'+(u.is_active?'Suspend':'Activate')+'</button>'+ (u.role==='member'?'<button class="btn sj-delete-account" data-admin-delete="'+html(u.id)+'" data-admin-email="'+html(u.email)+'">Delete account</button>':''))+
    '</div></article>').join('')||'<p class="muted">No matching accounts.</p>';
  }
  paint();
