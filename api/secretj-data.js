@@ -101,7 +101,7 @@ module.exports=async function handler(req,res){
         prior=[];
       }
       if(!detailsReady && details.some(field=>String(body[field]||'').trim()))
-        throw core.fail(503,'Expanded profile fields need database migration 012 before they can be saved');
+        throw core.fail(503,'Some profile fields are temporarily unavailable. Please try again later.');
       const input={...body};
       for(const field of details)if(!Object.prototype.hasOwnProperty.call(input,field))
         input[field]=prior[0]?.[field]||'';
