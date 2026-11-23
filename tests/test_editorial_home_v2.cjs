@@ -70,7 +70,7 @@ test('job feed, company list and homepage search link to working workspace',()=>
  assert.doesNotMatch(source,/secretj-job-preferences|matchingEngine|qualification_status/);
 });
 test('new landing theme applies only to home and mobile menu is accessible',()=>{
- assert.match(main,/document\.body\?\.classList\?\.toggle\('sj-editorial-home',state\.page==='home'\)/);
+ assert.match(main,/document\.body\?\.classList\?\.toggle\('sj-editorial-home',state\.page==='home'\|\|state\.page==='hunter'\)/);
  assert.match(style,/body\.sj-editorial-home \.sidebar/);
  assert.match(style,/body\.sj-editorial-home \.topbar/);
  assert.match(style,/@media\(max-width:760px\)/);
