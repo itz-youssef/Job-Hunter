@@ -1255,12 +1255,14 @@ a:hover{color:var(--ink)}
       '<button type="button" class="btn secondary" data-load-more-jobs>Load more jobs ('+
       visible.length+' of '+filtered.length+')</button>':'';
     const personalized=Boolean(state.member&&state.memberPrefsConfigured);
+    const personalizedDisplay=personalized&&!state.reviewExcluded&&
+      !state.query.trim()&&state.jobType!=='internship';
     counter.textContent=visible.length+' of '+filtered.length+' matching results · '+
-      source.length+' '+(personalized?'preference-matched':'detected')+
+      source.length+' '+(personalizedDisplay?'preference-matched':'detected')+
       ' jobs shown. A matching score is not a hiring probability; other roles may have no score.';
     const title=el('#main-content .section-top h1');
     if(title&&state.page==='jobs')title.textContent=state.query.trim()?
-      'Search all detected opportunities':personalized?'Your personalized job feed':'All detected opportunities';
+      'Search all detected opportunities':personalizedDisplay?'Your personalized job feed':'All detected opportunities';
     const nav=el('#nav-job-count');
     if(nav)nav.textContent=String(filtered.length);
   }
