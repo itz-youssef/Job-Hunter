@@ -145,3 +145,24 @@ test('company discovery displays distinct logo branding without repeating foregr
  assert.match(style,/brand-vois\{color:#ed1c24/);
  assert.match(main,/company-logos-20261123/);
 });
+
+test('footer is full width with accessible LinkedIn icon and one legal bar on landing',()=>{
+ const html=landing();
+ assert.match(html,/sj-land-footer-bottom/);
+ assert.match(html,/sj-land-footer-legal/);
+ assert.match(html,/sj-land-linkedin-icon/);
+ assert.match(html,/aria-label="Secret J on LinkedIn/);
+ assert.match(html,/linkedin\.com\/company\/secretj\/home/);
+ assert.match(html,/Terms &amp; Conditions/);
+ assert.match(html,/Privacy Policy/);
+ assert.match(style,/body\.sj-editorial-home>\.sj-legal-footer\{display:none!important\}/);
+ assert.match(style,/grid-template-columns:minmax\(270px,1\.7fr\)/);
+});
+test('dark companies section is layered and legible without changing light treatment',()=>{
+ assert.match(style,/html\[data-theme="dark"\] \.sj-landing #companies::before/);
+ assert.match(style,/html\[data-theme="dark"\] \.sj-landing #companies::after/);
+ assert.match(style,/background:#1c2028/);
+ assert.match(style,/background:rgba\(38,44,54,\.97\)/);
+ assert.match(style,/brand-vois\{color:#ff646d/);
+ assert.match(main,/dark-footer-20261123/);
+});
