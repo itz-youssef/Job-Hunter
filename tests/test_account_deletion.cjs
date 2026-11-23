@@ -79,3 +79,9 @@ test('Cloudflare parses DELETE request bodies and UI controls are exposed',()=>{
  assert.match(page,/\.sj-linkedin-connect/);
  assert.match(page,/\.sj-linkedin-disconnect/);
 });
+
+test('LinkedIn button branding is explicitly enforced in rendered markup',()=>{
+ const js=fs.readFileSync('dist/assets/secretj-account.js','utf8');
+ assert.match(js,/sj-linkedin-connect" style="background:#0a66c2!important;color:#fff!important/);
+ assert.match(js,/sj-linkedin-disconnect" style="background:#c62828!important;color:#fff!important/);
+});
