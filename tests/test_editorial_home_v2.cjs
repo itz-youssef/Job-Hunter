@@ -105,3 +105,17 @@ test('landing appearance control delegates to shared persistent theme switch',()
  assert.match(main,/if\(state\.page==='home'\)syncLandingTheme\(\)/);
  assert.match(style,/html\[data-theme="dark"\] \.sj-landing/);
 });
+
+test('landing sections follow the shared light and dark theme without fixed contrasting bands',()=>{
+ const how=landing();
+ assert.match(how,/class="sj-land-section sj-land-dark"/);
+ assert.match(how,/class="sj-land-bottom-cta"/);
+ assert.match(how,/class="sj-land-footer"/);
+ assert.match(style,/--sj-dark:#f5f4f2/);
+ assert.match(style,/html\[data-theme="dark"\] \.sj-landing\{[^\n]*--sj-dark:#151515/);
+ assert.match(style,/\.sj-land-dark\{background:var\(--sj-dark\);color:var\(--sj-text\)/);
+ assert.match(style,/\.sj-land-bottom-cta\{background:var\(--sj-warm\)/);
+ assert.match(style,/\.sj-land-footer\{background:var\(--sj-paper\);color:var\(--sj-text\)/);
+ assert.doesNotMatch(style,/\.sj-land-bottom-cta\{background:#eae9e7/);
+ assert.doesNotMatch(style,/\.sj-land-footer\{background:#111/);
+});
