@@ -34,7 +34,7 @@
       ' · '+safe(data.locationOf(job))+'</p>'+action+'</article>';
    };
    const account=data.member?
-     '<a class="sj-land-btn dark" href="/account.html?view=overview">My account ↗</a>':
+     '<a class="sj-land-profile-link" href="/account.html?view=overview" aria-label="My profile" title="My profile"><span class="sj-land-profile-fallback" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-4 3-6 7-6s7 2 7 6"/></svg></span><img class="sj-land-profile-photo" alt="" hidden></a>':
      '<a class="sj-land-btn soft" href="/account.html?mode=login&after=home">Log in</a>'+
      '<a class="sj-land-btn dark sj-land-signup" href="/account.html?mode=register&after=home">Sign up</a>';
    return `<div class="sj-landing" id="sj-landing">
@@ -148,5 +148,16 @@
      </div></footer>
     </div>`;
  }
- window.SecretJLanding=Object.freeze({render});
+ function syncAvatar(){
+   const link=document.querySelector('#sj-landing .sj-land-profile-link');
+   if(!link)return;
+   const source=document.getElementById('sj-profile-photo');
+   const target=link.querySelector('.sj-land-profile-photo');
+   const fallback=link.querySelector('.sj-land-profile-fallback');
+   const valid=source&&!source.hidden&&source.getAttribute('src')?.startsWith('data:image/');
+   if(valid){target.src=source.src;target.hidden=false;fallback.hidden=true;}
+   else{target.hidden=true;target.removeAttribute('src');fallback.hidden=false;}
+ }
+ window.addEventListener('secretj:avatar-updated',syncAvatar);
+ window.SecretJLanding=Object.freeze({render,syncAvatar});
 })();
