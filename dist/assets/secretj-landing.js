@@ -108,6 +108,7 @@
         <p class="sj-land-intro">Some employers monitored by Job Hunter. Job availability depends on each company's published vacancies.</p></div>
         <button type="button" class="sj-land-section-link" data-navigate="companies">Explore all companies ↗</button>
        </div>
+       <div class="sj-land-mobile-company-wall sj-land-mobile-company-wall-top" aria-hidden="true"><span class="sj-land-wall-brand sj-land-wall-brand-0">Microsoft</span><span class="sj-land-wall-brand sj-land-wall-brand-1">IBM</span><span class="sj-land-wall-brand sj-land-wall-brand-2">aws</span><span class="sj-land-wall-brand sj-land-wall-brand-3">EY</span><span class="sj-land-wall-brand sj-land-wall-brand-4">Nestlé</span></div>
        <div class="sj-land-chips" role="group" aria-label="Filter companies">
         <button type="button" data-home-company-filter="all" aria-selected="true">Highlights</button>
         <button type="button" data-home-company-filter="technology" aria-selected="false">Technology</button>
@@ -119,6 +120,7 @@
           ?Array.from({length:8},()=>'<div class="sj-land-company sj-land-company-skeleton" aria-hidden="true"><div><span class="sj-land-skeleton-title"></span><span class="sj-land-skeleton-description"></span></div><span class="sj-land-skeleton-action"></span></div>').join('')
           :''}
        </div>
+       <div class="sj-land-mobile-company-wall sj-land-mobile-company-wall-bottom" aria-hidden="true"><span class="sj-land-wall-brand sj-land-wall-brand-0">Deloitte.</span><span class="sj-land-wall-brand sj-land-wall-brand-1">pwc</span><span class="sj-land-wall-brand sj-land-wall-brand-2">Schneider Electric</span><span class="sj-land-wall-brand sj-land-wall-brand-3">Uber</span><span class="sj-land-wall-brand sj-land-wall-brand-4">Coca-Cola</span></div>
        <p class="sj-land-empty" data-home-company-empty hidden>No companies in this category. Explore the complete list instead.</p>
        ${companies.length||data.catalogLoading?'':'<p class="sj-land-empty">Company records could not be loaded. Please try refreshing.</p>'}
      </div></section>
