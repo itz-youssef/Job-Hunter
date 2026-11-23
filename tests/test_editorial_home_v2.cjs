@@ -205,3 +205,24 @@ test('dark footer uses neutral black with no navy tint, keeping light theme unto
  assert.doesNotMatch(style,/\.sj-land-footer\{background:#12151b/);
  assert.match(main,/neutral-footer-20261123/);
 });
+
+test('Job Hunter product hero has separate safe editorial note backgrounds for both modes',()=>{
+ const product=fs.readFileSync('dist/assets/secretj-jobhunter-intro.js','utf8');
+ const css=fs.readFileSync('dist/assets/secretj-jobhunter-intro.css','utf8');
+ const light=fs.readFileSync('dist/assets/secretj-jobhunter-hero-light.svg','utf8');
+ const dark=fs.readFileSync('dist/assets/secretj-jobhunter-hero-dark.svg','utf8');
+ assert.match(css,/secretj-jobhunter-hero-light\.svg/);
+ assert.match(css,/secretj-jobhunter-hero-dark\.svg/);
+ assert.match(css,/pointer-events:none/);
+ assert.match(css,/html\[data-theme="dark"\] \.jh-intro \.jh-intro-hero/);
+ assert.match(main,/stationery-hero-20261123/);
+ for(const a of [light,dark]){
+   assert.match(a,/Job Goals/);
+   assert.match(a,/Find the right role/);
+   assert.match(a,/(Applications|Apply for jobs)/);
+   assert.match(a,/<svg/);
+ }
+ assert.match(product,/LESS SEARCHING\./);
+ assert.match(product,/data-navigate="jobs"/);
+ assert.match(product,/data-home-scroll="how"/);
+});
