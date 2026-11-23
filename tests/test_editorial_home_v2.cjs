@@ -78,3 +78,12 @@ test('new landing theme applies only to home and mobile menu is accessible',()=>
  assert.match(landing(),/aria-expanded="false"/);
  assert.match(main,/setAttribute\('aria-expanded',String\(!open\)\)/);
 });
+
+test('global workspace theme does not flatten editorial landing backgrounds or hover styles',()=>{
+ const theme=fs.readFileSync('dist/assets/secretj-global-theme.css','utf8');
+ assert.match(theme,/body \*:not\(img\)[^\n]*:not\(:where\(\.sj-landing \*\)\)/);
+ assert.match(theme,/body :is\(button,a,input,textarea,select,summary,[role="button"]\):not\(:where\(\.sj-landing \*\)\)/);
+ assert.match(theme,/body \[aria-selected="true"\]:not\(:where\(\.sj-landing \*\)\)/);
+ assert.match(style,/\.sj-land-hero\{background:var\(--sj-warm\)/);
+ assert.match(style,/\.sj-land-dark\{background:var\(--sj-dark\)/);
+});
