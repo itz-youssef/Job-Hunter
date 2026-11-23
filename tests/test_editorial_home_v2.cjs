@@ -164,7 +164,7 @@ test('dark companies section is layered and legible without changing light treat
  assert.match(style,/background:#1c2028/);
  assert.match(style,/background:rgba\(38,44,54,\.97\)/);
  assert.match(style,/brand-vois\{color:#ff646d/);
- assert.match(main,/how-notes-20261123/);
+ assert.match(main,/neutral-footer-20261123/);
 });
 
 test('approved dark wall uses monochrome black, soft logos and retains light mosaic',()=>{
@@ -173,7 +173,7 @@ test('approved dark wall uses monochrome black, soft logos and retains light mos
  assert.match(style,/background:rgba\(23,23,23,\.96\)/);
  assert.match(style,/filter:none/);
  assert.match(style,/secretj-companies-mosaic\.svg/);
- assert.match(main,/how-notes-20261123/);
+ assert.match(main,/neutral-footer-20261123/);
  const darkAsset=fs.readFileSync('dist/assets/secretj-companies-dark.svg','utf8');
  for(const brand of ['Microsoft','IBM','aws','Deloitte','pwc','EY','Nestlé','Schneider','Uber','Coca-Cola']){
    assert.ok(darkAsset.includes(brand),'dark wall includes '+brand);
@@ -187,7 +187,7 @@ test('how-it-works uses pinned career-note artwork for both themes without touch
  assert.match(style,/secretj-how-notes-dark\.svg/);
  assert.match(style,/html\[data-theme="dark"\] \.sj-landing #how/);
  assert.match(style,/pointer-events:none/);
- assert.match(main,/how-notes-20261123/);
+ assert.match(main,/neutral-footer-20261123/);
  const light=fs.readFileSync('dist/assets/secretj-how-notes-light.svg','utf8');
  const dark=fs.readFileSync('dist/assets/secretj-how-notes-dark.svg','utf8');
  for(const asset of [light,dark]){
@@ -197,4 +197,11 @@ test('how-it-works uses pinned career-note artwork for both themes without touch
    assert.match(asset,/Job Hunt/);
  }
  assert.match(landing(),/From searching to finding\./);
+});
+
+test('dark footer uses neutral black with no navy tint, keeping light theme untouched',()=>{
+ assert.match(style,/html\[data-theme="dark"\] \.sj-landing \.sj-land-footer\{background:#0b0b0b;border-color:#303030\}/);
+ assert.match(style,/html\[data-theme="dark"\] \.sj-landing \.sj-land-linkedin-icon\{background:#181818;border-color:#4a4a4a;color:#f5f5f5\}/);
+ assert.doesNotMatch(style,/\.sj-land-footer\{background:#12151b/);
+ assert.match(main,/neutral-footer-20261123/);
 });
