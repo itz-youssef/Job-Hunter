@@ -9,16 +9,23 @@
 })(typeof window!=='undefined'?window:null,function(){
 'use strict';
 const FIELDS=['display_name','headline','location','summary','skills',
-  'experience','education','linkedin','github','portfolio'];
+  'experience','education','projects','certifications','languages','awards','volunteering','training','publications','linkedin','github','portfolio'];
 const limits={
   display_name:120,headline:220,location:180,summary:9000,skills:5000,
-  experience:12000,education:12000,linkedin:500,github:500,portfolio:500
+  experience:12000,education:12000,projects:12000,certifications:6000,languages:3000,awards:5000,volunteering:6000,training:6000,publications:6000,linkedin:500,github:500,portfolio:500
 };
 const headings=[
   ['summary',/^(?:professional\s+)?(?:summary|profile|objective|about\s+me|personal\s+statement)$/i],
   ['skills',/^(?:technical\s+)?(?:skills|technologies|tech\s+stack|core\s+competencies|tools\s+and\s+technologies|technical\s+expertise)$/i],
   ['experience',/^(?:professional\s+|work\s+|relevant\s+)?(?:experience|employment|work\s+history|internships?)$/i],
-  ['education',/^(?:education|academic\s+background|qualifications)$/i]
+  ['education',/^(?:education|academic\s+background|qualifications)$/i],
+  ['projects',/^(?:selected\s+|academic\s+|personal\s+|professional\s+)?projects?(?:\s+experience)?$/i],
+  ['certifications',/^(?:certificates?|certifications?|licenses?\s+and\s+certifications?)$/i],
+  ['languages',/^(?:languages?|language\s+proficiency)$/i],
+  ['awards',/^(?:awards?|honou?rs?|achievements?|accomplishments?)$/i],
+  ['volunteering',/^(?:volunteer(?:ing)?(?:\s+experience|\s+work)?|community\s+(?:service|involvement))$/i],
+  ['training',/^(?:courses?|training|professional\s+development|workshops?|bootcamps?)$/i],
+  ['publications',/^(?:publications?|research(?:\s+papers?|\s+work)?)$/i]
 ];
 const otherHead=/^(?:certifications?|certificates?|achievements?|honors?|awards?|publications?|projects?|languages?|volunteering|references?|courses?|training|contact|activities|leadership|interests?)$/i;
 function normalizeText(text){
@@ -46,7 +53,7 @@ function parseText(raw){
   const text=normalizeText(raw);
   if(text.length<35)throw Error('No readable CV text found. Image-only or scanned PDFs require OCR.');
   const lines=text.split(/\n/).map(x=>x.trim()).filter(Boolean);
-  const sections={summary:[],skills:[],experience:[],education:[]};
+  const sections=Object.fromEntries(['summary','skills','experience','education',...FIELDS.filter(x=>!['display_name','headline','location','summary','skills','experience','education','linkedin','github','portfolio'].includes(x))].map(key=>[key,[]]));
   const intro=[];
   let section=null;
   for(const line of lines){
@@ -73,6 +80,13 @@ function parseText(raw){
     skills:sections.skills.join('\n').slice(0,5000),
     experience:sections.experience.join('\n').slice(0,12000),
     education:sections.education.join('\n').slice(0,12000),
+    projects:sections.projects.join('\n').slice(0,12000),
+    certifications:sections.certifications.join('\n').slice(0,6000),
+    languages:sections.languages.join('\n').slice(0,3000),
+    awards:sections.awards.join('\n').slice(0,5000),
+    volunteering:sections.volunteering.join('\n').slice(0,6000),
+    training:sections.training.join('\n').slice(0,6000),
+    publications:sections.publications.join('\n').slice(0,6000),
     linkedin:readLink(text,/(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/[\w%-]+\/?/i),
     github:readLink(text,/(?:https?:\/\/)?(?:www\.)?github\.com\/[\w.-]+\/?/i),
     portfolio:readLink(text,/https:\/\/(?:www\.)?(?!linkedin\.com|github\.com)[\w.-]+\.[a-z]{2,}(?:\/[^\s]*)?/i)
