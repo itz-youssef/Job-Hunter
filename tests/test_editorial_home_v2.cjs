@@ -87,3 +87,9 @@ test('global workspace theme does not flatten editorial landing backgrounds or h
  assert.match(style,/\.sj-land-hero\{background:var\(--sj-warm\)/);
  assert.match(style,/\.sj-land-dark\{background:var\(--sj-dark\)/);
 });
+
+test('desktop editorial menu is horizontal and legacy sidebar button widths cannot stack it',()=>{
+ assert.match(style,/\.sj-landing \.sj-land-links\{display:flex;flex-direction:row;flex-wrap:nowrap;/);
+ assert.match(style,/\.sj-landing \.sj-land-links :is\(a,button\)\{display:inline-flex;width:auto;flex:0 0 auto;/);
+ assert.match(style,/@media\(max-width:900px\)[\s\S]*?\.sj-landing \.sj-land-links\{display:none;[^\n]*flex-direction:column/);
+});
