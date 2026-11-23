@@ -224,7 +224,7 @@ async function profile(root) {
   const photo=linked.connected&&connection?.picture_url?
      `<img class="linkedin-photo" src="${esc(connection.picture_url)}" alt="LinkedIn photo" referrerpolicy="no-referrer">`:'';
   const connect=linked.connected?
-    `<button class="btn danger" type="button" data-linkedin-disconnect>Disconnect LinkedIn</button>`:
+    `<button class="btn sj-linkedin-disconnect" type="button" data-linkedin-disconnect>Disconnect LinkedIn</button>`:
     linked.status_error?
       '<button class="btn sj-linkedin-connect" type="button" data-linkedin-retry>Retry LinkedIn status</button>':
     linked.configured?
@@ -262,7 +262,8 @@ ${detailedReady?`
       ${formField('github','GitHub URL',state.profile)}
       ${formField('portfolio','Portfolio URL',state.profile)}
       <button class="btn wide" type="submit">Save my profile</button>
-    </form>`;
+    </form>
+    ${state.user?.role==='member'?'<section class="sj-danger-zone"><h3>Delete your account</h3><p>Permanently remove your Secret J account, profile, CV, saved jobs, applications and sessions. This cannot be undone.</p><button class="btn sj-delete-account" type="button" data-delete-account>Delete account permanently</button></section>':''}`;
 }
 function jobCard(row){
   const j=row.job_snapshot||{};
@@ -583,10 +584,24 @@ $('#account-content').addEventListener('submit',async event=>{
 });
 $('#account-content').addEventListener('click',async event=>{
   const b=event.target.closest('button');if(!b)return;
+  // Admin console controls their own confirmed destructive actions.
+  if(b.hasAttribute('data-admin-delete'))return;
   if(b.dataset.sjBusy==='true')return;
   const tracked=!b.dataset.go&&!b.hasAttribute('data-preview-cv')&&!b.hasAttribute('data-download-cv');
   if(tracked){busyButton(b,true,'Working…');setAccountProgress(true,'Updating your account…');}
   try {
+    if(b.hasAttribute('data-delete-account')){
+      if(state.user?.role!=='member')return banner('Administrator accounts cannot be deleted here.',true);
+      const confirmation=prompt('This will permanently delete your account and all its data. Type DELETE to continue.');
+      if(confirmation===null)return;
+      if(confirmation!=='DELETE')return banner('Deletion cancelled: confirmation did not match.',true);
+      const password=prompt('Enter your current account password to permanently delete your account.');
+      if(password===null)return;
+      await api('/api/secretj-auth?action=delete-account','POST',{confirm:'DELETE',password});
+      state.user=null;state.profile=null;showAuth();
+      banner('Your account was permanently deleted.');
+      return;
+    }
     if(b.dataset.go)return showView(b.dataset.go);
     if(b.hasAttribute('data-email-test')){
       b.disabled=true;

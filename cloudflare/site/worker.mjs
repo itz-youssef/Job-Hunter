@@ -39,7 +39,7 @@ export async function runNodeHandler(handler,request,workerEnv){
   if(!['GET','HEAD','POST','PUT','PATCH','DELETE'].includes(method))
     return json(405,{ok:false,error:'Method not allowed'});
   let body={};
-  if(['POST','PUT','PATCH'].includes(method)){
+  if(['POST','PUT','PATCH','DELETE'].includes(method)){
     const type=request.headers.get('content-type')||'';
     const size=Number(request.headers.get('content-length')||0);
     if(size>maxBody)return json(413,{ok:false,error:'Request too large'});
