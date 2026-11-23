@@ -45,7 +45,12 @@ test('LinkedIn connection uses Worker environment even when process.env has no c
    assert.equal(enabled.status,200);
    assert.equal(JSON.parse(enabled.body).configured,true);
    const disabled=await invoke({...request,env:{LINKEDIN_CLIENT_ID:'test-client-id'}});
-   assert.equal(JSON.parse(disabled.body).configured,false);
+   const disabledInfo=JSON.parse(disabled.body);
+   assert.equal(disabledInfo.configured,false);
+   assert.deepEqual(disabledInfo.setup_issues,['LINKEDIN_CLIENT_SECRET_missing']);
+   assert.doesNotMatch(disabled.body,/test-private-secret/);
+   const mismatch=await invoke({...request,env:{...env,LINKEDIN_REDIRECT_URI:'https://invalid.example/callback'}});
+   assert.deepEqual(JSON.parse(mismatch.body).setup_issues,['LINKEDIN_REDIRECT_URI_mismatch']);
  }finally{
    core.requireUser=previous;
    core.setQueryForTests(null);
