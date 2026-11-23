@@ -16,6 +16,9 @@
   // Never claim login from localStorage or from a different deployment domain.
   let lastUserId = null;
   let requestSequence = 0;
+  let lastAccountRefresh = 0;
+  let accountRefreshPending = false;
+  const ACCOUNT_REFRESH_TTL_MS=120000;
   async function loadAvatar(sequence, userId) {
     if (!photo || !initial) return;
     try {
@@ -53,7 +56,11 @@
     if (initial) initial.hidden = false;
   }
 
-  async function refreshAccount() {
+  async function refreshAccount(force=false) {
+    if(document.hidden||accountRefreshPending)return;
+    if(!force&&lastAccountRefresh&&Date.now()-lastAccountRefresh<ACCOUNT_REFRESH_TTL_MS)return;
+    accountRefreshPending=true;
+    lastAccountRefresh=Date.now();
     const sequence = ++requestSequence;
     try {
       const response = await fetch('/api/secretj-auth?action=session', {
@@ -77,12 +84,13 @@
       const ops = document.getElementById('sj-admin-tools');
       if (ops) ops.hidden = user.role !== 'admin';
 
-      if (String(user.id) !== lastUserId) {
-        lastUserId = String(user.id);
+      const accountChanged=String(user.id)!==lastUserId;
+      if(accountChanged){
+        lastUserId=String(user.id);
         resetAvatar();
       }
-      // Re-read the private avatar when the tab is revisited after editing it.
-      await loadAvatar(sequence, lastUserId);
+      // Avoid an extra image download when revisiting the same tab.
+      if(accountChanged||force)await loadAvatar(sequence,lastUserId);
     } catch {
       if (sequence !== requestSequence) return;
       lastUserId = null;
@@ -93,7 +101,7 @@
       if (ops) ops.hidden = true;
       resetAvatar();
       if (menu) menu.open = false;
-    }
+    }finally{accountRefreshPending=false;}
   }
 
   document.addEventListener('click', (event) => {
@@ -121,8 +129,8 @@
   });
 
   refreshAccount();
-  window.addEventListener('secretj-account-changed', () => refreshAccount());
-  window.addEventListener('storage', event => { if(event.key === 'sj-account-change') refreshAccount(); });
+  window.addEventListener('secretj-account-changed', () => refreshAccount(true));
+  window.addEventListener('storage', event => { if(event.key === 'sj-account-change') refreshAccount(true); });
   window.addEventListener('focus', () => refreshAccount());
   window.addEventListener('pageshow', () => refreshAccount());
   window.addEventListener('hashchange', () => refreshAccount());
