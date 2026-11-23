@@ -583,13 +583,17 @@
     },
     {
       "name": "Blink22",
-      "source_url": "https://blink22.com/careers/",
-      "source_kind": "blink22_egypt",
-      "preference_mode": "internal-fallback",
-      "available_fields": [],
+      "source_url": "https://apply.workable.com/blink22-3/",
+      "source_kind": "workable",
+      "preference_mode": "official-live-unfiltered",
+      "available_fields": [
+        "employment_type",
+        "experience",
+        "location"
+      ],
       "supports_employer_side_filter": false,
-      "verification": "not-verified",
-      "documentation": ""
+      "verification": "documented-api-capability",
+      "documentation": "Verified public Workable board; only currently listed Egypt vacancies qualify, historical job ads are not treated as open."
     },
     {
       "name": "Amazon Egypt",
