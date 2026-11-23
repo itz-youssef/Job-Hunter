@@ -327,6 +327,13 @@ a:hover{color:var(--ink)}
   }
     const FEED_PAGE_SIZE=40;
   let searchTimer=null;
+  // The browser preserves this DOM and state while switching tabs.
+  // Avoid turning a tab focus event into six private API requests.
+  const TAB_SYNC_MIN_MS=120000;
+  let lastMemberSyncAt=0;
+  let memberSyncRunning=false;
+  const lastResults={list:null,key:'',value:null};
+  let dedupSnapshot=null,dedupPublic=null;
   const names = {home:'Home',radar:'Job Hunter',resume:'Resume Updater',cv:'CV Holder',profile:'My Profile', jobs:'Job Feed', saved:'Saved Jobs', companies:'My Companies', alerts:'Email Alerts'};
   const where = (value) => String(value || '').toLowerCase().trim();
   const getDate = (s) => {const d=new Date(s); return Number.isNaN(+d)?null:d;};
@@ -401,8 +408,11 @@ a:hover{color:var(--ink)}
   }
   async function hydrateMember(){
     const sequence=++memberSequence;
-    state.memberLoading=true;
-    if(['jobs','profile','cv','saved'].includes(state.page))render();
+    lastMemberSyncAt=Date.now();
+    memberSyncRunning=true;
+    const wasReady=Boolean(state.member&&state.memberPrefsConfigured);
+    state.memberLoading=!wasReady;
+    if(!wasReady&&['jobs','profile','cv','saved'].includes(state.page))render();
     try{
       const result=await memberRequest('/api/secretj-auth?action=session');
       if(sequence!==memberSequence)return;
@@ -433,10 +443,16 @@ a:hover{color:var(--ink)}
       state.savedRecords=saved?.jobs||[];
       state.saved=new Set(state.savedRecords.map(x=>String(x.job_key)));
       state.memberEmail=value(4);
+      const previousPrefs=JSON.stringify(state.memberPrefs||null);
       state.memberPrefsConfigured=value(5)?.configured===true;
       state.memberPrefs=state.memberPrefsConfigured?value(5)?.preferences:null;
-      state.watchFeed=[];state.watchFeedLoaded=false;state.watchFeedPendingSince=0;state.watchFeedError='';
-      if(state.memberPrefsConfigured){
+      const preferencesChanged=changed||previousPrefs!==JSON.stringify(state.memberPrefs||null);
+      // Keep authenticated feed mounted unless the account or filters changed.
+      if(preferencesChanged){
+        state.watchFeed=[];state.watchFeedLoaded=false;
+        state.watchFeedPendingSince=0;state.watchFeedError='';
+      }
+      if(state.memberPrefsConfigured&&(!state.watchFeedLoaded||preferencesChanged)){
         try{
           const feed=await loadMatchingFeed(userId,sequence);
           if(sequence!==memberSequence||state.member?.id!==userId)return;
@@ -456,7 +472,11 @@ a:hover{color:var(--ink)}
       state.memberEmail=null;state.memberPrefs=null;state.memberPrefsConfigured=false;state.watchFeed=[];state.watchFeedLoaded=false;state.watchFeedError='';state.saved=new Set();state.savedRecords=[];
       state.memberError=e.message;
     }finally{
-      if(sequence===memberSequence){state.memberLoading=false;syncFeedCount();render();}
+      if(sequence===memberSequence){
+        memberSyncRunning=false;
+        state.memberLoading=false;
+        if(!document.hidden){syncFeedCount();render();}
+      }
     }
   }
   async function cloudSave(key,remove){
@@ -494,8 +514,10 @@ a:hover{color:var(--ink)}
       normalize(locationOf(j)),description].join('|');
   }
   function allPublicJobs(){
+    const source=state.snapshot.jobs||state.snapshot.job_feed;
+    if(source&&source===dedupSnapshot&&dedupPublic)return dedupPublic;
     const seenUrls=new Set(),seenVacancies=new Set();
-    return jobs().filter(j=>{
+    const result=jobs().filter(j=>{
       if(!publicJob(j))return false;
       const url=jobURL(j).trim();
       if(seenUrls.has(url))return false;
@@ -505,6 +527,9 @@ a:hover{color:var(--ink)}
       if(fingerprint)seenVacancies.add(fingerprint);
       return true;
     });
+    dedupSnapshot=source;
+    dedupPublic=result;
+    return result;
   }
   function validJobs(){
     const all=allPublicJobs();
@@ -1133,8 +1158,17 @@ a:hover{color:var(--ink)}
   function filterJobs(list){
     const q=where(state.query);
     const now=Date.now();
-    return list.filter(j=>{
-      if(q && !(window.SecretJJobSearch?.matches(j,q,window.SecretJJobPreferences?.classify)))return false;
+    const cacheKey=[q,state.role,state.companyFilter,state.jobType,
+      state.dateFilter,state.dateBasis,state.sortBy,Math.floor(now/60000)].join('|');
+    if(lastResults.list===list&&lastResults.key===cacheKey)return lastResults.value;
+    const queryScores=q?new WeakMap():null;
+    const searchScore=j=>{
+      if(!queryScores)return 0;
+      if(!queryScores.has(j))queryScores.set(j,window.SecretJJobSearch?.score(j,q,window.SecretJJobPreferences?.classify)||0);
+      return queryScores.get(j);
+    };
+    const result=list.filter(j=>{
+      if(q && !searchScore(j))return false;
       if(!matchesRole(j,state.role))return false;
       if(state.companyFilter!=='all' && companyOf(j)!==state.companyFilter)return false;
       // Use precisely the same matching semantics as entering 'intern' in Search.
@@ -1148,7 +1182,7 @@ a:hover{color:var(--ink)}
       return true;
     }).sort((a,b)=>{
       if(q && state.sortBy!=='company'){
-        const relevance=(j)=>window.SecretJJobSearch?.score(j,q,window.SecretJJobPreferences?.classify)||0;
+        const relevance=searchScore;
         return relevance(b)-relevance(a) ||
           (getDate(jobDateForFilter(b))||0)-(getDate(jobDateForFilter(a))||0);
       }
@@ -1156,6 +1190,8 @@ a:hover{color:var(--ink)}
       if(state.sortBy==='company')return companyOf(a).localeCompare(companyOf(b))||scoreOf(b)-scoreOf(a);
       return scoreOf(b)-scoreOf(a)||(getDate(jobDateForFilter(b))||0)-(getDate(jobDateForFilter(a))||0);
     });
+    lastResults.list=list;lastResults.key=cacheKey;lastResults.value=result;
+    return result;
   }
   // The navbar's count is the same filtered list used to render job cards.
   // Recompute on auth completion, periodic snapshot refresh, and each filter.
@@ -1519,12 +1555,20 @@ a:hover{color:var(--ink)}
     });
     readSaved();
     let syncTimer;
-    const scheduleMemberSync=()=>{clearTimeout(syncTimer);syncTimer=setTimeout(()=>hydrateMember(),100);};
-    window.addEventListener('secretj-account-changed',scheduleMemberSync);
-    window.addEventListener('storage',event=>{if(event.key==='sj-account-change')scheduleMemberSync();});
-    window.addEventListener('pageshow',scheduleMemberSync);
-    window.addEventListener('focus',scheduleMemberSync);
-    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')scheduleMemberSync();});
+    const scheduleMemberSync=(force=false)=>{
+      if(memberSyncRunning||document.hidden)return;
+      if(!force&&lastMemberSyncAt&&Date.now()-lastMemberSyncAt<TAB_SYNC_MIN_MS)return;
+      clearTimeout(syncTimer);
+      syncTimer=setTimeout(()=>{if(!memberSyncRunning&&!document.hidden)hydrateMember();},180);
+    };
+    // Explicit account changes always revalidate; short tab switches do not.
+    window.addEventListener('secretj-account-changed',()=>scheduleMemberSync(true));
+    window.addEventListener('storage',event=>{if(event.key==='sj-account-change')scheduleMemberSync(true);});
+    window.addEventListener('pageshow',event=>{if(event.persisted)scheduleMemberSync();});
+    window.addEventListener('focus',()=>scheduleMemberSync());
+    document.addEventListener('visibilitychange',()=>{
+      if(document.visibilityState==='visible')scheduleMemberSync();
+    });
     document.querySelectorAll('nav button[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
     window.addEventListener('hashchange',()=>go(location.hash.replace('#','')));
     el('#refresh-button').addEventListener('click',()=>Promise.all([refresh(),hydrateMember()]));
@@ -1637,11 +1681,13 @@ a:hover{color:var(--ink)}
         state.feedLimit=FEED_PAGE_SIZE;
         const at=field.selectionStart;
         render();
-        syncFeedCount();
+        // render() already computed the filtered result, reuse it for the badge.
+        const badge=el('#nav-job-count');
+        if(badge&&lastResults.value)badge.textContent=String(lastResults.value.length);
         const next=el('#job-search');
         next?.focus({preventScroll:true});
         try{next?.setSelectionRange(at,at);}catch{}
-      },250);
+      },440);
     });
     document.addEventListener('submit',async event=>{
       if(event.target.id==='workspace-email-verify'){
@@ -1712,10 +1758,17 @@ a:hover{color:var(--ink)}
     hydrateMember();
     refresh(true);
     // Public catalog and private source-watch results refresh independently.
-    setInterval(()=>{refresh(true);refreshMatchingFeed();},60000);
+    setInterval(()=>{
+      // Never refresh, rerender or download data for a hidden tab.
+      if(document.hidden)return;
+      if(document.activeElement?.id==='job-search')return;
+      refresh(true);
+      refreshMatchingFeed();
+    },60000);
     // Quick follow-up only while the user's saved preferences are still
     // awaiting their FIRST matching feed. Never poll continuously when ready.
     setInterval(()=>{
+      if(document.hidden)return;
       if(state.member&&state.memberPrefsConfigured&&!state.memberLoading&&
          !state.watchFeedLoaded&&state.watchFeedPendingSince>0&&
          Date.now()-state.watchFeedPendingSince<90000)
