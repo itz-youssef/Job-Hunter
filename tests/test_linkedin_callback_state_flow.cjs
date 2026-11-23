@@ -73,3 +73,12 @@ test('start and status still require a signed-in member',async()=>{
   }
  }finally{core.requireUser=prev}
 });
+
+test('temporary LinkedIn status errors allow a retry rather than falsely claiming missing credentials',()=>{
+ const fs=require('node:fs');
+ const ui=fs.readFileSync('dist/assets/secretj-account.js','utf8');
+ assert.match(ui,/data-linkedin-retry/);
+ assert.match(ui,/Retry LinkedIn status/);
+ assert.match(ui,/linked\.status_error\?/);
+ assert.match(ui,/await showView\('profile'\)/);
+});
