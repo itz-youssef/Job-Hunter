@@ -72,7 +72,7 @@
          <div class="sj-land-product-meta"><span>01 / AVAILABLE NOW</span><span class="sj-land-product-state">LIVE</span></div>
          <div><span class="sj-land-eyebrow">JOB DISCOVERY</span><h3>Job Hunter ↗</h3>
           <p>Discover roles from monitored company career pages, choose your preferences, save opportunities, and get optional email alerts for matches.</p></div>
-         <div><button type="button" data-navigate="jobs" class="sj-land-btn dark">Explore Job Hunter ↗</button></div>
+         <div><button type="button" data-navigate="hunter" class="sj-land-btn dark">Explore Job Hunter ↗</button></div>
         </article>
         <article class="sj-land-product pending">
          <div class="sj-land-product-meta"><span>02 / IN DEVELOPMENT</span><span class="sj-land-product-state">COMING SOON</span></div>
@@ -137,7 +137,7 @@
        <div><h3>Secret J.</h3><p>Career-focused technology. Thoughtful products for finding opportunities and showcasing your work.</p></div>
        <div class="sj-land-footer-links"><strong>OUR PRODUCTS</strong>
         <button type="button" data-home-scroll="products">All Products</button>
-        <button type="button" data-navigate="jobs">Job Hunter · Live</button>
+        <button type="button" data-navigate="hunter">Job Hunter · Live</button>
         <button type="button" data-home-scroll="products">Botfolio · Coming Soon</button>
         <button type="button" data-home-scroll="how">How Job Hunter Works</button></div>
        <div class="sj-land-footer-links"><strong>SECRET J</strong>
