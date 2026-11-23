@@ -23,6 +23,10 @@
      <button type="button" data-navigate="home">Secret J Home</button>
     </nav>
     <div class="sj-land-account">
+     <button type="button" class="sj-land-theme-toggle" data-home-theme-toggle aria-label="Switch to dark mode" aria-pressed="false" title="Switch appearance"><span class="sj-land-theme-icon" aria-hidden="true">◐</span><span class="sj-land-theme-label">Dark</span></button>
+     ${data.member?
+       '<a class="sj-land-profile-link" href="/account.html?view=overview" aria-label="My profile" title="My profile"><span class="sj-land-profile-fallback" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-4 3-6 7-6s7 2 7 6"/></svg></span><img class="sj-land-profile-photo" alt="" hidden></a>':
+       '<a class="sj-land-btn soft" href="/account.html?mode=login&after=home">Log in</a>'}
      <button type="button" class="sj-land-btn dark" data-navigate="jobs">Open Job Feed ↗</button>
      <button type="button" class="sj-land-menu-btn" data-home-menu aria-label="Toggle navigation" aria-controls="sj-land-links" aria-expanded="false">☰</button>
     </div>

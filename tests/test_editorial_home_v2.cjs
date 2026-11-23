@@ -102,7 +102,7 @@ test('landing appearance control delegates to shared persistent theme switch',()
  assert.match(main,/event\.target\.closest\('\[data-home-theme-toggle\]'\)/);
  assert.match(main,/el\('#theme-toggle'\)\.click\(\)/);
  assert.match(main,/localStorage\.setItem\('jh-theme'/);
- assert.match(main,/if\(state\.page==='home'\)syncLandingTheme\(\)/);
+ assert.match(main,/if\(state\.page==='home'\|\|state\.page==='hunter'\)syncLandingTheme\(\)/);
  assert.match(style,/html\[data-theme="dark"\] \.sj-landing/);
 });
 
@@ -118,4 +118,17 @@ test('landing sections follow the shared light and dark theme without fixed cont
  assert.match(style,/\.sj-land-footer\{background:var\(--sj-paper\);color:var\(--sj-text\)/);
  assert.doesNotMatch(style,/\.sj-land-bottom-cta\{background:#eae9e7/);
  assert.doesNotMatch(style,/\.sj-land-footer\{background:#111/);
+});
+
+test('company and product pages share full-bleed navigation, theme and profile controls',()=>{
+ const product=fs.readFileSync('dist/assets/secretj-jobhunter-intro.js','utf8');
+ assert.match(style,/\.sj-landing \.sj-land-topline,\s*\.sj-landing \.sj-land-nav\{\s*width:100%;max-width:none/);
+ assert.match(style,/\.sj-landing \.sj-land-nav\{\s*position:sticky;top:0/);
+ assert.match(style,/\.sj-landing \.sj-land-section\{scroll-margin-top:94px/);
+ assert.match(product,/data-home-theme-toggle/);
+ assert.match(product,/sj-land-profile-link/);
+ assert.match(product,/data-navigate="home"/);
+ assert.match(product,/data-navigate="jobs"/);
+ assert.match(main,/state\.page==='home'\|\|state\.page==='hunter'\)syncLandingTheme\(\)/);
+ assert.match(main,/state\.page==='home'\|\|state\.page==='hunter'\)window\.SecretJLanding\?\.syncAvatar/);
 });

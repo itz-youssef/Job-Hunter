@@ -286,7 +286,7 @@ a:hover{color:var(--ink)}
     </div>
   </details>
 </div></div></header>
-      <main id="main-content" class="main-content" tabindex="-1"><p class="loading">Loading your workspace…</p></main>
+      <main id="main-content" class="main-content" tabindex="-1"><section class="sj-loading-shell" role="status" aria-live="polite" aria-busy="true"><div class="sj-loading-heading"><span class="sj-loading-ring" aria-hidden="true"></span><div><strong>Preparing your workspace</strong><small>Loading current opportunities and your saved settings…</small></div></div><div class="sj-skeleton-grid" aria-hidden="true"><div class="sj-skeleton-card"><span class="sj-skeleton-line sj-short"></span><span class="sj-skeleton-line sj-wide"></span><span class="sj-skeleton-line sj-medium"></span></div><div class="sj-skeleton-card"><span class="sj-skeleton-line sj-short"></span><span class="sj-skeleton-line sj-wide"></span><span class="sj-skeleton-line sj-medium"></span></div></div></section></main>
       <footer class="footer">JOB HUNTER <span>Your next move starts here.</span></footer>
     </div>
   </div>
@@ -1470,8 +1470,8 @@ a:hover{color:var(--ink)}
     const root=el('#main-content');if(!root)return;
     document.body?.classList?.toggle('sj-editorial-home',state.page==='home'||state.page==='hunter');
     root.innerHTML=state.page==='home'?home():state.page==='hunter'?jobHunterIntro():state.page==='radar'?radarHome():state.page==='resume'?resumePage():state.page==='cv'?cvPage():state.page==='profile'?profilePage():state.page==='jobs'?jobsPage():state.page==='saved'?jobsPage(true):state.page==='companies'?companiesPage():alertsPage();
-    if(state.page==='home')window.SecretJLanding?.syncAvatar?.();
-    if(state.page==='home')syncLandingTheme();
+    if(state.page==='home'||state.page==='hunter')window.SecretJLanding?.syncAvatar?.();
+    if(state.page==='home'||state.page==='hunter')syncLandingTheme();
   }
   async function editCompany(url, changes){
     const token=window.prompt('Enter your admin token to update this company:');
@@ -1588,7 +1588,21 @@ a:hover{color:var(--ink)}
     });
     document.querySelectorAll('nav button[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
     window.addEventListener('hashchange',()=>go(location.hash.replace('#','')));
-    el('#refresh-button').addEventListener('click',()=>Promise.all([refresh(),hydrateMember()]));
+    el('#refresh-button').addEventListener('click',async ()=>{
+      const button=el('#refresh-button');
+      if(button.disabled)return;
+      button.disabled=true;
+      button.classList.add('sj-refresh-busy');
+      button.setAttribute('aria-busy','true');
+      button.setAttribute('aria-label','Refreshing opportunities and account');
+      try{await Promise.allSettled([refresh(),hydrateMember()]);}
+      finally{
+        button.disabled=false;
+        button.classList.remove('sj-refresh-busy');
+        button.removeAttribute('aria-busy');
+        button.setAttribute('aria-label','Refresh data');
+      }
+    });
     document.addEventListener('click',event=>{
       if(event.target.closest('[data-home-theme-toggle]')){
         el('#theme-toggle').click();
