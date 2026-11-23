@@ -164,7 +164,7 @@ test('dark companies section is layered and legible without changing light treat
  assert.match(style,/background:#1c2028/);
  assert.match(style,/background:rgba\(38,44,54,\.97\)/);
  assert.match(style,/brand-vois\{color:#ff646d/);
- assert.match(main,/dark-footer-20261123/);
+ assert.match(main,/monochrome-dark-20261123/);
 });
 
 test('approved dark wall uses monochrome black, soft logos and retains light mosaic',()=>{
