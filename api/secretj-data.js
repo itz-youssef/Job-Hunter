@@ -34,7 +34,7 @@ function jobSnapshot(input){
 function validateProfile(body){
   const specs={
     display_name:120,headline:220,location:180,summary:9000,skills:5000,
-    experience:12000,education:12000,linkedin:500,github:500,portfolio:500
+    experience:12000,education:12000,projects:12000,certifications:6000,languages:3000,awards:5000,volunteering:6000,training:6000,publications:6000,linkedin:500,github:500,portfolio:500
   };
   const record={};
   for(const [field,max] of Object.entries(specs)){
@@ -78,23 +78,35 @@ module.exports=async function handler(req,res){
 
     if(scope==='profile'){
       if(req.method==='GET'){
-        const rows=await core.query('SELECT display_name,headline,location,summary,skills,experience,education,linkedin,github,portfolio,updated_at FROM public.sj_profiles WHERE user_id=$1',[userId]);
+        const rows=await core.query('SELECT display_name,headline,location,summary,skills,experience,education,projects,certifications,languages,awards,volunteering,training,publications,linkedin,github,portfolio,updated_at FROM public.sj_profiles WHERE user_id=$1',[userId]);
         return core.reply(res,200,{ok:true,profile:rows[0]||null});
       }
       if(req.method!=='PUT')throw core.fail(405,'Method not allowed');
       const v=validateProfile(body);
       const rows=await core.query(
         `INSERT INTO public.sj_profiles
-           (user_id,display_name,headline,location,summary,skills,experience,education,linkedin,github,portfolio)
-         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+           (user_id,display_name,headline,location,summary,skills,experience,education,projects,certifications,languages,awards,volunteering,training,publications,linkedin,github,portfolio)
+         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
          ON CONFLICT(user_id) DO UPDATE SET
-           display_name=EXCLUDED.display_name,headline=EXCLUDED.headline,
-           location=EXCLUDED.location,summary=EXCLUDED.summary,skills=EXCLUDED.skills,
-           experience=EXCLUDED.experience,education=EXCLUDED.education,
-           linkedin=EXCLUDED.linkedin,github=EXCLUDED.github,
+           display_name=EXCLUDED.display_name,
+           headline=EXCLUDED.headline,
+           location=EXCLUDED.location,
+           summary=EXCLUDED.summary,
+           skills=EXCLUDED.skills,
+           experience=EXCLUDED.experience,
+           education=EXCLUDED.education,
+           projects=EXCLUDED.projects,
+           certifications=EXCLUDED.certifications,
+           languages=EXCLUDED.languages,
+           awards=EXCLUDED.awards,
+           volunteering=EXCLUDED.volunteering,
+           training=EXCLUDED.training,
+           publications=EXCLUDED.publications,
+           linkedin=EXCLUDED.linkedin,
+           github=EXCLUDED.github,
            portfolio=EXCLUDED.portfolio,updated_at=now()
          RETURNING updated_at`,
-        [userId,v.display_name,v.headline,v.location,v.summary,v.skills,v.experience,v.education,v.linkedin,v.github,v.portfolio]
+        [userId,v.display_name,v.headline,v.location,v.summary,v.skills,v.experience,v.education,v.projects,v.certifications,v.languages,v.awards,v.volunteering,v.training,v.publications,v.linkedin,v.github,v.portfolio]
       );
       return core.reply(res,200,{ok:true,updated_at:rows[0]?.updated_at});
     }
