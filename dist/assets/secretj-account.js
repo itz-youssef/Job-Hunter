@@ -224,11 +224,11 @@ async function profile(root) {
   const photo=linked.connected&&connection?.picture_url?
      `<img class="linkedin-photo" src="${esc(connection.picture_url)}" alt="LinkedIn photo" referrerpolicy="no-referrer">`:'';
   const connect=linked.connected?
-    `<button class="btn sj-linkedin-disconnect" type="button" data-linkedin-disconnect>Disconnect LinkedIn</button>`:
+    `<button class="btn sj-linkedin-disconnect" style="background:#c62828!important;color:#fff!important;border:1px solid #c62828!important" type="button" data-linkedin-disconnect>Disconnect LinkedIn</button>`:
     linked.status_error?
       '<button class="btn sj-linkedin-connect" type="button" data-linkedin-retry>Retry LinkedIn status</button>':
     linked.configured?
-      '<a class="btn sj-linkedin-connect" href="/api/secretj-linkedin?action=start" aria-label="Connect your LinkedIn profile">Connect with LinkedIn ↗</a>':
+      '<a class="btn sj-linkedin-connect" style="background:#0a66c2!important;color:#fff!important;border:1px solid #0a66c2!important" href="/api/secretj-linkedin?action=start" aria-label="Connect your LinkedIn profile">Connect with LinkedIn ↗</a>':
       '<button class="btn secondary" type="button" data-linkedin-disabled>LinkedIn setup required</button>';
   root.innerHTML=`<h2>Professional profile</h2>
     <p class="muted">Describe your experience, education, and skills. Your information is saved privately to your account.</p>
