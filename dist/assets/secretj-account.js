@@ -214,13 +214,13 @@ async function profile(root) {
   const connection=linked.connection||null;
   const issues=Array.isArray(linked.setup_issues)?linked.setup_issues:[];
   const issuesText={
-    LINKEDIN_CLIENT_ID_missing:'Client ID not visible to the deployed Worker',
-    LINKEDIN_CLIENT_SECRET_missing:'Client Secret not visible to the deployed Worker',
-    LINKEDIN_REDIRECT_URI_mismatch:'Redirect URL does not match the OAuth callback',
-    LINKEDIN_DATABASE_MIGRATION_REQUIRED:'LinkedIn database tables are missing: migration 002 must be applied to production Neon'
+    LINKEDIN_CLIENT_ID_missing:'LinkedIn connection is temporarily unavailable. Please try again later.',
+    LINKEDIN_CLIENT_SECRET_missing:'LinkedIn connection is temporarily unavailable. Please try again later.',
+    LINKEDIN_REDIRECT_URI_mismatch:'LinkedIn connection is temporarily unavailable. Please try again later.',
+    LINKEDIN_DATABASE_MIGRATION_REQUIRED:'LinkedIn connection is temporarily unavailable. Please try again later.'
   };
   const diagnosis=issues.map(key=>issuesText[key]).filter(Boolean).join('; ')||
-    (linked.status_error?'LinkedIn status API error: '+linked.status_error:'');
+    (linked.status_error?'LinkedIn connection status is temporarily unavailable.':'');
   const photo=linked.connected&&connection?.picture_url?
      `<img class="linkedin-photo" src="${esc(connection.picture_url)}" alt="LinkedIn photo" referrerpolicy="no-referrer">`:'';
   const connect=linked.connected?
@@ -231,7 +231,7 @@ async function profile(root) {
       '<a class="btn sj-linkedin-connect" href="/api/secretj-linkedin?action=start" aria-label="Connect your LinkedIn profile">Connect with LinkedIn ↗</a>':
       '<button class="btn secondary" type="button" data-linkedin-disabled>LinkedIn setup required</button>';
   root.innerHTML=`<h2>Professional profile</h2>
-    <p class="muted">Describe your experience, education, and skills. Your information is stored in Neon, not locally.</p>
+    <p class="muted">Describe your experience, education, and skills. Your information is saved privately to your account.</p>
     <div class="provider-row">
       ${photo}<div class="spacer"><strong>LinkedIn profile connection</strong>
       <p class="small muted">${linked.connected?
@@ -257,7 +257,7 @@ ${detailedReady?`
       ${formField('volunteering','Volunteering and leadership',state.profile,true)}
       ${formField('training','Courses and training',state.profile,true)}
       ${formField('publications','Publications and research',state.profile,true)}
-      `:'<p class="wide small muted">Advanced profile fields will become available when the database upgrade is applied. Your existing profile is safe.</p>'}
+      `:'<p class="wide small muted">Some profile fields are temporarily unavailable. Your existing information is preserved.</p>'}
       ${formField('linkedin','LinkedIn profile URL',state.profile)}
       ${formField('github','GitHub URL',state.profile)}
       ${formField('portfolio','Portfolio URL',state.profile)}
@@ -326,7 +326,7 @@ async function preferences(root){
     <label>Choose where you receive alerts
       <input type="email" id="sj-email-recipient" maxlength="254" required autocomplete="email" value="${esc(recipient)}">
     </label>
-    <p class="small">Choose your own address. We'll email a confirmation code to prove you control it before any job alerts can be sent there. Your address is stored privately in Neon.</p>
+    <p class="small">Choose your own address. We'll email a confirmation code to prove you control it before any job alerts can be sent there. Your email address is saved privately to your account.</p>
     <p class="small"><strong>Email status:</strong> ${verified?'Verified':'Not verified yet'}.
       ${emailReady?'Email delivery is available.':'Email service is not configured by Secret J yet.'}</p>
     <div class="actions">
@@ -345,7 +345,7 @@ async function preferences(root){
     ${currentScan?.completed_at?' · '+esc(new Date(currentScan.completed_at).toLocaleString()):''}</p>
     <p class="small">Changing your saved preferences establishes a fresh baseline; only subsequently detected jobs trigger new messages. Source failures and incomplete career pages can delay alerts.</p>
   </div>
-  <p class="muted">Choose the jobs you want alerts about. Preferences are stored privately in Neon; automatic emails require verification, opt-in and activated mail service.</p>
+  <p class="muted">Choose the jobs you want alerts about. Your preferences are saved to your account. Email alerts require verification and your permission.</p>
   <form id="preferences-form">
   <label><span><input type="checkbox" name="egypt_only" style="width:auto" ${p.egypt_only?'checked':''}> Egypt-based opportunities</span></label>
   <h3>Target career levels</h3>
@@ -374,7 +374,7 @@ function readBase64(file) {
 async function documents(root){
   const [cv,avatar]=await Promise.all([api(dataUrl('cv')),api(dataUrl('avatar'))]);
   root.innerHTML=`<h2>CV and profile photo</h2>
-    <p class="muted">Your files are stored privately in Neon and available only to your account.</p>
+    <p class="muted">Your files are saved privately to your account.</p>
     ${avatar.found?`<img class="avatar" alt="Your profile photo" src="data:${esc(avatar.file.mime_type)};base64,${esc(avatar.file.base64)}">`:
       '<div class="avatar" aria-label="No profile photo"></div>'}
     <div class="filebox"><h3>Profile photo</h3>
@@ -678,11 +678,11 @@ $('#account-content').addEventListener('change',async event=>{
         const count=await importCVProfile(file);
         await showView('profile');
         banner(count?
-          'CV saved to Neon. '+count+' profile fields auto-filled. Review and edit any details.':
+          'CV saved to your account. '+count+' profile fields auto-filled. Review and edit any details.':
           'CV saved. No new fields recognized; existing profile details were preserved.');
       }catch(parseError){
         await showView('documents');
-        banner('CV saved to Neon. Automatic parsing could not complete: '+parseError.message,true);
+        banner('CV saved to your account. Automatic parsing could not complete: '+parseError.message,true);
       }
     }
     if(input.id==='avatar-upload'&&input.files[0]){
@@ -692,7 +692,7 @@ $('#account-content').addEventListener('change',async event=>{
       await api(dataUrl('avatar'),'POST',{mime:'image/webp',content:await readBase64(file)});
       await syncHeaderPhoto();
       await showView('documents');
-      banner('Your centered profile photo was saved to Neon.');
+      banner('Your profile photo was saved to your account.');
     }
   }catch(e){banner(e.message,true);}
   finally{if(tracked)setAccountProgress(false);}
@@ -708,11 +708,11 @@ $('#account-content').addEventListener('change',async event=>{
       response:'LinkedIn returned an incomplete authorization response. Try connecting again.',
       state:'The LinkedIn security request expired or did not match this session. Start a fresh connection.',
       exchange:'LinkedIn approval returned, but the server could not exchange the authorization code for profile access.',
-      storage:'LinkedIn approved access, but saving the connection in Neon failed.'
+      storage:'LinkedIn approved access, but your connection could not be saved. Please try again.'
     }[reason]||'LinkedIn authorization did not complete.';
     banner(message+' No profile information was changed.',true);
   }
-  if(linkedin==='connected')banner('LinkedIn profile connected successfully. Your account information is saved in Neon.');
+  if(linkedin==='connected')banner('LinkedIn profile connected successfully. Your account information is saved.');
   try {
     const session=await api(authUrl('session'));
     if(session.user)await signedIn(session.user);
@@ -728,22 +728,22 @@ $('#account-content').addEventListener('change',async event=>{
         if(!response.ok){
           const reason=health.database;
           const message=reason==='not_configured'?
-            'Neon is not connected to Vercel. Set Neon database connection setting in the Vercel Production environment and redeploy.':
+            'Account services are temporarily unavailable. Please try again later.':
             reason==='migration_required'?
-            'The database connection works, but required Secret J tables are missing. Run database migration 001 in Neon.':
+            'Account services are temporarily unavailable. Please try again later.':
             reason==='connection_failed'?
-            'Neon connection failed. Check the current Neon database connection setting in Vercel and review the Function logs.':
+            'Account services are temporarily unavailable. Please try again later.':
             response.status===404?
-            'This deployment does not include the new account API. Deploy the latest main branch on Vercel.':
-            'Account setup is not ready. Check the Neon connection and Vercel deployment.';
+            'Account services are temporarily unavailable. Please try again later.':
+            'Account setup is temporarily unavailable. Please try again later.';
           banner(message,true);
         }else if(!health.registration_enabled){
-          banner('Sign up is not enabled yet. Existing members can sign in. Enable SECRETJ_REGISTRATION_ENABLED in Vercel to register new accounts.');
+          banner('Sign up is temporarily unavailable. Existing members can still sign in.');
         }
       }catch{
-        banner('Account services are currently unavailable. Confirm the latest Vercel deployment is ready.',true);
+        banner('Account services are temporarily unavailable. Please try again later.',true);
       }
     }
-  }catch(e){showAuth();banner('Backend unavailable. The existing job feed still works; '+e.message,true);}
+  }catch(e){showAuth();banner('Account services unavailable. The existing job feed still works; '+e.message,true);}
 })();
 })();

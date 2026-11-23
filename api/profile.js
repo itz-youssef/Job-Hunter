@@ -25,9 +25,9 @@ function config(){
   const token=process.env.PROFILE_GITHUB_TOKEN||process.env.GITHUB_TOKEN||'';
   const branch=process.env.PROFILE_GITHUB_BRANCH||'main';
   if(!/^[\w.-]+\/[\w.-]+$/.test(repo)||!token)throw Object.assign(
-    new Error('Private cloud backup is not configured. Set PROFILE_GITHUB_REPO and PROFILE_GITHUB_TOKEN on Vercel.'),{code:503});
+    new Error('Private backup is currently unavailable. Please contact support.'),{code:503});
   if(repo.toLowerCase()===(process.env.GITHUB_REPO||'').toLowerCase())
-    throw Object.assign(new Error('Refusing to store your CV in the public Job Hunter repository'),{code:503});
+    throw Object.assign(new Error('Public destinations cannot be used for private backups. Please contact support.'),{code:503});
   return {repo,token,branch};
 }
 async function github(cfg,path,options={}){

@@ -139,7 +139,7 @@ module.exports=async function handler(req,res){
         await core.query('SELECT 1 FROM public.sj_linkedin_oauth_states LIMIT 0');
         await core.query('SELECT 1 FROM public.sj_linkedin_connections LIMIT 0');
       }catch(error){
-        if(error?.code==='42P01')throw core.fail(503,'LinkedIn database migration 002 is required');
+        if(error?.code==='42P01')throw core.fail(503,'LinkedIn connection is temporarily unavailable. Please try again later.');
         throw error;
       }
       const state=randomBytes(32).toString('base64url');

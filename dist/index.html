@@ -594,7 +594,7 @@ a:hover{color:var(--ink)}
   }
   async function json(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);return r.json();}
   async function companyApi(method='GET',payload,admin){
-    if(IS_CLOUDFLARE)throw Error('Cloudflare dashboard is read-only. Manage companies on Vercel or GitHub.');
+    if(IS_CLOUDFLARE)throw Error('Company management is unavailable in this version of the dashboard.');
     const r=await fetch('/api/companies',{method,cache:'no-store',headers:{'Content-Type':'application/json','x-admin-token':admin||''},body:method==='GET'?undefined:JSON.stringify(payload)});
     const data=await r.json().catch(()=>({}));if(!r.ok)throw Error(data.error||`API error (${r.status})`);return data;
   }
@@ -643,7 +643,7 @@ a:hover{color:var(--ink)}
     const res=await Promise.allSettled([catalogRequest,...requests.slice(1)]);
     if(res[0].status==='fulfilled')state.snapshot=res[0].value;
     if(res[1].status==='fulfilled'){state.companies=res[1].value.companies||[];state.companyApiError='';}
-    else state.companyApiError=IS_CLOUDFLARE?'GitHub watchlist could not be loaded.':'Company API unavailable — check Vercel deployment.';
+    else state.companyApiError=IS_CLOUDFLARE?'The company list could not be loaded.':'Company information is temporarily unavailable.';
     if(res[2].status==='fulfilled'){state.scanReport=res[2].value;state.scans=res[2].value.companies||[];state.statusError='';}
     else state.statusError='No custom scanner report published yet.';
     if(res[3].status==='fulfilled')state.alerts=res[3].value;
@@ -802,8 +802,8 @@ a:hover{color:var(--ink)}
       (!IS_CLOUDFLARE?'<button type="button" class="btn secondary" data-profile-cloud-save>Private cloud backup</button><button type="button" class="btn secondary" data-profile-cloud-load>Restore private profile</button>':'')+
       '</div></form>'+
       '<p class="tiny profile-notice">'+esc(profileMessage||'CV extraction is best effort. Review imported information before using it for job applications.')+'</p>'+
-      '<p class="tiny">Your details stay on this device unless you explicitly choose private cloud backup. The public website repository never stores your personal data.</p>'+
-      (IS_CLOUDFLARE?'<p class="tiny">Private GitHub sync is available only through the authenticated Vercel dashboard.</p>':'')+
+      '<p class="tiny">Your details stay on this device unless you explicitly choose private cloud backup. Your personal data is not included in the public job listings.</p>'+
+      (IS_CLOUDFLARE?'<p class="tiny">Private backup is available in the supported account dashboard.</p>':'')+
       '</section>';
   }
 
@@ -899,7 +899,7 @@ a:hover{color:var(--ink)}
   }
 
   async function profileCloud(method,kind,payload,token){
-    if(IS_CLOUDFLARE)throw Error('Private GitHub backup is available through Vercel only');
+    if(IS_CLOUDFLARE)throw Error('Private backup is unavailable in this version of the dashboard');
     const res=await fetch('/api/profile?kind='+encodeURIComponent(kind),{
       method,cache:'no-store',
       headers:{'x-admin-token':token,'Content-Type':'application/json'},
@@ -910,8 +910,8 @@ a:hover{color:var(--ink)}
     return data;
   }
   function adminForCloud(){
-    if(IS_CLOUDFLARE)throw Error('Open the Vercel dashboard for private cloud backup.');
-    const token=window.prompt('Enter your admin token for private GitHub backup:');
+    if(IS_CLOUDFLARE)throw Error('Private backup is unavailable in this version of the dashboard.');
+    const token=window.prompt('Enter your admin authorization to manage private backup:');
     if(!token)throw Error('Cloud backup cancelled');
     return token;
   }
@@ -932,7 +932,7 @@ a:hover{color:var(--ink)}
     await profileCloud('PUT','profile',{profile:{...profile,
       cvName:cvEntry?.name||profile.cvName||'',
       cvMime:cvEntry?.blob.type||profile.cvMime||''}},token);
-    profileMessage='Private profile backup saved in your separate private GitHub repository.';
+    profileMessage='Your private profile backup was saved.';
   }
   async function restoreCloudProfile(token){
     const result=await profileCloud('GET','profile',null,token);
@@ -940,7 +940,7 @@ a:hover{color:var(--ink)}
     if(!confirm('Replace your locally saved profile with the private cloud version?'))return;
     profile={...blankProfile(),...result.profile};
     await profileStore('save',profile);
-    profileMessage='Profile restored from private GitHub';
+    profileMessage='Profile restored from your private backup';
     render();
   }
   async function saveCloudCV(token){
@@ -953,7 +953,7 @@ a:hover{color:var(--ink)}
   async function restoreCloudCV(token){
     const metadata=await profileCloud('GET','profile',null,token);
     const result=await profileCloud('GET','cv',null,token);
-    if(!result.found)throw Error('No CV exists in your private GitHub backup');
+    if(!result.found)throw Error('No CV was found in your private backup');
     if(!confirm('Replace the CV currently saved on this browser?'))return;
     const saved=metadata.found?metadata.profile:{};
     const mime=saved.cvMime||'application/pdf';
@@ -963,22 +963,22 @@ a:hover{color:var(--ink)}
     await cvAction('save',item);
     cvEntry=item;
     if(metadata.found){profile={...blankProfile(),...saved};await profileStore('save',profile);}
-    profileMessage='CV restored from private GitHub storage';
+    profileMessage='CV restored from your private backup';
     render();
   }
   async function sendAdminEmailTest(){
-    if(IS_CLOUDFLARE)throw Error('Use the GitHub Actions test link on Cloudflare.');
+    if(IS_CLOUDFLARE)throw Error('Use the monitoring tools to run a test email.');
     const token=window.prompt('Enter your admin token to send one SMTP test email:');
     if(!token)return;
-    if(!confirm('Send one test email to the address configured in GitHub Actions?'))return;
+    if(!confirm('Send one test email to your configured recipient?'))return;
     const response=await fetch('/api/test-email',{method:'POST',
       headers:{'x-admin-token':token,'Content-Type':'application/json'}});
     const data=await response.json().catch(()=>({}));
     if(!response.ok)throw Error(data.error||'Could not request an email test');
-    toast('Email test queued. Open GitHub Actions or check the run status shortly.');
+    toast('Email test requested. You can review its status in the monitoring dashboard.');
   }
   async function adminEmailTestStatus(){
-    if(IS_CLOUDFLARE)throw Error('Email test run status is available on Vercel.');
+    if(IS_CLOUDFLARE)throw Error('Email test status is unavailable in this version of the dashboard.');
     const token=window.prompt('Admin token to check latest test email run:');
     if(!token)return;
     const response=await fetch('/api/test-email',{headers:{'x-admin-token':token},cache:'no-store'});
@@ -998,8 +998,8 @@ a:hover{color:var(--ink)}
         '<label for="cv-upload" class="btn primary cv-upload-label">'+(file?'Replace CV':'Upload CV')+'</label>'+
         '<input type="file" id="cv-upload" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>'+
         (file?'<button type="button" class="btn secondary" data-cv-preview><svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg> View CV</button><button type="button" class="btn secondary" data-cv-download>Download CV</button><button type="button" class="btn secondary" data-cv-remove>Remove CV</button>':'')+
-        '<p class="tiny cv-privacy">Your CV is saved locally in this browser (up to 10 MB). Optional private GitHub cloud backup is available from the Vercel dashboard with admin authentication; cloud uploads are limited to 2 MB and require a separate private repository.</p>'+
-        (!IS_CLOUDFLARE?'<div class="cv-cloud-actions"><button type="button" class="btn secondary" data-cv-cloud-save>Back up CV privately</button><button type="button" class="btn secondary" data-cv-cloud-load>Restore CV from cloud</button></div>':'<p class="tiny">To sync with a private GitHub repository, use the Vercel dashboard. This Cloudflare preview cannot access private Vercel APIs.</p>')+
+        '<p class="tiny cv-privacy">Your CV is saved on this device (up to 10 MB). Where private backup is available, an administrator can securely back up files up to 2 MB.</p>'+
+        (!IS_CLOUDFLARE?'<div class="cv-cloud-actions"><button type="button" class="btn secondary" data-cv-cloud-save>Back up CV privately</button><button type="button" class="btn secondary" data-cv-cloud-load>Restore CV from cloud</button></div>':'<p class="tiny">Private backup is unavailable in this version of the dashboard.</p>')+
       '</section>';
   }
 
@@ -1353,7 +1353,7 @@ a:hover{color:var(--ink)}
     const id=Number(run?.id);
     const url=Number.isSafeInteger(id)&&id>0?`${REPO}/actions/runs/${id}`:`${REPO}/actions`;
     return `<div class="monitoring-run">
-      <div><strong>${esc(label)}</strong><small>Target: ${esc(cadence)} · Next cron slot: ${esc(nextLabel)}</small><small>Latest actual GitHub run: ${esc(reported)}</small></div>
+      <div><strong>${esc(label)}</strong><small>Target: ${esc(cadence)} · Next cron slot: ${esc(nextLabel)}</small><small>Latest monitoring run: ${esc(reported)}</small></div>
       <div class="monitoring-run-action">${badge(stateLabel,color)}<a class="btn secondary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View run ↗</a></div>
     </div>`;
   }
@@ -1365,14 +1365,14 @@ a:hover{color:var(--ink)}
     const last=scanTime&&Number.isFinite(+scanTime)?prettyDate(stamp):'Not yet published';
     const accepted=state.scanReport?.emails_accepted_by_smtp;
     const count=Number.isInteger(accepted)?` · SMTP accepted ${accepted} alert(s)`:'';
-    return `<section class="panel monitoring-summary" aria-label="GitHub scanner activity">
+    return `<section class="panel monitoring-summary" aria-label="Monitoring activity">
       <div class="panel-head"><h2>◷ Live monitoring runs</h2><a class="link-button" href="${REPO}/actions" target="_blank" rel="noopener noreferrer">All runs ↗</a></div>
-      <p class="muted">Cloudflare requests checks on schedule; GitHub Actions executes the Python scans. Only actual completed runs and published results confirm progress.</p>
+      <p class="muted">Monitoring runs on a schedule. Only completed checks and published results confirm progress.</p>
       ${monitoringRunRow('Custom company scanner','every 5 min',{managed:true},state.runs.custom)}
       ${monitoringRunRow('Core scanner','every 15 min',{managed:false,active:true},state.runs.core)}
       <p class="monitoring-freshness">${badge(overdue?'Snapshot overdue':'Snapshot published',overdue?'orange':'green')} Last published custom scan: ${esc(last)}${esc(count)}.</p>
       ${state.runsError?`<p class="tiny">${esc(state.runsError)}</p>`:''}
-      <p class="tiny">Next cron times are estimates, not guaranteed starts. Run status is checked from GitHub periodically; job data refreshes from the published snapshot. SMTP acceptance does not confirm inbox delivery.</p>
+      <p class="tiny">Next check times are estimates, not guaranteed starts. Monitoring status updates periodically, and an accepted email request does not guarantee inbox delivery.</p>
     </section>`;
   }
   function companyCard(c){
@@ -1392,10 +1392,10 @@ a:hover{color:var(--ink)}
     return top('YOUR WATCHLIST','My companies','Every company and its actual monitoring status, together.',IS_CLOUDFLARE||state.member?.role!=='admin'?'':`<button class="btn primary" data-action="open-company">+ Add company</button>`)+
       `<section class="stats">${stat('Tracked companies','Built-in + manually added',all.length)}${stat('Monitoring','Last scan succeeded',active)}${stat('Waiting for scan','Not checked yet',pending)}${stat('Custom career pages','Managed from this site',state.companies.length)}</section>`+
       monitoringPanel()+
-      `${IS_CLOUDFLARE?'<p class="tiny">Live monitoring data from GitHub. Company editing is available from the Vercel dashboard.</p>':''}`+
+      `${IS_CLOUDFLARE?'<p class="tiny">Company monitoring status is shown here. Editing is available only to authorized administrators.</p>':''}`+
       `${state.companyApiError?`<p class="inline-error">${esc(state.companyApiError)}</p>`:''}${state.statusError?`<p class="tiny">${esc(state.statusError)}</p>`:''}`+
       `<div class="cards">${all.length?all.map(companyCard).join(''):empty('Build your company watchlist','Add a careers page to start checking for eligible roles.')}</div>`+
-      (state.member?.role==='admin'?`<div class="panel" style="margin-top:19px"><div class="panel-head"><h2>How monitoring works</h2></div><p class="muted">Adding a company saves it in GitHub. GitHub Actions then scans the source. <strong>Monitoring</strong> only means the last extraction succeeded — not that matching jobs were found. Workday and protected sites may need an adapter.</p><a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/actions/workflows/custom-companies.yml">Check scanner runs ↗</a></div>`:'');
+      (state.member?.role==='admin'?`<div class="panel" style="margin-top:19px"><div class="panel-head"><h2>How monitoring works</h2></div><p class="muted">Adding a company registers it for monitoring. The system then checks its careers page. <strong>Monitoring</strong> only means the last extraction succeeded — not that matching jobs were found. Workday and protected sites may need an adapter.</p><a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/actions/workflows/custom-companies.yml">Check scanner runs ↗</a></div>`:'');
   }
   function accountGate(title){
     return top('YOUR ACCOUNT',title,'Your account is the source for your profile, files and preferences.')+
@@ -1460,10 +1460,10 @@ a:hover{color:var(--ink)}
     if(state.member?.role!=='admin')return memberEmailAlertsPage();
     const a=state.alerts, good=Boolean(a?.configured), email=state.fullEmail||a?.recipient_masked||'Not published yet', updated=a?.checked_at;
     return top('NOTIFICATIONS','Email alerts','See where job alerts are configured to go, and test delivery.')+
-      `<div class="alert-card"><span class="alert-icon">✉</span><div class="alert-content"><strong>Notifications are addressed to</strong><p><code>${esc(email)}</code></p><p>${state.fullEmail?'Verified using your Vercel admin credentials.': 'Masked by default. To reveal the full address, add ALERT_EMAIL to Vercel and authenticate.'}</p></div>${badge(good?'Configured':'Not confirmed',good?'green':'orange')}</div>`+
+      `<div class="alert-card"><span class="alert-icon">✉</span><div class="alert-content"><strong>Notifications are addressed to</strong><p><code>${esc(email)}</code></p><p>${state.fullEmail?'Verified by an authorized administrator.': 'Hidden by default for privacy. Authorized administrators can view the full recipient when configured.'}</p></div>${badge(good?'Configured':'Not confirmed',good?'green':'orange')}</div>`+
       `<div class="alert-card"><span class="alert-icon">◈</span><div class="alert-content"><strong>SMTP configuration</strong><p>${good?'All four SMTP secrets were present when this status was generated.':'SMTP setup has not been confirmed in the published status.'}</p><p class="tiny">${updated?'Last checked: '+esc(prettyDate(updated)):'No published check yet.'} This does not prove that email was delivered.</p></div></div>`+
-      `<section class="panel"><div class="panel-head"><h2>Your private destination</h2></div><p class="muted">The full recipient is not published in the static job snapshot.</p>${IS_CLOUDFLARE?`<p class="tiny">To reveal the destination, use the authenticated Vercel dashboard. Cloudflare does not expose that private API.</p>`:`<button class="btn primary" data-action="reveal-email">Reveal full email ↗</button>`}</section>`+
-      `<section class="panel"><div class="panel-head"><h2>Test your email delivery</h2></div><p class="muted">Run the manual GitHub Actions test, then inspect the workflow result and your inbox. SMTP acceptance alone does not guarantee inbox delivery.</p><div style="display:flex;gap:10px;flex-wrap:wrap">${!IS_CLOUDFLARE?'<button type="button" class="btn primary" data-email-test>Send test email</button><button type="button" class="btn secondary" data-email-status>Check latest test</button>':''}<a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/actions/workflows/test-email.yml">GitHub Actions ↗</a><a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/settings/secrets/actions">Email secrets ↗</a></div><p class="tiny">${IS_CLOUDFLARE?'Cloudflare does not host authenticated Vercel endpoints. Open the Vercel dashboard for one-click testing, or run the GitHub workflow manually.':'An admin token is required. The website queues a real SMTP test through GitHub Actions; success still requires checking the inbox.'}</p></section>`+
+      `<section class="panel"><div class="panel-head"><h2>Your private destination</h2></div><p class="muted">The full recipient is not published in the static job snapshot.</p>${IS_CLOUDFLARE?`<p class="tiny">The full recipient is available only to authorized administrators in the supported dashboard.</p>`:`<button class="btn primary" data-action="reveal-email">Reveal full email ↗</button>`}</section>`+
+      `<section class="panel"><div class="panel-head"><h2>Test your email delivery</h2></div><p class="muted">Send a test email, then check the delivery status and your inbox. SMTP acceptance alone does not guarantee inbox delivery.</p><div style="display:flex;gap:10px;flex-wrap:wrap">${!IS_CLOUDFLARE?'<button type="button" class="btn primary" data-email-test>Send test email</button><button type="button" class="btn secondary" data-email-status>Check latest test</button>':''}<a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/actions/workflows/test-email.yml">Monitoring console ↗</a><a class="btn secondary" target="_blank" rel="noopener noreferrer" href="${REPO}/settings/secrets/actions">Email settings ↗</a></div><p class="tiny">${IS_CLOUDFLARE?'Email testing is unavailable in this version of the dashboard. Use your authorized monitoring tools.':'Administrator authorization is required. A successful request does not guarantee the email reached the inbox.'}</p></section>`+
       `<section class="panel"><div class="panel-head"><h2>Matching preferences</h2></div><div class="job-info">${badge('Egypt only','green')}${badge('Junior / Entry')}${badge('Internships')}${badge('Software Engineering')}${badge('AI / ML')}${badge('Computer Vision')}${badge('MLOps')}</div><p class="tiny">These are the target rules in your Python filtering file, not editable settings on this static dashboard.</p></section>`;
   }
   function syncLandingTheme(){
@@ -1826,7 +1826,7 @@ a:hover{color:var(--ink)}
     });
     el('#company-form').addEventListener('submit',async event=>{
       event.preventDefault();const form=event.currentTarget;const f=new FormData(form);const button=el('#company-submit');button.disabled=true;
-      try{await companyApi('POST',{name:String(f.get('name')||'').trim(),url:String(f.get('url')||'').trim()},String(f.get('admin_token')||''));form.reset();el('#company-dialog').close();toast('Company saved! It will be scanned by GitHub Actions.');await refresh(true);go('companies');}
+      try{await companyApi('POST',{name:String(f.get('name')||'').trim(),url:String(f.get('url')||'').trim()},String(f.get('admin_token')||''));form.reset();el('#company-dialog').close();toast('Company saved! Monitoring will check its source.');await refresh(true);go('companies');}
       catch(e){toast(e.message,true);}finally{button.disabled=false;}
     });
     el('#account-link').href='/account.html';

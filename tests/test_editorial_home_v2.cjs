@@ -286,3 +286,20 @@ test('company catalog loads independently of slower status requests and shows sk
  assert.match(style,/prefers-reduced-motion:reduce/);
  assert.match(main,/company-loader-20261123/);
 });
+
+test('public and account copy does not expose database or hosting providers',()=>{
+ const account=fs.readFileSync('dist/account.html','utf8');
+ const accountUI=fs.readFileSync('dist/assets/secretj-account.js','utf8');
+ const privacy=fs.readFileSync('dist/privacy.html','utf8');
+ const admin=fs.readFileSync('dist/assets/secretj-admin-console.js','utf8');
+ assert.doesNotMatch(account,/Neon|PostgreSQL|public GitHub repository/i);
+ assert.doesNotMatch(privacy,/Neon|PostgreSQL|Cloudflare|GitHub|Vercel/);
+ assert.doesNotMatch(accountUI,/stored in Neon|saved to Neon|Neon is not connected|Vercel deployment|production Neon/i);
+ assert.match(accountUI,/LinkedIn profile connected successfully\. Your account information is saved\./);
+ assert.match(accountUI,/Sign up is temporarily unavailable\./);
+ assert.match(account,/secretj-account\.js\?v=clear-account-copy-20261123/);
+ assert.match(admin,/does not expose passwords, session tokens, or private CV file contents/);
+ assert.doesNotMatch(main,/GitHub watchlist could not be loaded|check Vercel deployment|Private GitHub sync/);
+ assert.match(main,/The company list could not be loaded/);
+ assert.match(privacy,/third-party infrastructure providers for hosting, data storage/);
+});
