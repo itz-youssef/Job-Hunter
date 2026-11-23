@@ -225,9 +225,11 @@ async function profile(root) {
      `<img class="linkedin-photo" src="${esc(connection.picture_url)}" alt="LinkedIn photo" referrerpolicy="no-referrer">`:'';
   const connect=linked.connected?
     `<button class="btn danger" type="button" data-linkedin-disconnect>Disconnect LinkedIn</button>`:
+    linked.status_error?
+      '<button class="btn sj-linkedin-connect" type="button" data-linkedin-retry>Retry LinkedIn status</button>':
     linked.configured?
       '<a class="btn sj-linkedin-connect" href="/api/secretj-linkedin?action=start" aria-label="Connect your LinkedIn profile">Connect with LinkedIn ↗</a>':
-      '<button class="btn sj-linkedin-connect" type="button" data-linkedin-disabled>Connect with LinkedIn ↗</button>';
+      '<button class="btn secondary" type="button" data-linkedin-disabled>LinkedIn setup required</button>';
   root.innerHTML=`<h2>Professional profile</h2>
     <p class="muted">Describe your experience, education, and skills. Your information is stored in Neon, not locally.</p>
     <div class="provider-row">
@@ -607,7 +609,11 @@ $('#account-content').addEventListener('click',async event=>{
       await showView('profile');banner(count?count+' new profile fields imported from your CV.':'Your existing profile is already complete, or no new fields were recognized.');
       return;
     }
-    if(b.hasAttribute('data-linkedin-disabled'))return banner('LinkedIn connect requires the developer app and server-side OAuth credentials. Configure LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET and LINKEDIN_REDIRECT_URI securely on Cloudflare.',true);
+    if(b.hasAttribute('data-linkedin-retry')){
+      await showView('profile');
+      return;
+    }
+    if(b.hasAttribute('data-linkedin-disabled'))return banner('LinkedIn setup is not ready. Check the specific diagnostic displayed inside Professional profile.',true);
     if(b.hasAttribute('data-linkedin-disconnect')){
       if(!confirm('Disconnect LinkedIn? Your saved profile details will remain.'))return;
       await api('/api/secretj-linkedin?action=disconnect','POST',{});
