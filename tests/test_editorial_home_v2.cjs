@@ -132,3 +132,16 @@ test('company and product pages share full-bleed navigation, theme and profile c
  assert.match(main,/state\.page==='home'\|\|state\.page==='hunter'\)syncLandingTheme\(\)/);
  assert.match(main,/state\.page==='home'\|\|state\.page==='hunter'\)window\.SecretJLanding\?\.syncAvatar/);
 });
+
+test('company discovery displays distinct logo branding without repeating foreground employers in backdrop',()=>{
+ const sources=['Siemens','Blink22','ITWorx','Sumerge','Thndr','VOIS','ADCB Egypt','Amazon Egypt'].map(name=>({name}));
+ const html=landing({sources});
+ for(const name of ['Siemens','Blink22','ITWorx','Sumerge','Thndr','VOIS','ADCB Egypt','Amazon Egypt']){
+   assert.match(html,new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
+ }
+ for(const brand of ['siemens','blink22','itworx','sumerge','thndr','vois','adcb','amazon'])
+   assert.match(html,new RegExp('brand-'+brand));
+ assert.match(style,/secretj-companies-mosaic\.svg/);
+ assert.match(style,/brand-vois\{color:#ed1c24/);
+ assert.match(main,/company-logos-20261123/);
+});
