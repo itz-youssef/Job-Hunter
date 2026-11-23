@@ -27,7 +27,7 @@ function config(){
   if(!/^[\w.-]+\/[\w.-]+$/.test(repo)||!token)throw Object.assign(
     new Error('Private backup is currently unavailable. Please contact support.'),{code:503});
   if(repo.toLowerCase()===(process.env.GITHUB_REPO||'').toLowerCase())
-    throw Object.assign(new Error('Private backup is currently unavailable. Please contact support.'),{code:503});
+    throw Object.assign(new Error('Public destinations cannot be used for private backups. Please contact support.'),{code:503});
   return {repo,token,branch};
 }
 async function github(cfg,path,options={}){
