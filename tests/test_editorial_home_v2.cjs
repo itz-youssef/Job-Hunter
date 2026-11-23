@@ -215,7 +215,7 @@ test('Job Hunter product hero has separate safe editorial note backgrounds for b
  assert.match(css,/secretj-jobhunter-hero-dark\.svg/);
  assert.match(css,/pointer-events:none/);
  assert.match(css,/html\[data-theme="dark"\] \.jh-intro \.jh-intro-hero/);
- assert.match(main,/workspace-photo-20261123/);
+ assert.match(main,/abstract-shadow-20261123/);
  for(const a of [light,dark]){
    assert.match(a,/Job Goals/);
    assert.match(a,/Find the right role/);
@@ -235,18 +235,25 @@ test('product intro keeps stationery at edges and removes repeated notes from it
  assert.match(css,/\.jh-intro #how::after\{content:none!important/);
  assert.match(css,/html\[data-theme="dark"\] \.jh-intro #how\{/);
  assert.match(css,/background:#0c0c0c/);
- assert.match(main,/workspace-photo-20261123/);
+ assert.match(main,/abstract-shadow-20261123/);
 });
 
-test('workspace photography overrides earlier note artwork in both hero themes',()=>{
+test('Job Hunter hero uses local monochrome architectural shadow artwork in both themes',()=>{
  const css=fs.readFileSync('dist/assets/secretj-jobhunter-intro.css','utf8');
- const block=css.slice(css.indexOf('/* Job Hunter photographic workspace hero'));
- assert.match(block,/photo-1764755932155-dabbee87df7e/);
- assert.match(block,/photo-1752225494606-ae09aca08bea/);
- assert.match(block,/filter:saturate\(1\.29\) contrast\(1\.12\) brightness\(1\.09\)/);
- assert.match(block,/filter:saturate\(1\.22\) contrast\(1\.18\) brightness\(\.83\)/);
- assert.match(block,/mask-image:none/);
- assert.match(block,/pointer-events:none/);
+ const block=css.slice(css.indexOf('/* Job Hunter — Abstract Light & Shadow.'));
+ const light=fs.readFileSync('dist/assets/jobhunter-abstract-light.svg','utf8');
+ const dark=fs.readFileSync('dist/assets/jobhunter-abstract-dark.svg','utf8');
+ assert.match(block,/jobhunter-abstract-light\.svg/);
+ assert.match(block,/jobhunter-abstract-dark\.svg/);
  assert.match(block,/html\[data-theme="dark"\] \.jh-intro \.jh-intro-hero::before/);
- assert.match(main,/workspace-photo-20261123/);
+ assert.match(block,/pointer-events:none/);
+ assert.doesNotMatch(block,/images\.unsplash\.com|photo-\d+/);
+ assert.doesNotMatch(block,/sticky|stationery|saturate\(/);
+ assert.match(main,/abstract-shadow-20261123/);
+ for(const image of [light,dark]){
+   assert.match(image,/<svg/);
+   assert.match(image,/<linearGradient/);
+   assert.match(image,/<!-- Soft architectural planes/);
+   assert.doesNotMatch(image,/<image|https?:\/\//);
+ }
 });
