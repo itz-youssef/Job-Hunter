@@ -55,7 +55,7 @@
       ' · '+safe(data.locationOf(job))+'</p>'+action+'</article>';
    };
    const account=data.member?
-     '<a class="sj-land-profile-link" href="/account.html?view=overview" aria-label="My profile" title="My profile"><span class="sj-land-profile-fallback" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-4 3-6 7-6s7 2 7 6"/></svg></span><img class="sj-land-profile-photo" alt="" hidden></a>':
+     '<details class="sj-land-profile-menu"><summary class="sj-land-profile-link" aria-label="Open profile menu" title="My account"><span class="sj-land-profile-fallback" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-4 3-6 7-6s7 2 7 6"/></svg></span><img class="sj-land-profile-photo" alt="" hidden></summary><div class="sj-land-dropdown sj-land-profile-dropdown"><a href="/account.html?view=overview">Dashboard</a><a href="/account.html?view=profile">My profile</a><a href="/account.html?view=documents">CV &amp; photo</a><a href="/account.html?view=saved">Saved jobs</a><a href="/account.html?view=applications">Applications</a><a href="/account.html?view=preferences">Settings &amp; alerts</a>'+(data.member?.role==='admin'?'<a href="/account.html?view=admin">Admin console</a>':'')+'<div class="sj-land-dropdown-divider"></div><button type="button" data-land-signout>Sign out</button></div></details>':
      '<a class="sj-land-btn soft" href="/account.html?mode=login&after=home">Log in</a>'+
      '<a class="sj-land-btn dark sj-land-signup" href="/account.html?mode=register&after=home">Sign up</a>';
    return `<div class="sj-landing" id="sj-landing">
@@ -64,7 +64,7 @@
        <a class="sj-land-logo" href="#home" data-navigate="home" aria-label="Secret J home">
         <img src="/assets/secretj-mark.svg" alt="">Secret J.</a>
        <nav id="sj-land-links" class="sj-land-links" aria-label="Main website navigation">
-         <button type="button" data-home-scroll="products">Our Products</button>
+         <details class="sj-land-products-menu"><summary>Our Products <span class="sj-land-nav-chevron" aria-hidden="true">⌄</span></summary><div class="sj-land-dropdown sj-land-products-dropdown"><button type="button" data-navigate="hunter">Job Hunter <span class="sj-land-dropdown-note">Live ↗</span></button><span class="sj-land-upcoming" aria-disabled="true">Botfolio <span class="sj-land-dropdown-note">Coming soon</span></span></div></details>
          <button type="button" data-navigate="jobs">Find Jobs</button>
          <button type="button" data-home-scroll="companies">Explore Companies</button>
          <button type="button" data-home-scroll="how">How It Works</button>
@@ -150,7 +150,7 @@
         <p>Secret J is an independent career-focused technology company building tools that help people navigate their professional journeys. Our first product, Job Hunter, helps people discover and organize opportunities from monitored company career pages.</p>
         <p>We're building for people across technical and non-technical careers. Botfolio, our next product, is in development — part of a growing collection of tools for discovering and presenting work.</p>
         <div class="sj-land-about-actions"><button class="sj-land-btn dark" type="button" data-navigate="jobs">Find Jobs ↗</button>
-          <a href="${LINKEDIN}" class="sj-land-btn soft" target="_blank" rel="noopener noreferrer">Secret J on LinkedIn ↗</a></div>
+          <a href="${LINKEDIN}" class="sj-land-btn sj-land-linkedin-cta" target="_blank" rel="noopener noreferrer">Secret J on LinkedIn ↗</a></div>
        </div>
      </div></section>
      <section class="sj-land-bottom-cta"><div class="sj-land-width sj-land-bottom-inner">
