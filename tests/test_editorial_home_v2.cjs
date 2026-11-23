@@ -143,7 +143,7 @@ test('company discovery displays distinct logo branding without repeating foregr
    assert.match(html,new RegExp('brand-'+brand));
  assert.match(style,/secretj-companies-mosaic\.svg/);
  assert.match(style,/brand-vois\{color:#ed1c24/);
- assert.match(main,/company-loader-20261123/);
+ assert.match(main,/\/assets\/secretj-landing\.js\?v=[\w-]+/);
 });
 
 test('footer is full width with accessible LinkedIn icon and one legal bar on landing',()=>{
@@ -164,7 +164,7 @@ test('dark companies section is layered and legible without changing light treat
  assert.match(style,/background:#1c2028/);
  assert.match(style,/background:rgba\(38,44,54,\.97\)/);
  assert.match(style,/brand-vois\{color:#ff646d/);
- assert.match(main,/company-loader-20261123/);
+ assert.match(main,/\/assets\/secretj-landing\.js\?v=[\w-]+/);
 });
 
 test('approved dark wall uses monochrome black, soft logos and retains light mosaic',()=>{
@@ -173,7 +173,7 @@ test('approved dark wall uses monochrome black, soft logos and retains light mos
  assert.match(style,/background:rgba\(23,23,23,\.96\)/);
  assert.match(style,/filter:none/);
  assert.match(style,/secretj-companies-mosaic\.svg/);
- assert.match(main,/company-loader-20261123/);
+ assert.match(main,/\/assets\/secretj-landing\.js\?v=[\w-]+/);
  const darkAsset=fs.readFileSync('dist/assets/secretj-companies-dark.svg','utf8');
  for(const brand of ['Microsoft','IBM','aws','Deloitte','pwc','EY','Nestlé','Schneider','Uber','Coca-Cola']){
    assert.ok(darkAsset.includes(brand),'dark wall includes '+brand);
@@ -187,7 +187,7 @@ test('how-it-works uses pinned career-note artwork for both themes without touch
  assert.match(style,/secretj-how-notes-dark\.svg/);
  assert.match(style,/html\[data-theme="dark"\] \.sj-landing #how/);
  assert.match(style,/pointer-events:none/);
- assert.match(main,/company-loader-20261123/);
+ assert.match(main,/\/assets\/secretj-landing\.js\?v=[\w-]+/);
  const light=fs.readFileSync('dist/assets/secretj-how-notes-light.svg','utf8');
  const dark=fs.readFileSync('dist/assets/secretj-how-notes-dark.svg','utf8');
  for(const asset of [light,dark]){
@@ -203,7 +203,7 @@ test('dark footer uses neutral black with no navy tint, keeping light theme unto
  assert.match(style,/html\[data-theme="dark"\] \.sj-landing \.sj-land-footer\{background:#0b0b0b;border-color:#303030\}/);
  assert.match(style,/html\[data-theme="dark"\] \.sj-landing \.sj-land-linkedin-icon\{background:#181818;border-color:#4a4a4a;color:#f5f5f5\}/);
  assert.doesNotMatch(style,/\.sj-land-footer\{background:#12151b/);
- assert.match(main,/company-loader-20261123/);
+ assert.match(main,/\/assets\/secretj-landing\.js\?v=[\w-]+/);
 });
 
 test('Job Hunter product hero has separate safe editorial note backgrounds for both modes',()=>{
@@ -215,7 +215,7 @@ test('Job Hunter product hero has separate safe editorial note backgrounds for b
  assert.match(css,/secretj-jobhunter-hero-dark\.svg/);
  assert.match(css,/pointer-events:none/);
  assert.match(css,/html\[data-theme="dark"\] \.jh-intro \.jh-intro-hero/);
- assert.match(main,/faq-editorial-20261123/);
+ assert.match(main,/\/assets\/secretj-jobhunter-intro\.css\?v=[\w-]+/);
  for(const a of [light,dark]){
    assert.match(a,/Job Goals/);
    assert.match(a,/Find the right role/);
@@ -235,7 +235,7 @@ test('product intro keeps stationery at edges and removes repeated notes from it
  assert.match(css,/\.jh-intro #how::after\{content:none!important/);
  assert.match(css,/html\[data-theme="dark"\] \.jh-intro #how\{/);
  assert.match(css,/background:#0c0c0c/);
- assert.match(main,/faq-editorial-20261123/);
+ assert.match(main,/\/assets\/secretj-jobhunter-intro\.css\?v=[\w-]+/);
 });
 
 test('Job Hunter hero uses local monochrome architectural shadow artwork in both themes',()=>{
@@ -249,7 +249,7 @@ test('Job Hunter hero uses local monochrome architectural shadow artwork in both
  assert.match(block,/pointer-events:none/);
  assert.doesNotMatch(block,/images\.unsplash\.com|photo-\d+/);
  assert.doesNotMatch(block,/sticky|stationery|saturate\(/);
- assert.match(main,/faq-editorial-20261123/);
+ assert.match(main,/\/assets\/secretj-jobhunter-intro\.css\?v=[\w-]+/);
  for(const image of [light,dark]){
    assert.match(image,/<svg/);
    assert.match(image,/<linearGradient/);
@@ -266,7 +266,7 @@ test('stronger shadow treatment remains neutral and keeps responsive text protec
  assert.match(fineTune,/rgba\(246,246,244,\.31\)/);
  assert.match(fineTune,/rgba\(13,13,13,\.31\)/);
  assert.match(fineTune,/@media\(max-width:760px\)/);
- assert.match(main,/faq-editorial-20261123/);
+ assert.match(main,/\/assets\/secretj-jobhunter-intro\.css\?v=[\w-]+/);
 });
 
 test('company catalog loads independently of slower status requests and shows skeletons',()=>{
@@ -284,7 +284,7 @@ test('company catalog loads independently of slower status requests and shows sk
  assert.match(main,/Promise\.allSettled\(\[catalogRequest,\.\.\.requests\.slice\(1\)\]\)/);
  assert.match(style,/sj-land-company-skeleton/);
  assert.match(style,/prefers-reduced-motion:reduce/);
- assert.match(main,/company-loader-20261123/);
+ assert.match(main,/\/assets\/secretj-landing\.js\?v=[\w-]+/);
 });
 
 test('public and account copy does not expose database or hosting providers',()=>{
@@ -297,7 +297,7 @@ test('public and account copy does not expose database or hosting providers',()=
  assert.doesNotMatch(accountUI,/stored in Neon|saved to Neon|Neon is not connected|Vercel deployment|production Neon/i);
  assert.match(accountUI,/LinkedIn profile connected successfully\. Your account information is saved\./);
  assert.match(accountUI,/Sign up is temporarily unavailable\./);
- assert.match(account,/secretj-account\.js\?v=clear-account-copy-20261123/);
+ assert.match(account,/secretj-account\.js\?v=[\w-]+/);
  assert.match(admin,/does not expose passwords, session tokens, or private CV file contents/);
  assert.doesNotMatch(main,/GitHub watchlist could not be loaded|check Vercel deployment|Private GitHub sync/);
  assert.match(main,/The company list could not be loaded/);
@@ -315,7 +315,7 @@ test('Job Hunter FAQ and CTA get legible coordinated light/dark abstract decorat
  assert.match(block,/html\[data-theme="dark"\] \.jh-intro #questions \.jh-intro-faq details p\{color:#d3d3d3\}/);
  assert.match(block,/pointer-events:none/);
  assert.match(block,/@media\(max-width:760px\)/);
- assert.match(main,/faq-editorial-20261123/);
+ assert.match(main,/\/assets\/secretj-jobhunter-intro\.css\?v=[\w-]+/);
  assert.match(light,/<svg/);
  assert.match(dark,/<svg/);
  assert.match(light,/radialGradient/);
