@@ -214,13 +214,13 @@ async function profile(root) {
   const connection=linked.connection||null;
   const issues=Array.isArray(linked.setup_issues)?linked.setup_issues:[];
   const issuesText={
-    LINKEDIN_CLIENT_ID_missing:'Client ID not visible to the deployed Worker',
-    LINKEDIN_CLIENT_SECRET_missing:'Client Secret not visible to the deployed Worker',
-    LINKEDIN_REDIRECT_URI_mismatch:'Redirect URL does not match the OAuth callback',
+    LINKEDIN_CLIENT_ID_missing:'LinkedIn connection is temporarily unavailable. Please try again later.',
+    LINKEDIN_CLIENT_SECRET_missing:'LinkedIn connection is temporarily unavailable. Please try again later.',
+    LINKEDIN_REDIRECT_URI_mismatch:'LinkedIn connection is temporarily unavailable. Please try again later.',
     LINKEDIN_DATABASE_MIGRATION_REQUIRED:'LinkedIn connection is temporarily unavailable. Please try again later.'
   };
   const diagnosis=issues.map(key=>issuesText[key]).filter(Boolean).join('; ')||
-    (linked.status_error?'LinkedIn status API error: '+linked.status_error:'');
+    (linked.status_error?'LinkedIn connection status is temporarily unavailable.':'');
   const photo=linked.connected&&connection?.picture_url?
      `<img class="linkedin-photo" src="${esc(connection.picture_url)}" alt="LinkedIn photo" referrerpolicy="no-referrer">`:'';
   const connect=linked.connected?
