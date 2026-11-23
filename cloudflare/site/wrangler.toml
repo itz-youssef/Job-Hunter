@@ -35,3 +35,7 @@ SECRETJ_NATIVE_MONITOR_ENABLED = "true"
 [triggers]
 crons = ["* * * * *"]
 
+
+# Cloudflare Git-integrated preview builds run `wrangler preview`.
+# Keep preview settings isolated from the production Worker settings above.
+[previews]
