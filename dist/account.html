@@ -234,14 +234,14 @@ html[data-theme="light"] .nav button.active *{
 <section id="login-code-panel" hidden aria-live="polite">
   <div class="sj-loading-feedback" style="display:flex;margin:14px 0">
     <span aria-hidden="true" style="font-size:22px">🔐</span>
-    <div><strong>Verify your sign-in</strong><small>We sent a six-digit code to your account email. It expires in 10 minutes.</small></div>
+    <div><strong id="sj-code-heading">Verify your sign-in</strong><small id="sj-code-description">We sent a six-digit code to your account email. It expires in 10 minutes.</small></div>
   </div>
   <form id="login-code-form" autocomplete="off">
     <label for="sj-login-code">Email verification code
       <input id="sj-login-code" name="code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
         autocomplete="one-time-code" placeholder="6-digit code" required>
     </label>
-    <button class="btn" id="sj-login-code-submit" type="submit">Verify &amp; sign in</button>
+    <button class="btn" id="sj-login-code-submit" type="submit">Verify code</button>
   </form>
   <div class="actions"><button id="sj-login-code-resend" class="btn secondary" type="button">Resend code</button>
     <button id="sj-login-code-cancel" class="btn subtle" type="button">Back to sign in</button></div>

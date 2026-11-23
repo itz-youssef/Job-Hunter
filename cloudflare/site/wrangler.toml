@@ -16,6 +16,9 @@ NODE_ENV = "production"
 # Pilot switch: signup only works when a private DATABASE_URL secret has
 # also been provisioned on this website Worker.
 SECRETJ_REGISTRATION_ENABLED = "true"
+# New accounts must verify ownership of their email before a session is issued.
+# Delivery uses existing private RESEND_API_KEY and SECRETJ_EMAIL_FROM secrets.
+SECRETJ_SIGNUP_OTP_ENABLED = "true"
 # The sender and API key must still be set privately. No mail is sent otherwise.
 SECRETJ_ALERTS_ENABLED = "true"
 # Independent source-aware personalized monitoring supersedes snapshot-only alerts.
