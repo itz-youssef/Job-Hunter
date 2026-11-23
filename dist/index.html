@@ -1232,8 +1232,37 @@ a:hover{color:var(--ink)}
         <p class="tiny">Employer posted date is verified source metadata when supplied; unknown dates are excluded from posted-date ranges, never replaced with detection timestamps. First seen is separate.</p>
       </section>
       <div class="cards" id="jobs-list">${visible.length?visible.map(jobCard).join(''):empty('No jobs match these filters','Change the date range or reset filters to see available opportunities.')}</div>
-      ${list.length>visible.length?`<div style="text-align:center;margin:18px 0"><button type="button" class="btn secondary" data-load-more-jobs>Load more jobs (${visible.length} of ${list.length})</button></div>`:''}
-      <p class="tiny">${visible.length} of ${list.length} matching results · ${whole.length} ${personalized?'preference-matched':'detected'} jobs shown. A matching score is not a hiring probability; other roles may have no score.</p>`;
+      <div id="jobs-load-more-wrap" style="text-align:center;margin:18px 0">${list.length>visible.length?
+        `<button type="button" class="btn secondary" data-load-more-jobs>Load more jobs (${visible.length} of ${list.length})</button>`:''}</div>
+      <p class="tiny" id="jobs-count-summary">${visible.length} of ${list.length} matching results · ${whole.length} ${personalized?'preference-matched':'detected'} jobs shown. A matching score is not a hiring probability; other roles may have no score.</p>`;
+  }
+  // Search updates only job cards, result count and title. The search input
+  // remains mounted, preventing keyboard stalls and lost focus on every term.
+  function updateSearchResults(){
+    if(state.page!=='jobs'&&state.page!=='saved')return render();
+    const results=el('#jobs-list'),counter=el('#jobs-count-summary'),
+      more=el('#jobs-load-more-wrap');
+    if(!results||!counter||!more)return render();
+    const publicList=validJobs();
+    const source=state.page==='saved'?
+      (state.member?(state.savedRecords||[]).map(row=>({...row.job_snapshot,id:row.job_key})):
+        publicList.filter(j=>state.saved.has(jobKey(j)))):publicList;
+    const filtered=filterJobs(source);
+    const visible=filtered.slice(0,state.feedLimit);
+    results.innerHTML=visible.length?visible.map(jobCard).join(''):
+      empty('No jobs match these filters','Change the date range or reset filters to see available opportunities.');
+    more.innerHTML=filtered.length>visible.length?
+      '<button type="button" class="btn secondary" data-load-more-jobs>Load more jobs ('+
+      visible.length+' of '+filtered.length+')</button>':'';
+    const personalized=Boolean(state.member&&state.memberPrefsConfigured);
+    counter.textContent=visible.length+' of '+filtered.length+' matching results · '+
+      source.length+' '+(personalized?'preference-matched':'detected')+
+      ' jobs shown. A matching score is not a hiring probability; other roles may have no score.';
+    const title=el('#main-content .section-top h1');
+    if(title&&state.page==='jobs')title.textContent=state.query.trim()?
+      'Search all detected opportunities':personalized?'Your personalized job feed':'All detected opportunities';
+    const nav=el('#nav-job-count');
+    if(nav)nav.textContent=String(filtered.length);
   }
   // Brand-domain allowlist: ATS hosting domains (Lever/Workable/Ashby) are not company logos.
   // Uses company website favicons; unknown domains retain a clean monogram.
@@ -1678,14 +1707,7 @@ a:hover{color:var(--ink)}
         if(!field.isConnected || field.value!==value)return;
         state.query=value;
         state.feedLimit=FEED_PAGE_SIZE;
-        const at=field.selectionStart;
-        render();
-        // render() already computed the filtered result, reuse it for the badge.
-        const badge=el('#nav-job-count');
-        if(badge&&lastResults.value)badge.textContent=String(lastResults.value.length);
-        const next=el('#job-search');
-        next?.focus({preventScroll:true});
-        try{next?.setSelectionRange(at,at);}catch{}
+        updateSearchResults();
       },440);
     });
     document.addEventListener('submit',async event=>{
