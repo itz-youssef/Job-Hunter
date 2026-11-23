@@ -105,3 +105,26 @@ jobs:
           done
           echo "::error::Cloudflare website revision could not be verified."
           exit 1
+      - name: Diagnose production WWW route and LinkedIn callback (no OAuth credentials)
+        shell: bash
+        run: |
+          set -euo pipefail
+          for SITE in "https://www.jobsnow.tech" "https://jobhunter-youssef.yoyoyasso19.workers.dev"; do
+            echo "Checking host: $SITE"
+            status=$(curl -sS --max-time 20 -o /tmp/sj-site-build.json -w '%{http_code}' "$SITE/build-version.json" || true)
+            echo "build-version HTTP: $status"
+            if [[ "$status" == "200" ]]; then
+              node -e 'let d=require("/tmp/sj-site-build.json"); console.log("revision:",String(d.git_sha||"unknown").slice(0,12),"source:",d.source,"worker:",d.worker)'
+            fi
+            # Deliberately omit OAuth code/state. A healthy configured callback
+            # rejects this invalid request with reason=response. No database writes.
+            curl -sS --max-time 20 -o /dev/null -D /tmp/sj-linkedin-headers.txt \
+              "$SITE/api/secretj-linkedin?action=callback" || true
+            awk 'BEGIN{IGNORECASE=1} /^HTTP\//{print "callback " $0} /^[Ll]ocation:/{
+              if($0 ~ /reason=(response|session|provider|state|exchange|storage)/) {
+                if($0 ~ /reason=response/) print "callback setup: CONFIGURED (invalid response rejected)";
+                else if($0 ~ /reason=session/) print "callback setup: CONFIG NOT VISIBLE OR SESSION FAILURE";
+                else print "callback returned an unexpected phase";
+              } else print "callback returned no classified reason"
+            }' /tmp/sj-linkedin-headers.txt
+          done
