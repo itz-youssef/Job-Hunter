@@ -219,7 +219,7 @@ test('Job Hunter product hero has separate safe editorial note backgrounds for b
  for(const a of [light,dark]){
    assert.match(a,/Job Goals/);
    assert.match(a,/Find the right role/);
-   assert.match(a,/Apply/);
+   assert.match(a,/(Applications|Apply for jobs)/);
    assert.match(a,/<svg/);
  }
  assert.match(product,/LESS SEARCHING\./);
