@@ -15,27 +15,31 @@ const homeJS=fs.readFileSync('dist/assets/secretj-home.js','utf8');
 const accountJS=fs.readFileSync('dist/assets/secretj-account.js','utf8');
 const sql=fs.readFileSync('database/migrations/002_secretj_linkedin_oauth.sql','utf8');
 
-test('Secret J lives within the original Job Hunter sidebar and toolbar',()=>{
+test('Secret J editorial landing uses full-width design while retaining the original workspace routes',()=>{
+  const landing=fs.readFileSync('dist/assets/secretj-landing.js','utf8');
+  const style=fs.readFileSync('dist/assets/secretj-landing.css','utf8');
   assert.match(html,/class="layout"/);
   assert.match(html,/class="sidebar"/);
   assert.match(html,/id="navigation"/);
   assert.match(html,/class="topbar"/);
   assert.match(html,/id="main-content"/);
-  assert.doesNotMatch(html,/id="sj-public-home"/);
-  assert.match(html,/function home\(\)[\s\S]*?Software built for real life\./);
-  assert.match(html,/function home\(\)[\s\S]*?monitoringPanel\(\)/);
-  assert.match(html,/data-page="jobs"/);
-  assert.match(html,/data-page="companies"/);
-  assert.match(html,/src="\/assets\/secretj-mark\.svg"/);
-  assert.match(html,/src="\/assets\/secretj-home\.js(?:\?[^"\s]+)?"/);
-  assert.match(html,/https:\/\/www\.linkedin\.com\/company\/secretj\/home\//);
+  assert.match(html,/secretj-landing\.js/);
+  assert.match(html,/secretj-landing\.css/);
+  assert.match(html,/state\.page==='home'/);
+  assert.match(style,/body\.sj-editorial-home \.sidebar/);
+  assert.match(style,/body\.sj-editorial-home \.topbar/);
+  assert.match(landing,/YOUR CAREER/);
+  assert.match(landing,/Job Hunter/);
+  assert.match(landing,/Botfolio/);
+  assert.match(landing,/data-navigate="jobs"/);
+  assert.match(landing,/https:\/\/www\.linkedin\.com\/company\/secretj\/home\//);
 });
-test('company copy is minimal, professional, without invented founders or AI punctuation',()=>{
-  const body=html.slice(html.indexOf('  function home(){'),html.indexOf('  // CV files never leave'));
-  assert.doesNotMatch(body,/Youssef|Yasser|Built for Youssef/i);
-  for(const term of ['OUR STORY','OUR MISSION','VISION','WHAT WE OFFER',
-      'Job Hunter','Software built for real life.'])assert.ok(body.includes(term),term);
-  assert.doesNotMatch(body,/\u2014|\u2013|--/);
+test('company homepage copy identifies live and future products without invented founders',()=>{
+  const landing=fs.readFileSync('dist/assets/secretj-landing.js','utf8');
+  assert.doesNotMatch(landing,/Youssef|Yasser|Built for Youssef/i);
+  for(const term of ['WHAT WE BUILD','WHO WE ARE','Job Hunter','Botfolio','COMING SOON'])
+    assert.ok(landing.includes(term),term);
+  assert.match(landing,/Career-focused technology/);
 });
 test('existing light and dark modes use only neutral palettes with Manrope',()=>{
   const css=fs.readFileSync('dist/assets/secretj-home.css','utf8');
