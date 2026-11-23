@@ -91,6 +91,7 @@ async function exchangeCode(code,options){
 module.exports=async function handler(req,res){
   const action=req.query?.action||'status';
   const options=settings(req);
+  let callbackStage='session';
   try{
     core.allowedMethod(req,['GET','POST']);
     if(req.method==='POST'&&action!=='disconnect')throw core.fail(405,'Method not allowed');
@@ -154,14 +155,16 @@ module.exports=async function handler(req,res){
     }
 
     if(req.query?.error){
-      return redirect(res,RETURN_FAIL);
+      return redirect(res,RETURN_FAIL+'&reason=provider');
     }
+    callbackStage='response';
     const state=req.query?.state;
     const code=req.query?.code;
     if(typeof state!=='string'||typeof code!=='string'||
        !/^[A-Za-z0-9_-]{40,60}$/.test(state)||
        code.length<4||code.length>2048)
       throw core.fail(400,'Invalid LinkedIn authorization response');
+    callbackStage='state';
     // An expiring, single-use state binds this callback to the logged-in user.
     const ownership=await core.query(
       `DELETE FROM public.sj_linkedin_oauth_states
@@ -171,9 +174,11 @@ module.exports=async function handler(req,res){
     );
     if(!ownership[0])throw core.fail(403,'LinkedIn authorization expired or not owned by this user');
 
+    callbackStage='exchange';
     const profile=await exchangeCode(code,options);
     // Preserve manually edited profile fields. Never overwrite the account's
     // login email or alert destination with the LinkedIn provider email.
+    callbackStage='storage';
     await core.query(
       `WITH linked AS (
           INSERT INTO public.sj_linkedin_connections
@@ -197,7 +202,12 @@ module.exports=async function handler(req,res){
     );
     return redirect(res,RETURN_OK);
   }catch(error){
-    if(action==='callback')return redirect(res,RETURN_FAIL);
+    if(action==='callback'){
+      // Publish only an allow-listed phase, not OAuth codes, tokens or SQL errors.
+      const reason=['session','response','state','exchange','storage'].includes(callbackStage)
+        ?callbackStage:'unknown';
+      return redirect(res,RETURN_FAIL+'&reason='+reason);
+    }
     return core.safeError(res,error);
   }
 };
