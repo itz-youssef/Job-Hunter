@@ -42,32 +42,55 @@
     return internship.test(normalize(values.join(' '))) ||
       /\bgraduate (?:internship|training|trainee) program\b/i.test(normalize(values.join(' ')));
   }
+  // Prepared per-job searchable fields are amortized across keystrokes.
+  // WeakMap is bounded by job object lifetimes: no cross-user persistence.
+  const prepared=new WeakMap();
+  const queryParts=new Map();
+  function cachedTerms(query){
+    const key=String(query??'').slice(0,160);
+    if(queryParts.has(key))return queryParts.get(key);
+    const result=tokens(key).map(part=>({part,possibilities:expand(part)}));
+    if(queryParts.size>96)queryParts.clear();
+    queryParts.set(key,result);
+    return result;
+  }
+  function prepare(job,classify){
+    if(!job||typeof job!=='object')return null;
+    const previous=prepared.get(job);
+    if(previous&&previous.classify===classify)return previous;
+    const record={
+      classify,
+      title:normalize(job.title||job.position||job.job_title),
+      company:normalize(job.company||job.employer||job.company_name),
+      type:normalize([job.employment,job.job_type,job.seniority,job.experience_level,job.career_level].join(' ')),
+      location:normalize(job.location||job.job_location),
+      description:normalize([job.description,job.requirements,job.skills,job.summary].join(' ')).slice(0,14000),
+      category:normalize(typeof classify==='function'?(classify(job)||[]).join(' '):''),
+      internship:isInternship(job)
+    };
+    prepared.set(job,record);
+    return record;
+  }
   function score(job,query,classify){
-    const parts=tokens(query);
+    const parts=cachedTerms(query);
     if(!parts.length)return 0;
-    const title=normalize(job.title||job.position||job.job_title);
-    const company=normalize(job.company||job.employer||job.company_name);
-    const type=normalize([job.employment,job.job_type,job.seniority,job.experience_level,job.career_level].join(' '));
-    const location=normalize(job.location||job.job_location);
-    const description=normalize([job.description,job.requirements,job.skills,job.summary].join(' ')).slice(0,14000);
-    const category=normalize(typeof classify==='function'?(classify(job)||[]).join(' '):'');
-    const internshipTerm=isInternship(job);
-    let total=0;
+    const item=prepare(job,classify);
+    if(!item)return 0;
     const contains=(hay,term)=>(' '+hay+' ').includes(' '+term+' ');
-    for(const part of parts){
-      const possibilities=expand(part);
+    let total=0;
+    for(const {part,possibilities} of parts){
       let best=0;
-      if(possibilities.some(t=>contains(title,t)))best=12;
-      else if((part==='internship'||part==='intern')&&internshipTerm)best=11;
-      else if(possibilities.some(t=>contains(company,t)))best=9;
-      else if(possibilities.some(t=>contains(type,t)))best=7;
-      else if(possibilities.some(t=>contains(category,t)))best=6;
-      else if(possibilities.some(t=>contains(location,t)))best=3;
-      else if(possibilities.some(t=>contains(description,t)))best=1;
-      if(!best)return 0; // Every search term must be grounded in some field.
+      if(possibilities.some(t=>contains(item.title,t)))best=12;
+      else if((part==='internship'||part==='intern')&&item.internship)best=11;
+      else if(possibilities.some(t=>contains(item.company,t)))best=9;
+      else if(possibilities.some(t=>contains(item.type,t)))best=7;
+      else if(possibilities.some(t=>contains(item.category,t)))best=6;
+      else if(possibilities.some(t=>contains(item.location,t)))best=3;
+      else if(possibilities.some(t=>contains(item.description,t)))best=1;
+      if(!best)return 0;
       total+=best;
     }
-    if(title.includes(parts.join(' ')))total+=8;
+    if(item.title.includes(parts.map(x=>x.part).join(' ')))total+=8;
     return total;
   }
   return {normalize,tokens,isInternship,score,matches:(job,query,classify)=>score(job,query,classify)>0};
