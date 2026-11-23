@@ -1,6 +1,11 @@
 name = "jobhunter-youssef"
 main = "worker.mjs"
 compatibility_date = "2026-11-13"
+# Required for API handlers reading secrets via Node.js process.env.
+compatibility_flags = ["nodejs_compat"]
+# Preserve production dashboard variables when deploying from GitHub/Wrangler.
+# Existing encrypted Worker secrets remain secret and are never committed.
+keep_vars = true
 workers_dev = true
 
 # Current GitHub main dist/ becomes the active Cloudflare UI.
