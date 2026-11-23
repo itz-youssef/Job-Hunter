@@ -1456,6 +1456,7 @@ a:hover{color:var(--ink)}
     const root=el('#main-content');if(!root)return;
     document.body?.classList?.toggle('sj-editorial-home',state.page==='home'||state.page==='hunter');
     root.innerHTML=state.page==='home'?home():state.page==='hunter'?jobHunterIntro():state.page==='radar'?radarHome():state.page==='resume'?resumePage():state.page==='cv'?cvPage():state.page==='profile'?profilePage():state.page==='jobs'?jobsPage():state.page==='saved'?jobsPage(true):state.page==='companies'?companiesPage():alertsPage();
+    if(state.page==='home')window.SecretJLanding?.syncAvatar?.();
   }
   async function editCompany(url, changes){
     const token=window.prompt('Enter your admin token to update this company:');
