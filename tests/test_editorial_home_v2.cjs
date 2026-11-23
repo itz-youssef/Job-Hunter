@@ -166,3 +166,17 @@ test('dark companies section is layered and legible without changing light treat
  assert.match(style,/brand-vois\{color:#ff646d/);
  assert.match(main,/dark-footer-20261123/);
 });
+
+test('approved dark wall uses monochrome black, soft logos and retains light mosaic',()=>{
+ assert.match(style,/secretj-companies-dark\.svg/);
+ assert.match(style,/background:#101010/);
+ assert.match(style,/background:rgba\(23,23,23,\.96\)/);
+ assert.match(style,/filter:none/);
+ assert.match(style,/secretj-companies-mosaic\.svg/);
+ assert.match(main,/monochrome-dark-20261123/);
+ const darkAsset=fs.readFileSync('dist/assets/secretj-companies-dark.svg','utf8');
+ for(const brand of ['Microsoft','IBM','aws','Deloitte','pwc','EY','Nestlé','Schneider','Uber','Coca-Cola']){
+   assert.ok(darkAsset.includes(brand),'dark wall includes '+brand);
+ }
+ assert.doesNotMatch(darkAsset,/#1c2028|#303640|#242a33/);
+});
