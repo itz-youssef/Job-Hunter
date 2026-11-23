@@ -12,6 +12,13 @@ const challengePattern=/^[A-Za-z0-9_-]{42,44}$/;
 const codePattern=/^\d{6}$/;
 const tokenHash=token=>core.hash('secretj-login-challenge:'+token);
 const codeDigest=(token,code,salt)=>core.hash('secretj-login-otp:'+token+':'+code+':'+salt);
+const signupTokenHash=token=>core.hash('secretj-signup-challenge:'+token);
+const signupCodeDigest=(token,code,salt)=>core.hash('secretj-signup-otp:'+token+':'+code+':'+salt);
+async function dispatchSignupCode(to,code){
+  await emailService.send(to,'Secret J: Verify your new account',
+    'Your Secret J account verification code is: '+code+
+    '\\n\\nThis code expires in 10 minutes. Never share it. If you did not create this account, ignore this message.');
+}
 function equalHash(a,b){
   return /^[a-f0-9]{64}$/.test(String(a||''))&&/^[a-f0-9]{64}$/.test(String(b||''))&&
     timingSafeEqual(Buffer.from(a,'hex'),Buffer.from(b,'hex'));
@@ -41,6 +48,64 @@ module.exports=async function handler(req,res){
         await core.query('DELETE FROM public.sj_sessions WHERE token_hash=$1',[core.hash(token)]);
       res.setHeader('Set-Cookie',core.sessionCookie('',true));
       return core.reply(res,200,{ok:true});
+    }
+    if(action==='verify-signup'){
+      const body=core.parseBody(req);
+      const challenge=String(body.challenge||'');
+      const code=String(body.code||'').trim();
+      if(!challengePattern.test(challenge)||!codePattern.test(code))
+        throw core.fail(400,'Invalid or expired verification code');
+      const rows=await core.query(
+        `UPDATE public.sj_registration_challenges SET attempts=attempts+1
+         WHERE token_hash=$1 AND expires_at>now() AND attempts<5
+         RETURNING code_hash,code_salt`,
+        [signupTokenHash(challenge)]);
+      if(!rows[0])throw core.fail(400,'Code expired or too many attempts. Sign up again.');
+      const digest=signupCodeDigest(challenge,code,rows[0].code_salt);
+      if(!equalHash(digest,rows[0].code_hash))throw core.fail(400,'Incorrect verification code');
+      // Atomic consume -> account creation -> profile, preventing code replay.
+      const created=await core.query(
+        `WITH consumed AS (
+           DELETE FROM public.sj_registration_challenges
+           WHERE token_hash=$1 AND code_hash=$2 AND expires_at>now()
+           RETURNING email,password_hash,display_name,terms_version,privacy_version
+         ), created AS (
+           INSERT INTO public.sj_users(id,email,password_hash,terms_accepted_at,terms_version,privacy_version)
+           SELECT $3,email,password_hash,now(),terms_version,privacy_version FROM consumed
+           ON CONFLICT(email) DO NOTHING RETURNING id,email,role
+         ), profile AS (
+           INSERT INTO public.sj_profiles(user_id,display_name)
+           SELECT created.id,consumed.display_name FROM created CROSS JOIN consumed
+           RETURNING user_id
+         )
+         SELECT created.id,created.email,created.role
+         FROM created JOIN profile ON profile.user_id=created.id`,
+        [signupTokenHash(challenge),digest,core.randomUUID()]);
+      if(!created[0])throw core.fail(409,'Account verification expired or email already registered');
+      await core.issueSession(res,created[0].id);
+      return core.reply(res,201,{ok:true,user:core.publicUser(created[0])});
+    }
+    if(action==='resend-signup'){
+      requireEmailDelivery();
+      const challenge=String(core.parseBody(req).challenge||'');
+      if(!challengePattern.test(challenge))throw core.fail(400,'Invalid registration challenge');
+      const code=String(randomInt(100000,1000000)),salt=randomBytes(16).toString('hex');
+      const digest=signupCodeDigest(challenge,code,salt);
+      const rows=await core.query(
+        `UPDATE public.sj_registration_challenges
+         SET code_hash=$2,code_salt=$3,send_count=send_count+1,sent_at=now()
+         WHERE token_hash=$1 AND expires_at>now() AND attempts<5
+           AND send_count<3 AND sent_at<now()-interval '60 seconds'
+         RETURNING email`,
+        [signupTokenHash(challenge),digest,salt]);
+      if(!rows[0])throw core.fail(429,'Please wait before requesting another code, or sign up again.');
+      try{await dispatchSignupCode(rows[0].email,code);}
+      catch(error){
+        await core.query('DELETE FROM public.sj_registration_challenges WHERE token_hash=$1 AND code_hash=$2',
+          [signupTokenHash(challenge),digest]).catch(()=>{});
+        throw error;
+      }
+      return core.reply(res,200,{ok:true,message:'Another verification code has been sent.'});
     }
     if(action==='verify-login'){
       const body=core.parseBody(req);
@@ -117,6 +182,41 @@ module.exports=async function handler(req,res){
         body.privacy_version !== '2026-11-14')
         throw core.fail(400,'Please accept the current Terms and Privacy Policy to create an account');
       const name=core.validateText(body.name||'',120,'Name');
+      if(process.env.SECRETJ_SIGNUP_OTP_ENABLED==='true'){
+        requireEmailDelivery();
+        const already=await core.query('SELECT id FROM public.sj_users WHERE email=$1 LIMIT 1',[address]);
+        if(already.length)throw core.fail(409,'This email is already registered');
+        const challenge=randomBytes(32).toString('base64url');
+        const code=String(randomInt(100000,1000000));
+        const salt=randomBytes(16).toString('hex');
+        const digest=signupCodeDigest(challenge,code,salt);
+        const passhash=await core.hashPassword(password);
+        // Prevent restarting a live challenge to reset guessed-code attempts.
+        const pending=await core.query(
+          `INSERT INTO public.sj_registration_challenges
+            (token_hash,email,password_hash,display_name,code_hash,code_salt,
+             expires_at,terms_version,privacy_version)
+           VALUES($1,$2,$3,$4,$5,$6,now()+interval '10 minutes',$7,$8)
+           ON CONFLICT(email) DO UPDATE SET
+             token_hash=EXCLUDED.token_hash,password_hash=EXCLUDED.password_hash,
+             display_name=EXCLUDED.display_name,code_hash=EXCLUDED.code_hash,
+             code_salt=EXCLUDED.code_salt,expires_at=EXCLUDED.expires_at,
+             sent_at=now(),attempts=0,send_count=1,
+             terms_version=EXCLUDED.terms_version,privacy_version=EXCLUDED.privacy_version
+           WHERE public.sj_registration_challenges.expires_at<now()
+           RETURNING token_hash`,
+          [signupTokenHash(challenge),address,passhash,name,digest,salt,
+            '2026-11-14','2026-11-14']);
+        if(!pending[0])throw core.fail(429,'A verification code is already pending for this email. Check your inbox.');
+        try{await dispatchSignupCode(address,code);}
+        catch(error){
+          await core.query('DELETE FROM public.sj_registration_challenges WHERE token_hash=$1',
+            [signupTokenHash(challenge)]).catch(()=>{});
+          throw error;
+        }
+        return core.reply(res,200,{ok:true,requires_otp:true,otp_purpose:'signup',
+          challenge,expires_in_seconds:600,message:'Check your email to verify your new account.'});
+      }
       const id=core.randomUUID();
       const passhash=await core.hashPassword(password);
       const created=await core.query(
