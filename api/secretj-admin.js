@@ -2,13 +2,25 @@
 
 /** Admin-only operations. Never accept role assignment from registration. */
 const core=require('../lib/secretj/core');
+const {removeMember}=require('../lib/secretj/account-deletion');
 
 module.exports=async function handler(req,res){
   try {
-    core.allowedMethod(req,['GET','PATCH']);
+    core.allowedMethod(req,['GET','PATCH','DELETE']);
     const admin=await core.requireAdmin(req);
     const action=req.query?.action || 'summary';
 
+    if(req.method==='DELETE' && action==='delete-user'){
+      const body=core.parseBody(req);
+      const id=String(body.id||'');
+      if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))
+        throw core.fail(400,'Invalid user');
+      if(id===admin.id)throw core.fail(403,'Cannot delete your own administrator account');
+      if(body.confirm!=='DELETE')throw core.fail(400,'Deletion confirmation required');
+      if(!(await removeMember(id,admin.id)))
+        throw core.fail(404,'Member account not found or cannot be deleted');
+      return core.reply(res,200,{ok:true,deleted:true});
+    }
     if(req.method==='GET' && action==='summary'){
       const [stats,latest]=await Promise.all([
         core.query(`SELECT
