@@ -64,7 +64,7 @@
        <a class="sj-land-logo" href="#home" data-navigate="home" aria-label="Secret J home">
         <img src="/assets/secretj-mark.svg" alt="">Secret J.</a>
        <nav id="sj-land-links" class="sj-land-links" aria-label="Main website navigation">
-         <details class="sj-land-products-menu"><summary>Our Products <span class="sj-land-nav-chevron" aria-hidden="true">⌄</span></summary><div class="sj-land-dropdown sj-land-products-dropdown"><button type="button" data-navigate="hunter">Job Hunter <span class="sj-land-dropdown-note">Live ↗</span></button><span class="sj-land-upcoming" aria-disabled="true">Botfolio <span class="sj-land-dropdown-note">Coming soon</span></span></div></details>
+         <div class="sj-land-products-menu"><button type="button" class="sj-land-products-trigger" aria-haspopup="true" aria-expanded="false">Our Products</button><div class="sj-land-dropdown sj-land-products-dropdown"><button type="button" data-navigate="hunter">Job Hunter <span class="sj-land-dropdown-note">Live ↗</span></button><span class="sj-land-upcoming" aria-disabled="true">Botfolio <span class="sj-land-dropdown-note">Coming soon</span></span></div></div>
          <button type="button" data-navigate="jobs">Find Jobs</button>
          <button type="button" data-home-scroll="companies">Explore Companies</button>
          <button type="button" data-home-scroll="how">How It Works</button>
