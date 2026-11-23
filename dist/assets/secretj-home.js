@@ -42,7 +42,7 @@
         photo.src = 'data:' + mime + ';base64,' + base64;
         photo.hidden = false;
         initial.hidden = true;
-        window.dispatchEvent(new Event('secretj:avatar-updated'));
+        window.SecretJLanding?.syncAvatar?.();
       }
     } catch {
       // Keep the circular initials as an accessible fallback.
@@ -55,7 +55,7 @@
       photo.removeAttribute('src');
     }
     if (initial) initial.hidden = false;
-    window.dispatchEvent(new Event('secretj:avatar-updated'));
+    window.SecretJLanding?.syncAvatar?.();
   }
 
   async function refreshAccount(force=false) {
