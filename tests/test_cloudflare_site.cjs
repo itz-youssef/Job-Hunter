@@ -102,3 +102,16 @@ test('Cloudflare preview deployment has explicit Wrangler previews configuration
   assert.match(config,/^\[assets\]\s*$/m);
   assert.match(config,/^name = "jobhunter-youssef"\s*$/m);
 });
+
+test('Cloudflare Git-integrated root Wrangler config resolves the same site Worker and static assets',()=>{
+  const fs=require('node:fs');
+  const path=require('node:path');
+  const root=fs.readFileSync('wrangler.toml','utf8');
+  const site=fs.readFileSync('cloudflare/site/wrangler.toml','utf8');
+  assert.match(root,/^main = "cloudflare\/site\/worker\.mjs"$/m);
+  assert.match(root,/^directory = "\.\/dist"$/m);
+  assert.match(root,/^\[previews\]\s*$/m);
+  assert.equal(root.match(/^name = "(.*?)"$/m)?.[1],site.match(/^name = "(.*?)"$/m)?.[1]);
+  assert.ok(fs.existsSync(path.resolve('cloudflare/site/worker.mjs')));
+  assert.ok(fs.existsSync(path.resolve('dist/index.html')));
+});

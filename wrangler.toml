@@ -1,0 +1,43 @@
+# Root config for Cloudflare Git-integrated Builds (runs `npx wrangler preview` or `npx wrangler deploy` from repository root).
+# Keep this aligned with cloudflare/site/wrangler.toml; the GitHub Actions production workflow uses its own explicit --config.
+name = "jobhunter-youssef"
+main = "cloudflare/site/worker.mjs"
+compatibility_date = "2026-11-13"
+# Required for API handlers reading secrets via Node.js process.env.
+compatibility_flags = ["nodejs_compat"]
+# Preserve production dashboard variables when deploying from GitHub/Wrangler.
+# Existing encrypted Worker secrets remain secret and are never committed.
+keep_vars = true
+workers_dev = true
+
+# Current GitHub main dist/ becomes the active Cloudflare UI.
+# Keep this Worker DISTINCT from cloudflare/scheduler/wrangler.toml
+# which deploys job-hunter-scheduler and preserves its Cron triggers.
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+run_worker_first = true
+
+[vars]
+NODE_ENV = "production"
+# Pilot switch: signup only works when a private DATABASE_URL secret has
+# also been provisioned on this website Worker.
+SECRETJ_REGISTRATION_ENABLED = "true"
+# New accounts must verify ownership of their email before a session is issued.
+# Delivery uses existing private RESEND_API_KEY and SECRETJ_EMAIL_FROM secrets.
+SECRETJ_SIGNUP_OTP_ENABLED = "true"
+# The sender and API key must still be set privately. No mail is sent otherwise.
+SECRETJ_ALERTS_ENABLED = "true"
+# Independent source-aware personalized monitoring supersedes snapshot-only alerts.
+SECRETJ_NATIVE_MONITOR_ENABLED = "true"
+# Saved preference matching uses the deterministic title dictionary (no AI binding).
+
+# Separate from the existing scanner scheduler. The site worker only handles
+# opted-in, email-confirmed members. Requires configured Resend secrets and verified opt-in.
+[triggers]
+crons = ["* * * * *"]
+
+
+# Cloudflare Git-integrated preview builds run `wrangler preview`.
+# Keep preview settings isolated from the production Worker settings above.
+[previews]
