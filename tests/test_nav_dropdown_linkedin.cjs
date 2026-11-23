@@ -8,6 +8,8 @@ const account=fs.readFileSync('dist/account.html','utf8');
 const home=fs.readFileSync('dist/index.html','utf8');
 test('products menu retains live product and disabled coming-soon item',()=>{
  assert.match(landing,/class="sj-land-products-menu"/);
+ assert.match(landing,/class="sj-land-products-trigger" aria-haspopup="true"/);
+ assert.doesNotMatch(landing,/sj-land-nav-chevron/);
  assert.match(landing,/data-navigate="hunter">Job Hunter/);
  assert.match(landing,/aria-disabled="true">Botfolio/);
 });
@@ -26,4 +28,11 @@ test('brand LinkedIn CTA uses official blue and accessible white text',()=>{
  assert.match(landing,/sj-land-linkedin-cta/);
  assert.match(css,/sj-land-linkedin-cta:hover/);
  assert.match(css,/background:#0a66c2!important;color:#fff!important/);
+});
+
+test('product navigation is CSS-hover powered without requiring desktop clicks',()=>{
+ assert.match(css,/\.sj-land-products-menu:hover>\.sj-land-products-dropdown/);
+ assert.match(css,/\.sj-land-products-menu>\.sj-land-products-dropdown\{display:none/);
+ assert.doesNotMatch(landing,/<summary>Our Products/);
+ assert.match(home,/productsTrigger && matchMedia/);
 });
