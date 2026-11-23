@@ -14,6 +14,6 @@ test('site worker preserves LinkedIn dashboard bindings and enables Node environ
  assert.match(worker,/\['\/api\/secretj-linkedin',linkedinHandler\]/);
  assert.match(linkedin,/const env=req\?\.env\|\|process\.env/);
  assert.match(linkedin,/id:env\.LINKEDIN_CLIENT_ID/);
- assert.match(linkedin,/process\.env\.LINKEDIN_CLIENT_SECRET/);
+ assert.match(linkedin,/secret:env\.LINKEDIN_CLIENT_SECRET/);
  assert.doesNotMatch(config,/LINKEDIN_CLIENT_SECRET\s*=\s*"/);
 });
