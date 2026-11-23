@@ -12,7 +12,7 @@ function landing(data={}){
   vm.runInNewContext(source,sandbox,{filename:'secretj-landing.js'});
   assert.equal(typeof sandbox.window.SecretJLanding.render,'function');
   output=sandbox.window.SecretJLanding.render({
-    sources:data.sources||[],jobs:data.jobs||[],member:data.member||null,
+    sources:data.sources||[],jobs:data.jobs||[],member:data.member||null,catalogLoading:Boolean(data.catalogLoading),
     titleOf:j=>j.title,companyOf:j=>j.company,locationOf:j=>j.location,
     jobURL:j=>j.url
   });
