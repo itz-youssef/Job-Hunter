@@ -60,3 +60,13 @@ test('preference scan has bounded skeleton display and short readiness polling',
   assert.match(home,/refreshMatchingFeed\(\);\s*},5000\)/);
   assert.match(home,/state\.watchFeedPendingSince=feed\.ready===false/);
 });
+
+test('initial workspace loading and manual refresh have visible bounded progress',()=>{
+ assert.match(home,/Preparing your workspace/);
+ assert.match(home,/sj-loading-shell" role="status"/);
+ assert.match(home,/id="refresh-button"/);
+ assert.match(home,/button\.classList\.add\('sj-refresh-busy'\)/);
+ assert.match(home,/await Promise\.allSettled\(\[refresh\(\),hydrateMember\(\)\]\)/);
+ assert.match(home,/button\.classList\.remove\('sj-refresh-busy'\)/);
+ assert.match(css,/sj-loading-ring/);
+});
