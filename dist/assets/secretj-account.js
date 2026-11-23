@@ -116,8 +116,12 @@ async function signedIn(user) {
 }
 let isRegistration=false;
 let loginChallenge=null;
-function showLoginCode(challenge){
+let signupChallengeActive=false;
+function showLoginCode(challenge,signup=false){
   loginChallenge=challenge;
+  signupChallengeActive=signup;
+  $('#sj-code-heading').textContent=signup?'Verify your new account':'Verify your sign-in';
+  $('#sj-code-description').textContent=signup?'Enter the 6-digit code sent to your email to activate your new account. It expires in 10 minutes.':'Enter the 6-digit code sent to your account email. It expires in 10 minutes.';
   $('#auth-form').hidden=true;
   $('#login-code-panel').hidden=false;
   $('#sj-login-code').value='';
@@ -125,6 +129,7 @@ function showLoginCode(challenge){
 }
 function cancelLoginCode(){
   loginChallenge=null;
+  signupChallengeActive=false;
   $('#login-code-panel').hidden=true;
   $('#auth-form').hidden=false;
 }
@@ -425,8 +430,8 @@ $('#auth-form').addEventListener('submit',async event=>{
     form.reset();$('#message').hidden=true;
     if(result.requires_otp){
       if(!result.challenge)throw Error('Sign-in code challenge was not returned');
-      showLoginCode(result.challenge);
-      banner('We sent a verification code to your email. Enter it to finish signing in.');
+      showLoginCode(result.challenge,result.otp_purpose==='signup');
+      banner(result.otp_purpose==='signup'?'Enter the emailed code to activate your new account.':'We sent a verification code to your email. Enter it to finish signing in.');
       return;
     }
     await signedIn(result.user);
@@ -440,7 +445,7 @@ $('#login-code-form').addEventListener('submit',async event=>{
   busyButton(button,true,'Verifying…');
   try{
     const code=String($('#sj-login-code').value||'').trim();
-    const result=await api(authUrl('verify-login'),'POST',{challenge:loginChallenge,code});
+    const result=await api(signupChallengeActive?authUrl('verify-signup'):authUrl('verify-login'),'POST',{challenge:loginChallenge,code});
     loginChallenge=null;
     $('#login-code-panel').hidden=true;
     $('#message').hidden=true;
@@ -453,7 +458,7 @@ $('#sj-login-code-resend').addEventListener('click',async()=>{
   const button=$('#sj-login-code-resend');
   busyButton(button,true,'Sending…');
   try{
-    await api(authUrl('resend-login'),'POST',{challenge:loginChallenge});
+    await api(signupChallengeActive?authUrl('resend-signup'):authUrl('resend-login'),'POST',{challenge:loginChallenge});
     $('#sj-login-code').value='';
     banner('A new code was sent. Check your inbox.');
   }catch(error){banner(error.message,true);}
