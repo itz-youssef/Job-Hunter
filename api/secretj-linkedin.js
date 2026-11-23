@@ -25,8 +25,15 @@ function settings(req){
     redirect:env.LINKEDIN_REDIRECT_URI||CALLBACK
   };
 }
+function setupIssues(options){
+  const issues=[];
+  if(typeof options.id!=='string'||!options.id.trim())issues.push('LINKEDIN_CLIENT_ID_missing');
+  if(typeof options.secret!=='string'||!options.secret.trim())issues.push('LINKEDIN_CLIENT_SECRET_missing');
+  if(options.redirect!==CALLBACK)issues.push('LINKEDIN_REDIRECT_URI_mismatch');
+  return issues;
+}
 function configured(options){
-  return Boolean(options.id&&options.secret&&options.redirect===CALLBACK);
+  return setupIssues(options).length===0;
 }
 function redirect(res,path){
   res.statusCode=302;
@@ -99,7 +106,9 @@ module.exports=async function handler(req,res){
       ):[];
       return core.reply(res,200,{
         ok:true,configured:enabled,connected:Boolean(rows[0]),
-        connection:rows[0]||null
+        connection:rows[0]||null,
+        // Only enum-like setup codes; never expose IDs, secret values or actual redirects.
+        setup_issues:enabled?[]:setupIssues(options)
       });
     }
     if(action==='disconnect'){

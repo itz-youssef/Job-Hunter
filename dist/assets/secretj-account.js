@@ -212,6 +212,13 @@ async function profile(root) {
   state.profile=data.profile||{};
   const detailedReady=data.details_ready!==false;
   const connection=linked.connection||null;
+  const issues=Array.isArray(linked.setup_issues)?linked.setup_issues:[];
+  const issuesText={
+    LINKEDIN_CLIENT_ID_missing:'Client ID not visible to the deployed Worker',
+    LINKEDIN_CLIENT_SECRET_missing:'Client Secret not visible to the deployed Worker',
+    LINKEDIN_REDIRECT_URI_mismatch:'Redirect URL does not match the OAuth callback'
+  };
+  const diagnosis=issues.map(key=>issuesText[key]).filter(Boolean).join('; ');
   const photo=linked.connected&&connection?.picture_url?
      `<img class="linkedin-photo" src="${esc(connection.picture_url)}" alt="LinkedIn photo" referrerpolicy="no-referrer">`:'';
   const connect=linked.connected?
@@ -226,7 +233,7 @@ async function profile(root) {
       <p class="small muted">${linked.connected?
         `Connected as ${esc(connection?.full_name||'LinkedIn member')}. Name, email and photo metadata are saved privately.`:
         'With your permission, LinkedIn shares basic identity information (name, email, photo). Work history, education and skills are not provided by standard LinkedIn sign-in; import those from your CV.'}</p>
-      ${linked.configured?'':'<p class="tiny">LinkedIn developer app and server-side OAuth setup required. You can still complete your profile from your CV.</p>'}</div>
+      ${linked.configured?'':`<p class="tiny" role="status">${esc(diagnosis||'LinkedIn configuration could not be verified. Check the deployed Worker environment and that the status API is reachable.')}. Your CV profile remains available.</p>`}</div>
       ${connect}
     </div>
     <p class="small muted">Your login email and alert destination never change automatically when you connect LinkedIn.</p>
