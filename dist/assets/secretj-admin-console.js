@@ -31,7 +31,7 @@ async function render(root,api,state){
  '<section class="sj-admin-section"><h3>🛡️ Administrative activity</h3>'+
  (overview.activity||[]).map(a=>'<div class="sj-admin-activity"><strong>'+html(a.action)+'</strong><span>'+html(a.actor_email||'Administrator')+'</span><small>'+html(day(a.created_at))+'</small></div>').join('')+
  (!overview.activity?.length?'<p class="muted">No administrative actions yet.</p>':'')+'</section>'+
- '<div class="notice">Security: actions are checked on the server against your active administrator session. This console does not expose passwords, session tokens, CV file contents, or database credentials.</div>';
+ '<div class="notice">Security: actions are checked on the server against your active administrator session. This console does not expose passwords, session tokens, or private CV file contents.</div>';
  const list=root.querySelector('#sj-admin-users');
  function paint(filter=''){
   const matching=(users.users||[]).filter(u=>
