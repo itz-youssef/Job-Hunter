@@ -738,7 +738,7 @@ $('#account-content').addEventListener('change',async event=>{
             'Account setup is temporarily unavailable. Please try again later.';
           banner(message,true);
         }else if(!health.registration_enabled){
-          banner('Sign up is not enabled yet. Existing members can sign in. Enable SECRETJ_REGISTRATION_ENABLED in Vercel to register new accounts.');
+          banner('Sign up is temporarily unavailable. Existing members can still sign in.');
         }
       }catch{
         banner('Account services are temporarily unavailable. Please try again later.',true);
