@@ -114,9 +114,13 @@
         <button type="button" data-home-company-filter="business" aria-selected="false">Business &amp; Consulting</button>
         <button type="button" data-home-company-filter="operations" aria-selected="false">Operations</button>
        </div>
-       <div class="sj-land-companies">${companies.map(companyCard).join('')}</div>
+       <div class="sj-land-companies" aria-busy="${Boolean(data.catalogLoading && !companies.length)}" aria-label="Monitored companies">
+        ${companies.length?companies.map(companyCard).join(''):data.catalogLoading
+          ?Array.from({length:8},()=>'<div class="sj-land-company sj-land-company-skeleton" aria-hidden="true"><div><span class="sj-land-skeleton-title"></span><span class="sj-land-skeleton-description"></span></div><span class="sj-land-skeleton-action"></span></div>').join('')
+          :''}
+       </div>
        <p class="sj-land-empty" data-home-company-empty hidden>No companies in this category. Explore the complete list instead.</p>
-       ${companies.length?'':'<p class="sj-land-empty">Company records will appear after the next source update.</p>'}
+       ${companies.length||data.catalogLoading?'':'<p class="sj-land-empty">Company records could not be loaded. Please try refreshing.</p>'}
      </div></section>
      <section class="sj-land-section" id="opportunities"><div class="sj-land-width">
        <div class="sj-land-heading"><div><span class="sj-land-eyebrow">JOB HUNTER · AVAILABLE NOW</span><h2>Discover opportunities</h2>
