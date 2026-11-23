@@ -16,14 +16,35 @@
  function render(data){
    const sources=Array.isArray(data.sources)?data.sources:[];
    const jobs=Array.isArray(data.jobs)?data.jobs:[];
-   const prioritized=['Siemens','Blink22','PwC','talabat'].map(label=>
-     sources.find(company=>String(company.name||'').toLowerCase()===label.toLowerCase())).filter(Boolean);
-   const companies=prioritized.concat(sources.filter(c=>!prioritized.includes(c))).slice(0,8);
-   const companyCard=company=>
-     '<article class="sj-land-company" data-home-category="'+category(company.name)+'">'+
-     '<div><div class="sj-land-company-name">'+safe(company.name)+'</div>'+
-     '<p>Employer monitored by Job Hunter</p></div>'+
+   const preferred=['Siemens','Blink22','ITWorx','Sumerge','Thndr','VOIS','ADCB Egypt','Amazon Egypt'];
+   const normalized=name=>String(name||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+   const preferredCompanies=preferred.map(label=>
+     sources.find(company=>normalized(company.name)===normalized(label))).filter(Boolean);
+   const companies=preferredCompanies.concat(sources.filter(c=>!preferredCompanies.includes(c))).slice(0,8);
+   // Fixed artwork for known employers only: never interpolate employer data into SVG.
+   const logoFor=name=>{
+     const key=normalized(name);
+     const mark=(brand,symbol,wordmark)=>'<span class="sj-land-company-logo brand-'+brand+'" aria-hidden="true">'+
+       '<span class="sj-land-company-logo-mark">'+symbol+'</span>'+
+       '<span class="sj-land-company-logo-type">'+wordmark+'</span></span>';
+     if(key==='siemens')return mark('siemens','','SIEMENS');
+     if(key==='blink22')return mark('blink22','▰▰','Blink22');
+     if(key==='itworx')return mark('itworx','▶','ITWorx');
+     if(key==='sumerge')return mark('sumerge','S','Sumerge');
+     if(key==='thndr')return mark('thndr','ϟ','Thndr');
+     if(key==='vois')return mark('vois','','VOIS');
+     if(key==='adcb'||key==='adcbegypt')return mark('adcb','◢','ADCB');
+     if(key==='amazonegypt'||key==='amazon')return mark('amazon','','amazon<span class="sj-land-amazon-smile">⌣</span>');
+     return '';
+   };
+   const companyCard=company=>{
+     const logo=logoFor(company.name);
+     return '<article class="sj-land-company" data-home-category="'+category(company.name)+'">'+
+     '<div><div class="sj-land-company-heading"><div class="sj-land-company-name">'+safe(company.name)+'</div>'+
+     (logo?'<span class="sj-land-company-logo-divider" aria-hidden="true"></span>'+logo:'')+
+     '</div><p>Employer monitored by Job Hunter</p></div>'+
      '<button class="sj-land-company-footer" type="button" data-navigate="companies">Explore employer <span aria-hidden="true">↗</span></button></article>';
+   };
    const jobCard=job=>{
      const url=data.jobURL(job);
      const action=url==='#'?
