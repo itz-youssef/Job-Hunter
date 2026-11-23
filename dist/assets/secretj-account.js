@@ -207,7 +207,7 @@ async function overview(root) {
 async function profile(root) {
   const [data,linked]=await Promise.all([
     api(dataUrl('profile')),
-    api('/api/secretj-linkedin?action=status').catch(()=>({configured:false,connected:false}))
+    api('/api/secretj-linkedin?action=status').catch(error=>({configured:false,connected:false,status_error:String(error.message||'Request failed').slice(0,160)}))
   ]);
   state.profile=data.profile||{};
   const detailedReady=data.details_ready!==false;
@@ -216,9 +216,11 @@ async function profile(root) {
   const issuesText={
     LINKEDIN_CLIENT_ID_missing:'Client ID not visible to the deployed Worker',
     LINKEDIN_CLIENT_SECRET_missing:'Client Secret not visible to the deployed Worker',
-    LINKEDIN_REDIRECT_URI_mismatch:'Redirect URL does not match the OAuth callback'
+    LINKEDIN_REDIRECT_URI_mismatch:'Redirect URL does not match the OAuth callback',
+    LINKEDIN_DATABASE_MIGRATION_REQUIRED:'LinkedIn database tables are missing: migration 002 must be applied to production Neon'
   };
-  const diagnosis=issues.map(key=>issuesText[key]).filter(Boolean).join('; ');
+  const diagnosis=issues.map(key=>issuesText[key]).filter(Boolean).join('; ')||
+    (linked.status_error?'LinkedIn status API error: '+linked.status_error:'');
   const photo=linked.connected&&connection?.picture_url?
      `<img class="linkedin-photo" src="${esc(connection.picture_url)}" alt="LinkedIn photo" referrerpolicy="no-referrer">`:'';
   const connect=linked.connected?
