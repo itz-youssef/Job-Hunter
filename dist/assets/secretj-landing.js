@@ -40,8 +40,8 @@
    return `<div class="sj-landing" id="sj-landing">
      <div class="sj-land-topline sj-land-width"><strong>Secret J · Career-focused technology</strong><small>Tools for your next career move</small></div>
      <header class="sj-land-nav sj-land-width">
-       <button class="sj-land-logo" type="button" data-navigate="home" aria-label="Secret J home">
-        <img src="/assets/secretj-mark.svg" alt="">Secret J.</button>
+       <a class="sj-land-logo" href="#home" data-navigate="home" aria-label="Secret J home">
+        <img src="/assets/secretj-mark.svg" alt="">Secret J.</a>
        <nav id="sj-land-links" class="sj-land-links" aria-label="Main website navigation">
          <button type="button" data-home-scroll="products">Our Products</button>
          <button type="button" data-navigate="jobs">Find Jobs</button>
