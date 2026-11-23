@@ -1455,7 +1455,8 @@ a:hover{color:var(--ink)}
   function syncLandingTheme(){
       const button=el('[data-home-theme-toggle]');
       if(!button)return;
-      const dark=document.documentElement.dataset.theme==='dark';
+      const dark=document.documentElement?.dataset?.theme==='dark';
+      if(typeof button.setAttribute!=='function'||typeof button.querySelector!=='function')return;
       button.setAttribute('aria-pressed',String(dark));
       button.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');
       button.setAttribute('title',dark?'Switch to light mode':'Switch to dark mode');
