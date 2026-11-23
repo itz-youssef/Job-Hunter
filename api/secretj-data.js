@@ -82,7 +82,14 @@ module.exports=async function handler(req,res){
         return core.reply(res,200,{ok:true,profile:rows[0]||null});
       }
       if(req.method!=='PUT')throw core.fail(405,'Method not allowed');
-      const v=validateProfile(body);
+      // Older clients only send the original profile fields. Preserve expanded
+      // professional details rather than silently erasing them on save.
+      const details=['projects','certifications','languages','awards','volunteering','training','publications'];
+      const prior=await core.query('SELECT '+details.join(',')+' FROM public.sj_profiles WHERE user_id=$1',[userId]);
+      const input={...body};
+      for(const field of details)if(!Object.prototype.hasOwnProperty.call(input,field))
+        input[field]=prior[0]?.[field]||'';
+      const v=validateProfile(input);
       const rows=await core.query(
         `INSERT INTO public.sj_profiles
            (user_id,display_name,headline,location,summary,skills,experience,education,projects,certifications,languages,awards,volunteering,training,publications,linkedin,github,portfolio)
