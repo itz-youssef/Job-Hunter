@@ -89,3 +89,23 @@ img,video{max-width:100%}
  .sj-home .mini-job{align-items:flex-start}
  .sj-home .mini-job>.score{margin-left:auto}
 }
+
+/* Preserve all workspace content and imagery on narrow devices. */
+html,body{max-width:100%;overflow-x:clip}
+:where(.layout,.workspace-shell,.main-content,.panel,.cards,.grid,.stats,.grid-two){min-width:0}
+:where(.job-card,.company-card,.item,.notice,.alert-card){min-width:0;overflow-wrap:anywhere}
+:where(img,svg,video,canvas){max-width:100%}
+@media(max-width:750px){
+ .sidebar .profile,.sidebar .secondary-links,.sidebar .sidebar-bottom{display:flex}
+ .sidebar .nav-title{display:block}
+ .sidebar .secondary-links{flex-wrap:wrap;flex-direction:row;gap:8px}
+ .sidebar .sidebar-bottom{flex-direction:column;gap:12px}
+ .sidebar .profile{margin:12px 0}
+ .hero-graphic{display:grid;width:min(185px,100%);height:auto;aspect-ratio:1}
+ .region-tag,.top-avatar{display:inline-flex}
+ .topbar .breadcrumb{white-space:normal;overflow:visible;text-overflow:clip}
+}
+@media(max-width:590px){
+ .section-top,.job-actions,.top-actions{flex-wrap:wrap}
+ .main-content{padding-inline:clamp(12px,4vw,24px)}
+}

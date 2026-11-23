@@ -199,3 +199,26 @@ test('signup and login code UI remain distinct and supported',()=>{
  assert.match(js,/authUrl\('verify-login'\)/);
  assert.match(js,/authUrl\('resend-login'\)/);
 });
+
+test('signup OTP remains mandatory even if an old deployment disables its feature flag',async()=>{
+ await fixture(async t=>{
+  process.env.SECRETJ_SIGNUP_OTP_ENABLED='false';
+  const response=await call('register',register);
+  assert.equal(response.status,200);
+  assert.equal(response.data.requires_otp,true);
+  assert.equal(response.data.user,undefined);
+  assert.equal(t.users.size,0);
+  assert.equal(t.sessions.length,0);
+  assert.equal(t.sent.length,1);
+ });
+});
+test('missing verification email configuration fails closed with no account',async()=>{
+ await fixture(async t=>{
+  delete process.env.RESEND_API_KEY;
+  const response=await call('register',register);
+  assert.equal(response.status,503);
+  assert.equal(t.users.size,0);
+  assert.equal(t.sessions.length,0);
+  assert.equal(t.sent.length,0);
+ });
+});

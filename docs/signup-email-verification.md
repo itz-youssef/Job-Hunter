@@ -4,7 +4,7 @@ Users registering a **new account** must prove ownership of their chosen email b
 
 ## Server flow
 
-1. POST /api/secretj-auth?action=register — validate password and consent; rate-limit; if `SECRETJ_SIGNUP_OTP_ENABLED=true`, create an expiring *pending* registration record containing a scrypt hash of the chosen password and salted code hash (never plaintext passwords/codes); send the code via existing Resend integration.
+1. POST /api/secretj-auth?action=register — validate password and consent; rate-limit; create an expiring *pending* registration record containing a scrypt hash of the chosen password and salted code hash (never plaintext passwords/codes); send the code via existing Resend integration.
 2. POST /api/secretj-auth?action=verify-signup — increment guesses atomically, check one-time code and expiry, consume the challenge and create `sj_users`+`sj_profiles` together in one SQL statement, then issue a session.
 3. POST /api/secretj-auth?action=resend-signup — send at most twice more (maximum three deliveries), after a 60-second cooldown; keep the original expiry and failed-attempt counter.
 
@@ -16,7 +16,7 @@ The code is valid for 10 minutes, with five guesses. The challenge cannot be res
 - The public website's `cloudflare/site/wrangler.toml` enables `SECRETJ_SIGNUP_OTP_ENABLED=true`; this does **not** modify the separate scheduler Worker.
 - Both `RESEND_API_KEY` and `SECRETJ_EMAIL_FROM` must exist as private environment credentials on the **site** Worker, with the sender domain verified. If delivery is not configured, new signup fails closed with HTTP 503 rather than creating an unverified account.
 - Confirm on production with a fresh *test* address that an initial signup returns a challenge but no auth cookie, the emailed code activates the account, and replay fails. Automated tests simulate Resend; they cannot prove real inbox delivery.
-- Rollback: set `SECRETJ_SIGNUP_OTP_ENABLED=false` on the site Worker. This leaves existing accounts unaffected, but restores the old immediate signup, so use only to recover from a provider outage and restore enforcement promptly.
+- Registration fails closed when email delivery is unavailable. To temporarily stop registrations, use `SECRETJ_REGISTRATION_ENABLED=false`; do not bypass email ownership verification.
 
 ## Scope
 
