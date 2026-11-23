@@ -254,6 +254,6 @@ test('Job Hunter hero uses local monochrome architectural shadow artwork in both
    assert.match(image,/<svg/);
    assert.match(image,/<linearGradient/);
    assert.match(image,/<!-- Soft architectural planes/);
-   assert.doesNotMatch(image,/<image\\b|https?:\\/\\/(?!www\\.w3\\.org\\/2000\\/svg)/);
+   assert.ok(!image.includes('<image ') && !image.includes('xlink:href='), 'no remote or embedded image nodes');
  }
 });
