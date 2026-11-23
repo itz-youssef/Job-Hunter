@@ -1,0 +1,24 @@
+-- Expanded optional professional CV details. Existing profile values are preserved.
+BEGIN;
+ALTER TABLE public.sj_profiles ADD COLUMN IF NOT EXISTS projects TEXT NOT NULL DEFAULT '';
+ALTER TABLE public.sj_profiles DROP CONSTRAINT IF EXISTS sj_profiles_projects_limit;
+ALTER TABLE public.sj_profiles ADD CONSTRAINT sj_profiles_projects_limit CHECK (length(projects) <= 12000);
+ALTER TABLE public.sj_profiles ADD COLUMN IF NOT EXISTS certifications TEXT NOT NULL DEFAULT '';
+ALTER TABLE public.sj_profiles DROP CONSTRAINT IF EXISTS sj_profiles_certifications_limit;
+ALTER TABLE public.sj_profiles ADD CONSTRAINT sj_profiles_certifications_limit CHECK (length(certifications) <= 6000);
+ALTER TABLE public.sj_profiles ADD COLUMN IF NOT EXISTS languages TEXT NOT NULL DEFAULT '';
+ALTER TABLE public.sj_profiles DROP CONSTRAINT IF EXISTS sj_profiles_languages_limit;
+ALTER TABLE public.sj_profiles ADD CONSTRAINT sj_profiles_languages_limit CHECK (length(languages) <= 3000);
+ALTER TABLE public.sj_profiles ADD COLUMN IF NOT EXISTS awards TEXT NOT NULL DEFAULT '';
+ALTER TABLE public.sj_profiles DROP CONSTRAINT IF EXISTS sj_profiles_awards_limit;
+ALTER TABLE public.sj_profiles ADD CONSTRAINT sj_profiles_awards_limit CHECK (length(awards) <= 5000);
+ALTER TABLE public.sj_profiles ADD COLUMN IF NOT EXISTS volunteering TEXT NOT NULL DEFAULT '';
+ALTER TABLE public.sj_profiles DROP CONSTRAINT IF EXISTS sj_profiles_volunteering_limit;
+ALTER TABLE public.sj_profiles ADD CONSTRAINT sj_profiles_volunteering_limit CHECK (length(volunteering) <= 6000);
+ALTER TABLE public.sj_profiles ADD COLUMN IF NOT EXISTS training TEXT NOT NULL DEFAULT '';
+ALTER TABLE public.sj_profiles DROP CONSTRAINT IF EXISTS sj_profiles_training_limit;
+ALTER TABLE public.sj_profiles ADD CONSTRAINT sj_profiles_training_limit CHECK (length(training) <= 6000);
+ALTER TABLE public.sj_profiles ADD COLUMN IF NOT EXISTS publications TEXT NOT NULL DEFAULT '';
+ALTER TABLE public.sj_profiles DROP CONSTRAINT IF EXISTS sj_profiles_publications_limit;
+ALTER TABLE public.sj_profiles ADD CONSTRAINT sj_profiles_publications_limit CHECK (length(publications) <= 6000);
+COMMIT;
