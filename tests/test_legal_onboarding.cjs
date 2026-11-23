@@ -44,6 +44,6 @@ test('public legal pages explain CV handling and account controls',()=>{
  const terms=fs.readFileSync('dist/terms.html','utf8');
  const privacy=fs.readFileSync('dist/privacy.html','utf8');
  assert.match(terms,/CVs and content you upload/);
- assert.match(privacy,/Neon PostgreSQL/);
+ assert.match(privacy,/third-party infrastructure providers for hosting, data storage/);
  assert.match(privacy,/Retention and deletion/);
 });
