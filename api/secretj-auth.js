@@ -182,7 +182,8 @@ module.exports=async function handler(req,res){
         body.privacy_version !== '2026-11-14')
         throw core.fail(400,'Please accept the current Terms and Privacy Policy to create an account');
       const name=core.validateText(body.name||'',120,'Name');
-      if(process.env.SECRETJ_SIGNUP_OTP_ENABLED==='true'){
+      // New accounts always require verified email ownership.
+      {
         requireEmailDelivery();
         const already=await core.query('SELECT id FROM public.sj_users WHERE email=$1 LIMIT 1',[address]);
         if(already.length)throw core.fail(409,'This email is already registered');
@@ -217,23 +218,6 @@ module.exports=async function handler(req,res){
         return core.reply(res,200,{ok:true,requires_otp:true,otp_purpose:'signup',
           challenge,expires_in_seconds:600,message:'Check your email to verify your new account.'});
       }
-      const id=core.randomUUID();
-      const passhash=await core.hashPassword(password);
-      const created=await core.query(
-        `WITH created AS (
-           INSERT INTO public.sj_users(id,email,password_hash,terms_accepted_at,terms_version,privacy_version)
-           VALUES($1,$2,$3,now(),$5,$6) RETURNING id,email,role
-         ), profile AS (
-           INSERT INTO public.sj_profiles(user_id,display_name)
-           SELECT id,$4 FROM created RETURNING user_id
-         )
-         SELECT created.id,created.email,created.role FROM created
-         JOIN profile ON profile.user_id=created.id`,
-        [id,address,passhash,name,'2026-11-14','2026-11-14']);
-      // Initial registration retains existing onboarding. Future logins
-      // require the email code before any session is established.
-      await core.issueSession(res,id);
-      return core.reply(res,201,{ok:true,user:core.publicUser(created[0])});
     }
     const users=await core.query(
       'SELECT id,email,role,password_hash,is_active FROM public.sj_users WHERE email=$1 LIMIT 1',
