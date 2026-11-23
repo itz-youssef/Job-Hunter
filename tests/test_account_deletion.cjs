@@ -91,10 +91,10 @@ test('LinkedIn brand colors override monochrome controls inside the theme layer'
  const html=fs.readFileSync('dist/account.html','utf8');
  const block=theme.slice(theme.indexOf('/* Provider-specific brand controls'));
  assert.ok(block.length>100);
- assert.match(block,/body \.provider-row :is\(a\.sj-linkedin-connect,button\.sj-linkedin-connect\)/);
+ assert.match(block,/body #account-content \.provider-row :is\(a\.sj-linkedin-connect,button\.sj-linkedin-connect\)/);
  assert.match(block,/background-color:#0a66c2!important/);
  assert.match(block,/background-color:#004182!important/);
- assert.match(block,/body \.provider-row button\.sj-linkedin-disconnect/);
+ assert.match(block,/body #account-content \.provider-row button\.sj-linkedin-disconnect/);
  assert.match(block,/background-color:#c62828!important/);
  assert.match(block,/background-color:#a91f1f!important/);
  assert.match(block,/color:#fff!important/);
