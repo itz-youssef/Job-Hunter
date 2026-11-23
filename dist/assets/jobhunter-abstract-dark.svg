@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2200 740" preserveAspectRatio="xMidYMid slice">
+<defs>
+ <linearGradient id="canvas" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#151515"/><stop offset=".55" stop-color="#0d0d0d"/><stop offset="1" stop-color="#101010"/></linearGradient>
+ <linearGradient id="plane" x1="0" y1="0" x2="1" y2=".8"><stop stop-color="#282828" stop-opacity=".9"/><stop offset=".65" stop-color="#1e1e1e" stop-opacity=".30"/><stop offset="1" stop-color="#1e1e1e" stop-opacity="0"/></linearGradient>
+ <radialGradient id="light"><stop stop-color="#4b4b4b" stop-opacity=".34"/><stop offset="1" stop-color="#0d0d0d" stop-opacity="0"/></radialGradient>
+ <filter id="blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="26"/></filter>
+</defs>
+<rect width="2200" height="740" fill="url(#canvas)"/>
+<!-- Soft architectural planes; deliberately quiet central axis. -->
+<path d="M0 0H660L230 388L0 456Z" fill="url(#plane)" opacity=".75"/>
+<path d="M0 0H250L0 350Z" fill="#282828" opacity=".38"/>
+<path d="M2200 0H1720L2020 402L2200 318Z" fill="url(#plane)" opacity=".75"/>
+<path d="M2200 130L1950 500L2200 690Z" fill="#1e1e1e" opacity=".68"/>
+<path d="M0 605L360 740H0Z" fill="#282828" opacity=".40"/>
+<path d="M2200 585L1760 740H2200Z" fill="#282828" opacity=".33"/>
+<ellipse cx="1140" cy="255" rx="780" ry="400" fill="url(#light)"/>
+<g opacity=".36" filter="url(#blur)" fill="#000">
+ <path d="M0 0L510 0 260 590 0 680Z"/>
+ <path d="M2200 0L1920 0 1700 690 2200 550Z"/>
+</g>
+<!-- Elegant contour highlights at the edges, never behind core text -->
+<g fill="none" stroke="#666" stroke-width="1.6" opacity=".30">
+ <path d="M0 470C160 350 290 182 510 0"/>
+ <path d="M0 518C182 394 338 220 555 0"/>
+ <path d="M2200 390C2090 260 1975 120 1850 0"/>
+ <path d="M2200 440C2055 260 1950 135 1795 0"/>
+ <path d="M0 690C148 650 250 675 450 740"/>
+ <path d="M2200 665C2060 625 1950 675 1780 740"/>
+</g>
+</svg>
