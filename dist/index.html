@@ -514,7 +514,7 @@ a:hover{color:var(--ink)}
       normalize(locationOf(j)),description].join('|');
   }
   function allPublicJobs(){
-    const source=state.snapshot.jobs||state.snapshot.job_feed;
+    const source=state.snapshot?.jobs||state.snapshot?.job_feed;
     if(source&&source===dedupSnapshot&&dedupPublic)return dedupPublic;
     const seenUrls=new Set(),seenVacancies=new Set();
     const result=jobs().filter(j=>{
@@ -527,8 +527,7 @@ a:hover{color:var(--ink)}
       if(fingerprint)seenVacancies.add(fingerprint);
       return true;
     });
-    dedupSnapshot=source;
-    dedupPublic=result;
+    if(source){dedupSnapshot=source;dedupPublic=result;}
     return result;
   }
   function validJobs(){
