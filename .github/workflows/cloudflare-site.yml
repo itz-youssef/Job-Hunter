@@ -105,6 +105,39 @@ jobs:
           done
           echo "::error::Cloudflare website revision could not be verified."
           exit 1
+      - name: Audit Cloudflare WWW routing without modifying it
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'DNS and response routing indicators (no credentials):'
+          (dig +short CNAME www.jobsnow.tech || true) | head -5
+          (curl -sSI --max-time 15 https://www.jobsnow.tech/ | grep -iE '^(HTTP/|server:|cf-ray:|location:|x-powered-by:)' || true)
+          echo 'Cloudflare Worker custom-domain registry (host, worker only):'
+          curl -fsS --max-time 15 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/domains" \
+            -o /tmp/sj-domains.json || true
+          if [ -s /tmp/sj-domains.json ]; then
+            node -e 'let d=require("/tmp/sj-domains.json"); console.log("api_success:",d.success); for(let x of (d.result||[])) if(/jobsnow\\.tech$/i.test(x.hostname||"")) console.log("host:",x.hostname,"service:",x.service,"env:",x.environment,"zone:",x.zone_name||"")'
+          fi
+          echo 'Cloudflare jobsnow.tech zone/worker-route mapping (host, worker only):'
+          curl -fsS --max-time 15 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/zones?name=jobsnow.tech" \
+            -o /tmp/sj-zones.json || true
+          if [ -s /tmp/sj-zones.json ]; then
+            node -e 'let d=require("/tmp/sj-zones.json"); console.log("zone_api_success:",d.success,"zones:",(d.result||[]).map(x=>x.name).join(","))'
+            ZONE_ID=$(node -e 'let d=require("/tmp/sj-zones.json");let z=(d.result||[]).find(x=>x.name==="jobsnow.tech");process.stdout.write(z?.id||"")')
+            if [ -n "$ZONE_ID" ]; then
+              curl -fsS --max-time 15 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/workers/routes" \
+                -o /tmp/sj-routes.json || true
+              if [ -s /tmp/sj-routes.json ]; then
+                node -e 'let d=require("/tmp/sj-routes.json"); console.log("route_api_success:",d.success);for(let x of (d.result||[])) console.log("pattern:",x.pattern,"worker:",x.script||"(none)")'
+              fi
+            fi
+          fi
       - name: Diagnose production WWW route and LinkedIn callback (no OAuth credentials)
         shell: bash
         run: |
