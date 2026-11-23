@@ -357,7 +357,7 @@ function alerts() {
           generate alerts.
         </p>
         <p>
-          Email credentials and the recipient are managed in GitHub Secrets.
+          Email delivery settings are managed securely by the service.
           They are not included in this public website.
         </p>
         <p>
@@ -404,7 +404,7 @@ function deploy() {
       </p>
       <h3>Monitoring</h3>
       <p>
-        GitHub Actions runs the Python monitoring engine, saves job history
+        Our monitoring service checks for new openings, keeps job history
         and processes email alerts. Check the workflow for its schedule
         and execution results.
       </p>
@@ -416,7 +416,7 @@ function deploy() {
       </p>
       <a class="secondary" href="${WORKFLOW}"
          target="_blank" rel="noopener noreferrer">
-        Open GitHub Actions →
+        View monitoring activity →
       </a>
     </section>
   `;
