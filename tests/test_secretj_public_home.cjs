@@ -99,7 +99,10 @@ test('OAuth exchanges only permissioned name/photo/email, never steals work hist
   assert.match(code,/scope','openid profile email'/);
   assert.match(code,/https:\/\/api\.linkedin\.com\/v2\/userinfo/);
   assert.match(code,/sj_linkedin_connections/);
-  assert.match(code,/state_hash=\$1 AND user_id=\$2 AND expires_at>now\(\)/);
+  assert.match(code,/state_hash=\$1 AND expires_at>now\(\)/);
+  assert.match(code,/RETURNING user_id/);
+  assert.match(code,/const linkedUserId=ownership\[0\]\.user_id/);
+  assert.match(code,/VALUES\(\$1,\$2,now\(\)\+interval '10 minutes'\)/);
   assert.match(code,/display_name=CASE WHEN length\(trim\(sj_profiles\.display_name\)\)=0/);
   assert.doesNotMatch(code,/r_fullprofile|r_basicprofile|r_contactinfo/);
   assert.doesNotMatch(code,/sj_users SET email|UPDATE public\.sj_users SET email/i);
