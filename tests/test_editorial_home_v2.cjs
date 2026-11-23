@@ -215,7 +215,7 @@ test('Job Hunter product hero has separate safe editorial note backgrounds for b
  assert.match(css,/secretj-jobhunter-hero-dark\.svg/);
  assert.match(css,/pointer-events:none/);
  assert.match(css,/html\[data-theme="dark"\] \.jh-intro \.jh-intro-hero/);
- assert.match(main,/abstract-stronger-20261123/);
+ assert.match(main,/faq-editorial-20261123/);
  for(const a of [light,dark]){
    assert.match(a,/Job Goals/);
    assert.match(a,/Find the right role/);
@@ -235,7 +235,7 @@ test('product intro keeps stationery at edges and removes repeated notes from it
  assert.match(css,/\.jh-intro #how::after\{content:none!important/);
  assert.match(css,/html\[data-theme="dark"\] \.jh-intro #how\{/);
  assert.match(css,/background:#0c0c0c/);
- assert.match(main,/abstract-stronger-20261123/);
+ assert.match(main,/faq-editorial-20261123/);
 });
 
 test('Job Hunter hero uses local monochrome architectural shadow artwork in both themes',()=>{
@@ -249,7 +249,7 @@ test('Job Hunter hero uses local monochrome architectural shadow artwork in both
  assert.match(block,/pointer-events:none/);
  assert.doesNotMatch(block,/images\.unsplash\.com|photo-\d+/);
  assert.doesNotMatch(block,/sticky|stationery|saturate\(/);
- assert.match(main,/abstract-stronger-20261123/);
+ assert.match(main,/faq-editorial-20261123/);
  for(const image of [light,dark]){
    assert.match(image,/<svg/);
    assert.match(image,/<linearGradient/);
@@ -266,7 +266,7 @@ test('stronger shadow treatment remains neutral and keeps responsive text protec
  assert.match(fineTune,/rgba\(246,246,244,\.31\)/);
  assert.match(fineTune,/rgba\(13,13,13,\.31\)/);
  assert.match(fineTune,/@media\(max-width:760px\)/);
- assert.match(main,/abstract-stronger-20261123/);
+ assert.match(main,/faq-editorial-20261123/);
 });
 
 test('company catalog loads independently of slower status requests and shows skeletons',()=>{
@@ -302,4 +302,22 @@ test('public and account copy does not expose database or hosting providers',()=
  assert.doesNotMatch(main,/GitHub watchlist could not be loaded|check Vercel deployment|Private GitHub sync/);
  assert.match(main,/The company list could not be loaded/);
  assert.match(privacy,/third-party infrastructure providers for hosting, data storage/);
+});
+
+test('Job Hunter FAQ and CTA get legible coordinated light/dark abstract decorations',()=>{
+ const css=fs.readFileSync('dist/assets/secretj-jobhunter-intro.css','utf8');
+ const light=fs.readFileSync('dist/assets/jobhunter-faq-editorial-light.svg','utf8');
+ const dark=fs.readFileSync('dist/assets/jobhunter-faq-editorial-dark.svg','utf8');
+ const block=css.slice(css.indexOf('/* Editorial FAQ + closing CTA:'));
+ assert.match(block,/jobhunter-faq-editorial-light\.svg/);
+ assert.match(block,/jobhunter-faq-editorial-dark\.svg/);
+ assert.match(block,/\.jh-intro #questions \.jh-intro-faq details p\{color:#484848\}/);
+ assert.match(block,/html\[data-theme="dark"\] \.jh-intro #questions \.jh-intro-faq details p\{color:#d3d3d3\}/);
+ assert.match(block,/pointer-events:none/);
+ assert.match(block,/@media\(max-width:760px\)/);
+ assert.match(main,/faq-editorial-20261123/);
+ assert.match(light,/<svg/);
+ assert.match(dark,/<svg/);
+ assert.match(light,/radialGradient/);
+ assert.match(dark,/radialGradient/);
 });
