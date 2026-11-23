@@ -215,7 +215,7 @@ test('Job Hunter product hero has separate safe editorial note backgrounds for b
  assert.match(css,/secretj-jobhunter-hero-dark\.svg/);
  assert.match(css,/pointer-events:none/);
  assert.match(css,/html\[data-theme="dark"\] \.jh-intro \.jh-intro-hero/);
- assert.match(main,/clean-editorial-hero-20261123/);
+ assert.match(main,/workspace-photo-20261123/);
  for(const a of [light,dark]){
    assert.match(a,/Job Goals/);
    assert.match(a,/Find the right role/);
@@ -235,5 +235,18 @@ test('product intro keeps stationery at edges and removes repeated notes from it
  assert.match(css,/\.jh-intro #how::after\{content:none!important/);
  assert.match(css,/html\[data-theme="dark"\] \.jh-intro #how\{/);
  assert.match(css,/background:#0c0c0c/);
- assert.match(main,/clean-editorial-hero-20261123/);
+ assert.match(main,/workspace-photo-20261123/);
+});
+
+test('workspace photography overrides earlier note artwork in both hero themes',()=>{
+ const css=fs.readFileSync('dist/assets/secretj-jobhunter-intro.css','utf8');
+ const block=css.slice(css.indexOf('/* Job Hunter photographic workspace hero'));
+ assert.match(block,/photo-1764755932155-dabbee87df7e/);
+ assert.match(block,/photo-1752225494606-ae09aca08bea/);
+ assert.match(block,/filter:saturate\(1\.29\) contrast\(1\.12\) brightness\(1\.09\)/);
+ assert.match(block,/filter:saturate\(1\.22\) contrast\(1\.18\) brightness\(\.83\)/);
+ assert.match(block,/mask-image:none/);
+ assert.match(block,/pointer-events:none/);
+ assert.match(block,/html\[data-theme="dark"\] \.jh-intro \.jh-intro-hero::before/);
+ assert.match(main,/workspace-photo-20261123/);
 });
