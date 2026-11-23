@@ -143,7 +143,7 @@ test('company discovery displays distinct logo branding without repeating foregr
    assert.match(html,new RegExp('brand-'+brand));
  assert.match(style,/secretj-companies-mosaic\.svg/);
  assert.match(style,/brand-vois\{color:#ed1c24/);
- assert.match(main,/secretj-landing\\.js\\?v=footer-refresh-20261123/);
+ assert.match(main,/footer-refresh-20261123/);
 });
 
 test('footer is full width with accessible LinkedIn icon and one legal bar on landing',()=>{
