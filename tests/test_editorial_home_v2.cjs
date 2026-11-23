@@ -215,7 +215,7 @@ test('Job Hunter product hero has separate safe editorial note backgrounds for b
  assert.match(css,/secretj-jobhunter-hero-dark\.svg/);
  assert.match(css,/pointer-events:none/);
  assert.match(css,/html\[data-theme="dark"\] \.jh-intro \.jh-intro-hero/);
- assert.match(main,/stationery-hero-20261123/);
+ assert.match(main,/clean-editorial-hero-20261123/);
  for(const a of [light,dark]){
    assert.match(a,/Job Goals/);
    assert.match(a,/Find the right role/);
