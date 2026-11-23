@@ -41,7 +41,7 @@ async function render(root,api,state){
    '<div class="item-actions"><button class="btn secondary" data-admin-detail="'+html(u.id)+'">Details</button>'+
    (u.id===state.user.id?'<small>Your account</small>':
      '<button class="btn secondary" data-admin-id="'+html(u.id)+'" data-admin-field="role" data-admin-value="'+(u.role==='admin'?'member':'admin')+'">'+(u.role==='admin'?'Demote':'Make admin')+'</button>'+
-     '<button class="btn secondary" data-admin-id="'+html(u.id)+'" data-admin-field="is_active" data-admin-value="'+(u.is_active?'false':'true')+'">'+(u.is_active?'Suspend':'Activate')+'</button>')+
+     '<button class="btn secondary" data-admin-id="'+html(u.id)+'" data-admin-field="is_active" data-admin-value="'+(u.is_active?'false':'true')+'">'+(u.is_active?'Suspend':'Activate')+'</button>'+ (u.role==='member'?'<button class="btn sj-delete-account" data-admin-delete="'+html(u.id)+'" data-admin-email="'+html(u.email)+'">Delete account</button>':''))
    '</div></article>').join('')||'<p class="muted">No matching accounts.</p>';
  }
  paint();
@@ -67,10 +67,22 @@ async function render(root,api,state){
  root.querySelector('#sj-admin-search').addEventListener('input',e=>paint(e.target.value));
  root.querySelector('[data-ad-refresh]').addEventListener('click',()=>render(root,api,state).catch(err=>{root.textContent='Could not refresh: '+err.message;}));
  root.onclick=async e=>{
-  const b=e.target.closest('[data-admin-detail],[data-admin-revoke]');
+  const b=e.target.closest('[data-admin-detail],[data-admin-revoke],[data-admin-delete]');
   if(!b||!root.contains(b))return;
   const target=root.querySelector('#sj-admin-detail');
   try{
+   if(b.hasAttribute('data-admin-delete')){
+     if(state.user?.role!=='admin')throw Error('Administrator access required');
+     const email=b.dataset.adminEmail||'this member';
+     const confirmed=prompt('Permanently delete '+email+' and all associated data? Type DELETE to confirm.');
+     if(confirmed!=='DELETE')return;
+     b.disabled=true;
+     try{
+       await api(url+'delete-user','DELETE',{id:b.dataset.adminDelete,confirm:'DELETE'});
+       await render(root,api,state);
+     }finally{b.disabled=false;}
+     return;
+   }
    if(b.dataset.adminRevoke){
     if(!confirm('Sign out all active sessions for this account?'))return;
     await api(url+'revoke-sessions','PATCH',{id:b.dataset.adminRevoke});
