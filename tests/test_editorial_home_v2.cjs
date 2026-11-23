@@ -164,7 +164,7 @@ test('dark companies section is layered and legible without changing light treat
  assert.match(style,/background:#1c2028/);
  assert.match(style,/background:rgba\(38,44,54,\.97\)/);
  assert.match(style,/brand-vois\{color:#ff646d/);
- assert.match(main,/monochrome-dark-20261123/);
+ assert.match(main,/how-notes-20261123/);
 });
 
 test('approved dark wall uses monochrome black, soft logos and retains light mosaic',()=>{
@@ -173,10 +173,28 @@ test('approved dark wall uses monochrome black, soft logos and retains light mos
  assert.match(style,/background:rgba\(23,23,23,\.96\)/);
  assert.match(style,/filter:none/);
  assert.match(style,/secretj-companies-mosaic\.svg/);
- assert.match(main,/monochrome-dark-20261123/);
+ assert.match(main,/how-notes-20261123/);
  const darkAsset=fs.readFileSync('dist/assets/secretj-companies-dark.svg','utf8');
  for(const brand of ['Microsoft','IBM','aws','Deloitte','pwc','EY','Nestlé','Schneider','Uber','Coca-Cola']){
    assert.ok(darkAsset.includes(brand),'dark wall includes '+brand);
  }
  assert.doesNotMatch(darkAsset,/#1c2028|#303640|#242a33/);
+});
+
+test('how-it-works uses pinned career-note artwork for both themes without touching workspace',()=>{
+ assert.match(style,/\.sj-landing #how::before/);
+ assert.match(style,/secretj-how-notes-light\.svg/);
+ assert.match(style,/secretj-how-notes-dark\.svg/);
+ assert.match(style,/html\[data-theme="dark"\] \.sj-landing #how/);
+ assert.match(style,/pointer-events:none/);
+ assert.match(main,/how-notes-20261123/);
+ const light=fs.readFileSync('dist/assets/secretj-how-notes-light.svg','utf8');
+ const dark=fs.readFileSync('dist/assets/secretj-how-notes-dark.svg','utf8');
+ for(const asset of [light,dark]){
+   assert.match(asset,/Career Plan/);
+   assert.match(asset,/Reminders/);
+   assert.match(asset,/Target Roles/);
+   assert.match(asset,/Job Hunt/);
+ }
+ assert.match(landing(),/From searching to finding\./);
 });
