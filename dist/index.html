@@ -227,8 +227,8 @@ a:hover{color:var(--ink)}
   <script src="/assets/secretj-welcome-tour.js?v=welcome-1" defer></script>
 <link rel="stylesheet" href="/assets/responsive.css?v=20261113-mobile-1">
 <link rel="stylesheet" href="/assets/secretj-loading.css?v=20261123-loader-1">
-<link rel="stylesheet" href="/assets/secretj-landing.css?v=neutral-footer-20261123">
-<script src="/assets/secretj-landing.js?v=footer-refresh-20261123"></script>
+<link rel="stylesheet" href="/assets/secretj-landing.css?v=company-loader-20261123">
+<script src="/assets/secretj-landing.js?v=company-loader-20261123"></script>
 <link rel="stylesheet" href="/assets/secretj-jobhunter-intro.css?v=abstract-stronger-20261123">
 <script src="/assets/secretj-jobhunter-intro.js?v=product-intro-1"></script>
 </head>
@@ -317,7 +317,7 @@ a:hover{color:var(--ink)}
   const liveFile = name => RAW + name + '?v=' + Date.now();
   const el = (selector) => document.querySelector(selector);
   const esc = (x) => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const state = { member:null, memberLoading:true, memberPrefs:null, memberPrefsConfigured:false, reviewExcluded:false, watchFeed:[], watchFeedLoaded:false, watchFeedLoading:false, watchFeedPendingSince:0, watchFeedError:'', snapshot:{}, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'recent', jobType:'all', feedLimit:40, companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
+  const state = { member:null, memberLoading:true, memberPrefs:null, memberPrefsConfigured:false, reviewExcluded:false, watchFeed:[], watchFeedLoaded:false, watchFeedLoading:false, watchFeedPendingSince:0, watchFeedError:'', snapshot:{}, publicCatalogLoading:true, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'recent', jobType:'all', feedLimit:40, companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
   // Skeletons make authenticated feed/profile hydration obvious, not a fake zero.
   function loadingSkeleton(message='Loading matching opportunities…',detail='Retrieving your saved preferences and job feed.',count=4){
     return '<section class="sj-loading-shell" role="status" aria-live="polite" aria-busy="true">'+
@@ -620,14 +620,27 @@ a:hover{color:var(--ink)}
   async function refresh(silent=false){
     const runsDue=Date.now()-state.runsCheckedAt>=RUNS_REFRESH_MS;
     if(runsDue)state.runsCheckedAt=Date.now();
-    const res=await Promise.allSettled(IS_CLOUDFLARE
+    // Show the public catalog as soon as its snapshot arrives; never hold the
+    // homepage behind slower API, GitHub Actions, or status requests.
+    const requests=IS_CLOUDFLARE
       ? [json(liveFile('dist/data.json')),
          json(liveFile('companies.json')).then(companies=>({companies})),
          json(liveFile('dist/custom-status.json')),
          json(liveFile('dist/notification-status.json')),
          runsDue?Promise.allSettled(SCANNER_CHANNELS.map(c=>json(RUNS_API_ROOT+c.workflow+'/runs?branch=main&per_page=5'))):Promise.resolve(null)]
       : [json('/data.json'),companyApi(),json('/custom-status.json'),json('/notification-status.json'),
-         runsDue?Promise.allSettled(SCANNER_CHANNELS.map(c=>json(RUNS_API_ROOT+c.workflow+'/runs?branch=main&per_page=5'))):Promise.resolve(null)]);
+         runsDue?Promise.allSettled(SCANNER_CHANNELS.map(c=>json(RUNS_API_ROOT+c.workflow+'/runs?branch=main&per_page=5'))):Promise.resolve(null)];
+    const catalogRequest=requests[0].then(snapshot=>{
+      state.snapshot=snapshot;
+      state.publicCatalogLoading=false;
+      if(state.page==='home')render();
+      return snapshot;
+    },error=>{
+      state.publicCatalogLoading=false;
+      if(state.page==='home')render();
+      throw error;
+    });
+    const res=await Promise.allSettled([catalogRequest,...requests.slice(1)]);
     if(res[0].status==='fulfilled')state.snapshot=res[0].value;
     if(res[1].status==='fulfilled'){state.companies=res[1].value.companies||[];state.companyApiError='';}
     else state.companyApiError=IS_CLOUDFLARE?'GitHub watchlist could not be loaded.':'Company API unavailable — check Vercel deployment.';
@@ -700,6 +713,7 @@ a:hover{color:var(--ink)}
       (getDate(firstSeenDate(b))||0)-(getDate(firstSeenDate(a))||0)).slice(0,6);
     return window.SecretJLanding?.render({
       sources:monitoredSources(),jobs:latest,member:state.member,
+      catalogLoading:state.publicCatalogLoading,
       jobURL,titleOf,companyOf,locationOf
     })||'<section class="sj-home"><h1>Secret J</h1><button data-navigate="jobs">Find Jobs</button></section>';
   }

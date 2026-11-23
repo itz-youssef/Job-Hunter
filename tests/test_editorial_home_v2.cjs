@@ -12,7 +12,7 @@ function landing(data={}){
   vm.runInNewContext(source,sandbox,{filename:'secretj-landing.js'});
   assert.equal(typeof sandbox.window.SecretJLanding.render,'function');
   output=sandbox.window.SecretJLanding.render({
-    sources:data.sources||[],jobs:data.jobs||[],member:data.member||null,
+    sources:data.sources||[],jobs:data.jobs||[],member:data.member||null,catalogLoading:Boolean(data.catalogLoading),
     titleOf:j=>j.title,companyOf:j=>j.company,locationOf:j=>j.location,
     jobURL:j=>j.url
   });
@@ -143,7 +143,7 @@ test('company discovery displays distinct logo branding without repeating foregr
    assert.match(html,new RegExp('brand-'+brand));
  assert.match(style,/secretj-companies-mosaic\.svg/);
  assert.match(style,/brand-vois\{color:#ed1c24/);
- assert.match(main,/footer-refresh-20261123/);
+ assert.match(main,/company-loader-20261123/);
 });
 
 test('footer is full width with accessible LinkedIn icon and one legal bar on landing',()=>{
@@ -164,7 +164,7 @@ test('dark companies section is layered and legible without changing light treat
  assert.match(style,/background:#1c2028/);
  assert.match(style,/background:rgba\(38,44,54,\.97\)/);
  assert.match(style,/brand-vois\{color:#ff646d/);
- assert.match(main,/neutral-footer-20261123/);
+ assert.match(main,/company-loader-20261123/);
 });
 
 test('approved dark wall uses monochrome black, soft logos and retains light mosaic',()=>{
@@ -173,7 +173,7 @@ test('approved dark wall uses monochrome black, soft logos and retains light mos
  assert.match(style,/background:rgba\(23,23,23,\.96\)/);
  assert.match(style,/filter:none/);
  assert.match(style,/secretj-companies-mosaic\.svg/);
- assert.match(main,/neutral-footer-20261123/);
+ assert.match(main,/company-loader-20261123/);
  const darkAsset=fs.readFileSync('dist/assets/secretj-companies-dark.svg','utf8');
  for(const brand of ['Microsoft','IBM','aws','Deloitte','pwc','EY','Nestlé','Schneider','Uber','Coca-Cola']){
    assert.ok(darkAsset.includes(brand),'dark wall includes '+brand);
@@ -187,7 +187,7 @@ test('how-it-works uses pinned career-note artwork for both themes without touch
  assert.match(style,/secretj-how-notes-dark\.svg/);
  assert.match(style,/html\[data-theme="dark"\] \.sj-landing #how/);
  assert.match(style,/pointer-events:none/);
- assert.match(main,/neutral-footer-20261123/);
+ assert.match(main,/company-loader-20261123/);
  const light=fs.readFileSync('dist/assets/secretj-how-notes-light.svg','utf8');
  const dark=fs.readFileSync('dist/assets/secretj-how-notes-dark.svg','utf8');
  for(const asset of [light,dark]){
@@ -203,7 +203,7 @@ test('dark footer uses neutral black with no navy tint, keeping light theme unto
  assert.match(style,/html\[data-theme="dark"\] \.sj-landing \.sj-land-footer\{background:#0b0b0b;border-color:#303030\}/);
  assert.match(style,/html\[data-theme="dark"\] \.sj-landing \.sj-land-linkedin-icon\{background:#181818;border-color:#4a4a4a;color:#f5f5f5\}/);
  assert.doesNotMatch(style,/\.sj-land-footer\{background:#12151b/);
- assert.match(main,/neutral-footer-20261123/);
+ assert.match(main,/company-loader-20261123/);
 });
 
 test('Job Hunter product hero has separate safe editorial note backgrounds for both modes',()=>{
@@ -267,4 +267,22 @@ test('stronger shadow treatment remains neutral and keeps responsive text protec
  assert.match(fineTune,/rgba\(13,13,13,\.31\)/);
  assert.match(fineTune,/@media\(max-width:760px\)/);
  assert.match(main,/abstract-stronger-20261123/);
+});
+
+test('company catalog loads independently of slower status requests and shows skeletons',()=>{
+ const initial=landing({sources:[],jobs:[],catalogLoading:true});
+ assert.match(initial,/sj-land-company-skeleton/);
+ assert.match(initial,/aria-busy="true"/);
+ assert.doesNotMatch(initial,/Company records will appear after the next source update/);
+ assert.equal((initial.match(/sj-land-company-skeleton"/g)||[]).length,8);
+ const ready=landing({sources:[{name:'Siemens'}],jobs:[],catalogLoading:false});
+ assert.match(ready,/Siemens/);
+ assert.doesNotMatch(ready,/sj-land-company-skeleton/);
+ assert.match(main,/publicCatalogLoading:true/);
+ assert.match(main,/const catalogRequest=requests\[0\]\.then/);
+ assert.match(main,/if\(state\.page==='home'\)render\(\)/);
+ assert.match(main,/Promise\.allSettled\(\[catalogRequest,\.\.\.requests\.slice\(1\)\]\)/);
+ assert.match(style,/sj-land-company-skeleton/);
+ assert.match(style,/prefers-reduced-motion:reduce/);
+ assert.match(main,/company-loader-20261123/);
 });
