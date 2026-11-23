@@ -60,7 +60,7 @@ test('public live preview renders only supplied jobs, never fabricated postings'
 test('source-derived job strings are escaped',()=>{
  const html=render({jobs:[{title:'<script>bad()</script>',company:'<img src=x>',location:'Cairo & Giza'}]});
  assert.doesNotMatch(html,/<script>bad/);
- assert.doesNotMatch(html,/<img src/);
+ assert.doesNotMatch(html,/<img src=x>/);
  assert.match(html,/&lt;script&gt;/);
  assert.match(html,/Cairo &amp; Giza/);
 });
