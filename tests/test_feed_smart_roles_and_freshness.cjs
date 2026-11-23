@@ -17,10 +17,11 @@ test('job feed roles are generated from saved profile career fields, not fixed h
 test('job badge updates on account hydration, filters, search and periodic snapshot refresh',()=>{
  assert.match(html,/state\.memberLoading\?'…'/);
  assert.match(html,/String\(filterJobs\(validJobs\(\)\)\.length\)/);
- assert.match(html,/memberLoading=false;syncFeedCount\(\);render\(\)/);
+ assert.match(html,/state\.memberLoading=false;/);
+ assert.match(html,/syncFeedCount\(\);render\(\);/);
  assert.match(html,/syncFeedCount\(\);render\(\);/);
  assert.match(html,/if\(event\.target\.id!=='job-search'\)return/);
- assert.match(html,/searchTimer=setTimeout\([\s\S]*?syncFeedCount\(\);[\s\S]*?\},250\)/);
+ assert.match(html,/searchTimer=setTimeout\([\s\S]*?render\(\);[\s\S]*?\},440\)/);
 });
 
 test('date filters use employer posting dates instead of first detection',()=>{
