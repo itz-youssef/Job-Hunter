@@ -56,3 +56,20 @@ test('LinkedIn connection uses Worker environment even when process.env has no c
    core.setQueryForTests(null);
  }
 });
+
+test('missing LinkedIn database table reports migration requirement instead of missing credentials',async()=>{
+ const original=core.requireUser;
+ core.requireUser=async()=>({id,email:'member@example.com'});
+ core.setQueryForTests(async()=>{const e=new Error('relation does not exist');e.code='42P01';throw e;});
+ try{
+   const r=await invoke({method:'GET',query:{action:'status'},headers:{},env:{
+     LINKEDIN_CLIENT_ID:'valid-id',LINKEDIN_CLIENT_SECRET:'secret-value',
+     LINKEDIN_REDIRECT_URI:'https://www.jobsnow.tech/api/secretj-linkedin?action=callback'
+   }});
+   assert.equal(r.status,200);
+   const data=JSON.parse(r.body);
+   assert.equal(data.configured,true);
+   assert.deepEqual(data.setup_issues,['LINKEDIN_DATABASE_MIGRATION_REQUIRED']);
+   assert.doesNotMatch(r.body,/secret-value|relation does not exist/);
+ }finally{core.requireUser=original;core.setQueryForTests(null);}
+});

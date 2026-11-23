@@ -99,16 +99,25 @@ module.exports=async function handler(req,res){
     const user=await core.requireUser(req);
     if(action==='status'){
       const enabled=configured(options);
-      const rows=enabled?await core.query(
-        `SELECT full_name,provider_email,picture_url,connected_at
-           FROM public.sj_linkedin_connections WHERE user_id=$1`,
-        [user.id]
-      ):[];
+      let rows=[],schemaReady=true;
+      if(enabled){
+        try{
+          rows=await core.query(
+            `SELECT full_name,provider_email,picture_url,connected_at
+               FROM public.sj_linkedin_connections WHERE user_id=$1`,
+            [user.id]
+          );
+        }catch(error){
+          // 42P01: undefined_table. No secrets or SQL details are returned.
+          if(error?.code!=='42P01')throw error;
+          schemaReady=false;
+        }
+      }
       return core.reply(res,200,{
         ok:true,configured:enabled,connected:Boolean(rows[0]),
         connection:rows[0]||null,
         // Only enum-like setup codes; never expose IDs, secret values or actual redirects.
-        setup_issues:enabled?[]:setupIssues(options)
+        setup_issues:[...setupIssues(options),...(schemaReady?[]:['LINKEDIN_DATABASE_MIGRATION_REQUIRED'])]
       });
     }
     if(action==='disconnect'){
@@ -119,8 +128,15 @@ module.exports=async function handler(req,res){
       return core.reply(res,200,{ok:true,connected:false});
     }
     if(!configured(options))throw core.fail(503,'LinkedIn connection is not configured on the server');
-
     if(action==='start'){
+      // A missing schema must be reported before redirecting users to LinkedIn.
+      try{
+        await core.query('SELECT 1 FROM public.sj_linkedin_oauth_states LIMIT 0');
+        await core.query('SELECT 1 FROM public.sj_linkedin_connections LIMIT 0');
+      }catch(error){
+        if(error?.code==='42P01')throw core.fail(503,'LinkedIn database migration 002 is required');
+        throw error;
+      }
       const state=randomBytes(32).toString('base64url');
       await core.query('DELETE FROM public.sj_linkedin_oauth_states WHERE expires_at<now()');
       await core.query(
