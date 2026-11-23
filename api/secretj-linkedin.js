@@ -15,12 +15,18 @@ const CALLBACK='https://www.jobsnow.tech/api/secretj-linkedin?action=callback';
 const RETURN_OK='/account.html?view=profile&linkedin=connected';
 const RETURN_FAIL='/account.html?view=profile&linkedin=error';
 
-function configured(){
-  return Boolean(
-    process.env.LINKEDIN_CLIENT_ID &&
-    process.env.LINKEDIN_CLIENT_SECRET &&
-    (process.env.LINKEDIN_REDIRECT_URI||CALLBACK)===CALLBACK
-  );
+function settings(req){
+  // Cloudflare bindings are supplied directly by the Worker. Node.js
+  // process.env remains supported for local/Vercel execution and tests.
+  const env=req?.env||process.env;
+  return {
+    id:env.LINKEDIN_CLIENT_ID,
+    secret:env.LINKEDIN_CLIENT_SECRET,
+    redirect:env.LINKEDIN_REDIRECT_URI||CALLBACK
+  };
+}
+function configured(options){
+  return Boolean(options.id&&options.secret&&options.redirect===CALLBACK);
 }
 function redirect(res,path){
   res.statusCode=302;
@@ -43,13 +49,13 @@ function safePicture(input){
     return u.href;
   }catch{return null;}
 }
-async function exchangeCode(code){
+async function exchangeCode(code,options){
   const request=new URLSearchParams({
     grant_type:'authorization_code',
     code,
     redirect_uri:CALLBACK,
-    client_id:process.env.LINKEDIN_CLIENT_ID,
-    client_secret:process.env.LINKEDIN_CLIENT_SECRET
+    client_id:options.id,
+    client_secret:options.secret
   });
   const tokenResponse=await fetch(TOKEN,{
     method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
@@ -77,6 +83,7 @@ async function exchangeCode(code){
 
 module.exports=async function handler(req,res){
   const action=req.query?.action||'status';
+  const options=settings(req);
   try{
     core.allowedMethod(req,['GET','POST']);
     if(req.method==='POST'&&action!=='disconnect')throw core.fail(405,'Method not allowed');
@@ -84,7 +91,7 @@ module.exports=async function handler(req,res){
       throw core.fail(404,'Unknown action');
     const user=await core.requireUser(req);
     if(action==='status'){
-      const enabled=configured();
+      const enabled=configured(options);
       const rows=enabled?await core.query(
         `SELECT full_name,provider_email,picture_url,connected_at
            FROM public.sj_linkedin_connections WHERE user_id=$1`,
@@ -102,7 +109,7 @@ module.exports=async function handler(req,res){
       );
       return core.reply(res,200,{ok:true,connected:false});
     }
-    if(!configured())throw core.fail(503,'LinkedIn connection is not configured on the server');
+    if(!configured(options))throw core.fail(503,'LinkedIn connection is not configured on the server');
 
     if(action==='start'){
       const state=randomBytes(32).toString('base64url');
@@ -114,7 +121,7 @@ module.exports=async function handler(req,res){
       );
       const request=new URL(AUTHORIZE);
       request.searchParams.set('response_type','code');
-      request.searchParams.set('client_id',process.env.LINKEDIN_CLIENT_ID);
+      request.searchParams.set('client_id',options.id);
       request.searchParams.set('redirect_uri',CALLBACK);
       request.searchParams.set('scope','openid profile email');
       request.searchParams.set('state',state);
@@ -139,7 +146,7 @@ module.exports=async function handler(req,res){
     );
     if(!ownership[0])throw core.fail(403,'LinkedIn authorization expired or not owned by this user');
 
-    const profile=await exchangeCode(code);
+    const profile=await exchangeCode(code,options);
     // Preserve manually edited profile fields. Never overwrite the account's
     // login email or alert destination with the LinkedIn provider email.
     await core.query(
