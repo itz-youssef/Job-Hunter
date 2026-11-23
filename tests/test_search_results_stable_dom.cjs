@@ -1,0 +1,31 @@
+'use strict';
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const html=fs.readFileSync('dist/index.html','utf8');
+test('search keeps mounted input and filter controls while updating only results',()=>{
+ const start=html.indexOf("document.addEventListener('input',event=>{");
+ const end=html.indexOf("document.addEventListener('submit',async event=>",start);
+ const handler=html.slice(start,end);
+ assert.match(handler,/state\.query=value/);
+ assert.match(handler,/updateSearchResults\(\)/);
+ assert.doesNotMatch(handler,/\brender\(\)/);
+ assert.match(html,/function updateSearchResults\(\)/);
+ assert.match(html,/results\.innerHTML=/);
+ assert.match(html,/more\.innerHTML=/);
+ assert.match(html,/counter\.textContent=/);
+ assert.match(html,/id="jobs-count-summary"/);
+ assert.match(html,/id="jobs-load-more-wrap"/);
+ assert.match(html,/id="job-search"/);
+});
+test('partial search uses exactly same public and private job selection logic',()=>{
+ const start=html.indexOf('  function updateSearchResults(){');
+ const end=html.indexOf('  // Brand-domain allowlist:',start);
+ const helper=html.slice(start,end);
+ assert.ok(start>=0&&end>start);
+ assert.match(helper,/const publicList=validJobs\(\)/);
+ assert.match(helper,/const filtered=filterJobs\(source\)/);
+ assert.match(helper,/visible\.map\(jobCard\)/);
+ assert.match(helper,/state\.savedRecords/);
+ assert.match(helper,/personalizedDisplay/);
+});
