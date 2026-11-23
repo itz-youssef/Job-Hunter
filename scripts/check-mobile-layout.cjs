@@ -23,7 +23,8 @@ for(const width of [375,1024]){
    await page.evaluate(t=>localStorage.setItem('jh-theme',t),theme);
    await page.reload();
    await page.waitForTimeout(180);
-   const brand=page.locator('a.brand').first();
+   // The editorial homepage intentionally hides the legacy sidebar brand.
+   const brand=page.locator(path==='/#home'?'button.sj-land-logo':'a.brand').first();
    const style=()=>brand.evaluate(el=>{
      function visibleBg(node){
        while(node){
