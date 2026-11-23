@@ -81,29 +81,35 @@ test('signup disabled until Neon has been configured and registration enabled',a
     assert.equal(calls.length,0);
   });
 });
-test('signup always creates a normal member and a cookie with HttpOnly SameSite',async()=>{
+test('signup never bypasses email verification when delivery is unavailable',async()=>{
   await fixture(async calls=>{
-    const prev=process.env.SECRETJ_REGISTRATION_ENABLED;
+    const previous={
+      registration:process.env.SECRETJ_REGISTRATION_ENABLED,
+      otp:process.env.SECRETJ_SIGNUP_OTP_ENABLED,
+      key:process.env.RESEND_API_KEY,
+      sender:process.env.SECRETJ_EMAIL_FROM
+    };
     process.env.SECRETJ_REGISTRATION_ENABLED='true';
+    process.env.SECRETJ_SIGNUP_OTP_ENABLED='false'; // Old deployments must not bypass verification.
+    delete process.env.RESEND_API_KEY;
+    delete process.env.SECRETJ_EMAIL_FROM;
     try{
       const r=await call(auth,req('POST',{
         email:'member@example.com',password:'correct horse battery staple',
-        name:'Test User',role:'admin',accept_terms:true,terms_version:'2026-11-14',privacy_version:'2026-11-14'
+        name:'Test User',role:'admin',accept_terms:true,
+        terms_version:'2026-11-14',privacy_version:'2026-11-14'
       },{action:'register'}));
-      assert.equal(r.status,201);
-      assert.equal(r.body.user.role,'member');
-      assert.equal(r.body.user.password_hash,undefined);
-      assert.match(r.headers['Set-Cookie'],/HttpOnly/);
-      assert.match(r.headers['Set-Cookie'],/SameSite=Lax/);
-      const saved=calls.find(x=>x.sql.includes('WITH created AS'));
-      assert.ok(saved);
-      assert.ok(saved.args[2].startsWith('scrypt$'));
-      assert.ok(!saved.sql.includes('role,'));
-      assert.match(saved.sql,/terms_accepted_at/);
-      assert.deepEqual(saved.args.slice(4),['2026-11-14','2026-11-14']);
+      assert.equal(r.status,503);
+      assert.equal(r.body.user,undefined);
+      assert.equal(r.headers['Set-Cookie'],undefined);
+      assert.equal(calls.some(x=>x.sql.includes('INSERT INTO public.sj_users')),false);
+      assert.equal(calls.some(x=>x.sql.includes('INSERT INTO public.sj_sessions')),false);
     }finally{
-      if(prev===undefined)delete process.env.SECRETJ_REGISTRATION_ENABLED;
-      else process.env.SECRETJ_REGISTRATION_ENABLED=prev;
+      const restore=(key,value)=>value===undefined?delete process.env[key]:process.env[key]=value;
+      restore('SECRETJ_REGISTRATION_ENABLED',previous.registration);
+      restore('SECRETJ_SIGNUP_OTP_ENABLED',previous.otp);
+      restore('RESEND_API_KEY',previous.key);
+      restore('SECRETJ_EMAIL_FROM',previous.sender);
     }
   });
 });
