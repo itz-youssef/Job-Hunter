@@ -7,6 +7,7 @@
 const {randomBytes,randomInt,timingSafeEqual}=require('node:crypto');
 const core=require('../lib/secretj/core');
 const emailService=require('./secretj-email');
+const {removeMember}=require('../lib/secretj/account-deletion');
 const CODE_LIFETIME_MINUTES=10;
 const challengePattern=/^[A-Za-z0-9_-]{42,44}$/;
 const codePattern=/^\d{6}$/;
@@ -48,6 +49,20 @@ module.exports=async function handler(req,res){
         await core.query('DELETE FROM public.sj_sessions WHERE token_hash=$1',[core.hash(token)]);
       res.setHeader('Set-Cookie',core.sessionCookie('',true));
       return core.reply(res,200,{ok:true});
+    }
+    if(action==='delete-account'){
+      const user=await core.requireUser(req);
+      if(user.role!=='member')throw core.fail(403,'Administrator accounts cannot self-delete');
+      const body=core.parseBody(req);
+      if(body.confirm!=='DELETE'||typeof body.password!=='string')
+        throw core.fail(400,'Enter DELETE and your current password to confirm');
+      await core.allowAuthAttempt(req,user.email);
+      const rows=await core.query('SELECT password_hash FROM public.sj_users WHERE id=$1 AND is_active=true LIMIT 1',[user.id]);
+      if(!rows[0]||!(await core.checkPassword(body.password,rows[0].password_hash)))
+        throw core.fail(401,'Current password is incorrect');
+      if(!(await removeMember(user.id)))throw core.fail(409,'Account could not be deleted');
+      res.setHeader('Set-Cookie',core.sessionCookie('',true));
+      return core.reply(res,200,{ok:true,deleted:true});
     }
     if(action==='verify-signup'){
       const body=core.parseBody(req);
