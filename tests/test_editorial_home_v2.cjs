@@ -93,3 +93,15 @@ test('desktop editorial menu is horizontal and legacy sidebar button widths cann
  assert.match(style,/\.sj-landing \.sj-land-links :is\(a,button\)\{display:inline-flex;width:auto;flex:0 0 auto;/);
  assert.match(style,/@media\(max-width:900px\)[\s\S]*?\.sj-landing \.sj-land-links\{display:none;[^\n]*flex-direction:column/);
 });
+
+test('landing appearance control delegates to shared persistent theme switch',()=>{
+ const guest=landing();
+ const member=landing({member:{id:'member'}});
+ assert.match(guest,/data-home-theme-toggle/);
+ assert.match(member,/data-home-theme-toggle/);
+ assert.match(main,/event\.target\.closest\('\[data-home-theme-toggle\]'\)/);
+ assert.match(main,/el\('#theme-toggle'\)\.click\(\)/);
+ assert.match(main,/localStorage\.setItem\('jh-theme'/);
+ assert.match(main,/if\(state\.page==='home'\)syncLandingTheme\(\)/);
+ assert.match(style,/html\[data-theme="dark"\] \.sj-landing/);
+});
