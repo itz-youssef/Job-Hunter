@@ -86,6 +86,7 @@ def raw_ats(company, fetch_json=_json):
         if not isinstance(payload,dict) or not isinstance(payload.get("jobs"),list):
             raise ValueError("Workable widget list schema changed")
         jobs=[]
+        print("OFFICIAL_WORKABLE_LOCATION",name, [{"location":r.get("location"),"country_code":r.get("country_code"),"country":r.get("country")} for r in payload["jobs"][:2] if isinstance(r,dict)],flush=True)
         for row in payload["jobs"]:
             if not isinstance(row,dict) or not row.get("title"):continue
             if not egypt_location(row.get("location"),row.get("country_code")):continue
