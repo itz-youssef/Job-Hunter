@@ -114,10 +114,10 @@ def compare(company, reader=raw_ats, scanner=scan_company):
             return row
         row["official_total_all_locations"]=all_count
         official_by_key={listing_key(j["url"]):j for j in official}
-        if len(official_by_key)!=len(official):
-            row["status"]="UNVERIFIED"
-            row["reason"]="Official provider returned duplicate URLs"
-            return row
+        row["official_duplicate_rows"]=len(official)-len(official_by_key)
+        # Some Workable boards publish the same requisition once per city.
+        # Compare stable unique job URLs, never count a duplicate city as a
+        # missing role or silently throw away the entire reconciliation.
         jobs,scan_status,message=scanner(company)
         row["adapter_status"]=scan_status
         if scan_status not in ("monitoring","partial"):
@@ -137,7 +137,10 @@ def compare(company, reader=raw_ats, scanner=scan_company):
                            "url":adapter_by_key[k].get("url","")} for k in sorted(extra)],
             "status":"MATCHED" if not missing and not extra and
                      scan_status=="monitoring" else "MISMATCH",
-            "reason":str(message)[:200],
+            "reason":str(message)[:200]+(
+                "; "+str(row["official_duplicate_rows"])+
+                " repeated official location rows"
+                if row["official_duplicate_rows"] else ""),
         })
     except Exception as exc:
         row["status"]="UNVERIFIED"
