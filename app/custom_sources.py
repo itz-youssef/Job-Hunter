@@ -26,6 +26,7 @@ TIMEOUT = 12
 MAX_BYTES = 3_000_000
 MAX_PAGES = 5
 MAX_DETAILS = 20
+MAX_WORKDAY_PAGES = 25  # Workday serves 20 per page; 5 pages truncates >100 jobs.
 USER_AGENT = "JobHunterCareersMonitor/2.0"
 
 
@@ -967,12 +968,16 @@ def _board_jobs(name: str, url: str) -> list[dict]:
                     )
                 )
 
-            if (
-                not rows
-                or (page + 1) * 100
-                >= data.get("totalFound", 0)
-            ):
+            try:
+                total_found=int(data["totalFound"])
+            except (KeyError,ValueError,TypeError) as exc:
+                raise ValueError("SmartRecruiters reported total missing") from exc
+            if not rows and page*100 < total_found:
+                raise ValueError("SmartRecruiters pagination incomplete")
+            if (page + 1) * 100 >= total_found:
                 break
+        else:
+            raise ValueError("SmartRecruiters listings exceed verified page budget")
 
     # WORKDAY
     elif kind == "workday":
@@ -985,8 +990,12 @@ def _board_jobs(name: str, url: str) -> list[dict]:
         )
 
         detail_count = 0
+        reported_total = None
+        totals_seen = set()
+        count_drift = False
+        seen_paths = set()
 
-        for page in range(MAX_PAGES):
+        for page in range(MAX_WORKDAY_PAGES):
 
             data = _json(
                 endpoint + "/jobs",
@@ -998,7 +1007,43 @@ def _board_jobs(name: str, url: str) -> list[dict]:
                 }
             )
 
-            rows = data.get("jobPostings") or []
+            rows = data.get("jobPostings")
+            if not isinstance(rows,list):
+                raise ValueError("Workday jobPostings list missing")
+            try:
+                total = int(data["total"])
+            except (ValueError,TypeError,KeyError) as exc:
+                raise ValueError("Workday reported total missing") from exc
+            if total < 0:
+                raise ValueError("Workday reported invalid total")
+            if reported_total and total == 0:
+                # Some live Workday boards (Konecta, observed 2026-11-24)
+                # return total=0 on a later page after a nonzero first total.
+                # Never throw away already collected real jobs or claim complete.
+                count_drift = True
+                if not rows:
+                    break
+                total = reported_total
+            totals_seen.add(total)
+            if reported_total is None:
+                reported_total = total
+            elif total != reported_total:
+                # Real careers boards update while we page. Preserve observed
+                # jobs but mark coverage PARTIAL on a small concurrent change.
+                # Larger changes indicate an unstable source, not a complete scan.
+                # A live board may move or re-count results between pages.
+                # Keep verifiable rows but explicitly downgrade coverage.
+                count_drift = True
+                reported_total = max(reported_total,total)
+            if not rows and page*20 < total:
+                count_drift = True
+                break
+            # Same page repeating under different offsets is incomplete coverage.
+            page_paths = {str(item.get("externalPath") or "") for item in rows if isinstance(item,dict)}
+            if page_paths and page_paths.issubset(seen_paths):
+                count_drift = True
+                break
+            seen_paths.update(page_paths)
 
             for item in rows:
 
@@ -1058,12 +1103,16 @@ def _board_jobs(name: str, url: str) -> list[dict]:
                 job["source_detail_status"]=detail_status
                 jobs.append(job)
 
-            if (
-                not rows
-                or (page + 1) * 20
-                >= data.get("total", 0)
-            ):
+            if (page + 1) * 20 >= total:
                 break
+        else:
+            count_drift = True  # Published first pages retained, never claim full coverage.
+        # Do not mark a truncated list complete, even if page size varies.
+        if totals_seen and len(seen_paths) < min(totals_seen):
+            count_drift = True  # Never label an incomplete source as complete.
+        if count_drift:
+            for job in jobs:
+                job["source_pagination_consistency"]="changed-during-scan"
 
     # PERSONIO
     elif kind == "personio":
@@ -1326,6 +1375,14 @@ def scan_company(company: dict):
         # the official employer detail is inaccessible.
         from app.official_job_details import enrich_missing
         jobs=enrich_missing(jobs,kind,_bytes)
+
+        if kind == "workday" and any(
+            j.get("source_pagination_consistency")=="changed-during-scan" for j in jobs
+        ):
+            return jobs,"partial",(
+                f"{len(jobs)} Workday listings; official count changed during "
+                "pagination, so completeness remains unverified"
+            )
 
         if kind in ("adcb_egypt", "fab_minds_egypt"):
             return jobs, "partial", f"{len(jobs)} public vacancy details from official company pages; coverage may be incomplete"
