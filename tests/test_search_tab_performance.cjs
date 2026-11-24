@@ -51,14 +51,14 @@ test('search results retain multi-term matching, internship aliases and ranking'
 });
 test('Software Engineer Intern matches existing dictionary, not a new regex',()=>{
  const job={title:'Software Engineer Intern',company:'Blink22',location:'Alexandria, Egypt',
-  url:'https://apply.workable.com/blink22-3/j/TEST/'};
+  url:'https://blink22.com/careers/j/TEST/'};
  const pref={career_levels:['internship'],role_families:['software'],
   egypt_only:true,internships:false,max_experience_years:null};
  assert.equal(levels.evaluate(job).level,'internship');
  assert.ok(prefs.classify(job).includes('software'));
  assert.equal(prefs.isMatch(job,pref),true);
 });
-test('Blink22 uses public employer Workable board instead of incomplete old scrape',()=>{
+test('Blink22 uses its live employer career listing rather than the empty Workable board',()=>{
  const entry=companies.find(x=>x.name==='Blink22');
  const source=registry.companies.find(x=>x.name==='Blink22');
  assert.equal(entry.url,'https://apply.workable.com/blink22-3/');
