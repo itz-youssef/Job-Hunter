@@ -55,6 +55,10 @@ def listing_key(url):
         from urllib.parse import parse_qs
         req=parse_qs(p.query).get("jobId",[""])[0]
         if req:return "ibm-requisition:"+req.casefold()
+    if host.endswith(".taleo.net") and p.path.lower().endswith("/jobdetail.ftl"):
+        from urllib.parse import parse_qs
+        req=parse_qs(p.query).get("job",[""])[0]
+        if req:return host+"|requisition|"+req.casefold()
     return host+p.path.rstrip("/").casefold()
 
 
@@ -560,6 +564,114 @@ def raw_ats(company, fetch_json=_json):
             if offset>=total:return kind,list(out.values()),total
             if not rows:raise ValueError("Workday incomplete page")
         raise ValueError("Workday page limit")
+
+
+    if kind in ("cib_egypt","etisalat_egypt"):
+        import requests
+        from bs4 import BeautifulSoup
+        host="cibeg.taleo.net" if kind=="cib_egypt" else "etisalatmisr.taleo.net"
+        section="cib_ex" if kind=="cib_egypt" else "ex"
+        base=f"https://{host}/careersection/{section}/jobsearch.ftl?lang=en"
+        session=requests.Session()
+        session.headers.update({"User-Agent":"Mozilla/5.0","Accept":"application/json,text/html,*/*"})
+        response=session.get(base,timeout=25)
+        response.raise_for_status()
+        html=response.text
+        # Portal is the public site configuration, never guessed or sourced
+        # from another employer. Log only public numeric portal evidence.
+        patterns=[r'\bportal\s*[:=]\s*["\']?(\d{5,})',
+                  r'\bportalId\s*[:=]\s*["\']?(\d{5,})',
+                  r'["\']portal["\']\s*,\s*["\'](\d{5,})',
+                  r'name=["\']portal["\'][^>]*value=["\'](\d{5,})']
+        candidates=[]
+        for pattern in patterns:
+            candidates.extend(re.findall(pattern,html,re.I))
+        candidates=list(dict.fromkeys(candidates))
+        print("TALEO_PUBLIC_PORTAL",name,candidates,flush=True)
+        if len(candidates)!=1:
+            for m in list(re.finditer(r'\bportal(?:Id|Number)?\b',html,re.I))[:12]:
+                snippet=html[max(0,m.start()-28):m.end()+60]
+                safe=re.sub(r'[^A-Za-z0-9_:=,.\s"\'<>/-]',' ',snippet)
+                print("TALEO_PUBLIC_HINT",name,safe[:120],flush=True)
+            raise ValueError("Cannot establish unique public Taleo portal identifier")
+        url=f"https://{host}/careersection/rest/jobboard/searchjobs"
+        headers={"Content-Type":"application/json","X-Requested-With":"XMLHttpRequest","Referer":base,"Origin":f"https://{host}","tz":"GMT+02:00","tzname":"Africa/Cairo"}
+        out={}
+        seen=set()
+        total=None
+        unknown=0
+        for page in range(1,101):
+            fields={"KEYWORD":"","JOB_TITLE":"","JOB_NUMBER":"","LOCATION":""}
+            body={"multilineEnabled":False,"sortingSelection":{"sortBySelectionParam":"3","ascendingSortingOrder":"false"},
+                  "fieldData":{"fields":fields,"valid":True},
+                  "filterSelectionParam":{"searchFilterSelections":[{"id":k,"selectedValues":[]} for k in ("POSTING_DATE","LOCATION","JOB_FIELD","JOB_SCHEDULE","JOB_TYPE")]},
+                  "advancedSearchFiltersSelectionParam":{"searchFilterSelections":[{"id":k,"selectedValues":[]} for k in ("ORGANIZATION","LOCATION","JOB_FIELD","URGENT_JOB","EMPLOYEE_STATUS")]},
+                  "pageNo":page}
+            response=session.post(url,params={"lang":"en","portal":candidates[0]},headers=headers,json=body,timeout=30)
+            response.raise_for_status()
+            payload=response.json()
+            paging=payload["pagingData"]
+            count=int(paging["totalCount"])
+            rows=payload["requisitionList"]
+            if total is not None and count!=total:raise ValueError("Taleo total changed during paging")
+            total=count
+            print("TALEO_PUBLIC_PAGE",name,page,"total",total,"rows",len(rows),flush=True)
+            for row in rows:
+                ident=str(row["jobId"])
+                if ident in seen:raise ValueError("Taleo repeated a requisition while paging")
+                seen.add(ident)
+                cols=row["column"]
+                title=str(cols[int(row["linkedColumn"])])
+                loc=" ".join(str(cols[int(i)]) for i in row.get("locationsColumns",[]))
+                if not egypt_location(loc):
+                    if not re.search(r'\b(?:UAE|Saudi Arabia|Dubai|Jordan|United States|United Kingdom|India)\b',loc,re.I):unknown+=1
+                    continue
+                job_no=str(row.get("contestNo") or ident)
+                link=f"https://{host}/careersection/{section}/jobdetail.ftl?job="+quote(job_no,safe="")+"&lang=en"
+                out[ident]={"url":link,"title":title}
+            if len(seen)>=total:
+                if unknown:
+                    raise ValueError(f"Taleo official total {total}; {len(out)} explicit Egypt; {unknown} unknown location")
+                return kind,list(out.values()),total
+            if not rows:raise ValueError("Taleo returned an empty page before total")
+        raise ValueError("Taleo exceeded public pagination budget")
+
+    if kind=="linkdevelopment":
+        import requests
+        from bs4 import BeautifulSoup
+        from app.custom_sources import _bytes
+        base="https://linkdevelopment.com/careers/opportunities/"
+        doc=BeautifulSoup(_bytes(base),"html.parser")
+        nonce=doc.select_one("input[name='careers_nonce'],input#careers_nonce")
+        if nonce is None or not nonce.get("value"):raise ValueError("Link Development public form token not found")
+        result={}
+        expected=None
+        for page in range(1,51):
+            payload={"action":"load_careers_listing_results",
+                     "query_data":"&careers_keywords=&position_type=&position_department=&careers_nonce="+nonce["value"],
+                     "current_page":str(page)}
+            response=requests.post("https://linkdevelopment.com/wp/wp-admin/admin-ajax.php",data=payload,
+                headers={"User-Agent":"Mozilla/5.0","Referer":base},timeout=30)
+            response.raise_for_status()
+            markup=response.text
+            pages=re.search(r'ajax_careers\.latest_page\s*=\s*(\d+)',markup)
+            if not pages:raise ValueError("Link Development pagination total not present")
+            count=int(pages.group(1))
+            if expected is not None and count!=expected:raise ValueError("Link Development source changed")
+            expected=count
+            doc=BeautifulSoup(markup,"html.parser")
+            for a in doc.select("a[href]"):
+                link=urljoin(base,a["href"]).split("?",1)[0].split("#",1)[0]
+                p=urlsplit(link)
+                if p.hostname not in ("linkdevelopment.com","www.linkdevelopment.com") or not re.fullmatch(r"/careers/opportunities/[a-z0-9-]+/?",p.path,re.I):continue
+                title=a.get_text(" ",strip=True)
+                if not title or re.match(r"^(?:apply|view|share)",title,re.I):continue
+                if not egypt_location(title+" "+p.path.replace("-"," ")):continue
+                result[listing_key(link)]={"url":link,"title":title}
+            if page>=expected:
+                if not result:raise ValueError("No explicit Egypt vacancies on public list")
+                return kind,list(result.values()),len(result)
+        raise ValueError("Link Development pagination limit")
 
     return kind,None,None
 
