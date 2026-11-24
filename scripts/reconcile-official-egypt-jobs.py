@@ -38,8 +38,9 @@ def location_text(raw):
 
 def egypt_location(location,code=""):
     code=str(code or "").upper().strip()
-    if code in ("EG","EGY"):return True
-    if code and code not in ("EG","EGY"):return False
+    if code in ("EG","EGY","EGYPT"):return True
+    if code in ("AE","ARE","UAE","DE","DEU","US","USA","GB","GBR",
+                "SA","SAU","IN","IND"):return False
     text=location_text(location)
     return bool(EGYPT.search(text) and not OVERSEAS.search(text))
 
@@ -85,7 +86,6 @@ def raw_ats(company, fetch_json=_json):
         if not isinstance(payload,dict) or not isinstance(payload.get("jobs"),list):
             raise ValueError("Workable widget list schema changed")
         jobs=[]
-        print("ATS_LOCATION_SAMPLE",name,[{"location":r.get("location"),"country_code":r.get("country_code")} for r in payload["jobs"][:2] if isinstance(r,dict)],flush=True)
         for row in payload["jobs"]:
             if not isinstance(row,dict) or not row.get("title"):continue
             if not egypt_location(row.get("location"),row.get("country_code")):continue
