@@ -572,8 +572,8 @@ def _board_jobs(name: str, url: str) -> list[dict]:
         from app.egypt_expansion_feeds import taleo_bank_partial
         return _dedupe(taleo_bank_partial(name,url,_bytes,_job))
     if kind == "pwc_egypt":
-        from app.egypt_expansion_feeds import successfactors_egypt
-        return _dedupe(successfactors_egypt(name,_bytes,_job,"https://careers.pwc.com/search/?q=&locationsearch=Egypt"))
+        from app.pwc_egypt import pwc_egypt
+        return _dedupe(pwc_egypt(name,_bytes,_json,_job))
     if kind == "talabat_egypt":
         from app.egypt_expansion_feeds import talabat_egypt
         return _dedupe(talabat_egypt(name,_bytes,_job))
