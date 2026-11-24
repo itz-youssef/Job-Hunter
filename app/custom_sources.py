@@ -626,7 +626,7 @@ def _board_jobs(name: str, url: str) -> list[dict]:
 
     if kind == "paymob_recruitera":
         from app.employer_feeds import paymob_recruitera
-        return _dedupe(paymob_recruitera(name, _json, _job))
+        return _dedupe(paymob_recruitera(name, _json, _job, get_bytes=_bytes))
 
     if kind == "vois_egypt":
         from app.three_employer_feeds import eightfold_egypt
