@@ -6,6 +6,7 @@ on:
       - "scripts/reconcile-official-egypt-jobs.py"
       - "scripts/combine-official-egypt-reconciliation.py"
       - "tests/test_independent_live_ats_reconciliation.py"
+      - "tests/test_combine_official_egypt_reconciliation.py"
       - ".github/workflows/independent-egypt-ats-reconciliation.yml"
   workflow_dispatch:
 
@@ -28,7 +29,7 @@ jobs:
           python-version: "3.11"
       - run: pip install -r requirements.txt pytest
       - name: Validate independent parser tests
-        run: python -m pytest -q tests/test_independent_live_ats_reconciliation.py
+        run: python -m pytest -q tests/test_independent_live_ats_reconciliation.py tests/test_combine_official_egypt_reconciliation.py
       - name: Independently compare public Egypt vacancy URLs with production scanner
         env:
           PYTHONPATH: .
