@@ -63,7 +63,8 @@ def test_fawry_index_is_partial_and_preserves_dates():
       <a href="https://www.fawry.com/?post_type=job_listing&amp;p=38694">
       Operations Specialist Anywhere Posted on November 3, 2025</a>'''
     jobs=fawry_public_partial("Fawry",lambda _:source,cs._job)
-    assert len(jobs)==1
+    assert len(jobs)==2
+    assert {j["title"] for j in jobs} == {"Senior Java Software Engineer", "Operations Specialist"}
     assert jobs[0]["published_at"]=="2025-11-03"
     assert jobs[0]["location"]=="Anywhere"
     assert jobs[0]["url"].startswith("https://www.fawry.com/")
