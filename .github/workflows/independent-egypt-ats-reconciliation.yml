@@ -1,5 +1,5 @@
 name: Independent Egypt Official ATS Reconciliation
-# 2026-11-24: match real Workable top-level country schema
+# 2026-11-24: reconcile multi-location ATS duplicates by stable URL
 on:
   pull_request:
     paths:
