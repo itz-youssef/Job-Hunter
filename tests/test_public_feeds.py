@@ -7,7 +7,7 @@ def test_sumerge_detected_as_workable():
     assert cs._ats("https://apply.workable.com/sumerge-1/")[0] == "workable"
 
 
-def test_workable_keeps_every_role_on_official_board():
+def test_workable_keeps_every_egypt_role_on_official_board():
     def get_json(_):
         return {"jobs": [
             {"title": "Junior Backend Engineer", "shortcode": "ABC",
@@ -18,22 +18,22 @@ def test_workable_keeps_every_role_on_official_board():
              "location": {"city": "Cairo", "country": "Egypt"}},
         ]}
     jobs = workable("Sumerge","sumerge-1",get_json,lambda x:b"",cs._structured_jobs,cs._job)
-    assert len(jobs) == 3
-    assert {j['title'] for j in jobs} == {'Junior Backend Engineer','Senior Engineer','Accountant'}
+    assert len(jobs) == 2
+    assert {j['title'] for j in jobs} == {'Junior Backend Engineer','Accountant'}
     assert jobs[0]["url"].endswith("/ABC/")
 
 
-def test_link_development_keeps_all_official_listed_roles():
+def test_link_development_keeps_all_egypt_official_roles(): 
     url="https://linkdevelopment.com/careers/opportunities/"
     html='''<a href="/careers/opportunities/junior-software-engineer-egypt/">Junior Software Engineer - Egypt</a>
     <a href="/careers/opportunities/senior-engineer-uae/">Senior Engineer - UAE</a>
     <a href="/careers/opportunities/marketing-executive-egypt/">Marketing Executive - Egypt</a>'''
     jobs=link_development("Link Development",url,lambda _:html.encode(),cs._job)
-    assert len(jobs)==3
-    assert {j['title'] for j in jobs} == {'Junior Software Engineer - Egypt','Senior Engineer - UAE','Marketing Executive - Egypt'}
+    assert len(jobs)==2
+    assert {j['title'] for j in jobs} == {'Junior Software Engineer - Egypt','Marketing Executive - Egypt'}
 
 
-def test_itworx_all_official_openings_with_requirements():
+def test_itworx_all_egypt_openings_with_requirements():
     def post_json(endpoint, body):
         assert endpoint.endswith("/GetAllRequisitions")
         assert body["IsTokenPresent"] is False
@@ -48,7 +48,7 @@ def test_itworx_all_official_openings_with_requirements():
         ]}
     assert cs._ats("https://careers.itworx.com/")[0] == "itworx"
     jobs = itworx("ITWorx",post_json,cs._job)
-    assert len(jobs)==3
+    assert len(jobs)==2
     assert {j['title'] for j in jobs} == {'Junior Software Engineer','Marketing Intern'}
     assert jobs[0]["url"]=="https://careers.itworx.com/job-details/123"
     assert "0-2 years" in jobs[0]["description"]
