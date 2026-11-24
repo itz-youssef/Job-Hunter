@@ -23,11 +23,26 @@ def egypt_facet(facets):
 
 def workday_egypt(name,site,get_json,make_job,max_pages=100):
     endpoint=HOST+"/wday/cxs/pwc/"+site
-    def query(offset,facets):
-        return get_json(endpoint+"/jobs",{"appliedFacets":facets,"limit":20,"offset":offset,"searchText":""})
+    def query(offset,facets,text=""):
+        return get_json(endpoint+"/jobs",{"appliedFacets":facets,"limit":20,"offset":offset,"searchText":text})
     initial=query(0,{})
     if not isinstance(initial.get("facets"),list):raise ValueError("PwC Workday facets missing")
-    selected=egypt_facet(initial["facets"])
+    facets=list(initial["facets"])
+    try:
+        selected=egypt_facet(facets)
+    except ValueError:
+        # Global boards can limit the visible facet list to popular countries.
+        # Discover additional public facet IDs using location-specific searches,
+        # then apply those IDs without search keywords for complete coverage.
+        combined={}
+        for term in ("Egypt","Cairo","ETIC","Alexandria","Giza"):
+            probe=query(0,{},term)
+            for facet in probe.get("facets",[]):
+                key=facet.get("facetParameter")
+                values=combined.setdefault(key,{})
+                for value in facet.get("values",[]):
+                    if value.get("id"):values[value["id"]]=value
+        selected=egypt_facet([{"facetParameter":key,"values":list(vals.values())} for key,vals in combined.items()])
     seen={}
     total=None
     offset=0
