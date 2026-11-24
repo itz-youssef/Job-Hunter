@@ -193,3 +193,14 @@ def test_paymob_explicit_egypt_in_employer_slug_is_preserved():
     assert jobs[0]["location"]=="Paymob Head Office, Egypt"
     assert jobs[1]["location"]=="Dubai, UAE"
     assert jobs[2]["location"]=="Paymob Head Office"
+
+def test_paymob_detail_geography_requires_matching_posting_title():
+    import json
+    from app.employer_feeds import paymob_recruitera
+    rows=[{"id":"1","title":"Sales Specialist","slug":"sales-specialist","location":"Paymob Head Office"},{"id":"2","title":"HR Specialist","slug":"hr-specialist","location":"Paymob Head Office"}]
+    def detail(url):
+        record={"@type":"JobPosting","title":"Sales Specialist","jobLocation":{"address":{"addressLocality":"Cairo","addressCountry":"EG"}}}
+        return ('<script type="application/ld+json">'+json.dumps(record)+'</script>').encode()
+    jobs=paymob_recruitera("Paymob",lambda _:{"data":rows,"meta":{"found":2}},cs._job,get_bytes=detail)
+    assert jobs[0]["location"]=="Cairo, Egypt"
+    assert jobs[1]["location"]=="Paymob Head Office"

@@ -626,7 +626,7 @@ def _board_jobs(name: str, url: str) -> list[dict]:
 
     if kind == "paymob_recruitera":
         from app.employer_feeds import paymob_recruitera
-        return _dedupe(paymob_recruitera(name, _json, _job))
+        return _dedupe(paymob_recruitera(name, _json, _job, get_bytes=_bytes))
 
     if kind == "vois_egypt":
         from app.three_employer_feeds import eightfold_egypt
@@ -723,14 +723,19 @@ def _board_jobs(name: str, url: str) -> list[dict]:
             if not location and item.get("country"):
                 location = _location(item.get("country"))
             detail = {}
-            if details_done < MAX_DETAILS and re.search(
+            if details_done < MAX_DETAILS and (re.search(
                 r"egypt|cairo|giza|alexandria", location, re.I
-            ):
+            ) or (meta=="instabug.bamboohr.com" and not location)):
                 details_done += 1
                 try:
                     detail = _json(f"https://{meta}/careers/{urllib.parse.quote(job_id, safe='')}/detail")
                 except (OSError, ValueError, TypeError):
                     pass
+            if meta=="instabug.bamboohr.com" and not location and isinstance(detail,dict):
+                record=detail.get("result") or detail.get("jobOpening") or detail
+                if isinstance(record,dict):
+                    location=_location(record.get("atsLocation")) or _location(record.get("jobLocation")) or _location(record.get("location"))
+                    detail=record
             description = str(
                 detail.get("description")
                 or detail.get("jobOpeningDescription")
@@ -1083,6 +1088,12 @@ def _board_jobs(name: str, url: str) -> list[dict]:
                             endpoint + path
                         )
                         posting=detail.get("jobPostingInfo") or {}
+                        if name=="Konecta Egypt":
+                            detail_places=[_location(posting.get("location")),_location(posting.get("additionalLocations"))]
+                            evidence=next((v for v in detail_places if re.search(r"\b(?:Egypt|Cairo|Giza|Alexandria)\b",v,re.I)),"")
+                            if evidence:location=evidence
+                            elif not location or re.fullmatch(r"\d+ Locations?",location,re.I):
+                                location=", ".join(v for v in detail_places if v) or location
                         description=posting.get("jobDescription") or ""
                         if not isinstance(description,str):
                             description=str(description)
