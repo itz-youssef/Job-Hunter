@@ -41,4 +41,14 @@ jobs:
                       print("DIVISION_HINT",re.sub(r"\s+"," ",html[max(0,m.start()-100):m.end()+160]),flush=True)
               except Exception as e:
                   print("DIVISION_ERROR",url,type(e).__name__,str(e)[:160],flush=True)
+          data=_json("https://boards-api.greenhouse.io/v1/boards/strategyandmiddleeast/jobs?content=true")
+          rows=data["jobs"]
+          hits=[]
+          for j in rows:
+              loc=str(j.get("location",{}).get("name",""))
+              offices="; ".join(str(o.get("name",""))+" "+str(o.get("location","")) for o in j.get("offices",[]))
+              if re.search(r"\b(?:Egypt|Cairo|Giza|Alexandria)\b",loc+" "+offices,re.I):
+                  hits.append({"id":j["id"],"title":j["title"],"location":loc,"offices":offices,"url":j["absolute_url"]})
+          print("STRATEGY_OFFICIAL",len(rows),data.get("meta"),len(hits),flush=True)
+          print("STRATEGY_EGYPT",json.dumps(hits,ensure_ascii=False),flush=True)
           PY
