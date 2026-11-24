@@ -8,6 +8,7 @@ def test_egypt_only_and_explicit_foreign_exclusion():
     assert mod.egypt_location("Cairo, Egypt")
     assert mod.egypt_location({"city":"Tanta","country":"Egypt"})
     assert mod.egypt_location("Giza, Egypt")
+    assert mod.egypt_location("New Cairo, Egypt; United Arab Emirates")
     assert mod.egypt_location("","EG")
     assert not mod.egypt_location("Berlin, Germany")
     assert not mod.egypt_location("Dubai, UAE")
