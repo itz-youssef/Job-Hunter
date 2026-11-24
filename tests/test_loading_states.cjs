@@ -15,7 +15,7 @@ test('both pages load a single shared loading stylesheet',()=>{
 });
 test('skeleton is only active during a real feed fetch or account hydration',()=>{
   assert.match(home,/function loadingSkeleton\(/);
-  assert.match(home,/if\(!saved&&state\.memberLoading\)/);
+  assert.match(home,/if\(!saved&&state\.memberLoading&&state\.companyFilter==='all'\)/);
   assert.match(home,/state\.watchFeedLoading&&!state\.watchFeedLoaded/);
   assert.match(home,/state\.watchFeedLoading=false;/);
   assert.match(home,/watchFeedPendingSince/);
