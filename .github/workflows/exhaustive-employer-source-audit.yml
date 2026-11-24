@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - "scripts/audit-all-employer-sources.py"
+      - "scripts/combine-employer-source-audits.py"
       - "app/**"
       - ".github/workflows/exhaustive-employer-source-audit.yml"
       - "tests/test_all_employer_source_audit.py"
@@ -46,4 +47,33 @@ jobs:
           name: original-employer-probe-${{ matrix.part }}
           path: reports/employer-source-probes/shard-${{ matrix.part }}.json
           if-no-files-found: warn
+          retention-days: 30
+
+  combine-coverage:
+    name: Reconcile full 58-employer evidence matrix
+    needs: inspect-all-58
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: original-employer-probe-*
+          path: reports/employer-source-probes
+          merge-multiple: true
+      - name: Validate all employers and compare to dated baseline
+        run: python scripts/combine-employer-source-audits.py
+      - name: Display per-company evidence matrix
+        if: success()
+        run: cat reports/employer-source-probes/combined/coverage.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Store combined audit as JSON, CSV and Markdown
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: complete-employer-coverage-evidence
+          path: reports/employer-source-probes/combined/
           retention-days: 30
