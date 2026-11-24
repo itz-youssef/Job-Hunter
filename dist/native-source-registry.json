@@ -583,16 +583,12 @@
     },
     {
       "name": "Blink22",
-      "source_url": "https://apply.workable.com/blink22-3/",
-      "source_kind": "workable",
-      "preference_mode": "official-live-unfiltered",
-      "available_fields": [
-        "employment_type",
-        "experience",
-        "location"
-      ],
+      "source_url": "https://blink22.com/careers/",
+      "source_kind": "blink22_egypt",
+      "preference_mode": "internal-fallback",
+      "available_fields": [],
       "supports_employer_side_filter": false,
-      "verification": "documented-api-capability",
+      "verification": "not-verified",
       "documentation": ""
     },
     {
