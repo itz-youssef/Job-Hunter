@@ -11,7 +11,7 @@ def test_oracle_url_recognition():
     assert not supports("https://www.nokia.com/careers/")
     assert not supports("https://example.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs")
 
-def test_oracle_keeps_all_public_jobs_and_original_details(monkeypatch):
+def test_oracle_keeps_all_egypt_jobs_any_field_and_original_details(monkeypatch):
     requests = []
     def get_json(url):
         requests.append(url)
@@ -25,12 +25,12 @@ def test_oracle_keeps_all_public_jobs_and_original_details(monkeypatch):
             {"Id": "a3", "Title": "Marketing Coordinator", "PrimaryLocation": "Cairo, Egypt", "PrimaryLocationCountry": "EG"},
         ]}]}
     rows = scan("Test", URL, get_json, cs._job)
-    assert len(rows) == 3
-    assert {j['title'] for j in rows} == {'Junior Software Engineer','Software Engineer','Marketing Coordinator'}
+    assert len(rows) == 2
+    assert {j['title'] for j in rows} == {'Junior Software Engineer','Marketing Coordinator'}
     assert rows[0]["title"] == "Junior Software Engineer"
     assert rows[0]["description"] == "0-2 years Python and PyTorch"
     assert rows[0]["url"].endswith("/sites/CX_1/job/a1")
-    assert len(requests) == 4
+    assert len(requests) == 3
 
 def test_oracle_empty_feed():
     assert scan("Test", URL,
