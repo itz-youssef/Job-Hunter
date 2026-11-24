@@ -109,3 +109,68 @@ html,body{max-width:100%;overflow-x:clip}
  .section-top,.job-actions,.top-actions{flex-wrap:wrap}
  .main-content{padding-inline:clamp(12px,4vw,24px)}
 }
+
+/* Mobile Job Feed navigation: make career workspace destinations discoverable
+   without requiring a horizontal swipe past Home. Desktop remains unchanged. */
+.sidebar #navigation>.sj-mobile-workspace-shortcuts,
+.sidebar #navigation>.sj-mobile-job-tools{display:contents}
+@media(max-width:750px){
+ .sidebar #navigation{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:10px;
+  overflow:visible;
+  margin-top:10px;
+ }
+ .sidebar #navigation>.sj-mobile-workspace-shortcuts{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  min-width:0;
+ }
+ .sidebar #navigation>.sj-mobile-workspace-shortcuts>button{
+  width:100%;
+  min-width:0;
+  min-height:45px;
+  padding:10px 11px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:12px;
+  font-weight:700;
+  white-space:normal;
+  line-height:1.3;
+  border:1px solid var(--border);
+  border-radius:10px;
+ }
+ .sidebar #navigation>.sj-mobile-workspace-shortcuts>button>span:first-child{
+  flex:none;
+  font-size:17px;
+  width:20px;
+  text-align:center;
+ }
+ .sidebar #navigation>.sj-mobile-job-tools{
+  display:flex;
+  align-items:center;
+  flex-wrap:nowrap;
+  gap:7px;
+  max-width:100%;
+  min-width:0;
+  overflow-x:auto;
+  overscroll-behavior-x:contain;
+  scrollbar-width:thin;
+  padding:2px 0 6px;
+ }
+ .sidebar #navigation>.sj-mobile-job-tools>.nav-divider-label{display:none}
+ .sidebar #navigation>.sj-mobile-job-tools>button{
+  min-height:44px;
+  width:auto;
+  flex:0 0 auto;
+  white-space:nowrap;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:9px 11px;
+  font-size:12px;
+ }
+}
