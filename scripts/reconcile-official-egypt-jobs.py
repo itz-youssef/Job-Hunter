@@ -302,6 +302,9 @@ def execute(companies,part=0,parts=6):
               "adapter_egypt=",r["adapter_egypt_count"],
               "missing=",r["missing_count"],
               "reason=",r["reason"],flush=True)
+        if r["status"]=="MISMATCH":
+            print("MISSING_OFFICIAL",r["name"],json.dumps(r["missing_jobs"],ensure_ascii=False),flush=True)
+            print("EXTRA_ADAPTER",r["name"],json.dumps(r["extra_jobs"],ensure_ascii=False),flush=True)
     return result
 
 
