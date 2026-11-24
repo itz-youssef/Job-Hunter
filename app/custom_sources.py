@@ -26,6 +26,7 @@ TIMEOUT = 12
 MAX_BYTES = 3_000_000
 MAX_PAGES = 5
 MAX_DETAILS = 20
+MAX_WORKDAY_PAGES = 25  # Workday serves 20 per page; 5 pages truncates >100 jobs.
 USER_AGENT = "JobHunterCareersMonitor/2.0"
 
 
@@ -967,12 +968,16 @@ def _board_jobs(name: str, url: str) -> list[dict]:
                     )
                 )
 
-            if (
-                not rows
-                or (page + 1) * 100
-                >= data.get("totalFound", 0)
-            ):
+            try:
+                total_found=int(data["totalFound"])
+            except (KeyError,ValueError,TypeError) as exc:
+                raise ValueError("SmartRecruiters reported total missing") from exc
+            if not rows and page*100 < total_found:
+                raise ValueError("SmartRecruiters pagination incomplete")
+            if (page + 1) * 100 >= total_found:
                 break
+        else:
+            raise ValueError("SmartRecruiters listings exceed verified page budget")
 
     # WORKDAY
     elif kind == "workday":
@@ -985,8 +990,10 @@ def _board_jobs(name: str, url: str) -> list[dict]:
         )
 
         detail_count = 0
+        reported_total = None
+        seen_paths = set()
 
-        for page in range(MAX_PAGES):
+        for page in range(MAX_WORKDAY_PAGES):
 
             data = _json(
                 endpoint + "/jobs",
@@ -998,7 +1005,26 @@ def _board_jobs(name: str, url: str) -> list[dict]:
                 }
             )
 
-            rows = data.get("jobPostings") or []
+            rows = data.get("jobPostings")
+            if not isinstance(rows,list):
+                raise ValueError("Workday jobPostings list missing")
+            try:
+                total = int(data["total"])
+            except (ValueError,TypeError,KeyError) as exc:
+                raise ValueError("Workday reported total missing") from exc
+            if total < 0:
+                raise ValueError("Workday reported invalid total")
+            if reported_total is None:
+                reported_total = total
+            elif total != reported_total:
+                raise ValueError("Workday total changed during pagination")
+            if not rows and page*20 < total:
+                raise ValueError("Workday pagination ended before reported total")
+            # Same page repeating under different offsets is incomplete coverage.
+            page_paths = {str(item.get("externalPath") or "") for item in rows if isinstance(item,dict)}
+            if page_paths and page_paths.issubset(seen_paths):
+                raise ValueError("Workday pagination repeated before completion")
+            seen_paths.update(page_paths)
 
             for item in rows:
 
@@ -1058,12 +1084,13 @@ def _board_jobs(name: str, url: str) -> list[dict]:
                 job["source_detail_status"]=detail_status
                 jobs.append(job)
 
-            if (
-                not rows
-                or (page + 1) * 20
-                >= data.get("total", 0)
-            ):
+            if (page + 1) * 20 >= total:
                 break
+        else:
+            raise ValueError("Workday total exceeds verified pagination budget")
+        # Do not mark a truncated list complete, even if page size varies.
+        if reported_total is not None and len(seen_paths) < reported_total:
+            raise ValueError("Workday listing count does not match official total")
 
     # PERSONIO
     elif kind == "personio":
