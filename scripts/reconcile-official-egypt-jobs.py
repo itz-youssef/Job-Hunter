@@ -12,7 +12,7 @@ import json
 import re
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import quote, urlsplit
+from urllib.parse import quote, urlencode, urljoin, urlsplit
 
 from app.custom_sources import scan_company, _ats, _json
 
@@ -95,6 +95,150 @@ def raw_ats(company, fetch_json=_json):
                 url="https://apply.workable.com/"+slug+"/j/"+str(row["shortcode"])+"/"
             if url:jobs.append({"url":url,"title":row["title"]})
         return kind,jobs,len(payload["jobs"])
+
+    if kind in ("vois_egypt","ericsson_egypt"):
+        host="jobs.vodafone.com" if kind=="vois_egypt" else "jobs.ericsson.com"
+        domain="vodafone.com" if kind=="vois_egypt" else "ericsson.com"
+        official={}
+        total=None
+        for page in range(50):
+            params={"domain":domain,"query":"","location":"Egypt",
+                    "start":page*10,"num":10}
+            if kind=="vois_egypt":params["filter_brand"]="vois"
+            data=fetch_json("https://"+host+"/api/pcsx/search?"+urlencode(params))
+            section=data.get("data") if isinstance(data,dict) else None
+            if not isinstance(section,dict) or not isinstance(section.get("positions"),list):
+                raise ValueError("Eightfold official listing schema changed")
+            count=int(section["count"])
+            if total is None:total=count
+            elif total!=count:raise ValueError("Eightfold total changed during comparison")
+            rows=section["positions"]
+            if not rows and page*10<total:raise ValueError("Eightfold incomplete page")
+            for item in rows:
+                if not isinstance(item,dict):continue
+                loc=item.get("locations") or item.get("standardizedLocations") or item.get("location")
+                if not egypt_location(loc):continue
+                link=urljoin("https://"+host+"/",str(item.get("positionUrl") or
+                    item.get("canonicalPositionUrl") or ""))
+                if urlsplit(link).hostname!=host or not re.fullmatch(
+                        r"/careers/job/\d+/?",urlsplit(link).path):continue
+                if item.get("name") or item.get("title"):
+                    official[listing_key(link)]={"url":link,"title":item.get("name") or item.get("title")}
+            if (page+1)*10>=total:return kind,list(official.values()),total
+        raise ValueError("Eightfold official total exceeds page budget")
+
+    if kind=="amazon_egypt":
+        official={}
+        total=None
+        for page in range(20):
+            payload=fetch_json("https://www.amazon.jobs/en/search.json?"+urlencode({
+                "offset":page*100,"result_limit":100,"country":"EGY"}))
+            if not isinstance(payload,dict) or not isinstance(payload.get("jobs"),list):
+                raise ValueError("Amazon official jobs JSON changed")
+            count=int(payload["hits"])
+            if total is None:total=count
+            elif count!=total:raise ValueError("Amazon total changed")
+            rows=payload["jobs"]
+            if not rows and page*100<count:raise ValueError("Amazon empty page")
+            for item in rows:
+                if not isinstance(item,dict) or str(item.get("country_code") or "").upper()!="EGY":
+                    continue
+                path=str(item.get("job_path") or "")
+                if not re.fullmatch(r"/en/jobs/\d+/[a-z0-9-]+/?",path,re.I):
+                    continue
+                team=" ".join(str(item.get(key) or "") for key in
+                    ("business_category","business_category_list","team",
+                     "normalized_business_category","job_category"))
+                if name=="AWS Egypt" and not re.search(r"\b(?:aws|amazon web services)\b",team,re.I):
+                    continue
+                link="https://www.amazon.jobs"+path
+                official[listing_key(link)]={"url":link,"title":str(item.get("title") or "")}
+            if (page+1)*100>=count:return kind,list(official.values()),total
+        raise ValueError("Amazon official count exceeds page budget")
+
+    if kind=="schneider_egypt":
+        official={}
+        total=None
+        for page in range(1,31):
+            url="https://careers.se.com/api/jobs?"+urlencode(
+                {"location":"Egypt","limit":50,"page":page})
+            payload=fetch_json(url)
+            if not isinstance(payload,dict) or not isinstance(payload.get("jobs"),list):
+                raise ValueError("Schneider official Jibe schema changed")
+            count=int(payload["totalCount"])
+            if total is None:total=count
+            elif total!=count:raise ValueError("Schneider total changed")
+            rows=payload["jobs"]
+            if not rows and (page-1)*50<count:raise ValueError("Schneider empty page")
+            for record in rows:
+                item=record.get("data") if isinstance(record,dict) else None
+                if not isinstance(item,dict) or str(item.get("country_code") or "").upper()!="EG":
+                    continue
+                identity=str(item.get("req_id") or item.get("slug") or "")
+                if not identity.isdecimal() or not item.get("title"):continue
+                link="https://careers.se.com/jobs/"+identity+"?lang=en-US"
+                official[listing_key(link)]={"url":link,"title":item["title"]}
+            if page*50>=count:return kind,list(official.values()),total
+        raise ValueError("Schneider official count exceeds page budget")
+
+    if kind=="itworx":
+        official={}
+        total=None
+        url="https://careers.itworx.com/ServerApp/api/Requisition/GetAllRequisitions"
+        for page in range(30):
+            payload=fetch_json(url,{"StartIndex":page*50+1,"PageSize":50,
+                "SortBy":1,"IsTokenPresent":False})
+            if not isinstance(payload,dict) or not payload.get("success"):
+                raise ValueError("ITWorx official source unavailable")
+            rows=payload.get("AllRequisitions")
+            if not isinstance(rows,list):raise ValueError("ITWorx missing listings")
+            count=int(payload["TotalCount"])
+            if total is None:total=count
+            elif count!=total:raise ValueError("ITWorx official count changed")
+            if not rows and page*50<count:raise ValueError("ITWorx empty page")
+            for item in rows:
+                if not isinstance(item,dict) or not egypt_location(item.get("Location")):
+                    continue
+                ident=str(item.get("ReqId") or "")
+                if not ident.isdecimal() or not item.get("Position"):continue
+                link="https://careers.itworx.com/job-details/"+ident
+                official[listing_key(link)]={"url":link,"title":item["Position"]}
+            if (page+1)*50>=count:return kind,list(official.values()),total
+        raise ValueError("ITWorx official count exceeds page budget")
+
+    if kind=="oracle":
+        p=urlsplit(company["url"])
+        match=re.search(r"/hcmUI/CandidateExperience/([^/]+)/sites/([A-Za-z0-9_-]+)",p.path)
+        if not match:raise ValueError("Unsupported Oracle careers URL")
+        lang,site=match.groups()
+        root="https://"+p.hostname+"/hcmRestApi/resources/latest/recruitingCEJobRequisitions"
+        official={}
+        total=None
+        for page in range(30):
+            params=urlencode({"onlyData":"true","expand":"requisitionList.secondaryLocations",
+                "finder":f"findReqs;siteNumber={site},limit=100,offset={page*100},sortBy=POSTING_DATES_DESC"})
+            payload=fetch_json(root+"?"+params)
+            parts=payload.get("items") if isinstance(payload,dict) else None
+            if not isinstance(parts,list) or not parts:raise ValueError("Oracle official envelope missing")
+            info=parts[0]
+            if not isinstance(info,dict) or not isinstance(info.get("requisitionList"),list):
+                raise ValueError("Oracle official requisition list missing")
+            count=int(info["TotalJobsCount"])
+            if total is None:total=count
+            elif count!=total:raise ValueError("Oracle total changed")
+            rows=info["requisitionList"]
+            if not rows and page*100<count:raise ValueError("Oracle incomplete page")
+            for item in rows:
+                if not isinstance(item,dict):continue
+                country=item.get("PrimaryLocationCountry")
+                location=item.get("PrimaryLocation")
+                if not egypt_location(location,country):continue
+                ident=str(item.get("Id") or "").strip()
+                if not ident or not item.get("Title"):continue
+                link=f"https://{p.hostname}/hcmUI/CandidateExperience/{lang}/sites/{site}/job/{quote(ident,safe='')}"
+                official[listing_key(link)]={"url":link,"title":item["Title"]}
+            if (page+1)*100>=count:return kind,list(official.values()),total
+        raise ValueError("Oracle official count exceeds page budget")
 
     return kind,None,None
 
