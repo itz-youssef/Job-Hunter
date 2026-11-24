@@ -1,0 +1,42 @@
+name: Independent Egypt Official ATS Reconciliation
+on:
+  pull_request:
+    paths:
+      - "scripts/reconcile-official-egypt-jobs.py"
+      - "tests/test_independent_live_ats_reconciliation.py"
+      - ".github/workflows/independent-egypt-ats-reconciliation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    name: Compare official Egypt vacancies shard ${{ matrix.part }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt pytest
+      - name: Validate independent parser tests
+        run: python -m pytest -q tests/test_independent_live_ats_reconciliation.py
+      - name: Independently compare public Egypt vacancy URLs with production scanner
+        env:
+          PYTHONPATH: .
+        run: |
+          python scripts/reconcile-official-egypt-jobs.py \
+            --part ${{ matrix.part }} --parts 6 \
+            --output reports/live-reconciliation/shard-${{ matrix.part }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: official-egypt-reconciliation-${{ matrix.part }}
+          path: reports/live-reconciliation/shard-${{ matrix.part }}.json
+          retention-days: 30
