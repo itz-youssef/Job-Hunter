@@ -27,10 +27,13 @@ jobs:
               base=_json(ep,{"appliedFacets":{},"limit":20,"offset":0,"searchText":""})
               facets={}
               print("PWC_BASE",site,base.get("total"),[(f.get("facetParameter"),len(f.get("values",[]))) for f in base.get("facets",[])],flush=True)
+              print("PWC_LOCATION_TREE",site,json.dumps([f for f in base.get("facets",[]) if "location" in str(f.get("facetParameter")).lower()]),flush=True)
               combined=list(base.get("facets",[]))
               for term in ("Egypt","Cairo","ETIC","Alexandria","Giza"):
                   probe=_json(ep,{"appliedFacets":{},"limit":20,"offset":0,"searchText":term})
                   print("PWC_QUERY",site,term,probe.get("total"),json.dumps(probe.get("facets",[]))[:1500],flush=True)
+                  print("PWC_LOCATION_QUERY",site,term,json.dumps([f for f in probe.get("facets",[]) if "location" in str(f.get("facetParameter")).lower()]),flush=True)
+                  print("PWC_SAMPLE",site,term,json.dumps(probe.get("jobPostings",[])[:3]),flush=True)
                   combined.extend(probe.get("facets",[]))
               for f in combined:
                   vals=[v for v in f.get("values",[]) if re.search(r"Egypt|Cairo|Giza|Alexandria",str(v.get("descriptor")),re.I)]
