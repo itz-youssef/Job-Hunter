@@ -1,0 +1,44 @@
+name: PwC Additional Division Source Audit
+on:
+  pull_request:
+    paths: ['.github/workflows/pwc-division-source-audit.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt
+      - run: |
+          python -u - <<'PY'
+          import re,json
+          from urllib.parse import urljoin,urlsplit
+          from bs4 import BeautifulSoup
+          from app.custom_sources import _bytes,_json
+          urls=[
+            "https://www.strategyand.pwc.com/m1/en/careers/available-jobs.html",
+            "https://www.strategyand.pwc.com/m1/en/careers.html",
+            "https://www.pwcacademy-me.com/",
+            "https://www.pwc.com/m1/en/careers/egypt-technology-innovation-centre.html",
+          ]
+          for url in urls:
+              try:
+                  html=_bytes(url).decode("utf-8","replace")
+                  soup=BeautifulSoup(html,"html.parser")
+                  print("DIVISION_PAGE",url,len(html),flush=True)
+                  for tag in soup.select("a[href],iframe[src],script[src]"):
+                      v=tag.get("href") or tag.get("src") or ""
+                      text=tag.get_text(" ",strip=True)
+                      if re.search(r"greenhouse|jobboard|job-board|workday|jobsearch|job-search|career|recruit|jobs",v,re.I):
+                          print("DIVISION_LINK",urljoin(url,v),text[:100],flush=True)
+                  for m in list(re.finditer(r"greenhouse|jobBoard|boardToken|job_board|jobsApi|boards-api|gh_jid",html,re.I))[:30]:
+                      print("DIVISION_HINT",re.sub(r"\s+"," ",html[max(0,m.start()-100):m.end()+160]),flush=True)
+              except Exception as e:
+                  print("DIVISION_ERROR",url,type(e).__name__,str(e)[:160],flush=True)
+          PY
