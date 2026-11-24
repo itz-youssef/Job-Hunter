@@ -36,7 +36,9 @@ jobs:
           for job in jobs:
               print("ROLE",job["title"],job["location"],job["published_at"],flush=True)
           assert status == "partial" and len(jobs)>0
-          assert any("Technology Intern" in j["title"] for j in jobs)
+          # Vacancies close over time; never require a historical intern title.
+          assert all(j["title"] and j["location"] for j in jobs)
+          assert any(len(j.get("description") or "") >= 100 for j in jobs)
           assert all(j["url"].startswith("https://careers.4dxventures.com/companies/breadfast/jobs/") for j in jobs)
           PY
       - name: Inspect public source links
