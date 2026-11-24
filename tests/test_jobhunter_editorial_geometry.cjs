@@ -24,7 +24,7 @@ test('Hero layout stays interactive and decorations remain nonblocking',()=>{
  assert.match(script,/data-navigate="jobs"/);
  assert.match(script,/data-home-scroll="how"/);
  assert.match(script,/class="jh-intro-preview"/);
- assert.match(html,/secretj-jobhunter-intro\.css\?v=white-sculptural-photo-20261124/);
+ assert.match(html,/secretj-jobhunter-intro\.css\?v=sharp-architectural-20261124/);
 });
 test('Mobile and tablet still reveal architectural shapes in both themes',()=>{
  assert.match(latest,/@media\(max-width:1050px\)/);
