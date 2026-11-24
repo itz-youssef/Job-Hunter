@@ -1,6 +1,7 @@
 """Read public Taleo requisitions, preserving real job identities and page completeness."""
 from __future__ import annotations
 import re
+import json
 from datetime import datetime
 from urllib.parse import quote
 import requests
@@ -63,7 +64,15 @@ def public_pages(kind, session=None, *, max_pages=100):
                     cols=item.get("column") or []
                     try:
                         title=str(cols[int(item["linkedColumn"])]).strip()
-                        location="; ".join(str(cols[int(i)]) for i in item.get("locationsColumns",[])).strip()
+                        parts=[]
+                        for i in item.get("locationsColumns",[]):
+                            value=cols[int(i)]
+                            if isinstance(value,str):
+                                try:value=json.loads(value)
+                                except ValueError:pass
+                            if isinstance(value,list):parts.extend(str(x) for x in value)
+                            else:parts.append(str(value))
+                        location="; ".join(parts).strip()
                     except (TypeError,ValueError,KeyError,IndexError):continue
                     if not re.fullmatch(r"[A-Za-z0-9_-]+",number) or not title or not identity:continue
                     page_ids.append(identity)
@@ -93,6 +102,26 @@ def taleo_jobs(kind,name,make_job,session=None):
     unknown=0
     for row in rows:
         location=row["location"]
+        if not EGYPT.search(location) and kind=="cib_egypt" and "multiple locations" in location.casefold() and session is None:
+            # Read only the individual posting's explicit work-location fields.
+            try:
+                from bs4 import BeautifulSoup
+                response=requests.get(row["url"],headers={"User-Agent":"Mozilla/5.0"},timeout=20)
+                response.raise_for_status()
+                doc=BeautifulSoup(response.text,"html.parser")
+                for label in doc.find_all(string=re.compile(r"^\s*(?:Primary Location|Other Locations|Work Locations?)\s*:?\s*$",re.I)):
+                    parent=label.parent
+                    if parent:
+                        candidate=parent.parent.get_text(" ",strip=True) if parent.parent else ""
+                        if len(candidate)<400 and EGYPT.search(candidate):
+                            location=candidate
+                            break
+                if not EGYPT.search(location):
+                    title=row["title"]
+                    if re.search(r"\b(?:Egypt|Cairo|Giza|Alexandria)\b",title,re.I):
+                        location=title
+            except (requests.RequestException,ValueError,TypeError):
+                pass
         if not EGYPT.search(location):
             if not FOREIGN.search(location):unknown+=1
             continue
