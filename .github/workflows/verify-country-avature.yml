@@ -1,0 +1,26 @@
+name: Verify Siemens and Deloitte country coverage
+on:
+  pull_request:
+    paths: ['app/avature_egypt.py','app/custom_sources.py','companies.json','.github/workflows/verify-country-avature.yml']
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: |
+          python - <<'PY'
+          from app.custom_sources import scan_company
+          import json
+          for name in ('Siemens','Deloitte'):
+              c=next(x for x in json.load(open('companies.json')) if x['name']==name)
+              jobs,status,reason=scan_company(c)
+              print(name,len(jobs),status,reason,flush=True)
+              print('official total', {j.get('source_reported_total') for j in jobs},'unique IDs',len({j.get('external_id') for j in jobs}),flush=True)
+              assert jobs and status in ('monitoring','partial')
+              assert len(jobs)==len({j.get('external_id') for j in jobs})==jobs[0]['source_reported_total']
+          PY
