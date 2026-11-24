@@ -243,6 +243,87 @@ def raw_ats(company, fetch_json=_json):
             if (page+1)*100>=count:return kind,list(official.values()),total
         raise ValueError("Oracle official count exceeds page budget")
 
+
+    if kind in ("ey_egypt", "pwc_egypt", "talabat_egypt", "tp_egypt", "luxoft_egypt"):
+        from bs4 import BeautifulSoup
+        from app.custom_sources import _bytes
+        from urllib.parse import parse_qsl
+        official = {}
+        expected = None
+        seen = set()
+        if kind == "ey_egypt":
+            base = "https://careers.ey.com/ey/search/?q=&locationsearch=Egypt"
+        elif kind == "pwc_egypt":
+            base = "https://careers.pwc.com/search/?q=&locationsearch=Egypt"
+        elif kind == "talabat_egypt":
+            base = "https://careers.deliveryhero.com/jobs?options=252%2C845"
+        elif kind == "luxoft_egypt":
+            base = "https://career.luxoft.com/jobs?country%5B%5D=Egypt&perPage=60"
+        else:
+            base = "https://tpegyptcareers.teleperformance.com.eg/vacancies"
+        for page in range(1, 51):
+            url = base
+            if kind in ("ey_egypt", "pwc_egypt"):
+                url += "&startrow=" + str((page-1)*20)
+            elif kind in ("talabat_egypt", "luxoft_egypt"):
+                url += "&page=" + str(page)
+            elif page > 1:
+                url += "?page=" + str(page)
+            doc = BeautifulSoup(_bytes(url), "html.parser")
+            body = doc.get_text(" ", strip=True)
+            if kind in ("ey_egypt", "pwc_egypt"):
+                total_match = re.search(r"Results\s+\d+\s*[-–]\s*\d+\s+of\s+([\d,]+)", body, re.I)
+                containers = doc.select("tr")
+                pattern = r"/(?:[a-z]{2}/)?job/[^/]+/\d+/?"
+            elif kind == "talabat_egypt":
+                total_match = re.search(r"\b([\d,]+)\s+result\(s\)",body,re.I)
+                containers = doc.select("[data-jobid]")
+                pattern = r"/job/[a-z0-9-]+-jid-\d+/?"
+            elif kind == "luxoft_egypt":
+                total_match = re.search(r"\b([\d,]+)\s+(?:open\s+)?(?:jobs|vacancies|positions)\s+found\b",body,re.I)
+                containers = doc.select("a[href]")
+                pattern = r"/jobs/[a-z0-9-]+-\d+/?"
+            else:
+                total_match = re.search(r"\bTotal\s*:?\s*([\d,]+)",body,re.I)
+                containers = doc.select("a[href]")
+                pattern = r"/vacancies/[a-z0-9-]+/?"
+            if total_match:
+                total = int(total_match.group(1).replace(",",""))
+                if expected is not None and total != expected:
+                    raise ValueError("Official result count changed during paging")
+                expected = total
+            current = {}
+            for card in containers:
+                anchors = [card] if card.name == "a" else card.select("a[href]")
+                for a in anchors:
+                    link = urljoin(url,a.get("href") or "")
+                    p = urlsplit(link)
+                    if p.hostname != urlsplit(base).hostname or not re.fullmatch(pattern,p.path,re.I):
+                        continue
+                    title = a.get_text(" ",strip=True)
+                    location = card.get_text(" ",strip=True)
+                    if kind in ("ey_egypt","pwc_egypt"):
+                        location = " ".join(td.get_text(" ",strip=True) for td in card.select("td") if a not in td.descendants)
+                    if kind != "tp_egypt" and not egypt_location(location):
+                        continue
+                    if kind == "talabat_egypt" and not re.search(r"\btalabat\b",location,re.I):
+                        continue
+                    if not title:
+                        title = p.path.rstrip("/").rsplit("/",1)[-1].replace("-"," ")
+                    current[listing_key(link)] = {"url":link,"title":title}
+            signature = frozenset(current)
+            if signature in seen and signature:
+                raise ValueError("Official pagination repeated")
+            seen.add(signature)
+            official.update(current)
+            if expected is not None and len(official) == expected:
+                return kind,list(official.values()),expected
+            if expected is not None and len(official)>expected:
+                raise ValueError("More unique official links than reported total")
+            if not current:
+                raise ValueError("Official page empty before a verified total")
+        raise ValueError("Official count could not be reconciled within pagination budget")
+
     return kind,None,None
 
 
