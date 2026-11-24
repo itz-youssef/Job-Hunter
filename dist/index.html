@@ -532,6 +532,10 @@ a:hover{color:var(--ink)}
       const u=new URL(jobURL(j)), h=u.hostname.toLowerCase(), p=u.pathname;
       const c=String(companyOf(j)).trim().toLowerCase();
       let m;
+      if(c==='pwc egypt' && h==='pwc.wd3.myworkdayjobs.com' &&
+         (m=p.match(/_([0-9]+WD)\/?$/i)))return 'pwc-workday|'+m[1].toUpperCase();
+      if(c==='pwc egypt' && h==='careers.pwc.com' &&
+         (m=p.match(/\/job\/[^/]+\/(\d+)\/?$/i)))return 'pwc-regional|'+m[1];
       if(c==='amazon egypt' && (h==='www.amazon.jobs'||h==='amazon.jobs') &&
          (m=p.match(/^\/(?:en|en-gb)\/jobs\/(\d+)(?:\/|$)/i)))return 'amazon-requisition|'+m[1];
       if(c==='schneider electric' && (h==='careers.se.com'||h==='www.careers.se.com') &&
