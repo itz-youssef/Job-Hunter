@@ -24,7 +24,7 @@ jobs:
           python - <<'PY'
           import json,re
           from app.custom_sources import scan_company,_bytes,_json
-          from app.etisalat_browser import collect_public_board,parse_rendered,ROOT
+          from app.etisalat_browser import collect_public_board,ROOT
           from bs4 import BeautifulSoup
           from playwright.sync_api import sync_playwright
           reg={x["name"]:x for x in json.load(open("companies.json"))}

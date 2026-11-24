@@ -609,6 +609,13 @@ def _board_jobs(name: str, url: str) -> list[dict]:
         return _dedupe(schneider_egypt(name, _json, _job))
 
     if kind == "etisalat_egypt":
+        import os
+        if os.getenv("ETISALAT_BROWSER_ENABLED")=="true":
+            try:
+                from app.etisalat_browser import etisalat_browser_jobs
+                return _dedupe(etisalat_browser_jobs(name,_job))
+            except Exception as exc:
+                raise ValueError("Etisalat public browser scan incomplete: "+str(exc)[:150]) from exc
         from app.telco_schneider_feeds import etisalat_taleo_partial
         from app.taleo_public import taleo_jobs
         try:
