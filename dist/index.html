@@ -524,8 +524,7 @@ a:hover{color:var(--ink)}
         const req=url.searchParams.get('jobId');
         if(req)return 'ibm-requisition|'+req.toLowerCase();
       }catch{}
-      // Distinct official URLs are stronger evidence than identical copy.
-      return '';
+      // Legacy records without a verified requisition retain the existing fingerprint.
     }
     const normalize=v=>String(v||'').normalize('NFKC').toLowerCase()
       .replace(/[^\p{L}\p{N}]+/gu,' ').trim().replace(/\s+/g,' ');
