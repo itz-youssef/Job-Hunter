@@ -25,3 +25,7 @@ def test_incomplete_page_rejected():
             return {"facets":[{"facetParameter":"locationCountry","values":[{"descriptor":"Egypt","id":"eg"}]}]}
         return {"total":30,"jobPostings":[]}
     with pytest.raises(ValueError):workday_egypt("PwC Egypt","Global_Campus_Careers",fetch,_job)
+
+def test_nested_office_facets_include_both_etic_ids():
+    facets=[{"facetParameter":"locationMainGroup","values":[{"facetParameter":"locations","values":[{"descriptor":"Cairo","id":"regular"},{"descriptor":"Cairo - ETIC","id":"etic1"},{"descriptor":"Cairo - ETIC","id":"etic2"},{"descriptor":"Dubai","id":"foreign"}]}]}]
+    assert egypt_facet(facets)=={"locations":["regular","etic1","etic2"]}
