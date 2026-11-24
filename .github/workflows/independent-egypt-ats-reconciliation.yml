@@ -1,4 +1,5 @@
 name: Independent Egypt Official ATS Reconciliation
+# 2026-11-24: explicit country-code validation regression
 on:
   pull_request:
     paths:
