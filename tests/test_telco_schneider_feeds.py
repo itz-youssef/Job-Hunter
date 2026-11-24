@@ -22,6 +22,24 @@ def test_jibe_egypt_only_complete_and_stable():
     assert jobs[0]["url"]=="https://careers.se.com/jobs/123?lang=en-US"
     assert jobs[0]["id"]=="custom-schneider-123"
 
+def test_schneider_paginates_all_egypt_jobs_beyond_first_50():
+    pages=[]
+    def get(url):
+        from urllib.parse import urlparse, parse_qs
+        page=int(parse_qs(urlparse(url).query)["page"][0])
+        pages.append(page)
+        start=(page-1)*50
+        return {"totalCount":63,"jobs":[
+            {"data":{"req_id":str(i+100),"title":f"Role {i}",
+                     "country_code":"EG","full_location":"Cairo, Egypt"}}
+            for i in range(start,min(start+50,63))
+        ]}
+    jobs=schneider_egypt("Schneider Electric",get,cs._job)
+    assert len(jobs)==63
+    assert pages==[1,2]
+    assert all(j["location"]=="Cairo, Egypt" for j in jobs)
+
+
 def test_jibe_incomplete_fails():
     import pytest
     with pytest.raises(ValueError):
