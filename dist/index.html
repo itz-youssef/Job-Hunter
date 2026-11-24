@@ -225,7 +225,7 @@ a:hover{color:var(--ink)}
   <script src="/assets/secretj-job-preferences.js?v=constraint-aware-f-1" defer></script>
   <script src="/assets/secretj-job-search.js?v=catalog-search-1" defer></script>
   <script src="/assets/secretj-welcome-tour.js?v=welcome-1" defer></script>
-<link rel="stylesheet" href="/assets/responsive.css?v=responsive-preserve-20261123">
+<link rel="stylesheet" href="/assets/responsive.css?v=mobile-workspace-nav-20261124">
 <link rel="stylesheet" href="/assets/secretj-loading.css?v=20261123-loader-1">
 <link rel="stylesheet" href="/assets/secretj-landing.css?v=signup-glow-20261124">
 <script src="/assets/secretj-landing.js?v=company-mobile-wall-20261124"></script>
@@ -238,17 +238,21 @@ a:hover{color:var(--ink)}
       <a class="brand" href="#home" aria-label="Secret J home"><img src="/assets/secretj-mark.svg" width="30" height="30" style="border-radius:7px" alt=""><span>Secret J<span class="brand-dot">.</span></span></a>
       <div class="profile"><span class="profile-avatar">SJ</span><span><b>Secret J workspace</b><small>Career tools &amp; opportunities</small></span><span class="profile-live" title="Your workspace">✦</span></div>
       <p class="nav-title">WORKSPACE</p>
-      <nav id="navigation">
-        <button type="button" data-page="home"><span>⌂</span> Home</button>
-        <button type="button" data-page="hunter"><span>◉</span> Job Hunter</button>
-        <button type="button" data-page="resume"><span>▤</span> Resume Updater</button>
-        <button type="button" data-page="cv"><span>▣</span> CV Holder</button>
-        <button type="button" data-page="profile"><span>◉</span> My Profile</button>
-        <span class="nav-divider-label">JOB HUNTER TOOLS</span>
-        <button type="button" data-page="jobs"><span>▤</span> Job Feed <b class="nav-count" id="nav-job-count">0</b></button>
-        <button type="button" data-page="saved"><span>♡</span> Saved Jobs</button>
-        <button type="button" data-page="companies"><span>▦</span> My Companies</button>
-        <button type="button" data-page="alerts"><span>♧</span> Email Alerts</button>
+      <nav id="navigation" aria-label="Workspace navigation">
+        <div class="sj-mobile-workspace-shortcuts" role="group" aria-label="Workspace shortcuts">
+          <button type="button" data-page="home"><span>⌂</span> Home</button>
+          <button type="button" data-page="hunter"><span>◉</span> Job Hunter</button>
+          <button type="button" data-page="resume"><span>▤</span> Resume Updater</button>
+          <button type="button" data-page="cv"><span>▣</span> CV Holder</button>
+          <button type="button" data-page="profile"><span>◉</span> My Profile</button>
+        </div>
+        <div class="sj-mobile-job-tools" role="group" aria-label="Job Hunter tools">
+          <span class="nav-divider-label">JOB HUNTER TOOLS</span>
+          <button type="button" data-page="jobs"><span>▤</span> Job Feed <b class="nav-count" id="nav-job-count">0</b></button>
+          <button type="button" data-page="saved"><span>♡</span> Saved Jobs</button>
+          <button type="button" data-page="companies"><span>▦</span> My Companies</button>
+          <button type="button" data-page="alerts"><span>♧</span> Email Alerts</button>
+        </div>
       </nav>
       <p class="nav-title nav-title-second">TOOLS</p>
       <div class="secondary-links">
