@@ -148,7 +148,10 @@ function authMode(register) {
   $('#tab-register').classList.toggle('active',register);
   $('#tab-login').classList.toggle('active',!register);
   $('#name-label').hidden=!register;
+  $('#confirm-password-label').hidden=!register;
+  $('#auth-form').elements.confirm_password.required=register;
   $('#registration-consent').hidden=!register;
+  $('#sj-email-code-alternative').hidden=register;
   $('#auth-form').elements.accept_terms.required=register;
   $('#auth-submit').textContent=register?'Create my account':'Sign in';
   $('#auth-form').elements.password.autocomplete=register?'new-password':'current-password';
@@ -357,7 +360,7 @@ async function preferences(root){
   </div>
   <label><span><input type="checkbox" name="internships" style="width:auto" ${p.internships?'checked':''}> Legacy: internships only (used when no career levels are selected)</span></label>
   <label>Maximum required experience (years) — optional<input name="max_experience_years" type="number" min="0" max="30" placeholder="Any experience" value="${p.max_experience_years==null?'':Number(p.max_experience_years)}"></label>
-  <p class="small">Leave everything unchecked and experience blank to see every discovered job, just like before login. Select any categories to narrow your job feed. Unchecked location and internship options do not restrict results.</p>
+  <p class="small">Career fields are optional: selecting only Internship, Entry or another career level matches jobs from any field. Choosing fields as well narrows matches to those fields. Jobs already published when monitoring first starts become your baseline; email alerts are sent only for subsequently detected matches.</p>
   <h3>Career fields</h3><div class="grid">
   ${(window.SecretJJobPreferences?.categories||[]).map(({key:v,label})=>
    `<label><span><input type="checkbox" style="width:auto" name="roles" value="${v}" ${p.role_families.includes(v)?'checked':''}> ${label}</span></label>`).join('')}</div>
@@ -449,10 +452,35 @@ $('#sj-cv-preview')?.addEventListener('close',()=>{
 });
 $('#tab-login').addEventListener('click',()=>authMode(false));
 $('#tab-register').addEventListener('click',()=>authMode(true));
+$('#sj-email-login-toggle').addEventListener('click',async()=>{
+  const form=$('#auth-form');
+  if(isRegistration)return;
+  const email=form.elements.email;
+  if(!email.value.trim()||!email.checkValidity()){
+    email.reportValidity();
+    email.focus();
+    return;
+  }
+  const button=$('#sj-email-login-toggle');
+  busyButton(button,true,'Sending code…');
+  try{
+    const result=await api(authUrl('request-email-login'),'POST',{email:email.value.trim()});
+    if(!result.requires_otp||!result.challenge)throw Error('Could not start email-code sign-in');
+    showLoginCode(result.challenge,false);
+    banner('If this email has an active Secret J account, a sign-in code has been sent. Check your inbox.');
+  }catch(error){banner(error.message,true);}
+  finally{busyButton(button,false);}
+});
 $('#auth-form').addEventListener('submit',async event=>{
   event.preventDefault();const form=event.currentTarget;const button=$('#auth-submit');
   const values=Object.fromEntries(new FormData(form));
   if(isRegistration){
+    if(values.password!==values.confirm_password){
+      banner('Passwords do not match. Please confirm your password.',true);
+      form.elements.confirm_password.focus();
+      return;
+    }
+    delete values.confirm_password;
     if(!form.elements.accept_terms.checked){banner('You must accept the Terms & Conditions and acknowledge the Privacy Policy.',true);return;}
     values.accept_terms=true;
     values.terms_version='2026-11-14';
@@ -474,7 +502,7 @@ $('#auth-form').addEventListener('submit',async event=>{
 });
 $('#login-code-form').addEventListener('submit',async event=>{
   event.preventDefault();
-  if(!loginChallenge)return banner('Start by signing in with your password.',true);
+  if(!loginChallenge)return banner('Start by requesting a sign-in code.',true);
   const button=$('#sj-login-code-submit');
   busyButton(button,true,'Verifying…');
   try{
