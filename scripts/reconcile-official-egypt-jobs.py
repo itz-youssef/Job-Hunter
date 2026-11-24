@@ -50,7 +50,12 @@ def egypt_location(location,code=""):
 
 def listing_key(url):
     p=urlsplit(str(url or ""))
-    return (p.hostname or "").lower()+p.path.rstrip("/").casefold()
+    host=(p.hostname or "").lower()
+    if host in ("careers.ibm.com","www.ibm.com"):
+        from urllib.parse import parse_qs
+        req=parse_qs(p.query).get("jobId",[""])[0]
+        if req:return "ibm-requisition:"+req.casefold()
+    return host+p.path.rstrip("/").casefold()
 
 
 def raw_ats(company, fetch_json=_json):
@@ -323,6 +328,98 @@ def raw_ats(company, fetch_json=_json):
             if not current:
                 raise ValueError("Official page empty before a verified total")
         raise ValueError("Official count could not be reconciled within pagination budget")
+
+
+    if kind in ("capgemini_egypt","dxc_egypt","paymob_recruitera","telecom_egypt","ibm_egypt"):
+        from app.custom_sources import _bytes
+        from urllib.parse import parse_qs
+        official={}
+        total=None
+        read=0
+        cursor=None
+        cursors=set()
+        unknown_locations=0
+        for page in range(1,31):
+            if kind=="capgemini_egypt":
+                payload=fetch_json("https://cg-jobstream-api.azurewebsites.net/api/job-search?"+urlencode({"page":page,"size":100,"country_code":"eg-en"}))
+                rows=payload["data"]
+                count=int(payload["total"])
+            elif kind=="dxc_egypt":
+                params=[("callback","CWS.jobs.jobCallback"),("facet[]","is_internal:DXCJobs"),("facet[]","primary_country:EG"),("sortfield","open_date"),("sortorder","descending"),("Limit","100"),("Organization","2492"),("offset",str(read+1)),("fuzzy","false")]
+                raw=_bytes("https://jobsapi-internal.m-cloud.io/api/job?"+urlencode(params)).decode().strip().rstrip(" ;")
+                if not raw.startswith("CWS.jobs.jobCallback(") or not raw.endswith(")"):
+                    raise ValueError("DXC source JSONP envelope missing")
+                payload=json.loads(raw[len("CWS.jobs.jobCallback("):-1])
+                rows=payload["queryResult"]
+                count=int(payload["totalHits"])
+            elif kind=="paymob_recruitera":
+                payload=fetch_json("https://app.recruitera.ai/api/public/v1/paymob/opportunities"+("?cursor="+quote(cursor,safe="") if cursor else ""))
+                rows=payload["data"]
+                count=int(payload["meta"]["found"])
+            elif kind=="telecom_egypt":
+                payload=fetch_json("https://te.eg/o/c/vacancies/?"+urlencode({"page":page,"pageSize":100}))
+                rows=payload["items"]
+                count=int(payload["totalCount"])
+            else:
+                payload=fetch_json("https://www-api.ibm.com/search/api/v2",{"appId":"careers","scopes":["careers2"],"query":{"bool":{"must":[{"term":{"field_keyword_05":"Egypt"}}]}},"from":read,"size":100,"sort":[{"_score":"desc"},{"pageviews":"desc"}],"lang":"zz","localeSelector":{},"sm":{"query":"","lang":"zz"},"_source":["title","url","field_keyword_05","field_keyword_19"]})
+                rows=[x["_source"] for x in payload["hits"]["hits"]]
+                count=int(payload["hits"]["total"]["value"])
+            if not isinstance(rows,list) or count<0:
+                raise ValueError("Invalid official page envelope")
+            if total is not None and total!=count:
+                raise ValueError("Official count changed during scan")
+            total=count
+            read+=len(rows)
+            for item in rows:
+                title=str(item.get("title") or item.get("titleEnglish") or item.get("titleArabic") or "").strip()
+                if not title:
+                    raise ValueError("Source listing has no title")
+                if kind=="capgemini_egypt":
+                    if str(item.get("country_code","")).lower() not in ("eg","eg-en","en-eg"):continue
+                    link=str(item["apply_job_url"]).split("?",1)[0]
+                elif kind=="dxc_egypt":
+                    if item.get("primary_country")!="EG":continue
+                    link=str(item["url"]).split("?",1)[0]
+                elif kind=="paymob_recruitera":
+                    slug=str(item["slug"])
+                    raw_place=location_text(item.get("location"))+" "+str(item.get("country") or item.get("country_code") or "")
+                    is_foreign=bool(re.search(r"\b(?:UAE|Saudi Arabia|Oman|Dubai|Riyadh|Abu Dhabi|Jordan|Pakistan)\b",raw_place,re.I))
+                    is_egypt=egypt_location(raw_place,item.get("country_code")) or bool(re.search(r"(?:^|-)egypt(?:-|$)",slug,re.I))
+                    if is_foreign:continue
+                    if not is_egypt:
+                        unknown_locations+=1
+                        continue
+                    link="https://app.recruitera.ai/careers/paymob/"+quote(slug,safe="%-")
+                elif kind=="telecom_egypt":
+                    state=item.get("status")
+                    if isinstance(state,dict):state=state.get("label") or state.get("name")
+                    if str(state or "").lower() in ("expired","closed","draft","archived","inactive"):continue
+                    expiry=str(item.get("expiryDate") or "")[:10]
+                    if expiry and expiry<datetime.now(timezone.utc).date().isoformat():continue
+                    if not egypt_location(item.get("locationEnglish") or item.get("locationArabic")):continue
+                    raise ValueError("Active WE listing has no unique public job-detail URL; identity reconciliation needed")
+                else:
+                    if not egypt_location(item.get("field_keyword_19"),item.get("field_keyword_05")):continue
+                    link=str(item["url"])
+                if urlsplit(link).scheme!="https" or not urlsplit(link).hostname:
+                    raise ValueError("Official posting URL invalid")
+                key=listing_key(link)
+                if kind=="ibm_egypt":
+                    req=parse_qs(urlsplit(link).query).get("jobId",[""])[0]
+                    if not req and key.endswith("jobdetail"):raise ValueError("IBM requisition identity missing")
+                official[key]={"url":link,"title":title}
+            if kind=="paymob_recruitera":
+                cursor=payload["meta"].get("next_cursor")
+                if cursor:
+                    if cursor in cursors:raise ValueError("Repeated official cursor")
+                    cursors.add(cursor)
+                    continue
+            if read>=total:
+                if kind=="paymob_recruitera" and unknown_locations:
+                    raise ValueError(f"Paymob: {len(official)} confirmed Egypt postings; {unknown_locations} postings lack explicit geography; not a complete Egypt count")
+                return kind,list(official.values()),total
+            if not rows:raise ValueError("Official page empty before total")
+        raise ValueError("Official count exceeds page budget")
 
     return kind,None,None
 
