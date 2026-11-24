@@ -8,7 +8,7 @@ from __future__ import annotations
 import re
 from urllib.parse import quote, urlencode, urlsplit
 
-MAX_PAGES = 10
+MAX_PAGES = 40
 PAGE_SIZE = 100
 MAX_DETAILS = 20
 EGYPT = re.compile(r"\b(?:egypt|cairo|giza|alexandria|maadi|6th of october|nasr city|smart village)\b", re.I)
@@ -31,6 +31,7 @@ def scan(name: str, url: str, get_json, make_job) -> list[dict]:
     origin = f"https://{p.hostname}"
     endpoint = origin + "/hcmRestApi/resources/latest"
     found, details_done = {}, 0
+    official_total = None
     for page in range(MAX_PAGES):
         offset = page * PAGE_SIZE
         finder = f"findReqs;siteNumber={site},limit={PAGE_SIZE},offset={offset},sortBy=POSTING_DATES_DESC"
@@ -38,20 +39,32 @@ def scan(name: str, url: str, get_json, make_job) -> list[dict]:
         envelope = get_json(f"{endpoint}/recruitingCEJobRequisitions?{params}")
         records = envelope.get("items") or []
         if not records:
-            break
+            raise ValueError("Oracle recruiting API did not return a result envelope")
         payload = records[0]
-        rows = payload.get("requisitionList") or []
+        if not isinstance(payload,dict) or not isinstance(payload.get("requisitionList"),list):
+            raise ValueError("Oracle recruiting schema missing requisition list")
+        rows = payload["requisitionList"]
+        try:
+            count=int(payload["TotalJobsCount"])
+        except (KeyError, ValueError, TypeError) as exc:
+            raise ValueError("Oracle recruiting total count missing") from exc
+        if official_total is None:
+            official_total=count
+        elif official_total!=count:
+            raise ValueError("Oracle recruiting count changed during pagination")
+        if not rows and offset<count:
+            raise ValueError("Oracle recruiting returned empty page before total")
         for row in rows:
             job_id = str(row.get("Id") or "").strip()
             title = str(row.get("Title") or "").strip()
             location = str(row.get("PrimaryLocation") or "").strip()
             country = str(row.get("PrimaryLocationCountry") or "").upper().strip()
-            if not job_id or not title or (country != "EG" and not EGYPT.search(location)):
+            # All sectors and experience levels are valid, but Egypt remains
+            # mandatory. Do not infer Egypt when location is unavailable.
+            if not job_id or not title or (country not in ("EG","EGY") and not EGYPT.search(location)):
                 continue
-            if country == "EG" and not location:
+            if not location:
                 location = "Egypt"
-            if not TARGET.search(title):
-                continue
             if job_id in found:
                 continue
             description = str(row.get("ShortDescriptionStr") or "")
@@ -73,6 +86,8 @@ def scan(name: str, url: str, get_json, make_job) -> list[dict]:
                     pass
             job_url = f"{origin}/hcmUI/CandidateExperience/{quote(lang,safe='')}/sites/{quote(site,safe='')}/job/{quote(job_id,safe='')}"
             found[job_id] = make_job(name, title, location, job_url, description, date, row.get("JobSchedule") or "")
-        if not rows or offset + len(rows) >= (payload.get("TotalJobsCount") or 0):
+        if offset + len(rows) >= count:
             break
+    else:
+        raise ValueError("Oracle recruiting total exceeds verified pagination budget")
     return list(found.values())
