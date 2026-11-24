@@ -1036,11 +1036,13 @@ def _board_jobs(name: str, url: str) -> list[dict]:
                 count_drift = True
                 reported_total = max(reported_total,total)
             if not rows and page*20 < total:
-                raise ValueError("Workday pagination ended before reported total")
+                count_drift = True
+                break
             # Same page repeating under different offsets is incomplete coverage.
             page_paths = {str(item.get("externalPath") or "") for item in rows if isinstance(item,dict)}
             if page_paths and page_paths.issubset(seen_paths):
-                raise ValueError("Workday pagination repeated before completion")
+                count_drift = True
+                break
             seen_paths.update(page_paths)
 
             for item in rows:
@@ -1104,7 +1106,7 @@ def _board_jobs(name: str, url: str) -> list[dict]:
             if (page + 1) * 20 >= total:
                 break
         else:
-            raise ValueError("Workday total exceeds verified pagination budget")
+            count_drift = True  # Published first pages retained, never claim full coverage.
         # Do not mark a truncated list complete, even if page size varies.
         if totals_seen and len(seen_paths) < min(totals_seen):
             count_drift = True  # Never label an incomplete source as complete.
