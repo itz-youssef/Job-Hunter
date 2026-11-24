@@ -338,6 +338,7 @@ def raw_ats(company, fetch_json=_json):
         read=0
         cursor=None
         cursors=set()
+        unknown_locations=0
         for page in range(1,31):
             if kind=="capgemini_egypt":
                 payload=fetch_json("https://cg-jobstream-api.azurewebsites.net/api/job-search?"+urlencode({"page":page,"size":100,"country_code":"eg-en"}))
@@ -380,8 +381,15 @@ def raw_ats(company, fetch_json=_json):
                     if item.get("primary_country")!="EG":continue
                     link=str(item["url"]).split("?",1)[0]
                 elif kind=="paymob_recruitera":
-                    if not egypt_location(item.get("location")):continue
-                    link="https://app.recruitera.ai/careers/paymob/"+quote(str(item["slug"]),safe="%-")
+                    slug=str(item["slug"])
+                    raw_place=location_text(item.get("location"))+" "+str(item.get("country") or item.get("country_code") or "")
+                    is_foreign=bool(re.search(r"\b(?:UAE|Saudi Arabia|Oman|Dubai|Riyadh|Abu Dhabi|Jordan|Pakistan)\b",raw_place,re.I))
+                    is_egypt=egypt_location(raw_place,item.get("country_code")) or bool(re.search(r"(?:^|-)egypt(?:-|$)",slug,re.I))
+                    if is_foreign:continue
+                    if not is_egypt:
+                        unknown_locations+=1
+                        continue
+                    link="https://app.recruitera.ai/careers/paymob/"+quote(slug,safe="%-")
                 elif kind=="telecom_egypt":
                     state=item.get("status")
                     if isinstance(state,dict):state=state.get("label") or state.get("name")
@@ -407,6 +415,8 @@ def raw_ats(company, fetch_json=_json):
                     cursors.add(cursor)
                     continue
             if read>=total:
+                if kind=="paymob_recruitera" and unknown_locations:
+                    raise ValueError(f"Paymob: {len(official)} confirmed Egypt postings; {unknown_locations} postings lack explicit geography; not a complete Egypt count")
                 return kind,list(official.values()),total
             if not rows:raise ValueError("Official page empty before total")
         raise ValueError("Official count exceeds page budget")
