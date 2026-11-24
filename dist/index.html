@@ -526,6 +526,33 @@ a:hover{color:var(--ink)}
       }catch{}
       // Legacy records without a verified requisition retain the existing fingerprint.
     }
+    // Authoritative ATS identifiers distinguish vacancies even if the employer
+    // publishes identical copy. Scope to verified affected boards only.
+    try{
+      const u=new URL(jobURL(j)), h=u.hostname.toLowerCase(), p=u.pathname;
+      const c=String(companyOf(j)).trim().toLowerCase();
+      let m;
+      if(c==='amazon egypt' && (h==='www.amazon.jobs'||h==='amazon.jobs') &&
+         (m=p.match(/^\/(?:en|en-gb)\/jobs\/(\d+)(?:\/|$)/i)))return 'amazon-requisition|'+m[1];
+      if(c==='schneider electric' && (h==='careers.se.com'||h==='www.careers.se.com') &&
+         (m=p.match(/^\/jobs\/(\d+)(?:\/|$)/i)))return 'schneider-requisition|'+m[1];
+      if(c==='yassir' && h==='jobs.lever.co' &&
+         (m=p.match(/^\/yassir\/([0-9a-f-]{36})(?:\/|$)/i)))return 'yassir-requisition|'+m[1].toLowerCase();
+      if(c==='paymob' && h==='app.recruitera.ai' && /^\/careers\/paymob\//i.test(p)){
+        const id=String(j.id||'').match(/^custom-paymob-([0-9a-f-]{36})$/i);
+        if(id)return 'paymob-requisition|'+id[1].toLowerCase();
+        return 'paymob-url|'+p.replace(/\/$/,'').toLowerCase();
+      }
+      if(c==='siemens'){
+        if(h==='jobs.siemens.com' && (m=p.match(/\/JobDetail\/(\d+)(?:\/|$)/i)))
+          return 'siemens-requisition|'+m[1];
+        if(h==='jobs.sw.siemens.com'){
+          const req=String(j.external_id||'').trim();
+          if(/^\d+$/.test(req))return 'siemens-requisition|'+req;
+          if((m=p.match(/\/([a-f0-9-]{20,80})\/job\/?$/i)))return 'siemens-guid|'+m[1].toLowerCase();
+        }
+      }
+    }catch{}
     const normalize=v=>String(v||'').normalize('NFKC').toLowerCase()
       .replace(/[^\p{L}\p{N}]+/gu,' ').trim().replace(/\s+/g,' ');
     const description=normalize(j.description||j.content||'');
