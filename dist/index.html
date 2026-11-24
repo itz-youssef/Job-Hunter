@@ -570,6 +570,9 @@ a:hover{color:var(--ink)}
       if(!s || typeof s!=='object')continue;
       const name=String(s.name || s.company || s.company_name || '').trim();
       if(!name)continue;
+      // Hide the retired built-in VOIS source from old published snapshots;
+      // the separately managed Custom VOIS entry is added below.
+      if(['vodafone / vois','vois'].includes(where(name)))continue;
       const status=where(s.status || s.state || '');
       const active=Boolean(s.enabled===true || ['ok','healthy','monitoring','active','success','working'].includes(status));
       map.set(where(name),{name,active,status:status||'configured',last:s.last_check || s.last_checked || s.checked_at || s.last_scan || ''});
