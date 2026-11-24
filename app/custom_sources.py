@@ -991,6 +991,8 @@ def _board_jobs(name: str, url: str) -> list[dict]:
 
         detail_count = 0
         reported_total = None
+        totals_seen = set()
+        count_drift = False
         seen_paths = set()
 
         for page in range(MAX_WORKDAY_PAGES):
@@ -1014,10 +1016,17 @@ def _board_jobs(name: str, url: str) -> list[dict]:
                 raise ValueError("Workday reported total missing") from exc
             if total < 0:
                 raise ValueError("Workday reported invalid total")
+            totals_seen.add(total)
             if reported_total is None:
                 reported_total = total
             elif total != reported_total:
-                raise ValueError("Workday total changed during pagination")
+                # Real careers boards update while we page. Preserve observed
+                # jobs but mark coverage PARTIAL on a small concurrent change.
+                # Larger changes indicate an unstable source, not a complete scan.
+                if abs(total-reported_total)>max(3,reported_total//10):
+                    raise ValueError("Workday total changed significantly during pagination")
+                count_drift = True
+                reported_total = max(reported_total,total)
             if not rows and page*20 < total:
                 raise ValueError("Workday pagination ended before reported total")
             # Same page repeating under different offsets is incomplete coverage.
@@ -1089,8 +1098,11 @@ def _board_jobs(name: str, url: str) -> list[dict]:
         else:
             raise ValueError("Workday total exceeds verified pagination budget")
         # Do not mark a truncated list complete, even if page size varies.
-        if reported_total is not None and len(seen_paths) < reported_total:
+        if totals_seen and len(seen_paths) < min(totals_seen):
             raise ValueError("Workday listing count does not match official total")
+        if count_drift:
+            for job in jobs:
+                job["source_pagination_consistency"]="changed-during-scan"
 
     # PERSONIO
     elif kind == "personio":
@@ -1353,6 +1365,14 @@ def scan_company(company: dict):
         # the official employer detail is inaccessible.
         from app.official_job_details import enrich_missing
         jobs=enrich_missing(jobs,kind,_bytes)
+
+        if kind == "workday" and any(
+            j.get("source_pagination_consistency")=="changed-during-scan" for j in jobs
+        ):
+            return jobs,"partial",(
+                f"{len(jobs)} Workday listings; official count changed during "
+                "pagination, so completeness remains unverified"
+            )
 
         if kind in ("adcb_egypt", "fab_minds_egypt"):
             return jobs, "partial", f"{len(jobs)} public vacancy details from official company pages; coverage may be incomplete"
