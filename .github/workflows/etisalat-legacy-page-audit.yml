@@ -34,6 +34,15 @@ jobs:
                   # Public form action/field names only; never log session tokens.
                   print("PUBLIC_POST_FIELDS",[(k,v[:100] if re.search(r"page|action|event|command",k,re.I) and not re.search(r"token|session|history",k,re.I) else "") for k,v in pairs],flush=True)
               page.on("request",request)
+              def response(res):
+                  if not res.url.endswith("joblist.ajax"):return
+                  try:
+                      data=res.text()
+                      print("AJAX_PUBLIC_SHAPE",len(data),"job_number_count",len(re.findall(r"Job Number:",data,re.I)),flush=True)
+                      for m in list(re.finditer(r"Job Number:\s*[A-Z0-9]+",data,re.I))[:2]:
+                          print("AJAX_PUBLIC_JOB",data[max(0,m.start()-280):m.end()+50],flush=True)
+                  except Exception as e:print("AJAX_READ_ERROR",type(e).__name__,str(e)[:100],flush=True)
+              page.on("response",response)
               page.goto("https://etisalatmisr.taleo.net/careersection/ex/joblist.ftl",wait_until="domcontentloaded",timeout=60000)
               page.wait_for_timeout(2500)
               print("PUBLIC_PAGE",page.url,page.title(),flush=True)
@@ -41,6 +50,11 @@ jobs:
               for f in page.frames:
                   print("PAGERS",f.locator("a").evaluate_all("(els)=>els.filter(e=>/^(next|2|3|4|5)$/i.test(e.innerText.trim())).map(e=>({text:e.innerText,href:e.getAttribute('href'),id:e.id,onclick:e.getAttribute('onclick')}))"),flush=True)
                   print("FORMS",f.locator("form").evaluate_all("(els)=>els.map(e=>({action:e.getAttribute('action'),method:e.method,id:e.id}))"),flush=True)
+              anchors=page.locator('a[id*="reqTitleLinkAction"]')
+              print("PUBLIC_TITLE_COUNT",anchors.count(),flush=True)
+              if anchors.count():
+                  print("TITLE_ANCESTORS",anchors.first.evaluate("(e)=>[e.parentElement,e.parentElement.parentElement,e.parentElement.parentElement.parentElement,e.closest('tr')].filter(Boolean).map(n=>n.outerHTML.slice(0,5500))"),flush=True)
+                  print("PUBLIC_REQUISITION_ID",anchors.first.evaluate("(e)=>_ftl_api.lstVal('requisitionListInterface','requisitionListInterface.listRequisition','requisitionListInterface.ID1274',e)"),flush=True)
               for f in page.frames:
                   target=f.get_by_text("Next",exact=True)
                   if target.count():
