@@ -98,6 +98,28 @@ def workday_egypt(name,site,get_json,make_job,max_pages=100):
     if len({j["external_id"] for j in jobs})!=total:raise ValueError("PwC board duplicate requisition IDs")
     return jobs
 
+def strategy_egypt(name,get_json,make_job):
+    """Official Strategy& Middle East Greenhouse board linked by PwC."""
+    from urllib.parse import urlencode
+    data=get_json("https://boards-api.greenhouse.io/v1/boards/strategyandmiddleeast/jobs?content=true")
+    rows=data["jobs"]
+    total=int(data["meta"]["total"])
+    if not isinstance(rows,list) or len(rows)!=total or len({r["id"] for r in rows})!=total:
+        raise ValueError("Strategy& official board incomplete")
+    out=[]
+    for row in rows:
+        loc=places(row.get("location",{})).strip()
+        office_text="; ".join(places(o).strip() for o in row.get("offices",[]))
+        if not EGYPT.search(loc+" "+office_text):continue
+        ident=str(row["id"])
+        where=loc if EGYPT.search(loc) else office_text
+        if not re.search(r"\bEgypt\b",where,re.I):where+=", Egypt"
+        link="https://www.strategyand.pwc.com/m1/en/careers/available-jobs/job-details.html?"+urlencode({"gh_jid":ident,"pTitle":row["title"],"location":loc})
+        job=make_job(name,row["title"],where,link,row.get("content") or "","","")
+        job.update(external_id="strategy-"+ident,pwc_board="Strategy& Greenhouse",pwc_division="Strategy&",source_detail_status="official-job-section" if row.get("content") else "official-listing")
+        out.append(job)
+    return out
+
 def pwc_egypt(name,get_bytes,get_json,make_job):
     from app.egypt_expansion_feeds import successfactors_egypt
     # Keep existing regional source and its stable URLs. A failed source
@@ -123,4 +145,6 @@ def pwc_egypt(name,get_bytes,get_json,make_job):
         job["pwc_board"]="regional"
         job["pwc_division"]="PwC"
         merged["regional:"+job["url"]]=job
+    for job in strategy_egypt(name,get_json,make_job):
+        merged[job["external_id"]]=job
     return list(merged.values())
