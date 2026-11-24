@@ -270,7 +270,7 @@ def raw_ats(company, fetch_json=_json):
             url = base
             if kind in ("ey_egypt", "pwc_egypt"):
                 url += "&startrow=" + str((page-1)*20)
-            elif kind in ("talabat_egypt", "luxoft_egypt"):
+            elif kind == "talabat_egypt" or (kind == "luxoft_egypt" and page > 1):
                 url += "&page=" + str(page)
             elif page > 1:
                 url += "?page=" + str(page)
@@ -325,6 +325,9 @@ def raw_ats(company, fetch_json=_json):
                 return kind,list(official.values()),expected
             if expected is not None and len(official)>expected:
                 raise ValueError("More unique official links than reported total")
+            if kind=="luxoft_egypt" and expected is None and current and len(current)<60:
+                pagers=[a for a in doc.select("a[href]") if re.search(r"(?:[?&]page=|/page/)[2-9]",a.get("href",""))]
+                if not pagers:return kind,list(official.values()),len(official)
             if not current:
                 raise ValueError("Official page empty before a verified total")
         raise ValueError("Official count could not be reconciled within pagination budget")
@@ -420,6 +423,143 @@ def raw_ats(company, fetch_json=_json):
                 return kind,list(official.values()),total
             if not rows:raise ValueError("Official page empty before total")
         raise ValueError("Official count exceeds page budget")
+
+
+    if kind=="orange_egypt":
+        results={}
+        total=None
+        offset=0
+        for page in range(30):
+            body={"ddoKey":"refineSearch","jobs":True,"counts":True,"from":offset,"size":100,
+                  "pageName":"Egypt results","pageType":"landingPage","rk":"l-egypt-results",
+                  "sortBy":"","subsearch":"","all_fields":["phLocSlider","category","contractType","country","city","companyName","workModel","hiringType"],
+                  "selected_fields":{"country":["EGYPT"],"companyName":["Orange Egypt"]},
+                  "lang":"en_gb","deviceType":"desktop","country":"gb","pageId":"page549-prod","siteType":"external","refNum":"OYVOCZGB"}
+            data=fetch_json("https://orange.jobs/widgets",body)["refineSearch"]
+            rows=data["data"]["jobs"]
+            count=int(data["totalHits"])
+            if total is not None and count!=total:raise ValueError("Orange total changed")
+            total=count
+            if not isinstance(rows,list):raise ValueError("Orange official rows missing")
+            for item in rows:
+                if str(item.get("country","")).casefold() not in ("egypt","eg","egy"):continue
+                ident=str(item["jobId"])
+                title=str(item["title"])
+                links=[str(item.get(key) or "") for key in ("applyUrl","jobUrl")]
+                link=next((u for u in links if urlsplit(u).scheme=="https" and urlsplit(u).hostname in ("orange.jobs","www.careers-page.com","careers-page.com")),"")
+                if not link:
+                    slug=re.sub(r"[^a-zA-Z0-9]+","-",title).strip("-")
+                    link="https://orange.jobs/gb/en/job/"+quote(ident,safe="-")+"/"+quote(slug,safe="-")
+                results[ident]={"url":link,"title":title}
+            offset+=len(rows)
+            if offset>=total:return kind,list(results.values()),total
+            if not rows:raise ValueError("Orange page missing")
+        raise ValueError("Orange source page limit")
+
+    if kind in ("sap_cairo","indrive_egypt","adcb_egypt","fab_minds_egypt"):
+        from bs4 import BeautifulSoup
+        from app.custom_sources import _bytes
+        if kind=="sap_cairo":
+            base="https://jobs.sap.com/en/jobs/?country=Egypt"
+            pattern=r"/en/jobs/\d+/[a-z0-9-]+/?"
+            host="jobs.sap.com"
+        elif kind=="indrive_egypt":
+            base="https://careers.indrive.com/vacancies/?country=Egypt"
+            pattern=r"/en/postings/[0-9a-f-]{36}/?"
+            host="indrive.pinpointhq.com"
+        elif kind=="adcb_egypt":
+            base="https://www.adcb.com.eg/available-careers/"
+            pattern=r"/adcb_careers/[a-z0-9-]+/?"
+            host="www.adcb.com.eg"
+        else:
+            base="https://www.fab-minds.com/careers/"
+            pattern=r"/careers/[a-z0-9-]+/?"
+            host="www.fab-minds.com"
+        found={}
+        pages=set()
+        total=None
+        next_url=base
+        for _ in range(30):
+            if next_url in pages:raise ValueError("Official pagination repeated")
+            pages.add(next_url)
+            doc=BeautifulSoup(_bytes(next_url),"html.parser")
+            text=doc.get_text(" ",strip=True)
+            count_match=re.search(r"\b([\d,]+)\s+(?:jobs|positions|vacancies)\s+found\b",text,re.I)
+            if count_match:
+                count=int(count_match.group(1).replace(",",""))
+                if total is not None and total!=count:raise ValueError("Official total changed")
+                total=count
+            for a in doc.select("a[href]"):
+                link=urljoin(next_url,a["href"]).split("#",1)[0].split("?",1)[0]
+                p=urlsplit(link)
+                if (p.hostname or "").removeprefix("www.")!=host.removeprefix("www.") or not re.fullmatch(pattern,p.path,re.I):continue
+                title=a.get_text(" ",strip=True)
+                if kind=="indrive_egypt":
+                    if not egypt_location(title):continue
+                    title=re.split(r"\s+(?:Hybrid|Remote|On-site|Onsite|Fully remote)\s+-\s+",title,maxsplit=1,flags=re.I)[0].strip()
+                elif kind=="sap_cairo":
+                    card=a
+                    for parent in list(a.parents)[:4]:
+                        label=parent.get_text(" ",strip=True)
+                        if "Locations:" in label and len(label)<1000:
+                            card=parent
+                            break
+                    if not egypt_location(card.get_text(" ",strip=True)):continue
+                else:
+                    detail=BeautifulSoup(_bytes(link),"html.parser")
+                    h=detail.select_one("h1") or detail.select_one("h2")
+                    title=h.get_text(" ",strip=True) if h else title
+                    if kind=="fab_minds_egypt" and not egypt_location(detail.get_text(" ",strip=True)):
+                        continue
+                if not title:title=p.path.rstrip("/").rsplit("/",1)[-1].replace("-"," ")
+                found[listing_key(link)]={"url":link,"title":title}
+            next_links=[]
+            for a in doc.select("a[href]"):
+                label=a.get_text(" ",strip=True)
+                href=urljoin(next_url,a["href"])
+                q=urlsplit(href)
+                if q.hostname!=urlsplit(base).hostname:continue
+                if "next" in (a.get("rel") or []) or (re.fullmatch(r"next|next page|›|»",label,re.I) and re.search(r"(?:[?&]page=|/page/)\d+",href)):
+                    if href not in pages:next_links.append(href)
+            if next_links:
+                next_url=next_links[0]
+                continue
+            if total is not None and len(found)!=total:
+                raise ValueError(f"Official list returned {len(found)} unique Egypt links of {total} reported")
+            if not found and total!=0:raise ValueError("No official detail links; zero not proven")
+            return kind,list(found.values()),total if total is not None else len(found)
+        raise ValueError("Official HTML paging limit")
+
+    if kind=="workday":
+        tenant,site,prefix=slug
+        host=urlsplit(company["url"]).hostname
+        endpoint=f"https://{host}/wday/cxs/{quote(tenant,safe='')}/{quote(site,safe='')}"
+        seen=set()
+        out={}
+        total=None
+        offset=0
+        for page in range(100):
+            payload=fetch_json(endpoint+"/jobs",{"appliedFacets":{},"limit":20,"offset":offset,"searchText":""})
+            count=int(payload["total"])
+            rows=payload["jobPostings"]
+            if total is not None and count!=total:raise ValueError(f"Official Workday count changed from {total} to {count}")
+            total=count
+            if not isinstance(rows,list):raise ValueError("Workday result list missing")
+            for item in rows:
+                path=str(item["externalPath"])
+                if path in seen:raise ValueError("Workday duplicate pagination")
+                seen.add(path)
+                loc=str(item.get("locationsText") or "")
+                if not egypt_location(loc):
+                    detail=fetch_json(endpoint+path)["jobPostingInfo"]
+                    loc=" ".join([loc,str(detail.get("location") or ""),location_text(detail.get("additionalLocations"))])
+                if not egypt_location(loc):continue
+                url=f"https://{host}/{prefix.strip('/')}{path}" if prefix else f"https://{host}/{site}{path}"
+                out[path]={"url":url,"title":item["title"]}
+            offset+=len(rows)
+            if offset>=total:return kind,list(out.values()),total
+            if not rows:raise ValueError("Workday incomplete page")
+        raise ValueError("Workday page limit")
 
     return kind,None,None
 
