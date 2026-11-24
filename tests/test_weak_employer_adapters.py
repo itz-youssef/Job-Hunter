@@ -92,3 +92,12 @@ def test_sap_and_blink22_are_routed_without_touching_old_adapters():
     assert _ats("https://jobs.sap.com/en/jobs/?location=Cairo")[0] == "sap_cairo"
     assert _ats("https://blink22.com/careers/")[0] == "blink22_egypt"
     assert _ats("https://careers.ey.com/ey/search/?locationsearch=Egypt")[0] == "ey_egypt"
+
+def test_sap_country_search_includes_new_cairo_and_cairo():
+    from urllib.parse import parse_qs,urlsplit
+    rows=[{"id":"123","title":"Finance Manager","url":"/en/jobs/123/finance-manager/","locations":"New Cairo, Egypt"},
+          {"id":"456","title":"Sales Associate","url":"/en/jobs/456/sales-associate/","locations":"Cairo, Egypt"}]
+    def fetch(url):
+        assert parse_qs(urlsplit(url).query)["country"]==["Egypt"]
+        return _sap_fixture(rows)
+    assert len(sap_egypt("SAP",fetch,_job))==2
