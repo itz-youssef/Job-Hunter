@@ -93,13 +93,13 @@
          <div class="sj-land-product-meta"><span>01 / AVAILABLE NOW</span><span class="sj-land-product-state">LIVE</span></div>
          <div><span class="sj-land-eyebrow">JOB DISCOVERY</span><h3>Job Hunter ↗</h3>
           <p>Discover roles from monitored company career pages, choose your preferences, save opportunities, and get optional email alerts for matches.</p></div>
-         <div><button type="button" data-navigate="hunter" class="sj-land-btn dark">Explore Job Hunter ↗</button></div>
+         <div class="sj-land-product-actions"><button type="button" data-navigate="hunter" class="sj-land-btn dark">Explore Job Hunter ↗</button><button type="button" data-navigate="jobs" class="sj-land-btn sj-land-product-open">Open Job Hunter ↗</button></div>
         </article>
         <article class="sj-land-product pending">
          <div class="sj-land-product-meta"><span>02 / IN DEVELOPMENT</span><span class="sj-land-product-state">COMING SOON</span></div>
          <div><span class="sj-land-eyebrow">YOUR WORK, PRESENTED</span><h3>Botfolio ✦</h3>
           <p>Our upcoming product will help people present their professional work and portfolio. More details will be shared when it's ready.</p></div>
-         <span class="sj-land-muted-action">We're building what's next.</span>
+         <div class="sj-land-product-actions"><span class="sj-land-muted-action">We're building what's next.</span><button type="button" class="sj-land-btn sj-land-product-open" disabled aria-disabled="true" title="Botfolio — coming soon">Open Botfolio</button></div>
         </article>
        </div>
      </div></section>
