@@ -12,10 +12,15 @@ def places(value):
     if isinstance(value,list):return "; ".join(places(x) for x in value)
     return str(value or "")
 
+def flatten_facets(facets):
+    for facet in facets:
+        yield facet
+        yield from flatten_facets([v for v in facet.get("values",[]) if isinstance(v,dict) and v.get("facetParameter")])
+
 def egypt_facet(facets):
     # Use the site's own opaque filter IDs; never hardcode a tenant facet ID.
     for key in ("locationCountry","locations","location"):
-        for facet in facets:
+        for facet in flatten_facets(facets):
             if facet.get("facetParameter")!=key:continue
             vals=[v for v in facet.get("values",[]) if EGYPT.search(places(v.get("descriptor"))) and v.get("id")]
             if vals:return {key:[v["id"] for v in vals]}
@@ -37,7 +42,7 @@ def workday_egypt(name,site,get_json,make_job,max_pages=100):
         combined={}
         for term in ("Egypt","Cairo","ETIC","Alexandria","Giza"):
             probe=query(0,{},term)
-            for facet in probe.get("facets",[]):
+            for facet in flatten_facets(probe.get("facets",[])):
                 key=facet.get("facetParameter")
                 values=combined.setdefault(key,{})
                 for value in facet.get("values",[]):
@@ -88,7 +93,7 @@ def workday_egypt(name,site,get_json,make_job,max_pages=100):
         job=make_job(name,title,evidence,link,detail.get("jobDescription") or "",detail.get("startDate") or row.get("postedOn") or "",detail.get("timeType") or "")
         job.update(external_id=req.upper(),source_detail_status="workday-official-detail" if detail.get("jobDescription") else "workday-summary",pwc_board=site,pwc_division="ETIC" if re.search(r"\bETIC\b|Egypt Technology and Innovation Centre",title+" "+evidence,re.I) else "PwC")
         return job
-    with ThreadPoolExecutor(max_workers=4) as pool:
+    with ThreadPoolExecutor(max_workers=6) as pool:
         jobs=list(pool.map(enrich,seen.items()))
     if len({j["external_id"] for j in jobs})!=total:raise ValueError("PwC board duplicate requisition IDs")
     return jobs
