@@ -22,5 +22,5 @@ test('photographic hero has explicit dark and mobile designs and keeps live UI',
  assert.match(hero,/data-navigate="jobs"/);
  assert.match(hero,/data-home-scroll="how"/);
  assert.match(hero,/class="jh-intro-preview"/);
- assert.match(page,/secretj-jobhunter-intro\.css\?v=white-sculptural-photo-20261124/);
+ assert.match(page,/secretj-jobhunter-intro\.css\?v=sharp-architectural-20261124/);
 });
