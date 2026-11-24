@@ -55,6 +55,16 @@ jobs:
               if anchors.count():
                   print("TITLE_ANCESTORS",anchors.first.evaluate("(e)=>[e.parentElement,e.parentElement.parentElement,e.parentElement.parentElement.parentElement,e.closest('tr')].filter(Boolean).map(n=>n.outerHTML.slice(0,5500))"),flush=True)
                   print("PUBLIC_REQUISITION_ID",anchors.first.evaluate("(e)=>_ftl_api.lstVal('requisitionListInterface','requisitionListInterface.listRequisition','requisitionListInterface.ID1274',e)"),flush=True)
+                  print("PUBLIC_JOB_FIELDS",anchors.first.evaluate("""e=>Object.fromEntries(['ID1274','ID1278','ID1363','ID1523','ID1723','ID1727'].map(k=>{try{return [k,_ftl_api.lstVal('requisitionListInterface','requisitionListInterface.listRequisition','requisitionListInterface.'+k,e)]}catch{return [k,null]}}))"""),flush=True)
+                  # Check the actual public vacancy detail navigation (no Apply).
+                  detail=b.new_page()
+                  detail.goto(ROOT if False else "https://etisalatmisr.taleo.net/careersection/ex/joblist.ftl",wait_until="domcontentloaded",timeout=60000)
+                  detail.locator('a[id*="reqTitleLinkAction"]').first.click(timeout=10000)
+                  detail.wait_for_timeout(1800)
+                  print("PUBLIC_DETAIL_URL",detail.url,flush=True)
+                  print("PUBLIC_DETAIL_HEAD",detail.locator("body").inner_text()[:1800],flush=True)
+                  detail.close()
+
               for f in page.frames:
                   target=f.get_by_text("Next",exact=True)
                   if target.count():
