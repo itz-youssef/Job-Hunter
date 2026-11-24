@@ -1,0 +1,78 @@
+name: Public Etisalat Legacy Pagination Diagnostic
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/etisalat-legacy-page-audit.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install playwright beautifulsoup4 && python -m playwright install --with-deps chromium
+      - name: Inspect public job search paging only
+        run: |
+          python - <<'PY'
+          import json,re
+          from urllib.parse import urlsplit,parse_qsl
+          from playwright.sync_api import sync_playwright
+          with sync_playwright() as p:
+              b=p.chromium.launch(headless=True)
+              page=b.new_page()
+              def request(req):
+                  if req.method!="POST":return
+                  path=urlsplit(req.url).path
+                  if "careersection" not in path:return
+                  print("PUBLIC_POST_PATH",path,flush=True)
+                  pairs=parse_qsl(req.post_data or "",keep_blank_values=True)
+                  # Public form action/field names only; never log session tokens.
+                  print("PUBLIC_POST_FIELDS",[(k,v[:100] if re.search(r"page|action|event|command",k,re.I) and not re.search(r"token|session|history",k,re.I) else "") for k,v in pairs],flush=True)
+              page.on("request",request)
+              def response(res):
+                  if not res.url.endswith("joblist.ajax"):return
+                  try:
+                      data=res.text()
+                      print("AJAX_PUBLIC_SHAPE",len(data),"job_number_count",len(re.findall(r"Job Number:",data,re.I)),flush=True)
+                      for m in list(re.finditer(r"Job Number:\s*[A-Z0-9]+",data,re.I))[:2]:
+                          print("AJAX_PUBLIC_JOB",data[max(0,m.start()-280):m.end()+50],flush=True)
+                  except Exception as e:print("AJAX_READ_ERROR",type(e).__name__,str(e)[:100],flush=True)
+              page.on("response",response)
+              page.goto("https://etisalatmisr.taleo.net/careersection/ex/joblist.ftl",wait_until="domcontentloaded",timeout=60000)
+              page.wait_for_timeout(2500)
+              print("PUBLIC_PAGE",page.url,page.title(),flush=True)
+              print("PUBLIC_FRAMES",[(f.name,urlsplit(f.url).path) for f in page.frames],flush=True)
+              for f in page.frames:
+                  print("PAGERS",f.locator("a").evaluate_all("(els)=>els.filter(e=>/^(next|2|3|4|5)$/i.test(e.innerText.trim())).map(e=>({text:e.innerText,href:e.getAttribute('href'),id:e.id,onclick:e.getAttribute('onclick')}))"),flush=True)
+                  print("FORMS",f.locator("form").evaluate_all("(els)=>els.map(e=>({action:e.getAttribute('action'),method:e.method,id:e.id}))"),flush=True)
+              anchors=page.locator('a[id*="reqTitleLinkAction"]')
+              print("PUBLIC_TITLE_COUNT",anchors.count(),flush=True)
+              if anchors.count():
+                  print("TITLE_ANCESTORS",anchors.first.evaluate("(e)=>[e.parentElement,e.parentElement.parentElement,e.parentElement.parentElement.parentElement,e.closest('tr')].filter(Boolean).map(n=>n.outerHTML.slice(0,5500))"),flush=True)
+                  print("PUBLIC_REQUISITION_ID",anchors.first.evaluate("(e)=>_ftl_api.lstVal('requisitionListInterface','requisitionListInterface.listRequisition','requisitionListInterface.ID1274',e)"),flush=True)
+                  print("PUBLIC_JOB_FIELDS",anchors.first.evaluate("""e=>Object.fromEntries(['ID1274','ID1278','ID1363','ID1523','ID1723','ID1727'].map(k=>{try{return [k,_ftl_api.lstVal('requisitionListInterface','requisitionListInterface.listRequisition','requisitionListInterface.'+k,e)]}catch{return [k,null]}}))"""),flush=True)
+                  # Check the actual public vacancy detail navigation (no Apply).
+                  detail=b.new_page()
+                  detail.goto(ROOT if False else "https://etisalatmisr.taleo.net/careersection/ex/joblist.ftl",wait_until="domcontentloaded",timeout=60000)
+                  detail.locator('a[id*="reqTitleLinkAction"]').first.click(timeout=10000)
+                  detail.wait_for_timeout(1800)
+                  print("PUBLIC_DETAIL_URL",detail.url,flush=True)
+                  print("PUBLIC_DETAIL_HEAD",detail.locator("body").inner_text()[:1800],flush=True)
+                  detail.close()
+
+              for f in page.frames:
+                  target=f.get_by_text("Next",exact=True)
+                  if target.count():
+                      try:
+                          target.last.click(timeout=5000)
+                          page.wait_for_timeout(2500)
+                          print("AFTER_NEXT",f.locator("body").inner_text()[:1800],flush=True)
+                          break
+                      except Exception as e:print("CLICK_ERROR",type(e).__name__,str(e)[:140],flush=True)
+              b.close()
+          PY
