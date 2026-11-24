@@ -116,7 +116,7 @@ def _rsc_job_arrays(html):
 
 
 def sap_egypt(name, get_bytes, make_job, max_pages=12):
-    """SAP Cairo-only job records with original posting timestamps.
+    """SAP country-wide Egypt job records with original posting timestamps.
 
     Reject changes in schema and incomplete pagination rather than reporting
     a healthy empty result when a dynamic page fails.
@@ -124,14 +124,14 @@ def sap_egypt(name, get_bytes, make_job, max_pages=12):
     results = {}
     total_pages = None
     for number in range(1, max_pages + 1):
-        params = {"location": "Cairo"}
+        params = {"country": "Egypt", "pagesize": "20"}
         if number > 1:
             params["page"] = str(number)
         page = _SAP_BASE + "?" + urlencode(params)
         html = get_bytes(page).decode("utf-8", "replace")
         arrays = _rsc_job_arrays(html)
         if not arrays:
-            raise ValueError("SAP Cairo job result payload unavailable")
+            raise ValueError("SAP Egypt job result payload unavailable")
         current = next((a for a in arrays if a and any("locations" in x for x in a)),
                        arrays[0])
         # The server-side response includes the page count in the same RSC
@@ -159,7 +159,7 @@ def sap_egypt(name, get_bytes, make_job, max_pages=12):
                 total_pages = this_pages
             elif total_pages != this_pages:
                 raise ValueError("SAP pagination total changed mid-scan")
-        if number > 1 and current and all(str(x.get("id")) in results for x in current):
+        if number > 1 and current and all(urljoin("https://jobs.sap.com", str(x.get("url") or "")) in results for x in current):
             raise ValueError("SAP repeated a page before all results were scanned")
 
         for record in current:
