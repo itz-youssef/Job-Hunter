@@ -15,6 +15,8 @@ test('report all employer losses from public catalog rendering',()=>{
  for(const c of registry){
    const companyRows=rows.filter(j=>j.company===c.name);
    const missing=companyRows.filter(j=>!selected.has(j));
-   console.log('UI_RECONCILE '+JSON.stringify({company:c.name,published:companyRows.length,visible:companyRows.length-missing.length,lost:missing.map(j=>({id:j.id,external_id:j.external_id,title:j.title,url:j.url,location:j.location}))}));
+   const fingerprint=vm.runInContext('vacancyFingerprint',ctx);
+   const slim=j=>({id:j.id,external_id:j.external_id,title:j.title,url:j.url,location:j.location,source:j.source,source_id:j.source_id});
+   console.log('UI_RECONCILE '+JSON.stringify({company:c.name,published:companyRows.length,visible:companyRows.length-missing.length,lost:missing.map(j=>({ ...slim(j), collisions:visible.filter(k=>k.url===j.url||(fingerprint(j)&&fingerprint(j)===fingerprint(k))).map(slim)}))}));
  }
 });
