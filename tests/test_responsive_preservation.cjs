@@ -23,5 +23,5 @@ test('workspace preserves mobile profile and hero illustrations',()=>{
  assert.match(responsive,/\.region-tag,\.top-avatar\{display:inline-flex\}/);
 });
 test('responsive stylesheet URLs are versioned for client reload',()=>{
- assert.match(home,/responsive-preserve-20261123/);
+ assert.match(home,/mobile-workspace-nav-20261124/);
 });
