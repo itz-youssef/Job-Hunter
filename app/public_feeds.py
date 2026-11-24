@@ -20,7 +20,7 @@ def workable(name, slug, get_json, get_bytes, structured, make_job):
         if not isinstance(item, dict):
             continue
         title = str(item.get("title") or "")
-        if not TARGET.search(title):
+        if not title.strip():
             continue
         location = item.get("location") or {}
         if isinstance(location, dict):
@@ -29,9 +29,9 @@ def workable(name, slug, get_json, get_bytes, structured, make_job):
             place = str(location)
         if not place:
             place = ", ".join(str(item.get(k) or "") for k in ("city","state","country") if item.get(k))
-        if not EGYPT.search(place) and str(item.get("country_code") or "").upper() != "EG":
-            continue
-        if not place: place = "Egypt"
+        # Every publicly listed vacancy belongs in the catalog regardless
+        # of career family or geography. Preferences are applied downstream.
+        if not place: place = str(item.get("country_code") or "")
         link = str(item.get("url") or item.get("job_url") or "")
         if not link:
             shortcode = str(item.get("shortcode") or "")
@@ -98,10 +98,10 @@ def link_development(name, url, get_bytes, make_job):
         if p.hostname not in ("linkdevelopment.com","www.linkdevelopment.com"):continue
         if not re.match(r"^/careers/opportunities/[^/]+/?$",p.path,re.I):continue
         slug=unquote(p.path.strip("/").split("/")[-1])
-        if not EGYPT.search(slug.replace("-"," ")):continue
+        # Never discard non-Egypt or non-technical employer vacancies here.
         if not label or len(label)<12 or label.lower().startswith(("more","apply","view")):
             label=" ".join(slug.replace("-"," ").split())
-        if not TARGET.search(label): continue
+        if not label:continue
         found[link]=make_job(name,label,"Egypt",link,"","","")
     return list(found.values())
 
@@ -111,7 +111,7 @@ def itworx(name, post_json, make_job):
     endpoint = "https://careers.itworx.com/ServerApp/api/Requisition/GetAllRequisitions"
     found = {}
     page_size = 50
-    for page in range(3):
+    for page in range(30):
         data = post_json(endpoint, {
             "StartIndex": page * page_size + 1,
             "PageSize": page_size,
@@ -125,7 +125,7 @@ def itworx(name, post_json, make_job):
             title = str(row.get("Position") or "").strip()
             location = str(row.get("Location") or "").strip()
             job_id = str(row.get("ReqId") or "").strip()
-            if not job_id.isdigit() or not EGYPT.search(location) or not TARGET.search(title):
+            if not job_id.isdigit() or not title:
                 continue
             description = " ".join(str(row.get(k) or "") for k in ("Description", "Requirements"))
             job = make_job(
@@ -135,7 +135,13 @@ def itworx(name, post_json, make_job):
             )
             job["seniority"] = str(row.get("CareerLevel") or "")
             found[job_id] = job
-        total = int(data.get("TotalCount") or len(rows))
-        if not rows or (page + 1) * page_size >= total:
+        total = int(data.get("TotalCount") if data.get("TotalCount") is not None else len(rows))
+        if total < 0:
+            raise ValueError("ITWorx returned an invalid vacancy count")
+        if not rows and page * page_size < total:
+            raise ValueError("ITWorx stopped pagination before reported total")
+        if (page + 1) * page_size >= total:
             break
+    else:
+        raise ValueError("ITWorx vacancy list exceeds verified pagination budget")
     return list(found.values())
