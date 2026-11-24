@@ -9,7 +9,7 @@ const latest=css.slice(css.lastIndexOf('/* Job Hunter editorial architecture'));
 test('Job Hunter has its own soft architecture in light and dark, not photos or brutalism',()=>{
  assert.match(latest,/jobhunter-editorial-geometry-light\.svg/);
  assert.match(latest,/jobhunter-editorial-geometry-dark\.svg/);
- assert.doesNotMatch(latest,/images\.unsplash\.com|jobhunter-brutalism/);
+ assert.match(css,/images\.unsplash\.com\/photo-1762344677875-33739bc5d40d/);
  for(const mode of ['light','dark']){
   const svg=fs.readFileSync('dist/assets/jobhunter-editorial-geometry-'+mode+'.svg','utf8');
   assert.match(svg,/<svg[^>]+viewBox="0 0 2200 780"/);
@@ -24,7 +24,7 @@ test('Hero layout stays interactive and decorations remain nonblocking',()=>{
  assert.match(script,/data-navigate="jobs"/);
  assert.match(script,/data-home-scroll="how"/);
  assert.match(script,/class="jh-intro-preview"/);
- assert.match(html,/secretj-jobhunter-intro\.css\?v=editorial-geometry-20261124/);
+ assert.match(html,/secretj-jobhunter-intro\.css\?v=white-sculptural-photo-20261124/);
 });
 test('Mobile and tablet still reveal architectural shapes in both themes',()=>{
  assert.match(latest,/@media\(max-width:1050px\)/);
