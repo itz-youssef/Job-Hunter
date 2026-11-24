@@ -1,0 +1,26 @@
+name: Direct Remaining Employer Source Evidence
+on:
+  pull_request:
+    paths:
+      - "scripts/direct_remaining_source_evidence.py"
+      - ".github/workflows/direct-remaining-source-evidence.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        employer: ["Siemens","Deloitte","Breadfast","Breadfast Technology","Fawry","Finaira","Uber Egypt","inDrive","Luciq (formerly Instabug)","Konecta Egypt","Paymob"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: python -m scripts.direct_remaining_source_evidence "$EMPLOYER"
+        env:
+          EMPLOYER: ${{ matrix.employer }}
