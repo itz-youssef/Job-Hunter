@@ -84,15 +84,39 @@
     <div><span class="sj-land-eyebrow">READY WHEN YOU ARE</span><h2>Your next opportunity starts here.</h2><p>Browse jobs first. Personalize when you want.</p></div>
     <div class="jh-intro-actions"><button type="button" data-navigate="jobs" class="sj-land-btn dark">Explore Job Feed ↗</button>${action}</div>
    </div></section>
-   <footer class="sj-land-footer"><div class="sj-land-footer-inner sj-land-width">
-    <div><h3>Job Hunter.</h3><p>A job discovery product by Secret J, built for technical and non-technical careers.</p></div>
-    <div class="sj-land-footer-links"><strong>JOB HUNTER</strong><button type="button" data-navigate="jobs">Job Feed</button>
-     <button type="button" data-navigate="companies">Companies</button><button type="button" data-home-scroll="how">How It Works</button></div>
-    <div class="sj-land-footer-links"><strong>SECRET J</strong><button type="button" data-navigate="home">Company Home</button>
-     <a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a>
-     <a href="https://www.linkedin.com/company/secretj/home/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a></div>
-    <div class="sj-land-copy">© ${new Date().getFullYear()} Secret J · Job Hunter is a Secret J product.</div>
-   </div></footer>
+     <footer class="sj-land-footer" aria-label="Job Hunter footer">
+       <div class="sj-land-footer-inner sj-land-width">
+         <div class="sj-land-footer-brand">
+           <h3>Secret J.</h3>
+           <p>Career-focused technology. Thoughtful products for finding opportunities and showcasing your work.</p>
+           <span class="sj-land-footer-tagline">YOUR CAREER. MORE POSSIBILITIES.</span>
+         </div>
+         <div class="sj-land-footer-links"><strong>OUR PRODUCTS</strong>
+           <button type="button" data-navigate="home">All Products</button>
+           <button type="button" data-navigate="hunter">Job Hunter · Live</button>
+           <button type="button" data-navigate="home">Botfolio · Coming Soon</button>
+           <button type="button" data-home-scroll="how">How Job Hunter Works</button>
+         </div>
+         <div class="sj-land-footer-links"><strong>EXPLORE SECRET J</strong>
+           <button type="button" data-navigate="home">About Us</button>
+           <button type="button" data-navigate="companies">Explore Companies</button>
+           <button type="button" data-navigate="jobs">Find Jobs</button>
+         </div>
+         <div class="sj-land-footer-social">
+           <strong>CONNECT WITH US</strong>
+           <a class="sj-land-linkedin-icon" href="https://www.linkedin.com/company/secretj/home/" target="_blank" rel="noopener noreferrer" aria-label="Secret J on LinkedIn (opens in new tab)" title="Secret J on LinkedIn">
+             <svg aria-hidden="true" viewBox="0 0 24 24" width="23" height="23" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.327-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.35V9h3.414v1.561h.049c.476-.9 1.637-1.85 3.37-1.85 3.601 0 4.264 2.37 4.264 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 .001-4.124 2.062 2.062 0 0 1-.001 4.124zM7.119 20.452H3.555V9H7.12v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451c.978 0 1.778-.773 1.778-1.729V1.729C24 .774 23.2 0 22.222 0z"/></svg>
+           </a>
+         </div>
+       </div>
+       <div class="sj-land-footer-bottom sj-land-width">
+         <span>© ${new Date().getFullYear()} Secret J. All rights reserved.</span>
+         <nav class="sj-land-footer-legal" aria-label="Legal information">
+           <a href="/terms.html">Terms &amp; Conditions</a>
+           <a href="/privacy.html">Privacy Policy</a>
+         </nav>
+       </div>
+     </footer>
   </div>`;
  }
  window.SecretJJobHunterIntro=Object.freeze({render});
