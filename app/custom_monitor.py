@@ -448,7 +448,8 @@ def run(
                     trusted_detail=str(old.get("source_detail_status") or "") in (
                         "official-jsonld-detail","jsonld-jobposting",
                         "official-page-section","official-detail-level",
-                        "retained-official-detail"
+                        "official-job-section","official-article-sections",
+                        "workday-official-detail","retained-official-detail"
                     )
                     if trusted_detail and len(old_desc)>max(120,len(current_desc)):
                         job["description"]=old_desc
