@@ -77,3 +77,33 @@ if name=="Konecta Egypt":
    print("KONECTA_QUERY",repr(query),"total",d.get("total"),"facets",json.dumps(d.get("facets"),ensure_ascii=False)[:16000],flush=True)
    print("KONECTA_RESULT",query,json.dumps([{"title":r.get("title"),"location":r.get("locationsText"),"url":r.get("externalPath")} for r in d.get("jobPostings",[])],ensure_ascii=False)[:10000],flush=True)
  except Exception as exc:print("KONECTA_ERROR",type(exc).__name__,str(exc)[:200],flush=True)
+
+if name in ("Siemens","Deloitte"):
+ root=("https://jobs.siemens.com/en_US/externaljobs/SearchJobs/Egypt" if name=="Siemens" else "https://middleeastjobs.deloitte.com/careersME/SearchJobs/Egypt")
+ param="folder" if name=="Siemens" else "pipeline"
+ all_links={}
+ for offset in range(0,120,6):
+  url=root+"?"+urlencode({param+"RecordsPerPage":6,param+"Offset":offset})
+  try:
+   doc=BeautifulSoup(_bytes(url),"html.parser")
+   rows={}
+   for a in doc.select("a[href]"):
+    link=urljoin(url,a["href"]).split("?",1)[0]
+    if not re.search(PAT[name],link,re.I):continue
+    card=a
+    for parent in list(a.parents)[:6]:
+     label=parent.get_text(" ",strip=True)
+     if len(label)<600 and re.search(r"\b(?:Egypt|Cairo|Giza|Alexandria)\b",label,re.I):card=parent
+     if len(label)>600:break
+    heading=card.select_one("h2,h3,h4")
+    title=heading.get_text(" ",strip=True) if heading else a.get_text(" ",strip=True)
+    rows[link]={"title":title,"text":card.get_text(" ",strip=True)[:250]}
+   new=set(rows)-set(all_links)
+   print("AVATURE_PAGE",name,offset,len(rows),"new",len(new),flush=True)
+   if not rows or not new:break
+   all_links.update(rows)
+   if len(rows)<6:break
+  except Exception as exc:
+   print("AVATURE_ERROR",name,type(exc).__name__,str(exc)[:150],flush=True);break
+ print("AVATURE_TOTAL",name,len(all_links),flush=True)
+ print("AVATURE_LINKS",name,json.dumps(all_links,ensure_ascii=False)[:35000],flush=True)
