@@ -279,6 +279,9 @@ def _ats(url: str):
     if host in ("www.ibm.com", "ibm.com") and "/careers/search" in p.path:
         return "ibm_egypt", None
 
+    if host == "jobs.siemens.com" and "/SearchJobs/Egypt" in p.path:
+        return "siemens_country", None
+
     if host == "jobs.sw.siemens.com" and "/jobs" in p.path:
         return "siemens_software", None
 
@@ -655,8 +658,8 @@ def _board_jobs(name: str, url: str) -> list[dict]:
         return _dedupe(luxoft_egypt(name, _bytes, _job))
 
     if kind == "deloitte_partial":
-        from app.expanded_employers import deloitte_egypt_partial
-        return _dedupe(deloitte_egypt_partial(name, _bytes, _job))
+        from app.avature_egypt import country_jobs
+        return _dedupe(country_jobs(name, _bytes, _job))
 
     if kind == "_old_deloitte_partial":
         from app.requested_employers import deloitte_middle_east_partial
@@ -677,6 +680,10 @@ def _board_jobs(name: str, url: str) -> list[dict]:
     if kind == "ibm_egypt":
         from app.employer_feeds import ibm_egypt
         return _dedupe(ibm_egypt(name, _json, _job))
+
+    if kind == "siemens_country":
+        from app.avature_egypt import country_jobs
+        return _dedupe(country_jobs(name, _bytes, _job, siemens=True))
 
     if kind == "siemens_software":
         from app.egypt_public_feeds import siemens_software
@@ -1450,6 +1457,10 @@ def scan_company(company: dict):
                 [], "needs_adapter",
                 "Public listings rendered dynamically; no complete feed was extracted",
             )
+
+        if kind in ("siemens_country", "deloitte_partial"):
+            verified = sum(bool(j.get("location")) for j in jobs)
+            return jobs, "monitoring" if verified == len(jobs) else "partial", f"{len(jobs)} unique official country listings; {verified} explicit locations"
 
         return (
             jobs,
