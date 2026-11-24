@@ -23,12 +23,12 @@ test('coming soon Botfolio open button is disabled and non-navigating',()=>{
 });
 test('burgundy light and gold dark glows plus disabled and reduced-motion states',()=>{
  const styles=css.slice(css.lastIndexOf('/* Meet Our Products: distinct open-product CTAs'));
- assert.match(styles,/background:#3d204d/);
+ assert.match(styles,/background:#412c34/);
  assert.match(styles,/background:#d3a644/);
  assert.match(styles,/box-shadow:/);
  assert.match(styles,/:disabled/);
  assert.match(styles,/pointer-events:none/);
  assert.match(styles,/@media\(prefers-reduced-motion:reduce\)/);
- assert.match(index,/secretj-landing\.css\?v=deep-purple-open-glow-20261124/);
+ assert.match(index,/secretj-landing\.css\?v=oxblood-leather-open-glow-20261124/);
  assert.match(index,/secretj-landing\.js\?v=product-open-buttons-20261124/);
 });
