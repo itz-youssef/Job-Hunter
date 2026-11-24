@@ -1,6 +1,6 @@
 {
   "mode": "snapshot",
-  "generated_at": "2026-11-24T13:41:34.766824+00:00",
+  "generated_at": "2026-11-24T13:46:27.166058+00:00",
   "sources": [
     {
       "id": 1,
@@ -8302,6 +8302,41 @@
       "careers_url": "https://jobs.ashbyhq.com/thndr?"
     },
     {
+      "id": "custom-2f56ab22b41cee2abbe91973",
+      "company": "Thndr",
+      "title": "Senior Backend Engineer - Experience squad",
+      "location": "Cairo Office",
+      "url": "https://jobs.ashbyhq.com/thndr/3125ec5f-4ff3-4ed0-9b71-b69b5295159c",
+      "description": "ABOUT THE ROLE Every Thndr user passes through our systems before their first trade: signing up, verifying their identity, getting approved, logging in securely. Our ownership extends well beyond the initial user journey, covering Savings and Thndr Gold, the forthcoming Thndr Card and real estate products, the client domain, user profiles and the entire engagement pipeline. We run around twenty services across Egypt and the UAE, several of them Tier 1. That makes operational excellence non-negotiable. We treat reliability, monitoring and incident response as part of the job. The most interesting part is the product side. Savings and Gold are ours end to end, and real estate is next. A gram of gold is an instrument, an order, a custody record and a ledger entry, all handled through our back office. We build the layer on top: a domain model clean enough to turn a trading instrument into a product where someone buys gold, or a slice of a building, without seeing any of that. The work is broad. One minute you’re building an OAuth flow for a third party integration; the next you’re integrating an AML service provider for a new product with its own hosting and security requirements; a third time you’re arguing with policy on how to keep the experience smooth under new compliance demands. We sit between product teams shipping new features, operations and finance teams who live with what we build, and back office squads whose capabilities we build on top of. We’re looking for a senior engineer to own a subset of these domains: to know them better than anyone, decide where they go next, and be accountable for their health. WHAT YOU'LL DO - Own part of our domains end to end. You lead the projects in them, you set the technical direction, and you are accountable for their service health; latency, error rates, on-call, and the slow accumulation of debt that nobody else is watching. - Lead cross squad projects. Break down ambiguous product asks into a plan, sequence the work, pull in the people you need, unblock them, and ship it. Senior here means the project moves forward, not that the hardest function gets written. - Design systems that scale and degrade gracefully. Our services sit in front of every user on the platform and depend on third parties that time out, rate limit, and occasionally disappear. You build for that reality: idempotency, retries, sensible fallbacks, and failure that is contained instead of cascading. - Raise the bar on quality and operational discipline. Promote our observability culture, favor small and independently shippable PRs and define measurable and achievable SLOs to our critical flows. - Work close to the product. You will sit with product, design, and data teams to argue about what should be built and why, not just how. Pushing back on a bad requirement is part of the job. - Partner with operations, CX, and compliance, who rely on what you build to open accounts, resolve user issues, and keep us on the right side of regulators in every market we operate in. - Help bring our domains to new markets as we expand beyond Egypt, UAE and the US. WHAT YOU'LL NEED - Experience with distributed systems and a clear understanding of how to build systems that scale and how they behave when a dependency is slow, a queue backs up, or a deploy goes out mid-flight. - Impact-driven and product-minded. At the end of the day we are building a product for a large user base, so we need someone who thinks about the product first, not just the technical side. The best technical decision for a user funnel is not always the most interesting one. - Project management and leadership skills. Scoping, sequencing, communicating status, and bringing other engineers along with you are core skills of a senior here, not a bonus. - Confidence owning systems end to end, from design through production and on-call. You care not just about writing the code, but about how it behaves once real users are on it, and when incidents happen, you find the root cause quickly, contain the impact, unblock affected users and put lasting fixes in place. - Familiarity with our stack, or the confidence to get there quickly: Python, FastAPI, PostgreSQL, RabbitMQ, Redis, and Kubernetes. - Experience in fintech is appreciated — enough awareness of domain-critical flows involving money, identity, and regulation to know which mistakes are expensive and which are merely annoying. - Strong communication across teams. We need someone who can hold their own with other engineers and work closely with the product, operations, and compliance teams who rely on what you build. WHO ARE WE? Thndr was founded on a bold dream to democratize access to investing through smart tech and human-centric design. This is simply our way of saying we give anyone with a smartphone the simple and easy access they need to preserve and grow their wealth. At the same time, we’re shaping the future of investing while actively driving the economies we serve by promoting local investment products. History has shown that investing is the single greatest way to build long-term wealth, but before Thndr, only a very small percentage of people had access to it due to: - High barriers to entry — In the form of excessive minimum account balances, complex, outdated onboarding, and low financial literacy. - Irrelevant experience — Catered toward expert traders and financial specialists, therefore alienating the majority of the population. - Fragmented offering — Investment products were not gathered in a single, intuitive outlet. We don't just talk about change, we deliver it. Here's a glimpse into our impact so far: - 5.5 million app downloads - EGP 1B+ average daily traded value across 2025 - #1 digital investing platform in Egypt for the third consecutive year - 76% of users are first-time investors - 40% of our users come from outside of capital cities and have previously had limited access to financial institutions Building on the success of our core platform, we are continuing to change culture and break down barriers by launching Rumble, the subscription-based investment recommendations platform. Rumble was born with the vision to empower everyday individuals to build wealth confidently and intelligently through access to timely and in-depth advice from the industry’s top experts. Going beyond traditional investment advice, it offers long and short-term investment recommendations and financial content through engaging articles and videos that guide users on their financial journey and maximize their returns. At Thndr, we're looking for people driven by our mission to help us democratize investing across the MENA region.",
+      "published_at": "2026-11-24T13:44:28.218+00:00",
+      "employment": "FullTime",
+      "source": "Custom Careers",
+      "source_facets": {
+        "provider": "ashby",
+        "team": "Tech",
+        "department": "Tech",
+        "employment_type": "FullTime",
+        "location": "Cairo Office"
+      },
+      "department": "Tech",
+      "requirements": "",
+      "source_detail_status": "ashby-public-posting",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: explicit senior title"
+      ],
+      "match_reasons": [
+        "Excluded: explicit senior title"
+      ],
+      "discovered_at": "2026-11-24T13:46:26.960794+00:00",
+      "apply_url": "https://jobs.ashbyhq.com/thndr/3125ec5f-4ff3-4ed0-9b71-b69b5295159c",
+      "link": "https://jobs.ashbyhq.com/thndr/3125ec5f-4ff3-4ed0-9b71-b69b5295159c",
+      "careers_url": "https://jobs.ashbyhq.com/thndr?"
+    },
+    {
       "id": "custom-3c534e3cce3bdc3d2590900e",
       "company": "Klivvr",
       "title": "Administrative Assistant",
@@ -9658,33 +9693,6 @@
       "careers_url": "https://www.ibm.com/careers/search?"
     },
     {
-      "id": "custom-ibm-145352",
-      "company": "IBM",
-      "title": "Package Consultant - SuccessFactors LMS",
-      "location": "Giza, EG",
-      "url": "https://careers.ibm.com/careers/JobDetail?jobId=145352",
-      "description": "A career in IBM Consulting is built on long-term client relationships and close collaboration worldwide. You'll work with leading companies across industries, helping them shape their hybrid cloud and AI journeys. With support from our strategic...",
-      "published_at": "",
-      "employment": "",
-      "source": "Custom Careers",
-      "seniority": "Professional",
-      "category": "Consulting",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-22T22:11:33.594487+00:00",
-      "apply_url": "https://careers.ibm.com/careers/JobDetail?jobId=145352",
-      "link": "https://careers.ibm.com/careers/JobDetail?jobId=145352",
-      "careers_url": "https://www.ibm.com/careers/search?"
-    },
-    {
       "id": "custom-ibm-139922",
       "company": "IBM",
       "title": "Senior MERN Cloud Full Stack Developer - Openshift",
@@ -9709,6 +9717,33 @@
       "discovered_at": "2026-11-14T11:46:34.514193+00:00",
       "apply_url": "https://careers.ibm.com/careers/JobDetail?jobId=139922",
       "link": "https://careers.ibm.com/careers/JobDetail?jobId=139922",
+      "careers_url": "https://www.ibm.com/careers/search?"
+    },
+    {
+      "id": "custom-ibm-145352",
+      "company": "IBM",
+      "title": "Package Consultant - SuccessFactors LMS",
+      "location": "Giza, EG",
+      "url": "https://careers.ibm.com/careers/JobDetail?jobId=145352",
+      "description": "A career in IBM Consulting is built on long-term client relationships and close collaboration worldwide. You'll work with leading companies across industries, helping them shape their hybrid cloud and AI journeys. With support from our strategic...",
+      "published_at": "",
+      "employment": "",
+      "source": "Custom Careers",
+      "seniority": "Professional",
+      "category": "Consulting",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-22T22:11:33.594487+00:00",
+      "apply_url": "https://careers.ibm.com/careers/JobDetail?jobId=145352",
+      "link": "https://careers.ibm.com/careers/JobDetail?jobId=145352",
       "careers_url": "https://www.ibm.com/careers/search?"
     },
     {
@@ -11836,33 +11871,6 @@
       "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
     },
     {
-      "id": "custom-3769e037a9cea021fa7e2ce7",
-      "company": "Capgemini Egypt",
-      "title": "Lead Data Engineer",
-      "location": "Cairo, Egypt",
-      "url": "https://careers.capgemini.com/job/Cairo-Lead-Data-Engineer/1444750033/",
-      "description": "Job DescriptionData Engineering Lead / Manager – Data Lakehouse We are looking for an experienced Data Engineering Lead / Manager to provide technical and delivery leadership for a large-scale enterprise Data Lakehouse transformation. The successful candidate will lead a team of data engineers and technical specialists, working closely with business stakeholders, architects and platform teams to design and deliver scalable, secure and governed data solutions. Key Responsibilities Lead the design and delivery of enterprise-scale Data Lakehouse and data engineering solutions. Lead and mentor data engineering teams across multiple delivery workstreams. Drive the development of batch, streaming and real-time data pipelines. Lead data modeling across Silver and Gold layers, including modernization of legacy data models and source-to-target mappings. Establish engineering standards covering development, testing, CI/CD, monitoring and operational support. Provide technical leadership across data migration, reconciliation, data quality and governance. Review solution designs and ensure scalability, performance, security and maintainability. Coordinate technical dependencies, risks and issues across engineering, architecture and migration teams. Work closely with business stakeholders, architects, SMEs and implementation partners. Support planning, estimation and successful end-to-end delivery of the program. What We're Looking For 10+ years' experience in data engineering, data platforms, data warehousing or related areas. Strong experience leading technical teams and complex enterprise data programs. Hands-on understanding of modern Lakehouse architectures and data engineering patterns. Strong experience with Spark/PySpark, SQL, Kafka and Apache Iceberg. Experience with Cloudera Data Platform (CDP) or similar enterprise data platforms. Strong understanding of data modeling, ETL/ELT, data migration and data quality. Experience with CI/CD, automation, monitoring and production-grade data engineering. Strong stakeholder-management and technical leadership skills. Good to Have Experience in one or more of the following would be advantageous: Banking or financial services Apache NiFi, Flink or Airflow Cloudera ecosystem technologies Data governance tools such as Atlas, Ranger or Informatica Denodo or semantic/analytics layers Large-scale data migration or EDW modernization Regulatory or governance-driven data environments AI and advanced analytics platforms",
-      "published_at": "",
-      "employment": "Permanent",
-      "source": "Custom Careers",
-      "seniority": "Experienced Professionals",
-      "department": "",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.520972+00:00",
-      "apply_url": "https://careers.capgemini.com/job/Cairo-Lead-Data-Engineer/1444750033/",
-      "link": "https://careers.capgemini.com/job/Cairo-Lead-Data-Engineer/1444750033/",
-      "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
-    },
-    {
       "id": "custom-84512b6cee62fc74aae8209d",
       "company": "Capgemini Egypt",
       "title": "YPP - CX Associate (German/Turkish)",
@@ -11887,6 +11895,33 @@
       "discovered_at": "2026-11-14T11:46:34.521169+00:00",
       "apply_url": "https://careers.capgemini.com/job/Cairo-YPP-CX-Associate-%28GermanTurkish%29/1442434733/",
       "link": "https://careers.capgemini.com/job/Cairo-YPP-CX-Associate-%28GermanTurkish%29/1442434733/",
+      "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
+    },
+    {
+      "id": "custom-3769e037a9cea021fa7e2ce7",
+      "company": "Capgemini Egypt",
+      "title": "Lead Data Engineer",
+      "location": "Cairo, Egypt",
+      "url": "https://careers.capgemini.com/job/Cairo-Lead-Data-Engineer/1444750033/",
+      "description": "Job DescriptionData Engineering Lead / Manager – Data Lakehouse We are looking for an experienced Data Engineering Lead / Manager to provide technical and delivery leadership for a large-scale enterprise Data Lakehouse transformation. The successful candidate will lead a team of data engineers and technical specialists, working closely with business stakeholders, architects and platform teams to design and deliver scalable, secure and governed data solutions. Key Responsibilities Lead the design and delivery of enterprise-scale Data Lakehouse and data engineering solutions. Lead and mentor data engineering teams across multiple delivery workstreams. Drive the development of batch, streaming and real-time data pipelines. Lead data modeling across Silver and Gold layers, including modernization of legacy data models and source-to-target mappings. Establish engineering standards covering development, testing, CI/CD, monitoring and operational support. Provide technical leadership across data migration, reconciliation, data quality and governance. Review solution designs and ensure scalability, performance, security and maintainability. Coordinate technical dependencies, risks and issues across engineering, architecture and migration teams. Work closely with business stakeholders, architects, SMEs and implementation partners. Support planning, estimation and successful end-to-end delivery of the program. What We're Looking For 10+ years' experience in data engineering, data platforms, data warehousing or related areas. Strong experience leading technical teams and complex enterprise data programs. Hands-on understanding of modern Lakehouse architectures and data engineering patterns. Strong experience with Spark/PySpark, SQL, Kafka and Apache Iceberg. Experience with Cloudera Data Platform (CDP) or similar enterprise data platforms. Strong understanding of data modeling, ETL/ELT, data migration and data quality. Experience with CI/CD, automation, monitoring and production-grade data engineering. Strong stakeholder-management and technical leadership skills. Good to Have Experience in one or more of the following would be advantageous: Banking or financial services Apache NiFi, Flink or Airflow Cloudera ecosystem technologies Data governance tools such as Atlas, Ranger or Informatica Denodo or semantic/analytics layers Large-scale data migration or EDW modernization Regulatory or governance-driven data environments AI and advanced analytics platforms",
+      "published_at": "",
+      "employment": "Permanent",
+      "source": "Custom Careers",
+      "seniority": "Experienced Professionals",
+      "department": "",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.520972+00:00",
+      "apply_url": "https://careers.capgemini.com/job/Cairo-Lead-Data-Engineer/1444750033/",
+      "link": "https://careers.capgemini.com/job/Cairo-Lead-Data-Engineer/1444750033/",
       "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
     },
     {
@@ -12052,33 +12087,6 @@
       "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
     },
     {
-      "id": "custom-778cceaf0d93cb1cc3525a91",
-      "company": "Capgemini Egypt",
-      "title": "Software Engineer",
-      "location": "Cairo, Egypt",
-      "url": "https://careers.capgemini.com/job/Cairo-Software-Engineer/1387743233/",
-      "description": "About CapgeminiCapgemini is a global business and technology transformation partner, helping organizations to accelerate their dual transition to a digital and sustainable world, while creating tangible impact for enterprises and society. It is a responsible and diverse group of 340,000 team members in more than 50 countries. With its strong over 55-year heritage, Capgemini is trusted by its clients to unlock the value of technology to address the entire breadth of their business needs. It delivers end-to-end services and solutions leveraging strengths from strategy and design to engineering, all fueled by its market leading capabilities in AI, generative AI, cloud and data, combined with its deep industry expertise and partner ecosystem. The Group reported 2024 global revenues of €22.1 billion.Job Description:The Software Engineer designs, develops, and maintains scalable, secure, and high-quality software solutions across backend and frontend components. This role collaborates closely with cross-functional teams to deliver reliable applications, support cloud deployment, and continuously improve performance, quality, and operational stability.Responsibilities:Design, develop, and maintain scalable software solutions across backend and frontend components.Build and consume APIs and services using modern programming languages and frameworks.Collaborate with product managers, designers, and engineers to translate requirements into technical solutions.Write clean, maintainable, and well-tested code following engineering best practices.Optimize application performance, security, and reliability.Participate in code reviews, testing, and continuous improvement initiatives.Support deployment, monitoring, and troubleshooting of applications in cloud environments.Contribute to documentation, technical standards, and knowledge sharing within the team.Qualifications:Bachelor’s degree in Computer Science, Engineering, or a related field (or equivalent experience).4+ years of experience in software development (frontend, backend, or full stack).Outstanding English communication, both verbal and non-verbal.Proficiency in at least one backend language (e.g., Python, TypeScript, Go) and modern frontend frameworks.Experience with RESTful APIs and database technologies (SQL and/or NoSQL).Familiarity with cloud platforms (Azure or AWS) and CI/CD pipelines.Understanding of version control systems (Git) and collaborative development workflows.Knowledge of testing practices, software design principles, and security fundamentals.Strong problem-solving skills, communication abilities, and a collaborative mindset.",
-      "published_at": "",
-      "employment": "Permanent",
-      "source": "Custom Careers",
-      "seniority": "Experienced Professionals",
-      "department": "",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: ATS explicitly labels career level as senior"
-      ],
-      "match_reasons": [
-        "Excluded: ATS explicitly labels career level as senior"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.522036+00:00",
-      "apply_url": "https://careers.capgemini.com/job/Cairo-Software-Engineer/1387743233/",
-      "link": "https://careers.capgemini.com/job/Cairo-Software-Engineer/1387743233/",
-      "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
-    },
-    {
       "id": "custom-9a78597e576a5aa3a54b77f8",
       "company": "Capgemini Egypt",
       "title": "Senior Software Engineer",
@@ -12103,6 +12111,33 @@
       "discovered_at": "2026-11-14T11:46:34.517329+00:00",
       "apply_url": "https://careers.capgemini.com/job/Cairo-Senior-Software-Engineer/1433556433/",
       "link": "https://careers.capgemini.com/job/Cairo-Senior-Software-Engineer/1433556433/",
+      "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
+    },
+    {
+      "id": "custom-778cceaf0d93cb1cc3525a91",
+      "company": "Capgemini Egypt",
+      "title": "Software Engineer",
+      "location": "Cairo, Egypt",
+      "url": "https://careers.capgemini.com/job/Cairo-Software-Engineer/1387743233/",
+      "description": "About CapgeminiCapgemini is a global business and technology transformation partner, helping organizations to accelerate their dual transition to a digital and sustainable world, while creating tangible impact for enterprises and society. It is a responsible and diverse group of 340,000 team members in more than 50 countries. With its strong over 55-year heritage, Capgemini is trusted by its clients to unlock the value of technology to address the entire breadth of their business needs. It delivers end-to-end services and solutions leveraging strengths from strategy and design to engineering, all fueled by its market leading capabilities in AI, generative AI, cloud and data, combined with its deep industry expertise and partner ecosystem. The Group reported 2024 global revenues of €22.1 billion.Job Description:The Software Engineer designs, develops, and maintains scalable, secure, and high-quality software solutions across backend and frontend components. This role collaborates closely with cross-functional teams to deliver reliable applications, support cloud deployment, and continuously improve performance, quality, and operational stability.Responsibilities:Design, develop, and maintain scalable software solutions across backend and frontend components.Build and consume APIs and services using modern programming languages and frameworks.Collaborate with product managers, designers, and engineers to translate requirements into technical solutions.Write clean, maintainable, and well-tested code following engineering best practices.Optimize application performance, security, and reliability.Participate in code reviews, testing, and continuous improvement initiatives.Support deployment, monitoring, and troubleshooting of applications in cloud environments.Contribute to documentation, technical standards, and knowledge sharing within the team.Qualifications:Bachelor’s degree in Computer Science, Engineering, or a related field (or equivalent experience).4+ years of experience in software development (frontend, backend, or full stack).Outstanding English communication, both verbal and non-verbal.Proficiency in at least one backend language (e.g., Python, TypeScript, Go) and modern frontend frameworks.Experience with RESTful APIs and database technologies (SQL and/or NoSQL).Familiarity with cloud platforms (Azure or AWS) and CI/CD pipelines.Understanding of version control systems (Git) and collaborative development workflows.Knowledge of testing practices, software design principles, and security fundamentals.Strong problem-solving skills, communication abilities, and a collaborative mindset.",
+      "published_at": "",
+      "employment": "Permanent",
+      "source": "Custom Careers",
+      "seniority": "Experienced Professionals",
+      "department": "",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: ATS explicitly labels career level as senior"
+      ],
+      "match_reasons": [
+        "Excluded: ATS explicitly labels career level as senior"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.522036+00:00",
+      "apply_url": "https://careers.capgemini.com/job/Cairo-Software-Engineer/1387743233/",
+      "link": "https://careers.capgemini.com/job/Cairo-Software-Engineer/1387743233/",
       "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
     },
     {
@@ -12511,33 +12546,6 @@
       "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
     },
     {
-      "id": "custom-11376642afb0f40e0051aee5",
-      "company": "Capgemini Egypt",
-      "title": "Embedded Automotive SWDL & Cyber Security",
-      "location": "Cairo, Egypt",
-      "url": "https://careers.capgemini.com/job/Cairo-Embedded-Automotive-SWDL-&-Cyber-Security/1453392933/",
-      "description": "Job DescriptionWe are looking for an Embedded Automotive SWDL & Cybersecurity Engineer to support development, integration, verification and maintenance of software download, bootloader and embedded cybersecurity functionality for automotive Zone Controller platforms.Key ResponsibilitiesSoftware Download / BootloaderDevelop, integrate and maintain ECU Software Download / Flashing functionality.Work with bootloader and flash programming concepts for automotive ECUs and Zone Controllers.Support secure software update and reprogramming flows.Integrate SWDL functionality with AUTOSAR BSW, diagnostics and ECU platform services.Analyze download/programming failures and perform root-cause analysis.Embedded Automotive CybersecurityDevelop and integrate embedded automotive cybersecurity mechanisms.Support Secure Boot, secure flashing/download and authenticity/integrity verification.Work with automotive cryptographic services and key/certificate handling.Support integration of AUTOSAR security componentsAnalyze cybersecurity requirements and translate them into implementable software requirements and design.Support security analysis, implementation reviews, and defect resolution.Job Description - Grade SpecificHas more than 3 years of relevant work experience. Solid understanding of programming concepts, software design and software development principles. Consistently works to direction with minimal supervision, producing accurate and reliable results. Individuals are expected to be able to work on a range of tasks and problems, demonstrating their ability to apply their skills and knowledge. Organises own time to deliver against tasks set by others with a mid term horizon. Works co-operatively with others to achieve team goals and has a direct and positive impact on project performance and make decisions based on their understanding of the situation, not just the rules.",
-      "published_at": "",
-      "employment": "Permanent",
-      "source": "Custom Careers",
-      "seniority": "Experienced Professionals",
-      "department": "",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.517212+00:00",
-      "apply_url": "https://careers.capgemini.com/job/Cairo-Embedded-Automotive-SWDL-&-Cyber-Security/1453392933/",
-      "link": "https://careers.capgemini.com/job/Cairo-Embedded-Automotive-SWDL-&-Cyber-Security/1453392933/",
-      "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
-    },
-    {
       "id": "custom-0807341bf19915ab784be464",
       "company": "Capgemini Egypt",
       "title": "External Resources Manager - German Speaker",
@@ -12562,6 +12570,33 @@
       "discovered_at": "2026-11-14T11:46:34.517087+00:00",
       "apply_url": "https://careers.capgemini.com/job/Cairo-External-Resources-Manager-German-Speaker/1456394233/",
       "link": "https://careers.capgemini.com/job/Cairo-External-Resources-Manager-German-Speaker/1456394233/",
+      "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
+    },
+    {
+      "id": "custom-11376642afb0f40e0051aee5",
+      "company": "Capgemini Egypt",
+      "title": "Embedded Automotive SWDL & Cyber Security",
+      "location": "Cairo, Egypt",
+      "url": "https://careers.capgemini.com/job/Cairo-Embedded-Automotive-SWDL-&-Cyber-Security/1453392933/",
+      "description": "Job DescriptionWe are looking for an Embedded Automotive SWDL & Cybersecurity Engineer to support development, integration, verification and maintenance of software download, bootloader and embedded cybersecurity functionality for automotive Zone Controller platforms.Key ResponsibilitiesSoftware Download / BootloaderDevelop, integrate and maintain ECU Software Download / Flashing functionality.Work with bootloader and flash programming concepts for automotive ECUs and Zone Controllers.Support secure software update and reprogramming flows.Integrate SWDL functionality with AUTOSAR BSW, diagnostics and ECU platform services.Analyze download/programming failures and perform root-cause analysis.Embedded Automotive CybersecurityDevelop and integrate embedded automotive cybersecurity mechanisms.Support Secure Boot, secure flashing/download and authenticity/integrity verification.Work with automotive cryptographic services and key/certificate handling.Support integration of AUTOSAR security componentsAnalyze cybersecurity requirements and translate them into implementable software requirements and design.Support security analysis, implementation reviews, and defect resolution.Job Description - Grade SpecificHas more than 3 years of relevant work experience. Solid understanding of programming concepts, software design and software development principles. Consistently works to direction with minimal supervision, producing accurate and reliable results. Individuals are expected to be able to work on a range of tasks and problems, demonstrating their ability to apply their skills and knowledge. Organises own time to deliver against tasks set by others with a mid term horizon. Works co-operatively with others to achieve team goals and has a direct and positive impact on project performance and make decisions based on their understanding of the situation, not just the rules.",
+      "published_at": "",
+      "employment": "Permanent",
+      "source": "Custom Careers",
+      "seniority": "Experienced Professionals",
+      "department": "",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.517212+00:00",
+      "apply_url": "https://careers.capgemini.com/job/Cairo-Embedded-Automotive-SWDL-&-Cyber-Security/1453392933/",
+      "link": "https://careers.capgemini.com/job/Cairo-Embedded-Automotive-SWDL-&-Cyber-Security/1453392933/",
       "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
     },
     {
@@ -12808,33 +12843,6 @@
       "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
     },
     {
-      "id": "custom-d2f460186e0d33e9f79df8f7",
-      "company": "Capgemini Egypt",
-      "title": "SAP FICO Lead",
-      "location": "Cairo, Egypt",
-      "url": "https://careers.capgemini.com/job/Cairo-SAP-FICO-Lead/1456415533/",
-      "description": "Choosing Capgemini means choosing a company where you will be empowered to shape your career in the way you’d like, where you’ll be supported and inspired by a collaborative community of colleagues around the world, and where you’ll be able to reimagine what’s possible. Join us and help the world’s leading organizations unlock the value of technology and build a more sustainable, more inclusive world. Your Role & Responsibilities: We are seeking an SAP FICO Lead to join our growing team in Egypt. In this role, you will be responsible for leading the SAP FICO practice, designing, implementing, and optimizing SAP Finance & Controlling solutions to support business transformation and financial excellence. You will collaborate with business stakeholders, technical teams, and cross-functional project teams to deliver high-quality SAP solutions and drive successful business outcomes.As an SAP FICO Lead Consultant, your main responsibilities will include: Lead the design, configuration, and support of SAP FI/CO processes, including GL, AP, AR, Asset Accounting, Banking, Cost Center Accounting, Profit Center Accounting, and Product Costing. Drive end-to-end project delivery across design, build, testing, cutover, go-live, and hypercare phases. Partner with business and technical stakeholders to gather requirements, design solutions, and ensure integration with SAP MM, SD, PP, HR, and other modules. Oversee functional specifications, UAT, user training, knowledge transfer, and production support activities. Support financial closing, reporting, compliance, and continuous process improvement initiatives. Provide leadership, stakeholder management, issue resolution, and best practice guidance to project teams and clients._____Your Profile: Bachelor’s degree in Finance, Accounting, Business, IT, or a related field. 12+ years of SAP FICO consulting and project delivery experience. Strong expertise in SAP FI (GL, AP, AR, Asset Accounting, Banking) and CO (CCA, PCA, Internal Orders, Product Costing). Proven experience in SAP implementations, support, and integration with MM, SD, PP, and other modules. Solid knowledge of SAP best practices, interfaces, troubleshooting, and business processes. Strong stakeholder management, communication, and problem-solving skills. Experience with SAP S/4HANA Finance and SAP certifications are a plus. Ability to lead cross-functional teams and deliver in large-scale transformation programs._____Why Join Us? Meaningful Impact: Contribute to innovative projects that help clients achieve their business and technology transformation goals.Professional Growth: Access continuous learning opportunities, certifications, mentorship, and career development programs.Global Exposure: Collaborate with diverse teams, clients, and stakeholders across industries and geographies.Cutting-Edge Projects: Work with leading technologies, methodologies, and business solutions.Collaborative Culture: Join an inclusive, supportive, and people-centric work environment.Capgemini is an AI-powered global business and technology transformation partner, delivering tangible business value. We imagine the future of organizations and make it real with AI, technology and people. With our strong heritage of nearly 60 years, we are a responsible and diverse group of 420,000 team members in more than 50 countries. We deliver end-to-end services and solutions with our deep industry expertise and strong partner ecosystem, leveraging our capabilities across strategy, technology, design, engineering and business operations. The Group reported 2024 global revenues of €22.1 billion.Make it real | www.capgemini.com",
-      "published_at": "",
-      "employment": "Permanent",
-      "source": "Custom Careers",
-      "seniority": "Experienced Professionals",
-      "department": "",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.517054+00:00",
-      "apply_url": "https://careers.capgemini.com/job/Cairo-SAP-FICO-Lead/1456415533/",
-      "link": "https://careers.capgemini.com/job/Cairo-SAP-FICO-Lead/1456415533/",
-      "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
-    },
-    {
       "id": "custom-252696c9ab78a2854101b9f3",
       "company": "Capgemini Egypt",
       "title": "External Resources Manager - Portuguese/ Spanish",
@@ -12859,6 +12867,33 @@
       "discovered_at": "2026-11-14T11:46:34.517151+00:00",
       "apply_url": "https://careers.capgemini.com/job/Cairo-External-Resources-Manager-Portuguese-Spanish/1456401233/",
       "link": "https://careers.capgemini.com/job/Cairo-External-Resources-Manager-Portuguese-Spanish/1456401233/",
+      "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
+    },
+    {
+      "id": "custom-d2f460186e0d33e9f79df8f7",
+      "company": "Capgemini Egypt",
+      "title": "SAP FICO Lead",
+      "location": "Cairo, Egypt",
+      "url": "https://careers.capgemini.com/job/Cairo-SAP-FICO-Lead/1456415533/",
+      "description": "Choosing Capgemini means choosing a company where you will be empowered to shape your career in the way you’d like, where you’ll be supported and inspired by a collaborative community of colleagues around the world, and where you’ll be able to reimagine what’s possible. Join us and help the world’s leading organizations unlock the value of technology and build a more sustainable, more inclusive world. Your Role & Responsibilities: We are seeking an SAP FICO Lead to join our growing team in Egypt. In this role, you will be responsible for leading the SAP FICO practice, designing, implementing, and optimizing SAP Finance & Controlling solutions to support business transformation and financial excellence. You will collaborate with business stakeholders, technical teams, and cross-functional project teams to deliver high-quality SAP solutions and drive successful business outcomes.As an SAP FICO Lead Consultant, your main responsibilities will include: Lead the design, configuration, and support of SAP FI/CO processes, including GL, AP, AR, Asset Accounting, Banking, Cost Center Accounting, Profit Center Accounting, and Product Costing. Drive end-to-end project delivery across design, build, testing, cutover, go-live, and hypercare phases. Partner with business and technical stakeholders to gather requirements, design solutions, and ensure integration with SAP MM, SD, PP, HR, and other modules. Oversee functional specifications, UAT, user training, knowledge transfer, and production support activities. Support financial closing, reporting, compliance, and continuous process improvement initiatives. Provide leadership, stakeholder management, issue resolution, and best practice guidance to project teams and clients._____Your Profile: Bachelor’s degree in Finance, Accounting, Business, IT, or a related field. 12+ years of SAP FICO consulting and project delivery experience. Strong expertise in SAP FI (GL, AP, AR, Asset Accounting, Banking) and CO (CCA, PCA, Internal Orders, Product Costing). Proven experience in SAP implementations, support, and integration with MM, SD, PP, and other modules. Solid knowledge of SAP best practices, interfaces, troubleshooting, and business processes. Strong stakeholder management, communication, and problem-solving skills. Experience with SAP S/4HANA Finance and SAP certifications are a plus. Ability to lead cross-functional teams and deliver in large-scale transformation programs._____Why Join Us? Meaningful Impact: Contribute to innovative projects that help clients achieve their business and technology transformation goals.Professional Growth: Access continuous learning opportunities, certifications, mentorship, and career development programs.Global Exposure: Collaborate with diverse teams, clients, and stakeholders across industries and geographies.Cutting-Edge Projects: Work with leading technologies, methodologies, and business solutions.Collaborative Culture: Join an inclusive, supportive, and people-centric work environment.Capgemini is an AI-powered global business and technology transformation partner, delivering tangible business value. We imagine the future of organizations and make it real with AI, technology and people. With our strong heritage of nearly 60 years, we are a responsible and diverse group of 420,000 team members in more than 50 countries. We deliver end-to-end services and solutions with our deep industry expertise and strong partner ecosystem, leveraging our capabilities across strategy, technology, design, engineering and business operations. The Group reported 2024 global revenues of €22.1 billion.Make it real | www.capgemini.com",
+      "published_at": "",
+      "employment": "Permanent",
+      "source": "Custom Careers",
+      "seniority": "Experienced Professionals",
+      "department": "",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.517054+00:00",
+      "apply_url": "https://careers.capgemini.com/job/Cairo-SAP-FICO-Lead/1456415533/",
+      "link": "https://careers.capgemini.com/job/Cairo-SAP-FICO-Lead/1456415533/",
       "careers_url": "https://www.capgemini.com/eg-en/careers/join-us/?utm_source=chatgpt.com"
     },
     {
@@ -15516,87 +15551,6 @@
       "careers_url": "https://careers.dxc.com/?utm_source=chatgpt.com"
     },
     {
-      "id": "custom-bd424fd468cded900e764e2c",
-      "company": "Luxoft Egypt",
-      "title": "Test Manager Test Management",
-      "location": "Egypt",
-      "url": "https://career.luxoft.com/jobs/test-manager-29491",
-      "description": "",
-      "published_at": "",
-      "employment": "",
-      "source": "Custom Careers",
-      "external_id": "29491",
-      "source_detail_status": "official-detail-unavailable",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-17T13:46:36.819344+00:00",
-      "apply_url": "https://career.luxoft.com/jobs/test-manager-29491",
-      "link": "https://career.luxoft.com/jobs/test-manager-29491",
-      "careers_url": "https://career.luxoft.com/locations/egypt?utm_source=chatgpt.com"
-    },
-    {
-      "id": "custom-92af127cff444114d0333a75",
-      "company": "Luxoft Egypt",
-      "title": "Test Manager Test Management",
-      "location": "Egypt",
-      "url": "https://career.luxoft.com/jobs/test-manager-29490",
-      "description": "",
-      "published_at": "",
-      "employment": "",
-      "source": "Custom Careers",
-      "external_id": "29490",
-      "source_detail_status": "official-detail-unavailable",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-17T13:46:36.819386+00:00",
-      "apply_url": "https://career.luxoft.com/jobs/test-manager-29490",
-      "link": "https://career.luxoft.com/jobs/test-manager-29490",
-      "careers_url": "https://career.luxoft.com/locations/egypt?utm_source=chatgpt.com"
-    },
-    {
-      "id": "custom-eebe227a91f0c4be76b2f17b",
-      "company": "Luxoft Egypt",
-      "title": "Senior Technical Support Consultant - Finastra Trade Innovation Other Vendor specific (Quantum, Coremont etc.)",
-      "location": "Egypt",
-      "url": "https://career.luxoft.com/jobs/senior-technical-support-consultant-finastra-trade-innovation-28521",
-      "description": "",
-      "published_at": "",
-      "employment": "",
-      "source": "Custom Careers",
-      "external_id": "28521",
-      "source_detail_status": "official-detail-unavailable",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.524107+00:00",
-      "apply_url": "https://career.luxoft.com/jobs/senior-technical-support-consultant-finastra-trade-innovation-28521",
-      "link": "https://career.luxoft.com/jobs/senior-technical-support-consultant-finastra-trade-innovation-28521",
-      "careers_url": "https://career.luxoft.com/locations/egypt?utm_source=chatgpt.com"
-    },
-    {
       "id": "custom-da6e49eb7e4cde8f824db948",
       "company": "Luxoft Egypt",
       "title": "AI Software Architect Software/System Architecture",
@@ -15702,6 +15656,141 @@
       "discovered_at": "2026-11-14T11:46:34.524336+00:00",
       "apply_url": "https://career.luxoft.com/jobs/senior-python-automation-engineer-27355",
       "link": "https://career.luxoft.com/jobs/senior-python-automation-engineer-27355",
+      "careers_url": "https://career.luxoft.com/locations/egypt?utm_source=chatgpt.com"
+    },
+    {
+      "id": "custom-a87a415330cd66b24e154155",
+      "company": "Luxoft Egypt",
+      "title": "Vision Systems Architect C/C++",
+      "location": "Egypt",
+      "url": "https://career.luxoft.com/jobs/vision-systems-architect-24468",
+      "description": "",
+      "published_at": "",
+      "employment": "",
+      "source": "Custom Careers",
+      "external_id": "24468",
+      "source_detail_status": "official-detail-unavailable",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.524534+00:00",
+      "apply_url": "https://career.luxoft.com/jobs/vision-systems-architect-24468",
+      "link": "https://career.luxoft.com/jobs/vision-systems-architect-24468",
+      "careers_url": "https://career.luxoft.com/locations/egypt?utm_source=chatgpt.com"
+    },
+    {
+      "id": "custom-7e35a6a6e6717bcd6427f55a",
+      "company": "Luxoft Egypt",
+      "title": "Senior Vision Systems Engineer C/C++",
+      "location": "Egypt",
+      "url": "https://career.luxoft.com/jobs/senior-vision-systems-engineer-24463",
+      "description": "",
+      "published_at": "",
+      "employment": "",
+      "source": "Custom Careers",
+      "external_id": "24463",
+      "source_detail_status": "official-detail-unavailable",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.524566+00:00",
+      "apply_url": "https://career.luxoft.com/jobs/senior-vision-systems-engineer-24463",
+      "link": "https://career.luxoft.com/jobs/senior-vision-systems-engineer-24463",
+      "careers_url": "https://career.luxoft.com/locations/egypt?utm_source=chatgpt.com"
+    },
+    {
+      "id": "custom-bd424fd468cded900e764e2c",
+      "company": "Luxoft Egypt",
+      "title": "Test Manager Test Management",
+      "location": "Egypt",
+      "url": "https://career.luxoft.com/jobs/test-manager-29491",
+      "description": "",
+      "published_at": "",
+      "employment": "",
+      "source": "Custom Careers",
+      "external_id": "29491",
+      "source_detail_status": "official-detail-unavailable",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-17T13:46:36.819344+00:00",
+      "apply_url": "https://career.luxoft.com/jobs/test-manager-29491",
+      "link": "https://career.luxoft.com/jobs/test-manager-29491",
+      "careers_url": "https://career.luxoft.com/locations/egypt?utm_source=chatgpt.com"
+    },
+    {
+      "id": "custom-92af127cff444114d0333a75",
+      "company": "Luxoft Egypt",
+      "title": "Test Manager Test Management",
+      "location": "Egypt",
+      "url": "https://career.luxoft.com/jobs/test-manager-29490",
+      "description": "",
+      "published_at": "",
+      "employment": "",
+      "source": "Custom Careers",
+      "external_id": "29490",
+      "source_detail_status": "official-detail-unavailable",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-17T13:46:36.819386+00:00",
+      "apply_url": "https://career.luxoft.com/jobs/test-manager-29490",
+      "link": "https://career.luxoft.com/jobs/test-manager-29490",
+      "careers_url": "https://career.luxoft.com/locations/egypt?utm_source=chatgpt.com"
+    },
+    {
+      "id": "custom-eebe227a91f0c4be76b2f17b",
+      "company": "Luxoft Egypt",
+      "title": "Senior Technical Support Consultant - Finastra Trade Innovation Other Vendor specific (Quantum, Coremont etc.)",
+      "location": "Egypt",
+      "url": "https://career.luxoft.com/jobs/senior-technical-support-consultant-finastra-trade-innovation-28521",
+      "description": "",
+      "published_at": "",
+      "employment": "",
+      "source": "Custom Careers",
+      "external_id": "28521",
+      "source_detail_status": "official-detail-unavailable",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.524107+00:00",
+      "apply_url": "https://career.luxoft.com/jobs/senior-technical-support-consultant-finastra-trade-innovation-28521",
+      "link": "https://career.luxoft.com/jobs/senior-technical-support-consultant-finastra-trade-innovation-28521",
       "careers_url": "https://career.luxoft.com/locations/egypt?utm_source=chatgpt.com"
     },
     {
@@ -15813,60 +15902,6 @@
       "careers_url": "https://career.luxoft.com/locations/egypt?utm_source=chatgpt.com"
     },
     {
-      "id": "custom-a87a415330cd66b24e154155",
-      "company": "Luxoft Egypt",
-      "title": "Vision Systems Architect C/C++",
-      "location": "Egypt",
-      "url": "https://career.luxoft.com/jobs/vision-systems-architect-24468",
-      "description": "",
-      "published_at": "",
-      "employment": "",
-      "source": "Custom Careers",
-      "external_id": "24468",
-      "source_detail_status": "official-detail-unavailable",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.524534+00:00",
-      "apply_url": "https://career.luxoft.com/jobs/vision-systems-architect-24468",
-      "link": "https://career.luxoft.com/jobs/vision-systems-architect-24468",
-      "careers_url": "https://career.luxoft.com/locations/egypt?utm_source=chatgpt.com"
-    },
-    {
-      "id": "custom-7e35a6a6e6717bcd6427f55a",
-      "company": "Luxoft Egypt",
-      "title": "Senior Vision Systems Engineer C/C++",
-      "location": "Egypt",
-      "url": "https://career.luxoft.com/jobs/senior-vision-systems-engineer-24463",
-      "description": "",
-      "published_at": "",
-      "employment": "",
-      "source": "Custom Careers",
-      "external_id": "24463",
-      "source_detail_status": "official-detail-unavailable",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.524566+00:00",
-      "apply_url": "https://career.luxoft.com/jobs/senior-vision-systems-engineer-24463",
-      "link": "https://career.luxoft.com/jobs/senior-vision-systems-engineer-24463",
-      "careers_url": "https://career.luxoft.com/locations/egypt?utm_source=chatgpt.com"
-    },
-    {
       "id": "custom-224fad48e39d63a55071b5ac",
       "company": "SAP",
       "title": "Digital Demand Associate (DDA), Cairo (6 months' contract)",
@@ -15945,119 +15980,11 @@
       "careers_url": "https://jobs.sap.com/en/jobs/?location=Cairo&utm_source=chatgpt.com"
     },
     {
-      "id": "custom-orange-MNT-Y6R46379",
+      "id": "custom-orange-MNT-8X76V693",
       "company": "Orange Egypt",
-      "title": "Retail Agent - Sharm El Sheikh",
-      "location": "SHARM EL-SHEIKH, Egypt",
-      "url": "https://www.careers-page.com/orange-eg/job/Y6R46379/apply",
-      "description": "",
-      "published_at": "2026-11-24T12:10:43.000+0000",
-      "employment": "Regular",
-      "source": "Custom Careers",
-      "seniority": "Full-time",
-      "source_detail_status": "official-detail-unavailable",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.524814+00:00",
-      "apply_url": "https://www.careers-page.com/orange-eg/job/Y6R46379/apply",
-      "link": "https://www.careers-page.com/orange-eg/job/Y6R46379/apply",
-      "careers_url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com"
-    },
-    {
-      "id": "custom-orange-MNT-L43WY3R5",
-      "company": "Orange Egypt",
-      "title": "Sr. Specialist, First Class Call Center",
-      "location": "CAIRO, Egypt",
-      "url": "https://www.careers-page.com/orange-eg/job/L43WY3R5/apply",
-      "description": "",
-      "published_at": "2026-11-24T12:10:43.000+0000",
-      "employment": "Regular",
-      "source": "Custom Careers",
-      "seniority": "Full-time",
-      "source_detail_status": "official-detail-unavailable",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.524877+00:00",
-      "apply_url": "https://www.careers-page.com/orange-eg/job/L43WY3R5/apply",
-      "link": "https://www.careers-page.com/orange-eg/job/L43WY3R5/apply",
-      "careers_url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com"
-    },
-    {
-      "id": "custom-orange-MNT-L67YY7R5",
-      "company": "Orange Egypt",
-      "title": "Representative, Call Center - Enterprise",
-      "location": "CAIRO, Egypt",
-      "url": "https://www.careers-page.com/orange-eg/job/L67YY7R5/apply",
-      "description": "",
-      "published_at": "2026-11-24T12:10:43.000+0000",
-      "employment": "Regular",
-      "source": "Custom Careers",
-      "seniority": "Full-time",
-      "source_detail_status": "official-detail-unavailable",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.524997+00:00",
-      "apply_url": "https://www.careers-page.com/orange-eg/job/L67YY7R5/apply",
-      "link": "https://www.careers-page.com/orange-eg/job/L67YY7R5/apply",
-      "careers_url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com"
-    },
-    {
-      "id": "custom-orange-MNT-W339V75W",
-      "company": "Orange Egypt",
-      "title": "Call Center Representative - Assiut",
-      "location": "ASSIUT GOVERNORATE, Egypt",
-      "url": "https://www.careers-page.com/orange-eg/job/W339V75W/apply",
-      "description": "",
-      "published_at": "2026-11-24T12:10:43.000+0000",
-      "employment": "Regular",
-      "source": "Custom Careers",
-      "seniority": "Full-time",
-      "source_detail_status": "official-detail-unavailable",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-14T11:46:34.525030+00:00",
-      "apply_url": "https://www.careers-page.com/orange-eg/job/W339V75W/apply",
-      "link": "https://www.careers-page.com/orange-eg/job/W339V75W/apply",
-      "careers_url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com"
-    },
-    {
-      "id": "custom-orange-MNT-3W69494W",
-      "company": "Orange Egypt",
-      "title": "Radio Design & Planning Engineer F/H",
+      "title": "Radio Optimization Engineer",
       "location": "6TH OF OCTOBER CITY, Egypt",
-      "url": "https://www.careers-page.com/orange-eg/job/3W69494W/apply",
+      "url": "https://www.careers-page.com/orange-eg/job/8X76V693/apply",
       "description": "",
       "published_at": "2026-11-24T12:10:43.000+0000",
       "employment": "Regular",
@@ -16074,9 +16001,9 @@
       "match_reasons": [
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
       ],
-      "discovered_at": "2026-11-14T11:46:34.524914+00:00",
-      "apply_url": "https://www.careers-page.com/orange-eg/job/3W69494W/apply",
-      "link": "https://www.careers-page.com/orange-eg/job/3W69494W/apply",
+      "discovered_at": "2026-11-14T11:46:34.524769+00:00",
+      "apply_url": "https://www.careers-page.com/orange-eg/job/8X76V693/apply",
+      "link": "https://www.careers-page.com/orange-eg/job/8X76V693/apply",
       "careers_url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com"
     },
     {
@@ -16215,11 +16142,11 @@
       "careers_url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com"
     },
     {
-      "id": "custom-orange-MNT-8X76V693",
+      "id": "custom-orange-MNT-L67YY7R5",
       "company": "Orange Egypt",
-      "title": "Radio Optimization Engineer",
-      "location": "6TH OF OCTOBER CITY, Egypt",
-      "url": "https://www.careers-page.com/orange-eg/job/8X76V693/apply",
+      "title": "Representative, Call Center - Enterprise",
+      "location": "CAIRO, Egypt",
+      "url": "https://www.careers-page.com/orange-eg/job/L67YY7R5/apply",
       "description": "",
       "published_at": "2026-11-24T12:10:43.000+0000",
       "employment": "Regular",
@@ -16236,9 +16163,117 @@
       "match_reasons": [
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
       ],
-      "discovered_at": "2026-11-14T11:46:34.524769+00:00",
-      "apply_url": "https://www.careers-page.com/orange-eg/job/8X76V693/apply",
-      "link": "https://www.careers-page.com/orange-eg/job/8X76V693/apply",
+      "discovered_at": "2026-11-14T11:46:34.524997+00:00",
+      "apply_url": "https://www.careers-page.com/orange-eg/job/L67YY7R5/apply",
+      "link": "https://www.careers-page.com/orange-eg/job/L67YY7R5/apply",
+      "careers_url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com"
+    },
+    {
+      "id": "custom-orange-MNT-W339V75W",
+      "company": "Orange Egypt",
+      "title": "Call Center Representative - Assiut",
+      "location": "ASSIUT GOVERNORATE, Egypt",
+      "url": "https://www.careers-page.com/orange-eg/job/W339V75W/apply",
+      "description": "",
+      "published_at": "2026-11-24T12:10:43.000+0000",
+      "employment": "Regular",
+      "source": "Custom Careers",
+      "seniority": "Full-time",
+      "source_detail_status": "official-detail-unavailable",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.525030+00:00",
+      "apply_url": "https://www.careers-page.com/orange-eg/job/W339V75W/apply",
+      "link": "https://www.careers-page.com/orange-eg/job/W339V75W/apply",
+      "careers_url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com"
+    },
+    {
+      "id": "custom-orange-MNT-3W69494W",
+      "company": "Orange Egypt",
+      "title": "Radio Design & Planning Engineer F/H",
+      "location": "6TH OF OCTOBER CITY, Egypt",
+      "url": "https://www.careers-page.com/orange-eg/job/3W69494W/apply",
+      "description": "",
+      "published_at": "2026-11-24T12:10:43.000+0000",
+      "employment": "Regular",
+      "source": "Custom Careers",
+      "seniority": "Full-time",
+      "source_detail_status": "official-detail-unavailable",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.524914+00:00",
+      "apply_url": "https://www.careers-page.com/orange-eg/job/3W69494W/apply",
+      "link": "https://www.careers-page.com/orange-eg/job/3W69494W/apply",
+      "careers_url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com"
+    },
+    {
+      "id": "custom-orange-MNT-L43WY3R5",
+      "company": "Orange Egypt",
+      "title": "Sr. Specialist, First Class Call Center",
+      "location": "CAIRO, Egypt",
+      "url": "https://www.careers-page.com/orange-eg/job/L43WY3R5/apply",
+      "description": "",
+      "published_at": "2026-11-24T12:10:43.000+0000",
+      "employment": "Regular",
+      "source": "Custom Careers",
+      "seniority": "Full-time",
+      "source_detail_status": "official-detail-unavailable",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.524877+00:00",
+      "apply_url": "https://www.careers-page.com/orange-eg/job/L43WY3R5/apply",
+      "link": "https://www.careers-page.com/orange-eg/job/L43WY3R5/apply",
+      "careers_url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com"
+    },
+    {
+      "id": "custom-orange-MNT-Y6R46379",
+      "company": "Orange Egypt",
+      "title": "Retail Agent - Sharm El Sheikh",
+      "location": "SHARM EL-SHEIKH, Egypt",
+      "url": "https://www.careers-page.com/orange-eg/job/Y6R46379/apply",
+      "description": "",
+      "published_at": "2026-11-24T12:10:43.000+0000",
+      "employment": "Regular",
+      "source": "Custom Careers",
+      "seniority": "Full-time",
+      "source_detail_status": "official-detail-unavailable",
+      "score": 0,
+      "match_score": 0,
+      "relevance_score": 0,
+      "matched": false,
+      "reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "match_reasons": [
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
+      ],
+      "discovered_at": "2026-11-14T11:46:34.524814+00:00",
+      "apply_url": "https://www.careers-page.com/orange-eg/job/Y6R46379/apply",
+      "link": "https://www.careers-page.com/orange-eg/job/Y6R46379/apply",
       "careers_url": "https://orange.jobs/gb/en/africa-middle-east/egypt?utm_source=chatgpt.com"
     },
     {
@@ -19272,31 +19307,6 @@
       "discovered_at": "2026-11-24T13:21:30.668474+00:00",
       "apply_url": "https://careers.4dxventures.com/companies/breadfast/jobs/98855989-information-technology-help-desk",
       "link": "https://careers.4dxventures.com/companies/breadfast/jobs/98855989-information-technology-help-desk",
-      "careers_url": "https://www.breadfast.com/ar/careers_categories/technology/?utm_source=chatgpt.com"
-    },
-    {
-      "id": "custom-431da7dc762c2e54fb235c44",
-      "company": "Breadfast Technology",
-      "title": "Information Technology Specialist II",
-      "location": "Cairo, Cairo Governorate, Egypt",
-      "url": "https://careers.4dxventures.com/companies/breadfast/jobs/98855990-information-technology-specialist-ii",
-      "description": "Information Technology Specialist II @ Breadfast | 4DX Ventures Job Board About Portfolio Team Careers Contact About Portfolio Team Careers Search jobs Explore companies Join talent network Talent My job alerts Information Technology Specialist II Breadfast IT · Full-time Cairo, Cairo Governorate, Egypt Posted on Nov 3, 2026 Apply now Role Objectives: The IT Specialist II is responsible for managing and resolving complex technical issues that arise beyond the scope of the IT HelpDesk and junior IT staff. Roles & Responsibilities: Handle more complex technical issues escalated from IT HelpDesk and IT Specialists. Design and implement improvements and updates. Troubleshoot and resolve advanced hardware, network, and software problems. Manage and configure servers, firewalls, and other network infrastructure. Oversee system security and data protection policies and procedures. Provide support for virtualization technologies (e.g., VMware, Hyper-V). Administer cloud-based services and platforms (Google, AWS, Azure). Conduct network performance monitoring and identify optimization opportunities. Assist in the planning and implementation of large IT projects. Mentor junior IT staff and help them resolve complex technical issues. Required Education, Knowledge, And Skills: Minimum of 2 years of experience in IT or a related field, with proven expertise in advanced technical troubleshooting. Strong knowledge of server management, networking principles, and security protocols. Proficiency in virtualization technologies (e.g., VMware, Hyper-V) and cloud platforms (e.g., Google Cloud, AWS, Azure). Excellent problem-solving skills and the ability to work under pressure. Strong communication and interpersonal skills, with a commitment to providing exceptional support. Relevant certifications (e.g., CompTIA Network+, Security+, or similar) are highly desirable. Apply now See more open positions at Breadfast Powered by Getro.com Privacy policy Cookie policy Africa's leader in technology investing About Portfolio Team Careers Contact Linkedin ©2024 4DX Ventures. All rights reserved. Terms of use Privacy Policy Edit Cookies",
-      "published_at": "2026-11-03",
-      "employment": "",
-      "source": "Custom Careers",
-      "score": 0,
-      "match_score": 0,
-      "relevance_score": 0,
-      "matched": false,
-      "reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "match_reasons": [
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles"
-      ],
-      "discovered_at": "2026-11-24T13:21:30.668505+00:00",
-      "apply_url": "https://careers.4dxventures.com/companies/breadfast/jobs/98855990-information-technology-specialist-ii",
-      "link": "https://careers.4dxventures.com/companies/breadfast/jobs/98855990-information-technology-specialist-ii",
       "careers_url": "https://www.breadfast.com/ar/careers_categories/technology/?utm_source=chatgpt.com"
     },
     {
@@ -36625,7 +36635,7 @@
       "title": "Corporate Relationship Manager",
       "location": "Egypt",
       "url": "https://www.adcb.com.eg/adcb_careers/corporate-relationship-manager/",
-      "description": "Corporate Relationship Manager | ADCB Personal Business Excellency Sustainability MENU Back عربي search Search Search for: Branches & ATMs Digital Banking Internet Banking Corporate Payments Personal Business Excellency أنتِ Personal ADCB For You TouchPoints Offers & Discounts Open Your ADCB Egypt Account Digitally from the UAE Financial Inclusion Financial Inclusion account Erada Hayah Tomouh package “Go” Package for Youth Accounts Current account Daily current account Monthly saving account El Nahrda account Tawfeer plus saving account Speed up saving Aspire Daily Daily Account Deposits Time deposits Prime US Dollar CD 5, 7 Years EGP Fixed rate CDs 3, 5 and 7 years EGP Floating rate CDs Amwaly CD Star floating CD for 3 years Al Taqdeer CD ADCB Cards Cards Easy payment plan Balance transfer Easy cash Loans Car loan High end car loan Electronic Vehicle Loan High end personal loan High-end Compound Salaried Cash Loan Salary loan Mortgage loan Bancassurance For a Brighter Future Together Through Life’s Stages For a Dream Wedding Business Business accounts El Nahrda business account ADCB Egypt Payroll Service Sustainable call account Escrow account ADCB Egypt Sustainable products Green Facility Program Carbon Calculator Tool Empowering Healthcare Providers with Accessible Financing Solar energy loan SCALE UP Business SCALE UP PROGRAM NilePreneurs Initiative | Non- Financial Services Corporate & Institutional Banking Group ADCB Visa Platinum Business Credit Card Wholesale Overview Financial institutions Small and medium enterprises Corporate banking Corporate CDs Treasury Treasury Overview Foreign exchange Money market Fixed income “ Zayed Kol Youm ” – The Daily Accumulative Money Market Fund Excellency Eligibility Criteria Excellency Excellency Plus Excellency Private Wealth management Monthly Saving Account- Excellency Monthly Saving Account- Excellency Plus Monthly Saving Account- Excellency Private Private Daily Current Account- Excellency Excellency CD ADCB Visa Signature Debit Card Excellency concierge Excellency concierge services Excellency newsletter Excellency fees and tariffs أنتِ More than banking, It’s about you! أنتِTamouha Personal ADCB For You TouchPoints Offers & Discounts Open Your ADCB Egypt Account Digitally from the UAE Financial Inclusion Financial Inclusion account Erada Hayah Tomouh package “Go” Package for Youth Accounts Current account Daily current account Monthly saving account El Nahrda account Tawfeer plus saving account Speed up saving Aspire Daily Daily Account Deposits Time deposits Prime US Dollar CD 5, 7 Years EGP Fixed rate CDs 3, 5 and 7 years EGP Floating rate CDs Amwaly CD Star floating CD for 3 years Al Taqdeer CD ADCB Cards Cards Easy payment plan Balance transfer Easy cash Loans Car loan High end car loan Electronic Vehicle Loan High end personal loan High-end Compound Salaried Cash Loan Salary loan Mortgage loan Bancassurance For a Brighter Future Together Through Life’s Stages For a Dream Wedding Business Business accounts El Nahrda business account ADCB Egypt Payroll Service Sustainable call account Escrow account ADCB Egypt Sustainable products Green Facility Program Carbon Calculator Tool Empowering Healthcare Providers with Accessible Financing Solar energy loan SCALE UP Business SCALE UP PROGRAM NilePreneurs Initiative | Non- Financial Services Corporate & Institutional Banking Group ADCB Visa Platinum Business Credit Card Wholesale Overview Financial institutions Small and medium enterprises Corporate banking Corporate CDs Treasury Treasury Overview Foreign exchange Money market Fixed income “ Zayed Kol Youm ” – The Daily Accumulative Money Market Fund Excellency Eligibility Criteria Excellency Excellency Plus Excellency Private Wealth management Monthly Saving Account- Excellency Monthly Saving Account- Excellency Plus Monthly Saving Account- Excellency Private Private Daily Current Account- Excellency Excellency CD ADCB Visa Signature Debit Card Excellency concierge Excellency concierge services Excellency newsletter Excellency fees and tariffs أنتِ More than banking, It’s about you! أنتِTamouha Personal Business Excellency Sustainability About us Sustainability Corporate Social Responsibility Contact us and Complaints عربي عربي search Search Search for: Branches & ATMs Digital Banking Internet Banking Corporate Payments Corporate Relationship Manager Corporate Relationship Manager Corporate Relationship Manager Job Description: Building and maintaining positive relationships with Corporate customers. Contribute to the profitability of the bank by achieving lending & deposit budget. Support Relationship Officers in their daily work. Handle and resolve customers inquires, compliant and problem in timely manner to maintain or increase customer satisfaction. Qualifications: University Degree in in Finance, Economics, Business Administration, Commerce or a related field From 7 to 8 years of experience in Corporate Banking with solid knowledge in Credit and marketing. Credit Certificate is a must Apply Now Sign up to get the latest ADCB updates in your inbox Don’t miss new updates on your email Our dedicated team is committed to meeting your needs We always care of our customer. Online Our trained team of tellers and relationship managers are here to help you get the service you need. On the phone For support, including emergencies such as cards closure or immediate critical feedback. workplace In branch Our trained team of tellers and relationship managers are here to help you get the service you need. Facebook-f Linkedin-in Instagram Discover ADCB Egypt About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions Other Services Internet Banking ADCB PHONE ADCB SMS Banking Internet Banking ADCB PHONE ADCB SMS Banking GET IN TOUCH Call us on (+202)16862 Find Nearest Branch or ATM Contact us Discover ADCB Egypt About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions Other Services Internet Banking ADCB PHONE ADCB SMS Banking Internet Banking ADCB PHONE ADCB SMS Banking GET IN TOUCH Call us on 16862 Find a branch or ATM Contact Us Security tips Contact us and Complaints Disclaimer Privacy Policy Security tips Contact us and Complaints Disclaimer Privacy Policy Copyright © 2024 ADCB . All rights reserved. ×",
+      "description": "Corporate Relationship Manager | ADCB Personal Business Excellency Sustainability MENU Back عربي search Search Search for: Branches & ATMs Digital Banking Internet Banking Corporate Payments Personal Business Excellency أنتِ Personal ADCB For You TouchPoints Offers & Discounts Open Your ADCB Egypt Account Digitally from the UAE Financial Inclusion Financial Inclusion account Erada Hayah Tomouh package “Go” Package for Youth Accounts Current account Daily current account Monthly saving account El Nahrda account Tawfeer plus saving account Speed up saving Aspire Daily Daily Account Deposits Time deposits Prime US Dollar CD 5, 7 Years EGP Fixed rate CDs 3, 5 and 7 years EGP Floating rate CDs Amwaly CD Star floating CD for 3 years Al Taqdeer CD ADCB Cards Cards Easy payment plan Balance transfer Easy cash Loans Car loan High end car loan Electronic Vehicle Loan High end personal loan High-end Compound Salaried Cash Loan Salary loan Mortgage loan Bancassurance For a Brighter Future Together Through Life’s Stages For a Dream Wedding Business Business accounts El Nahrda business account ADCB Egypt Payroll Service Sustainable call account Escrow account ADCB Egypt Sustainable products Green Facility Program Carbon Calculator Tool Empowering Healthcare Providers with Accessible Financing Solar energy loan SCALE UP Business SCALE UP PROGRAM NilePreneurs Initiative | Non- Financial Services Corporate & Institutional Banking Group ADCB Visa Platinum Business Credit Card Wholesale Overview Financial institutions Small and medium enterprises Corporate banking Corporate CDs Treasury Treasury Overview Foreign exchange Money market Fixed income “ Zayed Kol Youm ” – The Daily Accumulative Money Market Fund Excellency Eligibility Criteria Excellency Excellency Plus Excellency Private Wealth management Monthly Saving Account- Excellency Monthly Saving Account- Excellency Plus Monthly Saving Account- Excellency Private Private Daily Current Account- Excellency Excellency CD ADCB Visa Signature Debit Card Excellency concierge Excellency concierge services Excellency newsletter Excellency fees and tariffs أنتِ More than banking, It’s about you! Personal ADCB For You TouchPoints Offers & Discounts Open Your ADCB Egypt Account Digitally from the UAE Financial Inclusion Financial Inclusion account Erada Hayah Tomouh package “Go” Package for Youth Accounts Current account Daily current account Monthly saving account El Nahrda account Tawfeer plus saving account Speed up saving Aspire Daily Daily Account Deposits Time deposits Prime US Dollar CD 5, 7 Years EGP Fixed rate CDs 3, 5 and 7 years EGP Floating rate CDs Amwaly CD Star floating CD for 3 years Al Taqdeer CD ADCB Cards Cards Easy payment plan Balance transfer Easy cash Loans Car loan High end car loan Electronic Vehicle Loan High end personal loan High-end Compound Salaried Cash Loan Salary loan Mortgage loan Bancassurance For a Brighter Future Together Through Life’s Stages For a Dream Wedding Business Business accounts El Nahrda business account ADCB Egypt Payroll Service Sustainable call account Escrow account ADCB Egypt Sustainable products Green Facility Program Carbon Calculator Tool Empowering Healthcare Providers with Accessible Financing Solar energy loan SCALE UP Business SCALE UP PROGRAM NilePreneurs Initiative | Non- Financial Services Corporate & Institutional Banking Group ADCB Visa Platinum Business Credit Card Wholesale Overview Financial institutions Small and medium enterprises Corporate banking Corporate CDs Treasury Treasury Overview Foreign exchange Money market Fixed income “ Zayed Kol Youm ” – The Daily Accumulative Money Market Fund Excellency Eligibility Criteria Excellency Excellency Plus Excellency Private Wealth management Monthly Saving Account- Excellency Monthly Saving Account- Excellency Plus Monthly Saving Account- Excellency Private Private Daily Current Account- Excellency Excellency CD ADCB Visa Signature Debit Card Excellency concierge Excellency concierge services Excellency newsletter Excellency fees and tariffs أنتِ More than banking, It’s about you! Personal Business Excellency Sustainability About us Sustainability Corporate Social Responsibility Contact us and Complaints عربي عربي search Search Search for: Branches & ATMs Digital Banking Internet Banking Corporate Payments Corporate Relationship Manager Corporate Relationship Manager Corporate Relationship Manager Job Description: Building and maintaining positive relationships with Corporate customers. Contribute to the profitability of the bank by achieving lending & deposit budget. Support Relationship Officers in their daily work. Handle and resolve customers inquires, compliant and problem in timely manner to maintain or increase customer satisfaction. Qualifications: University Degree in in Finance, Economics, Business Administration, Commerce or a related field From 7 to 8 years of experience in Corporate Banking with solid knowledge in Credit and marketing. Credit Certificate is a must Apply Now Sign up to get the latest ADCB updates in your inbox Don’t miss new updates on your email Our dedicated team is committed to meeting your needs We always care of our customer. Online Our trained team of tellers and relationship managers are here to help you get the service you need. On the phone For support, including emergencies such as cards closure or immediate critical feedback. workplace In branch Our trained team of tellers and relationship managers are here to help you get the service you need. Facebook-f Linkedin-in Instagram Discover ADCB Egypt About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions Other Services Internet Banking ADCB PHONE ADCB SMS Banking Internet Banking ADCB PHONE ADCB SMS Banking GET IN TOUCH Call us on (+202)16862 Find Nearest Branch or ATM Contact us Discover ADCB Egypt About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions Other Services Internet Banking ADCB PHONE ADCB SMS Banking Internet Banking ADCB PHONE ADCB SMS Banking GET IN TOUCH Call us on 16862 Find a branch or ATM Contact Us Security tips Contact us and Complaints Disclaimer Privacy Policy Security tips Contact us and Complaints Disclaimer Privacy Policy Copyright © 2024 ADCB . All rights reserved. ×",
       "published_at": "",
       "employment": "",
       "source": "Custom Careers",
@@ -36650,7 +36660,7 @@
       "title": "SME’s Relationship Manager",
       "location": "Egypt",
       "url": "https://www.adcb.com.eg/adcb_careers/smes-relationship-manager/",
-      "description": "SME’s Relationship Manager | ADCB Personal Business Excellency Sustainability MENU Back عربي search Search Search for: Branches & ATMs Digital Banking Internet Banking Corporate Payments Personal Business Excellency أنتِ Personal ADCB For You TouchPoints Offers & Discounts Open Your ADCB Egypt Account Digitally from the UAE Financial Inclusion Financial Inclusion account Erada Hayah Tomouh package “Go” Package for Youth Accounts Current account Daily current account Monthly saving account El Nahrda account Tawfeer plus saving account Speed up saving Aspire Daily Daily Account Deposits Time deposits Prime US Dollar CD 5, 7 Years EGP Fixed rate CDs 3, 5 and 7 years EGP Floating rate CDs Amwaly CD Star floating CD for 3 years Al Taqdeer CD ADCB Cards Cards Easy payment plan Balance transfer Easy cash Loans Car loan High end car loan Electronic Vehicle Loan High end personal loan High-end Compound Salaried Cash Loan Salary loan Mortgage loan Bancassurance For a Brighter Future Together Through Life’s Stages For a Dream Wedding Business Business accounts El Nahrda business account ADCB Egypt Payroll Service Sustainable call account Escrow account ADCB Egypt Sustainable products Green Facility Program Carbon Calculator Tool Empowering Healthcare Providers with Accessible Financing Solar energy loan SCALE UP Business SCALE UP PROGRAM NilePreneurs Initiative | Non- Financial Services Corporate & Institutional Banking Group ADCB Visa Platinum Business Credit Card Wholesale Overview Financial institutions Small and medium enterprises Corporate banking Corporate CDs Treasury Treasury Overview Foreign exchange Money market Fixed income “ Zayed Kol Youm ” – The Daily Accumulative Money Market Fund Excellency Eligibility Criteria Excellency Excellency Plus Excellency Private Wealth management Monthly Saving Account- Excellency Monthly Saving Account- Excellency Plus Monthly Saving Account- Excellency Private Private Daily Current Account- Excellency Excellency CD ADCB Visa Signature Debit Card Excellency concierge Excellency concierge services Excellency newsletter Excellency fees and tariffs أنتِ More than banking, It’s about you! أنتِTamouha Personal ADCB For You TouchPoints Offers & Discounts Open Your ADCB Egypt Account Digitally from the UAE Financial Inclusion Financial Inclusion account Erada Hayah Tomouh package “Go” Package for Youth Accounts Current account Daily current account Monthly saving account El Nahrda account Tawfeer plus saving account Speed up saving Aspire Daily Daily Account Deposits Time deposits Prime US Dollar CD 5, 7 Years EGP Fixed rate CDs 3, 5 and 7 years EGP Floating rate CDs Amwaly CD Star floating CD for 3 years Al Taqdeer CD ADCB Cards Cards Easy payment plan Balance transfer Easy cash Loans Car loan High end car loan Electronic Vehicle Loan High end personal loan High-end Compound Salaried Cash Loan Salary loan Mortgage loan Bancassurance For a Brighter Future Together Through Life’s Stages For a Dream Wedding Business Business accounts El Nahrda business account ADCB Egypt Payroll Service Sustainable call account Escrow account ADCB Egypt Sustainable products Green Facility Program Carbon Calculator Tool Empowering Healthcare Providers with Accessible Financing Solar energy loan SCALE UP Business SCALE UP PROGRAM NilePreneurs Initiative | Non- Financial Services Corporate & Institutional Banking Group ADCB Visa Platinum Business Credit Card Wholesale Overview Financial institutions Small and medium enterprises Corporate banking Corporate CDs Treasury Treasury Overview Foreign exchange Money market Fixed income “ Zayed Kol Youm ” – The Daily Accumulative Money Market Fund Excellency Eligibility Criteria Excellency Excellency Plus Excellency Private Wealth management Monthly Saving Account- Excellency Monthly Saving Account- Excellency Plus Monthly Saving Account- Excellency Private Private Daily Current Account- Excellency Excellency CD ADCB Visa Signature Debit Card Excellency concierge Excellency concierge services Excellency newsletter Excellency fees and tariffs أنتِ More than banking, It’s about you! أنتِTamouha Personal Business Excellency Sustainability About us Sustainability Corporate Social Responsibility Contact us and Complaints عربي عربي search Search Search for: Branches & ATMs Digital Banking Internet Banking Corporate Payments SME’s Relationship Manager SME’s Relationship Manager SME’s Relationship Manager Job Description: Achieve the annual set targets regards to assets, liabilities, commission & NTB in order to growth SME’s Portfolio. Handle and resolve customers inquires, compliant and problem in timely manner to maintain or increase customer satisfaction. Maintain strong relationship with SME’s customers. Qualifications: University Degree in Finance, Economics, Business Administration, Commerce or a related field From 5 to 6 years of Experience in CIBG preferably in SME’s SME’s Certificate is a must Apply Now Sign up to get the latest ADCB updates in your inbox Don’t miss new updates on your email Our dedicated team is committed to meeting your needs We always care of our customer. Online Our trained team of tellers and relationship managers are here to help you get the service you need. On the phone For support, including emergencies such as cards closure or immediate critical feedback. workplace In branch Our trained team of tellers and relationship managers are here to help you get the service you need. Facebook-f Linkedin-in Instagram Discover ADCB Egypt About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions Other Services Internet Banking ADCB PHONE ADCB SMS Banking Internet Banking ADCB PHONE ADCB SMS Banking GET IN TOUCH Call us on (+202)16862 Find Nearest Branch or ATM Contact us Discover ADCB Egypt About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions Other Services Internet Banking ADCB PHONE ADCB SMS Banking Internet Banking ADCB PHONE ADCB SMS Banking GET IN TOUCH Call us on 16862 Find a branch or ATM Contact Us Security tips Contact us and Complaints Disclaimer Privacy Policy Security tips Contact us and Complaints Disclaimer Privacy Policy Copyright © 2024 ADCB . All rights reserved. ×",
+      "description": "SME’s Relationship Manager | ADCB Personal Business Excellency Sustainability MENU Back عربي search Search Search for: Branches & ATMs Digital Banking Internet Banking Corporate Payments Personal Business Excellency أنتِ Personal ADCB For You TouchPoints Offers & Discounts Open Your ADCB Egypt Account Digitally from the UAE Financial Inclusion Financial Inclusion account Erada Hayah Tomouh package “Go” Package for Youth Accounts Current account Daily current account Monthly saving account El Nahrda account Tawfeer plus saving account Speed up saving Aspire Daily Daily Account Deposits Time deposits Prime US Dollar CD 5, 7 Years EGP Fixed rate CDs 3, 5 and 7 years EGP Floating rate CDs Amwaly CD Star floating CD for 3 years Al Taqdeer CD ADCB Cards Cards Easy payment plan Balance transfer Easy cash Loans Car loan High end car loan Electronic Vehicle Loan High end personal loan High-end Compound Salaried Cash Loan Salary loan Mortgage loan Bancassurance For a Brighter Future Together Through Life’s Stages For a Dream Wedding Business Business accounts El Nahrda business account ADCB Egypt Payroll Service Sustainable call account Escrow account ADCB Egypt Sustainable products Green Facility Program Carbon Calculator Tool Empowering Healthcare Providers with Accessible Financing Solar energy loan SCALE UP Business SCALE UP PROGRAM NilePreneurs Initiative | Non- Financial Services Corporate & Institutional Banking Group ADCB Visa Platinum Business Credit Card Wholesale Overview Financial institutions Small and medium enterprises Corporate banking Corporate CDs Treasury Treasury Overview Foreign exchange Money market Fixed income “ Zayed Kol Youm ” – The Daily Accumulative Money Market Fund Excellency Eligibility Criteria Excellency Excellency Plus Excellency Private Wealth management Monthly Saving Account- Excellency Monthly Saving Account- Excellency Plus Monthly Saving Account- Excellency Private Private Daily Current Account- Excellency Excellency CD ADCB Visa Signature Debit Card Excellency concierge Excellency concierge services Excellency newsletter Excellency fees and tariffs أنتِ More than banking, It’s about you! Personal ADCB For You TouchPoints Offers & Discounts Open Your ADCB Egypt Account Digitally from the UAE Financial Inclusion Financial Inclusion account Erada Hayah Tomouh package “Go” Package for Youth Accounts Current account Daily current account Monthly saving account El Nahrda account Tawfeer plus saving account Speed up saving Aspire Daily Daily Account Deposits Time deposits Prime US Dollar CD 5, 7 Years EGP Fixed rate CDs 3, 5 and 7 years EGP Floating rate CDs Amwaly CD Star floating CD for 3 years Al Taqdeer CD ADCB Cards Cards Easy payment plan Balance transfer Easy cash Loans Car loan High end car loan Electronic Vehicle Loan High end personal loan High-end Compound Salaried Cash Loan Salary loan Mortgage loan Bancassurance For a Brighter Future Together Through Life’s Stages For a Dream Wedding Business Business accounts El Nahrda business account ADCB Egypt Payroll Service Sustainable call account Escrow account ADCB Egypt Sustainable products Green Facility Program Carbon Calculator Tool Empowering Healthcare Providers with Accessible Financing Solar energy loan SCALE UP Business SCALE UP PROGRAM NilePreneurs Initiative | Non- Financial Services Corporate & Institutional Banking Group ADCB Visa Platinum Business Credit Card Wholesale Overview Financial institutions Small and medium enterprises Corporate banking Corporate CDs Treasury Treasury Overview Foreign exchange Money market Fixed income “ Zayed Kol Youm ” – The Daily Accumulative Money Market Fund Excellency Eligibility Criteria Excellency Excellency Plus Excellency Private Wealth management Monthly Saving Account- Excellency Monthly Saving Account- Excellency Plus Monthly Saving Account- Excellency Private Private Daily Current Account- Excellency Excellency CD ADCB Visa Signature Debit Card Excellency concierge Excellency concierge services Excellency newsletter Excellency fees and tariffs أنتِ More than banking, It’s about you! Personal Business Excellency Sustainability About us Sustainability Corporate Social Responsibility Contact us and Complaints عربي عربي search Search Search for: Branches & ATMs Digital Banking Internet Banking Corporate Payments SME’s Relationship Manager SME’s Relationship Manager SME’s Relationship Manager Job Description: Achieve the annual set targets regards to assets, liabilities, commission & NTB in order to growth SME’s Portfolio. Handle and resolve customers inquires, compliant and problem in timely manner to maintain or increase customer satisfaction. Maintain strong relationship with SME’s customers. Qualifications: University Degree in Finance, Economics, Business Administration, Commerce or a related field From 5 to 6 years of Experience in CIBG preferably in SME’s SME’s Certificate is a must Apply Now Sign up to get the latest ADCB updates in your inbox Don’t miss new updates on your email Our dedicated team is committed to meeting your needs We always care of our customer. Online Our trained team of tellers and relationship managers are here to help you get the service you need. On the phone For support, including emergencies such as cards closure or immediate critical feedback. workplace In branch Our trained team of tellers and relationship managers are here to help you get the service you need. Facebook-f Linkedin-in Instagram Discover ADCB Egypt About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions Other Services Internet Banking ADCB PHONE ADCB SMS Banking Internet Banking ADCB PHONE ADCB SMS Banking GET IN TOUCH Call us on (+202)16862 Find Nearest Branch or ATM Contact us Discover ADCB Egypt About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions Other Services Internet Banking ADCB PHONE ADCB SMS Banking Internet Banking ADCB PHONE ADCB SMS Banking GET IN TOUCH Call us on 16862 Find a branch or ATM Contact Us Security tips Contact us and Complaints Disclaimer Privacy Policy Security tips Contact us and Complaints Disclaimer Privacy Policy Copyright © 2024 ADCB . All rights reserved. ×",
       "published_at": "",
       "employment": "",
       "source": "Custom Careers",
@@ -36675,7 +36685,7 @@
       "title": "ADCB Academy",
       "location": "Egypt",
       "url": "https://www.adcb.com.eg/adcb_careers/adcb-academy/",
-      "description": "ADCB Academy | ADCB Personal Business Excellency Sustainability MENU Back عربي search Search Search for: Branches & ATMs Digital Banking Internet Banking Corporate Payments Personal Business Excellency أنتِ Personal ADCB For You TouchPoints Offers & Discounts Open Your ADCB Egypt Account Digitally from the UAE Financial Inclusion Financial Inclusion account Erada Hayah Tomouh package “Go” Package for Youth Accounts Current account Daily current account Monthly saving account El Nahrda account Tawfeer plus saving account Speed up saving Aspire Daily Daily Account Deposits Time deposits Prime US Dollar CD 5, 7 Years EGP Fixed rate CDs 3, 5 and 7 years EGP Floating rate CDs Amwaly CD Star floating CD for 3 years Al Taqdeer CD ADCB Cards Cards Easy payment plan Balance transfer Easy cash Loans Car loan High end car loan Electronic Vehicle Loan High end personal loan High-end Compound Salaried Cash Loan Salary loan Mortgage loan Bancassurance For a Brighter Future Together Through Life’s Stages For a Dream Wedding Business Business accounts El Nahrda business account ADCB Egypt Payroll Service Sustainable call account Escrow account ADCB Egypt Sustainable products Green Facility Program Carbon Calculator Tool Empowering Healthcare Providers with Accessible Financing Solar energy loan SCALE UP Business SCALE UP PROGRAM NilePreneurs Initiative | Non- Financial Services Corporate & Institutional Banking Group ADCB Visa Platinum Business Credit Card Wholesale Overview Financial institutions Small and medium enterprises Corporate banking Corporate CDs Treasury Treasury Overview Foreign exchange Money market Fixed income “ Zayed Kol Youm ” – The Daily Accumulative Money Market Fund Excellency Eligibility Criteria Excellency Excellency Plus Excellency Private Wealth management Monthly Saving Account- Excellency Monthly Saving Account- Excellency Plus Monthly Saving Account- Excellency Private Private Daily Current Account- Excellency Excellency CD ADCB Visa Signature Debit Card Excellency concierge Excellency concierge services Excellency newsletter Excellency fees and tariffs أنتِ More than banking, It’s about you! أنتِTamouha Personal ADCB For You TouchPoints Offers & Discounts Open Your ADCB Egypt Account Digitally from the UAE Financial Inclusion Financial Inclusion account Erada Hayah Tomouh package “Go” Package for Youth Accounts Current account Daily current account Monthly saving account El Nahrda account Tawfeer plus saving account Speed up saving Aspire Daily Daily Account Deposits Time deposits Prime US Dollar CD 5, 7 Years EGP Fixed rate CDs 3, 5 and 7 years EGP Floating rate CDs Amwaly CD Star floating CD for 3 years Al Taqdeer CD ADCB Cards Cards Easy payment plan Balance transfer Easy cash Loans Car loan High end car loan Electronic Vehicle Loan High end personal loan High-end Compound Salaried Cash Loan Salary loan Mortgage loan Bancassurance For a Brighter Future Together Through Life’s Stages For a Dream Wedding Business Business accounts El Nahrda business account ADCB Egypt Payroll Service Sustainable call account Escrow account ADCB Egypt Sustainable products Green Facility Program Carbon Calculator Tool Empowering Healthcare Providers with Accessible Financing Solar energy loan SCALE UP Business SCALE UP PROGRAM NilePreneurs Initiative | Non- Financial Services Corporate & Institutional Banking Group ADCB Visa Platinum Business Credit Card Wholesale Overview Financial institutions Small and medium enterprises Corporate banking Corporate CDs Treasury Treasury Overview Foreign exchange Money market Fixed income “ Zayed Kol Youm ” – The Daily Accumulative Money Market Fund Excellency Eligibility Criteria Excellency Excellency Plus Excellency Private Wealth management Monthly Saving Account- Excellency Monthly Saving Account- Excellency Plus Monthly Saving Account- Excellency Private Private Daily Current Account- Excellency Excellency CD ADCB Visa Signature Debit Card Excellency concierge Excellency concierge services Excellency newsletter Excellency fees and tariffs أنتِ More than banking, It’s about you! أنتِTamouha Personal Business Excellency Sustainability About us Sustainability Corporate Social Responsibility Contact us and Complaints عربي عربي search Search Search for: Branches & ATMs Digital Banking Internet Banking Corporate Payments ADCB Academy ADCB Academy ADCB Academy Qualifications: Bachelor degree in Business, Finance, Economics, Accounting or any relevant field. 0-1 Year of experience. Fresh Graduate Analytical, quantitative, interpersonal, written, and verbal communication skills. Good Command of English Language. Excellent MS office skills. Problem Solving and logical thinking. Detail-oriented, eager to learn and own self-development. Apply Now Sign up to get the latest ADCB updates in your inbox Don’t miss new updates on your email Our dedicated team is committed to meeting your needs We always care of our customer. Online Our trained team of tellers and relationship managers are here to help you get the service you need. On the phone For support, including emergencies such as cards closure or immediate critical feedback. workplace In branch Our trained team of tellers and relationship managers are here to help you get the service you need. Facebook-f Linkedin-in Instagram Discover ADCB Egypt About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions Other Services Internet Banking ADCB PHONE ADCB SMS Banking Internet Banking ADCB PHONE ADCB SMS Banking GET IN TOUCH Call us on (+202)16862 Find Nearest Branch or ATM Contact us Discover ADCB Egypt About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions Other Services Internet Banking ADCB PHONE ADCB SMS Banking Internet Banking ADCB PHONE ADCB SMS Banking GET IN TOUCH Call us on 16862 Find a branch or ATM Contact Us Security tips Contact us and Complaints Disclaimer Privacy Policy Security tips Contact us and Complaints Disclaimer Privacy Policy Copyright © 2024 ADCB . All rights reserved. ×",
+      "description": "ADCB Academy | ADCB Personal Business Excellency Sustainability MENU Back عربي search Search Search for: Branches & ATMs Digital Banking Internet Banking Corporate Payments Personal Business Excellency أنتِ Personal ADCB For You TouchPoints Offers & Discounts Open Your ADCB Egypt Account Digitally from the UAE Financial Inclusion Financial Inclusion account Erada Hayah Tomouh package “Go” Package for Youth Accounts Current account Daily current account Monthly saving account El Nahrda account Tawfeer plus saving account Speed up saving Aspire Daily Daily Account Deposits Time deposits Prime US Dollar CD 5, 7 Years EGP Fixed rate CDs 3, 5 and 7 years EGP Floating rate CDs Amwaly CD Star floating CD for 3 years Al Taqdeer CD ADCB Cards Cards Easy payment plan Balance transfer Easy cash Loans Car loan High end car loan Electronic Vehicle Loan High end personal loan High-end Compound Salaried Cash Loan Salary loan Mortgage loan Bancassurance For a Brighter Future Together Through Life’s Stages For a Dream Wedding Business Business accounts El Nahrda business account ADCB Egypt Payroll Service Sustainable call account Escrow account ADCB Egypt Sustainable products Green Facility Program Carbon Calculator Tool Empowering Healthcare Providers with Accessible Financing Solar energy loan SCALE UP Business SCALE UP PROGRAM NilePreneurs Initiative | Non- Financial Services Corporate & Institutional Banking Group ADCB Visa Platinum Business Credit Card Wholesale Overview Financial institutions Small and medium enterprises Corporate banking Corporate CDs Treasury Treasury Overview Foreign exchange Money market Fixed income “ Zayed Kol Youm ” – The Daily Accumulative Money Market Fund Excellency Eligibility Criteria Excellency Excellency Plus Excellency Private Wealth management Monthly Saving Account- Excellency Monthly Saving Account- Excellency Plus Monthly Saving Account- Excellency Private Private Daily Current Account- Excellency Excellency CD ADCB Visa Signature Debit Card Excellency concierge Excellency concierge services Excellency newsletter Excellency fees and tariffs أنتِ More than banking, It’s about you! Personal ADCB For You TouchPoints Offers & Discounts Open Your ADCB Egypt Account Digitally from the UAE Financial Inclusion Financial Inclusion account Erada Hayah Tomouh package “Go” Package for Youth Accounts Current account Daily current account Monthly saving account El Nahrda account Tawfeer plus saving account Speed up saving Aspire Daily Daily Account Deposits Time deposits Prime US Dollar CD 5, 7 Years EGP Fixed rate CDs 3, 5 and 7 years EGP Floating rate CDs Amwaly CD Star floating CD for 3 years Al Taqdeer CD ADCB Cards Cards Easy payment plan Balance transfer Easy cash Loans Car loan High end car loan Electronic Vehicle Loan High end personal loan High-end Compound Salaried Cash Loan Salary loan Mortgage loan Bancassurance For a Brighter Future Together Through Life’s Stages For a Dream Wedding Business Business accounts El Nahrda business account ADCB Egypt Payroll Service Sustainable call account Escrow account ADCB Egypt Sustainable products Green Facility Program Carbon Calculator Tool Empowering Healthcare Providers with Accessible Financing Solar energy loan SCALE UP Business SCALE UP PROGRAM NilePreneurs Initiative | Non- Financial Services Corporate & Institutional Banking Group ADCB Visa Platinum Business Credit Card Wholesale Overview Financial institutions Small and medium enterprises Corporate banking Corporate CDs Treasury Treasury Overview Foreign exchange Money market Fixed income “ Zayed Kol Youm ” – The Daily Accumulative Money Market Fund Excellency Eligibility Criteria Excellency Excellency Plus Excellency Private Wealth management Monthly Saving Account- Excellency Monthly Saving Account- Excellency Plus Monthly Saving Account- Excellency Private Private Daily Current Account- Excellency Excellency CD ADCB Visa Signature Debit Card Excellency concierge Excellency concierge services Excellency newsletter Excellency fees and tariffs أنتِ More than banking, It’s about you! Personal Business Excellency Sustainability About us Sustainability Corporate Social Responsibility Contact us and Complaints عربي عربي search Search Search for: Branches & ATMs Digital Banking Internet Banking Corporate Payments ADCB Academy ADCB Academy ADCB Academy Qualifications: Bachelor degree in Business, Finance, Economics, Accounting or any relevant field. 0-1 Year of experience. Fresh Graduate Analytical, quantitative, interpersonal, written, and verbal communication skills. Good Command of English Language. Excellent MS office skills. Problem Solving and logical thinking. Detail-oriented, eager to learn and own self-development. Apply Now Sign up to get the latest ADCB updates in your inbox Don’t miss new updates on your email Our dedicated team is committed to meeting your needs We always care of our customer. Online Our trained team of tellers and relationship managers are here to help you get the service you need. On the phone For support, including emergencies such as cards closure or immediate critical feedback. workplace In branch Our trained team of tellers and relationship managers are here to help you get the service you need. Facebook-f Linkedin-in Instagram Discover ADCB Egypt About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions Other Services Internet Banking ADCB PHONE ADCB SMS Banking Internet Banking ADCB PHONE ADCB SMS Banking GET IN TOUCH Call us on (+202)16862 Find Nearest Branch or ATM Contact us Discover ADCB Egypt About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions About us Careers Board of Directors Executive Management Policies and Forms News FAQs Investor Relations Fees and Tariffs Accounts and Deposits Rates Corporate terms and conditions Customer right protection Retail Customer Terms & Conditions Other Services Internet Banking ADCB PHONE ADCB SMS Banking Internet Banking ADCB PHONE ADCB SMS Banking GET IN TOUCH Call us on 16862 Find a branch or ATM Contact Us Security tips Contact us and Complaints Disclaimer Privacy Policy Security tips Contact us and Complaints Disclaimer Privacy Policy Copyright © 2024 ADCB . All rights reserved. ×",
       "published_at": "",
       "employment": "",
       "source": "Custom Careers",
@@ -36888,7 +36898,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 21
       },
-      "checked_at": "2026-11-24T13:41:34.304899+00:00"
+      "checked_at": "2026-11-24T13:46:26.930404+00:00"
     },
     {
       "name": "Bosta",
@@ -36903,23 +36913,23 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 68,
         "Excluded: job location is not explicitly in Egypt": 10
       },
-      "checked_at": "2026-11-24T13:41:34.364146+00:00"
+      "checked_at": "2026-11-24T13:46:26.958235+00:00"
     },
     {
       "name": "Thndr",
       "url": "https://jobs.ashbyhq.com/thndr?",
       "status": "monitoring",
-      "message": "15 jobs parsed from ashby",
-      "parsed_jobs": 15,
+      "message": "16 jobs parsed from ashby",
+      "parsed_jobs": 16,
       "matched_jobs": 0,
-      "public_jobs": 15,
-      "excluded_jobs": 15,
+      "public_jobs": 16,
+      "excluded_jobs": 16,
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 9,
         "Excluded: job location is not explicitly in Egypt": 5,
-        "Excluded: explicit senior title": 1
+        "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-24T13:41:34.368933+00:00"
+      "checked_at": "2026-11-24T13:46:26.960795+00:00"
     },
     {
       "name": "Klivvr",
@@ -36933,7 +36943,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 6
       },
-      "checked_at": "2026-11-24T13:41:34.369969+00:00"
+      "checked_at": "2026-11-24T13:46:26.961332+00:00"
     },
     {
       "name": "Emergence",
@@ -36948,7 +36958,7 @@
         "Excluded: job location is not explicitly in Egypt": 5,
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 1
       },
-      "checked_at": "2026-11-24T13:41:34.370639+00:00"
+      "checked_at": "2026-11-24T13:46:26.961681+00:00"
     },
     {
       "name": "Lean Technologies",
@@ -36962,7 +36972,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 8
       },
-      "checked_at": "2026-11-24T13:41:34.371675+00:00"
+      "checked_at": "2026-11-24T13:46:26.962229+00:00"
     },
     {
       "name": "Chatbase",
@@ -36977,7 +36987,7 @@
         "Excluded: job location is not explicitly in Egypt": 12,
         "Uncertain: early-career level not confirmed by source": 1
       },
-      "checked_at": "2026-11-24T13:41:34.373810+00:00"
+      "checked_at": "2026-11-24T13:46:26.963337+00:00"
     },
     {
       "name": "Lua Global",
@@ -36989,7 +36999,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-24T13:41:34.375176+00:00"
+      "checked_at": "2026-11-24T13:46:26.964056+00:00"
     },
     {
       "name": "IBM",
@@ -37005,7 +37015,7 @@
         "Excluded: explicit senior title": 1,
         "Uncertain: early-career level not confirmed by source": 1
       },
-      "checked_at": "2026-11-24T13:41:34.376330+00:00"
+      "checked_at": "2026-11-24T13:46:26.964662+00:00"
     },
     {
       "name": "Schneider Electric",
@@ -37021,7 +37031,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 3
       },
-      "checked_at": "2026-11-24T13:41:34.380816+00:00"
+      "checked_at": "2026-11-24T13:46:26.966920+00:00"
     },
     {
       "name": "Ericsson",
@@ -37035,7 +37045,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 8
       },
-      "checked_at": "2026-11-24T13:41:34.384174+00:00"
+      "checked_at": "2026-11-24T13:46:26.968691+00:00"
     },
     {
       "name": "Capgemini Egypt",
@@ -37051,7 +37061,7 @@
         "Excluded: ATS explicitly labels career level as senior": 5,
         "Excluded: explicit senior title": 4
       },
-      "checked_at": "2026-11-24T13:41:34.395886+00:00"
+      "checked_at": "2026-11-24T13:46:26.974919+00:00"
     },
     {
       "name": "DXC Technology",
@@ -37067,7 +37077,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-24T13:41:34.409450+00:00"
+      "checked_at": "2026-11-24T13:46:26.982387+00:00"
     },
     {
       "name": "Luxoft Egypt",
@@ -37082,7 +37092,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 12,
         "Uncertain: early-career level not confirmed by source": 1
       },
-      "checked_at": "2026-11-24T13:41:34.412853+00:00"
+      "checked_at": "2026-11-24T13:46:26.984206+00:00"
     },
     {
       "name": "Nokia",
@@ -37094,7 +37104,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-24T13:41:34.413437+00:00"
+      "checked_at": "2026-11-24T13:46:26.984521+00:00"
     },
     {
       "name": "SAP",
@@ -37108,7 +37118,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3
       },
-      "checked_at": "2026-11-24T13:41:34.413608+00:00"
+      "checked_at": "2026-11-24T13:46:26.984607+00:00"
     },
     {
       "name": "Orange Egypt",
@@ -37122,7 +37132,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 11
       },
-      "checked_at": "2026-11-24T13:41:34.414307+00:00"
+      "checked_at": "2026-11-24T13:46:26.984966+00:00"
     },
     {
       "name": "e& / Etisalat",
@@ -37136,7 +37146,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 25
       },
-      "checked_at": "2026-11-24T13:41:34.416181+00:00"
+      "checked_at": "2026-11-24T13:46:26.985950+00:00"
     },
     {
       "name": "Telecom Egypt (WE)",
@@ -37148,7 +37158,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-24T13:41:34.417427+00:00"
+      "checked_at": "2026-11-24T13:46:26.986621+00:00"
     },
     {
       "name": "Paymob",
@@ -37162,7 +37172,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 65
       },
-      "checked_at": "2026-11-24T13:41:34.422008+00:00"
+      "checked_at": "2026-11-24T13:46:26.988994+00:00"
     },
     {
       "name": "Breadfast",
@@ -37176,7 +37186,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 11
       },
-      "checked_at": "2026-11-24T13:41:34.426750+00:00"
+      "checked_at": "2026-11-24T13:46:26.991481+00:00"
     },
     {
       "name": "ITWorx",
@@ -37191,7 +37201,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 1,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-24T13:41:34.427259+00:00"
+      "checked_at": "2026-11-24T13:46:26.991746+00:00"
     },
     {
       "name": "Sumerge",
@@ -37206,7 +37216,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 5,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-24T13:41:34.430053+00:00"
+      "checked_at": "2026-11-24T13:46:26.993188+00:00"
     },
     {
       "name": "Luciq (formerly Instabug)",
@@ -37220,21 +37230,21 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 2
       },
-      "checked_at": "2026-11-24T13:41:34.432836+00:00"
+      "checked_at": "2026-11-24T13:46:26.994630+00:00"
     },
     {
       "name": "Breadfast Technology",
       "url": "https://www.breadfast.com/ar/careers_categories/technology/?utm_source=chatgpt.com",
       "status": "partial",
-      "message": "3 detail-verified technology roles from Breadfast's public investor board searches",
-      "parsed_jobs": 3,
+      "message": "2 detail-verified technology roles from Breadfast's public investor board searches",
+      "parsed_jobs": 2,
       "matched_jobs": 0,
-      "public_jobs": 3,
-      "excluded_jobs": 3,
+      "public_jobs": 2,
+      "excluded_jobs": 2,
       "exclusion_reasons": {
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3
+        "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 2
       },
-      "checked_at": "2026-11-24T13:41:34.433083+00:00"
+      "checked_at": "2026-11-24T13:46:26.994742+00:00"
     },
     {
       "name": "Link Development",
@@ -37250,7 +37260,7 @@
         "Excluded: explicit senior title": 1,
         "Uncertain: early-career level not confirmed by source": 1
       },
-      "checked_at": "2026-11-24T13:41:34.434114+00:00"
+      "checked_at": "2026-11-24T13:46:26.995245+00:00"
     },
     {
       "name": "Fawry",
@@ -37264,7 +37274,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 4
       },
-      "checked_at": "2026-11-24T13:41:34.435177+00:00"
+      "checked_at": "2026-11-24T13:46:26.995798+00:00"
     },
     {
       "name": "Siemens",
@@ -37279,7 +37289,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 8,
         "Uncertain: early-career level not confirmed by source": 3
       },
-      "checked_at": "2026-11-24T13:41:34.437944+00:00"
+      "checked_at": "2026-11-24T13:46:26.997242+00:00"
     },
     {
       "name": "Deloitte",
@@ -37294,7 +37304,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 42,
         "Excluded: explicit senior title": 5
       },
-      "checked_at": "2026-11-24T13:41:34.443691+00:00"
+      "checked_at": "2026-11-24T13:46:27.000378+00:00"
     },
     {
       "name": "BlackStone eIT",
@@ -37310,7 +37320,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 6,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-24T13:41:34.447178+00:00"
+      "checked_at": "2026-11-24T13:46:27.002329+00:00"
     },
     {
       "name": "Lamdax",
@@ -37325,7 +37335,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-24T13:41:34.452590+00:00"
+      "checked_at": "2026-11-24T13:46:27.005251+00:00"
     },
     {
       "name": "Yassir",
@@ -37342,7 +37352,7 @@
         "Uncertain: early-career level not confirmed by source": 2,
         "Excluded: explicit senior title": 20
       },
-      "checked_at": "2026-11-24T13:41:34.466403+00:00"
+      "checked_at": "2026-11-24T13:46:27.012675+00:00"
     },
     {
       "name": "Integrant",
@@ -37357,7 +37367,7 @@
         "Excluded: explicit senior title": 7,
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 11
       },
-      "checked_at": "2026-11-24T13:41:34.475500+00:00"
+      "checked_at": "2026-11-24T13:46:27.017510+00:00"
     },
     {
       "name": "inDrive",
@@ -37373,7 +37383,7 @@
         "Uncertain: early-career level not confirmed by source": 2,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-24T13:41:34.476653+00:00"
+      "checked_at": "2026-11-24T13:46:27.018113+00:00"
     },
     {
       "name": "robusta / RTG",
@@ -37389,7 +37399,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 6,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-24T13:41:34.478908+00:00"
+      "checked_at": "2026-11-24T13:46:27.019248+00:00"
     },
     {
       "name": "Incorta",
@@ -37403,7 +37413,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 2
       },
-      "checked_at": "2026-11-24T13:41:34.480816+00:00"
+      "checked_at": "2026-11-24T13:46:27.020223+00:00"
     },
     {
       "name": "SOUM",
@@ -37419,7 +37429,7 @@
         "Excluded: job location is not explicitly in Egypt": 18,
         "Uncertain: early-career level not confirmed by source": 1
       },
-      "checked_at": "2026-11-24T13:41:34.482845+00:00"
+      "checked_at": "2026-11-24T13:46:27.021268+00:00"
     },
     {
       "name": "econstruct",
@@ -37435,7 +37445,7 @@
         "Excluded: job location is not explicitly in Egypt": 10,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-24T13:41:34.487850+00:00"
+      "checked_at": "2026-11-24T13:46:27.023855+00:00"
     },
     {
       "name": "PetroApp",
@@ -37449,7 +37459,7 @@
       "exclusion_reasons": {
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-24T13:41:34.491000+00:00"
+      "checked_at": "2026-11-24T13:46:27.025478+00:00"
     },
     {
       "name": "SSC HR Solutions",
@@ -37467,7 +37477,7 @@
         "Excluded: explicit minimum experience exceeds 2 years": 1,
         "Excluded: explicit senior title": 9
       },
-      "checked_at": "2026-11-24T13:41:34.495946+00:00"
+      "checked_at": "2026-11-24T13:46:27.028014+00:00"
     },
     {
       "name": "Mondia Group",
@@ -37482,7 +37492,7 @@
         "Uncertain: early-career level not confirmed by source": 1,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-24T13:41:34.501153+00:00"
+      "checked_at": "2026-11-24T13:46:27.030706+00:00"
     },
     {
       "name": "mylo by B.TECH",
@@ -37498,7 +37508,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 2,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-24T13:41:34.501769+00:00"
+      "checked_at": "2026-11-24T13:46:27.031026+00:00"
     },
     {
       "name": "Infomineo",
@@ -37512,7 +37522,7 @@
       "exclusion_reasons": {
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-24T13:41:34.501981+00:00"
+      "checked_at": "2026-11-24T13:46:27.031127+00:00"
     },
     {
       "name": "ArpuPlus",
@@ -37527,7 +37537,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 2,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-24T13:41:34.502146+00:00"
+      "checked_at": "2026-11-24T13:46:27.031211+00:00"
     },
     {
       "name": "Madar",
@@ -37541,7 +37551,7 @@
       "exclusion_reasons": {
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-24T13:41:34.508680+00:00"
+      "checked_at": "2026-11-24T13:46:27.034423+00:00"
     },
     {
       "name": "EY Egypt",
@@ -37556,7 +37566,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 18,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-24T13:41:34.516308+00:00"
+      "checked_at": "2026-11-24T13:46:27.038239+00:00"
     },
     {
       "name": "PwC Egypt",
@@ -37570,7 +37580,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 4
       },
-      "checked_at": "2026-11-24T13:41:34.517654+00:00"
+      "checked_at": "2026-11-24T13:46:27.039002+00:00"
     },
     {
       "name": "Blink22",
@@ -37582,7 +37592,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-24T13:41:34.517879+00:00"
+      "checked_at": "2026-11-24T13:46:27.039118+00:00"
     },
     {
       "name": "Amazon Egypt",
@@ -37597,7 +37607,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 92,
         "Excluded: explicit senior title": 2
       },
-      "checked_at": "2026-11-24T13:41:34.528232+00:00"
+      "checked_at": "2026-11-24T13:46:27.044346+00:00"
     },
     {
       "name": "AWS Egypt",
@@ -37609,7 +37619,7 @@
       "public_jobs": 0,
       "excluded_jobs": 0,
       "exclusion_reasons": {},
-      "checked_at": "2026-11-24T13:41:34.538123+00:00"
+      "checked_at": "2026-11-24T13:46:27.049539+00:00"
     },
     {
       "name": "Talabat Egypt",
@@ -37624,7 +37634,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 39,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-24T13:41:34.539819+00:00"
+      "checked_at": "2026-11-24T13:46:27.050372+00:00"
     },
     {
       "name": "Uber Egypt",
@@ -37638,21 +37648,19 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 1
       },
-      "checked_at": "2026-11-24T13:41:34.541303+00:00"
+      "checked_at": "2026-11-24T13:46:27.051149+00:00"
     },
     {
       "name": "Teleperformance Egypt",
       "url": "https://tpegyptcareers.teleperformance.com.eg/vacancies",
-      "status": "monitoring",
-      "message": "4 jobs parsed from tp_egypt",
-      "parsed_jobs": 4,
+      "status": "error",
+      "message": "The read operation timed out",
+      "parsed_jobs": 0,
       "matched_jobs": 0,
-      "public_jobs": 4,
-      "excluded_jobs": 4,
-      "exclusion_reasons": {
-        "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 4
-      },
-      "checked_at": "2026-11-24T13:41:34.541503+00:00"
+      "public_jobs": 0,
+      "excluded_jobs": 0,
+      "exclusion_reasons": {},
+      "checked_at": "2026-11-24T13:46:27.051184+00:00"
     },
     {
       "name": "Finaira",
@@ -37666,7 +37674,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 1
       },
-      "checked_at": "2026-11-24T13:41:34.541672+00:00"
+      "checked_at": "2026-11-24T13:46:27.051334+00:00"
     },
     {
       "name": "CIB Egypt",
@@ -37681,7 +37689,7 @@
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 24,
         "Excluded: explicit senior title": 1
       },
-      "checked_at": "2026-11-24T13:41:34.542918+00:00"
+      "checked_at": "2026-11-24T13:46:27.051985+00:00"
     },
     {
       "name": "Konecta Egypt",
@@ -37695,7 +37703,7 @@
       "exclusion_reasons": {
         "Excluded: job location is not explicitly in Egypt": 35
       },
-      "checked_at": "2026-11-24T13:41:34.546302+00:00"
+      "checked_at": "2026-11-24T13:46:27.053731+00:00"
     },
     {
       "name": "ADCB Egypt",
@@ -37709,7 +37717,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 7
       },
-      "checked_at": "2026-11-24T13:41:34.548680+00:00"
+      "checked_at": "2026-11-24T13:46:27.054995+00:00"
     },
     {
       "name": "Fab Minds Egypt",
@@ -37723,7 +37731,7 @@
       "exclusion_reasons": {
         "Excluded: title is outside Software/AI/ML/CV/MLOps roles": 3
       },
-      "checked_at": "2026-11-24T13:41:34.549062+00:00"
+      "checked_at": "2026-11-24T13:46:27.055183+00:00"
     }
   ]
 }
