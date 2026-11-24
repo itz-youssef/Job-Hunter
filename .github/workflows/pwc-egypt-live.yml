@@ -26,13 +26,19 @@ jobs:
               ep=host+"/wday/cxs/pwc/"+site+"/jobs"
               base=_json(ep,{"appliedFacets":{},"limit":20,"offset":0,"searchText":""})
               facets={}
-              for f in base.get("facets",[]):
+              print("PWC_BASE",site,base.get("total"),[(f.get("facetParameter"),len(f.get("values",[]))) for f in base.get("facets",[])],flush=True)
+              combined=list(base.get("facets",[]))
+              for term in ("Egypt","Cairo","ETIC","Alexandria","Giza"):
+                  probe=_json(ep,{"appliedFacets":{},"limit":20,"offset":0,"searchText":term})
+                  print("PWC_QUERY",site,term,probe.get("total"),json.dumps(probe.get("facets",[]))[:1500],flush=True)
+                  combined.extend(probe.get("facets",[]))
+              for f in combined:
                   vals=[v for v in f.get("values",[]) if re.search(r"Egypt|Cairo|Giza|Alexandria",str(v.get("descriptor")),re.I)]
-                  if vals:facets[f["facetParameter"]]=vals
+                  if vals:facets.setdefault(f["facetParameter"],{}).update({v["id"]:v for v in vals})
               print("PWC_FACETS",site,json.dumps(facets),flush=True)
               for key in ("locationCountry","locations","location"):
                   if key in facets:
-                      selected={key:[v["id"] for v in facets[key]]}
+                      selected={key:list(facets[key])}
                       break
               else:raise ValueError("No Egypt facet")
               seen=set()
