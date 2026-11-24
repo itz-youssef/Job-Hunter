@@ -105,7 +105,7 @@ def test_custom_source_and_validation(monkeypatch):
         data={'name':'Example Careers','url':'https://example.com/careers'}
         assert c.post('/api/sources',json=data,headers=headers).status_code==200
         assert c.post('/api/sources',json=data,headers=headers).status_code==409
-        rows=c.get('/api/state').json()['sources'];assert len(rows)==6
+        rows=c.get('/api/state').json()['sources'];assert len(rows)==5
         custom=rows[-1];assert custom['enabled']==0
         assert c.put('/api/sources/'+str(custom['id']),json={'enabled':True,'approved':False},headers=headers).status_code==422
 
