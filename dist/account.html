@@ -205,6 +205,12 @@ html[data-theme="light"] .nav button.active *{
 .top-links .account-theme-toggle:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
 .top-links .account-theme-toggle #account-theme-icon{font-size:18px;line-height:1}
 @media(max-width:670px){.top-links{gap:9px}.top-links .account-theme-toggle{min-width:42px;padding:8px 10px}.top-links .account-theme-toggle #account-theme-label{display:none}}
+
+/* Sign-in method selection: accessible in both themes and narrow mobile screens. */
+.sj-email-login-choice{display:flex;flex-direction:column;align-items:stretch;gap:10px;margin-top:12px}
+.sj-email-login-choice>span{text-align:center;font-size:12px;color:var(--muted)}
+.sj-email-login-choice p{margin:0;text-align:center}
+#sj-email-login-toggle{min-height:44px}
 </style>
 <link rel="stylesheet" href="/assets/secretj-global-theme.css?v=linkedin-theme-layer-20261124">
 <script src="/assets/secretj-cv-parser.js" defer></script>
@@ -215,7 +221,7 @@ html[data-theme="light"] .nav button.active *{
   <script src="/assets/secretj-career-level.js?v=level-classifier-1" defer></script>
   <script src="/assets/secretj-job-preferences.js?v=constraint-aware-f-1" defer></script>
 <script src="/assets/secretj-account-theme.js?v=dashboard-theme-20261124" defer></script>
-<script src="/assets/secretj-account.js?v=account-delete-linkedin-20261123" defer></script>
+<script src="/assets/secretj-account.js?v=email-code-confirm-password-20261124" defer></script>
 <script src="/assets/secretj-welcome-tour.js?v=welcome-1" defer></script>
 <link rel="stylesheet" href="/assets/responsive.css?v=20261113-mobile-1">
 <link rel="stylesheet" href="/assets/secretj-loading.css?v=20261123-loader-1">
@@ -268,12 +274,12 @@ html[data-theme="dark"] body .sj-delete-account:hover{
 <form id="auth-form"><label id="name-label" hidden>Full name<input name="name" autocomplete="name" maxlength="120"></label>
 <label>Email address<input type="email" name="email" autocomplete="email" required></label>
 <label>Password<input type="password" name="password" autocomplete="current-password" minlength="12" maxlength="128" required></label>
+<label id="confirm-password-label" hidden>Confirm password<input type="password" name="confirm_password" autocomplete="new-password" minlength="12" maxlength="128"></label>
 <label id="registration-consent" hidden style="align-items:flex-start;gap:10px;margin:12px 0;font-size:13px;line-height:1.55">
 <input type="checkbox" name="accept_terms" value="yes" style="width:18px;height:18px;flex:0 0 auto;margin-top:3px">
 <span>I have read and agree to the <a href="/terms.html" target="_blank" rel="noopener noreferrer" style="text-decoration:underline">Terms &amp; Conditions</a>, and acknowledge the <a href="/privacy.html" target="_blank" rel="noopener noreferrer" style="text-decoration:underline">Privacy Policy</a>, including how my CV and profile are stored and processed.</span></label>
 <button class="btn" type="submit" id="auth-submit">Sign in</button>
-<div style="text-align:center;color:var(--muted);font-size:12px">or</div>
-<p class="small muted">Use your email and password to sign in. Google sign-in is not connected.</p>
+<div id="sj-email-code-alternative" class="sj-email-login-choice"><span>or</span><button type="button" id="sj-email-login-toggle" class="btn secondary">Sign in with email code</button><p class="small muted">No password needed. We will send a one-time code to your registered email.</p></div>
 </form>
 <section id="login-code-panel" hidden aria-live="polite">
   <div class="sj-loading-feedback" style="display:flex;margin:14px 0">
