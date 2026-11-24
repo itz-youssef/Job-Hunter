@@ -7,32 +7,58 @@ from urllib.parse import urljoin, unquote
 EGYPT=re.compile(r"\b(?:egypt|cairo|giza|alexandria|smart village)\b",re.I)
 
 def schneider_egypt(name,get_json,make_job):
-    """Use the official Jibe API; verify Egypt and complete total."""
-    payload=get_json("https://careers.se.com/api/jobs?location=Egypt&limit=50&page=1")
-    if not isinstance(payload,dict) or not isinstance(payload.get("jobs"),list):
-        raise ValueError("Schneider Jibe jobs schema changed")
-    rows=payload["jobs"]
-    total=int(payload.get("totalCount",-1))
-    if total<0 or len(rows)!=total:
-        raise ValueError(f"Schneider API result incomplete ({len(rows)} of {total})")
-    results={}
-    for record in rows:
-        item=record.get("data",{}) if isinstance(record,dict) else {}
-        if not isinstance(item,dict) or str(item.get("country_code") or "").upper()!="EG":
-            continue
-        identity=str(item.get("req_id") or item.get("slug") or "")
-        title=str(item.get("title") or "").strip()
-        if not identity.isdecimal() or not title:continue
-        location=str(item.get("full_location") or item.get("short_location") or "Egypt")
-        if not EGYPT.search(location):location="Egypt"
-        job=make_job(name,title,location,
-          f"https://careers.se.com/jobs/{identity}?lang=en-US",
-          str(item.get("description") or item.get("qualifications") or ""),
-          str(item.get("posted_date") or item.get("create_date") or ""),
-          str(item.get("employment_type") or ""))
-        job["id"]="custom-schneider-"+identity
-        results[identity]=job
-    return list(results.values())
+    """Read every page of the official Egypt-scoped Schneider Jibe API.
+
+    A single 50-row request is not a complete feed when totalCount > 50.
+    Never claim full coverage when pages are missing or the count changes.
+    """
+    from urllib.parse import urlencode
+    page_size = 50
+    total = None
+    results = {}
+    seen_page_ids = set()
+    for page in range(1,31):
+        query=urlencode({"location":"Egypt","limit":page_size,"page":page})
+        payload=get_json("https://careers.se.com/api/jobs?"+query)
+        if not isinstance(payload,dict) or not isinstance(payload.get("jobs"),list):
+            raise ValueError("Schneider Jibe jobs schema changed")
+        rows=payload["jobs"]
+        try: count=int(payload["totalCount"])
+        except (ValueError,TypeError,KeyError) as exc:
+            raise ValueError("Schneider API total missing") from exc
+        if count<0:raise ValueError("Schneider API returned negative total")
+        if total is None:total=count
+        elif count!=total:raise ValueError("Schneider jobs changed during paging")
+        if not rows and (page-1)*page_size<total:
+            raise ValueError("Schneider API returned incomplete page")
+        page_ids=set()
+        for record in rows:
+            item=record.get("data",{}) if isinstance(record,dict) else {}
+            if not isinstance(item,dict):continue
+            identity=str(item.get("req_id") or item.get("slug") or "")
+            title=str(item.get("title") or "").strip()
+            if not identity.isdecimal() or not title:continue
+            if identity in page_ids:continue
+            page_ids.add(identity)
+            if str(item.get("country_code") or "").upper()!="EG":continue
+            location=str(item.get("full_location") or item.get("short_location") or "Egypt")
+            if not EGYPT.search(location):location="Egypt"
+            job=make_job(name,title,location,
+              f"https://careers.se.com/jobs/{identity}?lang=en-US",
+              str(item.get("description") or item.get("qualifications") or ""),
+              str(item.get("posted_date") or item.get("create_date") or ""),
+              str(item.get("employment_type") or ""))
+            job["id"]="custom-schneider-"+identity
+            results[identity]=job
+        if page_ids and page_ids.issubset(seen_page_ids) and page>1:
+            raise ValueError("Schneider API repeated a page during pagination")
+        seen_page_ids.update(page_ids)
+        if page*page_size>=total:
+            if len(seen_page_ids)<total:
+                raise ValueError("Schneider Jibe API did not return all listed requisitions")
+            return list(results.values())
+    raise ValueError("Schneider vacancies exceed verified paging budget")
+
 
 def etisalat_taleo_partial(name,get_bytes,make_job):
     """Read server-rendered Taleo first-page requisitions; clearly partial."""

@@ -1,0 +1,73 @@
+name: Independent Egypt Official ATS Reconciliation
+# 2026-11-24: collect exact missing public vacancy links for source mismatches
+on:
+  pull_request:
+    paths:
+      - "scripts/reconcile-official-egypt-jobs.py"
+      - "scripts/combine-official-egypt-reconciliation.py"
+      - "tests/test_independent_live_ats_reconciliation.py"
+      - "tests/test_combine_official_egypt_reconciliation.py"
+      - ".github/workflows/independent-egypt-ats-reconciliation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    name: Compare official Egypt vacancies shard ${{ matrix.part }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [0, 1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt pytest
+      - name: Validate independent parser tests
+        run: python -m pytest -q tests/test_independent_live_ats_reconciliation.py tests/test_combine_official_egypt_reconciliation.py
+      - name: Independently compare public Egypt vacancy URLs with production scanner
+        env:
+          PYTHONPATH: .
+        run: |
+          python scripts/reconcile-official-egypt-jobs.py \
+            --part ${{ matrix.part }} --parts 6 \
+            --output reports/live-reconciliation/shard-${{ matrix.part }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: official-egypt-reconciliation-${{ matrix.part }}
+          path: reports/live-reconciliation/shard-${{ matrix.part }}.json
+          retention-days: 30
+
+  summarize:
+    name: Publish the full employer-by-employer Egypt count and missing jobs report
+    needs: compare
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: official-egypt-reconciliation-*
+          path: reports/live-reconciliation
+          merge-multiple: true
+      - name: Validate all configured employers and combine independent comparisons
+        run: python scripts/combine-official-egypt-reconciliation.py
+      - name: Publish human-readable company-by-company results
+        if: success()
+        run: cat reports/live-reconciliation/combined/reconciliation.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: official-egypt-full-company-reconciliation-report
+          path: reports/live-reconciliation/combined/
+          retention-days: 30
