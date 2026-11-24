@@ -90,27 +90,38 @@ def etisalat_taleo_partial(name,get_bytes,make_job):
     return list(result.values())
 
 def indrive_egypt_partial(name,get_bytes,make_job):
-    from html.parser import HTMLParser
-    class Links(HTMLParser):
-        def __init__(self):super().__init__();self.href=None;self.text=[];self.links=[]
-        def handle_starttag(self,tag,attrs):
-            if tag=="a":self.href=dict(attrs).get("href");self.text=[]
-        def handle_data(self,txt):
-            if self.href is not None:self.text.append(txt)
-        def handle_endtag(self,tag):
-            if tag=="a" and self.href is not None:
-                self.links.append((self.href," ".join(" ".join(self.text).split())))
-                self.href=None
+    """Read the Egyptian official job cards and every linked filtered page."""
+    from bs4 import BeautifulSoup
+    from urllib.parse import urlsplit,parse_qs,urlencode
     url="https://careers.indrive.com/vacancies/?country=Egypt"
-    parser=Links();parser.feed(get_bytes(url).decode("utf-8","replace"))
     jobs={}
-    for href,label in parser.links:
-        link=urljoin(url,href)
-        if not re.fullmatch(r"https://indrive\.pinpointhq\.com/en/postings/[0-9a-f-]{36}/?",link,re.I):
-            continue
-        if not EGYPT.search(label):continue
-        title=re.split(r"\s+(?:Hybrid|Remote|On-site)\s+-\s+",label,1)[0].strip()
-        if not title or len(title)>160:continue
-        jobs[link]=make_job(name,title,"Egypt",link,"","","")
-    if not jobs:raise ValueError("inDrive Egypt public vacancies unavailable")
-    return list(jobs.values())
+    visited=set()
+    next_url=url
+    for _ in range(50):
+        if next_url in visited:raise ValueError("inDrive repeated pagination")
+        visited.add(next_url)
+        doc=BeautifulSoup(get_bytes(next_url).decode("utf-8","replace"),"html.parser")
+        for a in doc.select("a[href]"):
+            link=urljoin(next_url,a["href"]).split("?",1)[0].rstrip("/")
+            if not re.fullmatch(r"https://indrive\.pinpointhq\.com/en/postings/[0-9a-f-]{36}",link,re.I):continue
+            label=a.get_text(" ",strip=True)
+            if not EGYPT.search(label):continue
+            title=re.split(r"\s+(?:Hybrid|Remote|Fully remote|On-site|Onsite)\s+-\s+",label,1,flags=re.I)[0].strip()
+            if title and len(title)<=160:
+                jobs[link]=make_job(name,title,"Egypt",link,"","","")
+        next_url=""
+        for a in doc.select("a[href]"):
+            label=a.get_text(" ",strip=True)
+            target=urljoin(url,a["href"])
+            p=urlsplit(target)
+            if p.hostname!="careers.indrive.com" or not p.path.startswith("/vacancies/"):continue
+            if "next" not in (a.get("rel") or []) and not re.fullmatch(r"next|next page|›|»|→",label,re.I) and "next" not in (a.get("class") or []):continue
+            if not re.search(r"/page/\d+/?$|[?&](?:page|paged)=\d+",target):continue
+            q=parse_qs(p.query)
+            q["country"]=["Egypt"]
+            target=p._replace(query=urlencode(q,doseq=True)).geturl()
+            if target not in visited:next_url=target;break
+        if not next_url:
+            if not jobs:raise ValueError("inDrive Egypt public vacancies unavailable")
+            return list(jobs.values())
+    raise ValueError("inDrive Egypt pagination exceeds safety limit")
