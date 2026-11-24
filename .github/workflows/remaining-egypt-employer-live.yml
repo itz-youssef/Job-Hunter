@@ -1,0 +1,60 @@
+name: Remaining Egypt Employer Live Check
+on:
+  pull_request:
+    paths:
+      - "companies.json"
+      - "app/etisalat_browser.py"
+      - "app/telco_schneider_feeds.py"
+      - ".github/workflows/remaining-egypt-employer-live.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt pytest playwright && python -m playwright install --with-deps chromium
+      - name: Check affected sources and public Etisalat pagination
+        run: |
+          python - <<'PY'
+          import json,re
+          from app.custom_sources import scan_company,_bytes,_json
+          from app.etisalat_browser import collect_public_board,parse_rendered,ROOT
+          from bs4 import BeautifulSoup
+          from playwright.sync_api import sync_playwright
+          reg={x["name"]:x for x in json.load(open("companies.json"))}
+          for name in ("Blink22","inDrive","CIB Egypt","Paymob","Breadfast","Breadfast Technology","Luciq (formerly Instabug)","Fawry","Siemens","Deloitte","Uber Egypt","Finaira","Konecta Egypt"):
+              if name not in reg:
+                  print("REGISTRY_MISSING",name,flush=True);continue
+              try:
+                  jobs,status,reason=scan_company(reg[name])
+                  print("REMAINING_ADAPTER",name,len(jobs),status,reason,flush=True)
+                  print("REMAINING_IDS",name,json.dumps([{"title":x.get("title"),"location":x.get("location"),"url":x.get("url"),"id":x.get("external_id")} for x in jobs],ensure_ascii=False),flush=True)
+              except Exception as exc:print("ADAPTER_ERROR",name,type(exc).__name__,str(exc)[:200],flush=True)
+          try:
+              rows,total=collect_public_board()
+              print("ETISALAT_BOARD",len(rows),total,"explicit_egypt",sum(bool(re.search(r"Egypt|Cairo|Giza|Alexandria",x["location"],re.I)) for x in rows),flush=True)
+              print("ETISALAT_EXAMPLES",json.dumps(rows[:4],ensure_ascii=False),flush=True)
+          except Exception as exc:
+              print("ETISALAT_ERROR",type(exc).__name__,str(exc)[:200],flush=True)
+              with sync_playwright() as p:
+                  b=p.chromium.launch(headless=True)
+                  page=b.new_page()
+                  page.goto(ROOT+"joblist.ftl",wait_until="domcontentloaded",timeout=60000)
+                  page.wait_for_timeout(2500)
+                  doc=BeautifulSoup(page.content(),"html.parser")
+                  for a in doc.select("a"):
+                      title=a.get_text(" ",strip=True)
+                      attrs=" ".join(str(v) for v in a.attrs.values())
+                      if title and ("requisition" in attrs.lower() or "job number" in attrs.lower()):
+                          print("ETISALAT_PUBLIC_ANCHOR",title[:100],str({k:a.get(k) for k in ("id","title","href","onclick")})[:500],flush=True)
+                          if title not in ("Apply","Add to My Job Cart","Next","Previous"):
+                              print("ETISALAT_PUBLIC_PARENT",str(a.parent)[:1000],flush=True)
+                              break
+                  b.close()
+          PY
