@@ -119,6 +119,17 @@ def paymob_recruitera(name, get_json, make_job):
                 continue
             url = "https://app.recruitera.ai/careers/paymob/" + quote(slug, safe="%-")
             location = str(row.get("location") or "").strip()
+            # Recruitera often supplies only "Paymob Head Office" in location.
+            # The public employer's own slug includes the actual city/country.
+            # Use explicit geographic metadata, never assume every HQ role is Egyptian.
+            country = str(row.get("country") or row.get("country_code") or "").strip()
+            foreign = re.search(r"\b(?:UAE|Saudi Arabia|Oman|Dubai|Riyadh|Abu Dhabi|Jordan|Pakistan)\b",
+                                location+" "+country,re.I)
+            explicit_egypt = re.search(r"\b(?:Egypt|Cairo|Giza|Alexandria)\b", location+" "+country,re.I)
+            slug_egypt = re.search(r"(?:^|-)egypt(?:-|$)",slug,re.I)
+            if not foreign and (explicit_egypt or slug_egypt or country.upper() in ("EG","EGY")):
+                if not re.search(r"\bEgypt\b",location,re.I):
+                    location = (location+", Egypt") if location else "Egypt"
             description = str(row.get("excerpt") or "")
             job = make_job(
                 name, title, location, url, description, "",
