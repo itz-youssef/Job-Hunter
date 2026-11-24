@@ -60,3 +60,17 @@ def test_no_independent_collector_is_not_a_false_match():
     result=mod.compare({"name":"Example","url":"https://example.com/careers"},
                        lambda _:("html",None,None),lambda _:([], "monitoring","ok"))
     assert result["status"]=="UNVERIFIED"
+
+
+def test_multilocation_duplicate_official_rows_are_not_false_missing_jobs():
+    company={"name":"Multi location board","url":"https://apply.workable.com/example/"}
+    official=lambda _:("workable",[
+        {"title":"Accountant","url":"https://apply.workable.com/example/j/AAA/"},
+        {"title":"Accountant","url":"https://apply.workable.com/example/j/AAA/"}],2)
+    scanner=lambda _:([{"title":"Accountant",
+                        "url":"https://apply.workable.com/example/j/AAA/",
+                        "location":"Cairo, Egypt"}],"monitoring","ok")
+    result=mod.compare(company,official,scanner)
+    assert result["status"]=="MATCHED"
+    assert result["official_duplicate_rows"]==1
+    assert result["official_egypt_count"]==result["adapter_egypt_count"]==1
