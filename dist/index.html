@@ -514,6 +514,19 @@ a:hover{color:var(--ink)}
   // A shared title alone is NOT enough: employers can advertise multiple
   // distinct openings with the same title, location and company.
   function vacancyFingerprint(j){
+    // IBM publishes separate requisitions with identical titles/descriptions.
+    // Deduplicate these by employer vacancy identity, not copied advert text.
+    if(String(companyOf(j)).trim().toLowerCase()==='ibm'){
+      const id=String(j.id||'').match(/^custom-ibm-([a-z0-9_-]+)$/i);
+      if(id)return 'ibm-requisition|'+id[1].toLowerCase();
+      try{
+        const url=new URL(jobURL(j));
+        const req=url.searchParams.get('jobId');
+        if(req)return 'ibm-requisition|'+req.toLowerCase();
+      }catch{}
+      // Distinct official URLs are stronger evidence than identical copy.
+      return '';
+    }
     const normalize=v=>String(v||'').normalize('NFKC').toLowerCase()
       .replace(/[^\p{L}\p{N}]+/gu,' ').trim().replace(/\s+/g,' ');
     const description=normalize(j.description||j.content||'');
