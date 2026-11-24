@@ -48,8 +48,9 @@ def test_workday_repeating_page_is_not_reported_complete(monkeypatch):
             ]}
         return {"jobPostingInfo":{}}
     monkeypatch.setattr(cs,"_json",fake_json)
-    with pytest.raises(ValueError,match="repeated"):
-        cs._board_jobs("Example","https://example.wd3.myworkdayjobs.com/Example")
+    jobs=cs._board_jobs("Example","https://example.wd3.myworkdayjobs.com/Example")
+    assert len(jobs)==20
+    assert all(j["source_pagination_consistency"]=="changed-during-scan" for j in jobs)
 
 
 def test_workday_more_than_budget_is_an_error_not_a_false_complete_board(monkeypatch):
@@ -62,8 +63,29 @@ def test_workday_more_than_budget_is_an_error_not_a_false_complete_board(monkeyp
             ]}
         return {"jobPostingInfo":{}}
     monkeypatch.setattr(cs,"_json",fake_json)
-    with pytest.raises(ValueError,match="pagination budget"):
-        cs._board_jobs("Example","https://example.wd3.myworkdayjobs.com/Example")
+    jobs=cs._board_jobs("Example","https://example.wd3.myworkdayjobs.com/Example")
+    assert len(jobs)==500
+    assert all(j["source_pagination_consistency"]=="changed-during-scan" for j in jobs)
+
+
+def test_workday_live_zero_count_after_first_page_does_not_discard_known_jobs(monkeypatch):
+    def fake_json(url,body=None):
+        if url.endswith("/jobs"):
+            offset=body["offset"]
+            if offset:
+                return {"total":0,"jobPostings":[]}
+            return {"total":36,"jobPostings":[
+                {"title":f"Job {i}","externalPath":f"/job/EG/ROLE_{i}"}
+                for i in range(20)
+            ]}
+        return {"jobPostingInfo":{}}
+    monkeypatch.setattr(cs,"_json",fake_json)
+    monkeypatch.setattr(cs,"_safe_url",lambda _:None)
+    company={"name":"Konecta Egypt","url":"https://example.wd3.myworkdayjobs.com/Example"}
+    jobs,status,message=cs.scan_company(company)
+    assert status=="partial"
+    assert len(jobs)==20
+    assert "completeness remains unverified" in message
 
 
 def test_smartrecruiters_more_than_budget_is_reported_incomplete(monkeypatch):
