@@ -222,8 +222,6 @@ def fawry_public_partial(name, get_bytes, make_job):
                 published = datetime.strptime(parts[1][:25].strip(), "%B %d, %Y").date().isoformat()
             except ValueError:
                 pass
-        if not TECH.search(title):
-            continue
         # "Anywhere" is not evidence of an explicitly Egyptian vacancy.
         # Preserve the original location rather than silently fabricating Egypt.
         job = make_job(name, title, "Anywhere", full, "", published, "")
