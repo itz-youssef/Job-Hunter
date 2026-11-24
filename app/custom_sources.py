@@ -1024,7 +1024,7 @@ def _board_jobs(name: str, url: str) -> list[dict]:
                 # jobs but mark coverage PARTIAL on a small concurrent change.
                 # Larger changes indicate an unstable source, not a complete scan.
                 if abs(total-reported_total)>max(3,reported_total//10):
-                    raise ValueError("Workday total changed significantly during pagination")
+                    raise ValueError(f"Workday total changed during pagination: {reported_total} -> {total}")
                 count_drift = True
                 reported_total = max(reported_total,total)
             if not rows and page*20 < total:
