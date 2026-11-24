@@ -29,9 +29,12 @@ def workable(name, slug, get_json, get_bytes, structured, make_job):
             place = str(location)
         if not place:
             place = ", ".join(str(item.get(k) or "") for k in ("city","state","country") if item.get(k))
-        # Every publicly listed vacancy belongs in the catalog regardless
-        # of career family or geography. Preferences are applied downstream.
-        if not place: place = str(item.get("country_code") or "")
+        # The full catalog includes EVERY occupation and level, but ONLY
+        # vacancies explicitly located in Egypt.
+        country_code=str(item.get("country_code") or "").upper().strip()
+        if not EGYPT.search(place) and country_code not in ("EG","EGY"):
+            continue
+        if not place: place = "Egypt"
         link = str(item.get("url") or item.get("job_url") or "")
         if not link:
             shortcode = str(item.get("shortcode") or "")
@@ -98,7 +101,8 @@ def link_development(name, url, get_bytes, make_job):
         if p.hostname not in ("linkdevelopment.com","www.linkdevelopment.com"):continue
         if not re.match(r"^/careers/opportunities/[^/]+/?$",p.path,re.I):continue
         slug=unquote(p.path.strip("/").split("/")[-1])
-        # Never discard non-Egypt or non-technical employer vacancies here.
+        # The slug is the only available country evidence on this board.
+        if not EGYPT.search(slug.replace("-"," ")):continue
         if not label or len(label)<12 or label.lower().startswith(("more","apply","view")):
             label=" ".join(slug.replace("-"," ").split())
         if not label:continue
@@ -125,7 +129,7 @@ def itworx(name, post_json, make_job):
             title = str(row.get("Position") or "").strip()
             location = str(row.get("Location") or "").strip()
             job_id = str(row.get("ReqId") or "").strip()
-            if not job_id.isdigit() or not title:
+            if not job_id.isdigit() or not title or not EGYPT.search(location):
                 continue
             description = " ".join(str(row.get(k) or "") for k in ("Description", "Requirements"))
             job = make_job(
