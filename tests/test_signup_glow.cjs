@@ -18,5 +18,5 @@ test('light and dark signup glow have hover shine, focus and motion-safety',()=>
  assert.match(glow,/html\[data-theme="dark"\]/);
  assert.match(glow,/:focus-visible/);
  assert.match(glow,/@media\(prefers-reduced-motion:reduce\)/);
- assert.match(html,/secretj-landing\.css\?v=product-open-glow-20261124/);
+ assert.match(html,/secretj-landing\.css\?v=deep-purple-open-glow-20261124/);
 });
