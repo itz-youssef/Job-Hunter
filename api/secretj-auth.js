@@ -182,6 +182,40 @@ module.exports=async function handler(req,res){
       }
       return core.reply(res,200,{ok:true,message:'A new sign-in code has been sent.'});
     }
+    if(action==='request-email-login'){
+      // Passwordless alternative: code is sent ONLY to the existing account email.
+      // Return the same response for unknown/inactive accounts to avoid enumeration.
+      requireEmailDelivery();
+      const body=core.parseBody(req);
+      const address=core.cleanEmail(body.email);
+      await core.allowAuthAttempt(req,address);
+      const challenge=randomBytes(32).toString('base64url');
+      const users=await core.query(
+        'SELECT id,email FROM public.sj_users WHERE email=$1 AND is_active=true LIMIT 1',
+        [address]);
+      if(users[0]){
+        const user=users[0];
+        const code=String(randomInt(100000,1000000));
+        const salt=randomBytes(16).toString('hex');
+        const digest=codeDigest(challenge,code,salt);
+        // A fresh request invalidates a previously sent code for this account.
+        await core.query('DELETE FROM public.sj_login_challenges WHERE user_id=$1',[user.id]);
+        await core.query(
+          `INSERT INTO public.sj_login_challenges
+           (token_hash,user_id,code_hash,code_salt,expires_at)
+           VALUES($1,$2,$3,$4,now()+interval '10 minutes')`,
+          [tokenHash(challenge),user.id,digest,salt]);
+        try{await dispatchCode(user.email,code);}
+        catch(error){
+          await core.query('DELETE FROM public.sj_login_challenges WHERE token_hash=$1',
+            [tokenHash(challenge)]).catch(()=>{});
+          throw error;
+        }
+      }
+      return core.reply(res,200,{ok:true,requires_otp:true,otp_purpose:'login',
+        challenge,expires_in_seconds:600,
+        message:'If this email has an active account, a sign-in code was sent.'});
+    }
     if(!['register','login'].includes(action))throw core.fail(404,'Unknown action');
     const body=core.parseBody(req);
     const address=core.cleanEmail(body.email);
