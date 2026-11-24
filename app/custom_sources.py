@@ -561,7 +561,14 @@ def _board_jobs(name: str, url: str) -> list[dict]:
         reader = adcb_egypt if kind == "adcb_egypt" else fab_minds_egypt
         return _dedupe(reader(name, _bytes, _job))
 
-    if kind in ("cib_egypt","adib_egypt"):
+    if kind == "cib_egypt":
+        from app.taleo_public import taleo_jobs
+        try:
+            return _dedupe(taleo_jobs(kind,name,_job))
+        except (ValueError,OSError):
+            from app.egypt_expansion_feeds import taleo_bank_partial
+            return _dedupe(taleo_bank_partial(name,url,_bytes,_job))
+    if kind == "adib_egypt":
         from app.egypt_expansion_feeds import taleo_bank_partial
         return _dedupe(taleo_bank_partial(name,url,_bytes,_job))
     if kind == "pwc_egypt":
@@ -603,7 +610,11 @@ def _board_jobs(name: str, url: str) -> list[dict]:
 
     if kind == "etisalat_egypt":
         from app.telco_schneider_feeds import etisalat_taleo_partial
-        return _dedupe(etisalat_taleo_partial(name, _bytes, _job))
+        from app.taleo_public import taleo_jobs
+        try:
+            return _dedupe(taleo_jobs(kind,name,_job))
+        except (ValueError,OSError):
+            return _dedupe(etisalat_taleo_partial(name, _bytes, _job))
 
     if kind == "indrive_egypt":
         from app.telco_schneider_feeds import indrive_egypt_partial
@@ -1393,6 +1404,8 @@ def scan_company(company: dict):
                     f"{len(jobs)} official Blink22 vacancies; {verified} with explicit Egypt location; "
                     "only verified jobs can match Egypt-only filters")
 
+        if kind in ("cib_egypt", "etisalat_egypt") and jobs and all(j.get("source_pagination_consistency")=="complete" for j in jobs):
+            return jobs,"monitoring",f"{len(jobs)} Egypt requisitions from complete public Taleo paging"
         if kind in ("etisalat_egypt", "indrive_egypt", "uber_egypt", "cib_egypt", "adib_egypt"):
             return (
                 jobs, "partial",
