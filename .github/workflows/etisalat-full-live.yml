@@ -1,0 +1,29 @@
+name: Etisalat Full Public Detail Reconciliation
+on:
+  pull_request:
+    paths:
+      - "app/etisalat_browser.py"
+      - ".github/workflows/etisalat-full-live.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt playwright && python -m playwright install --with-deps chromium
+      - name: Validate every official detail page and unique job code
+        run: |
+          python -u - <<'PY'
+          from app.etisalat_browser import collect_public_board
+          import json
+          rows,total=collect_public_board()
+          print("ETISALAT_FULL_RESULT",len(rows),total,"egypt_location",sum(bool(x["location"]) for x in rows))
+          print("ETISALAT_ID_SAMPLE",json.dumps([{k:r[k] for k in ("index","number","title","location","url")} for r in rows[:3]],ensure_ascii=False))
+          assert len(rows)==total==len({r["number"] for r in rows})
+          PY
