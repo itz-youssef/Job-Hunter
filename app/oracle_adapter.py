@@ -59,12 +59,12 @@ def scan(name: str, url: str, get_json, make_job) -> list[dict]:
             title = str(row.get("Title") or "").strip()
             location = str(row.get("PrimaryLocation") or "").strip()
             country = str(row.get("PrimaryLocationCountry") or "").upper().strip()
-            if not job_id or not title:
+            # All sectors and experience levels are valid, but Egypt remains
+            # mandatory. Do not infer Egypt when location is unavailable.
+            if not job_id or not title or (country not in ("EG","EGY") and not EGYPT.search(location)):
                 continue
             if not location:
-                location = country or "Location not provided"
-            # Keep all publicly listed jobs, independent of sector, country
-            # and career level. User preferences are evaluated downstream.
+                location = "Egypt"
             if job_id in found:
                 continue
             description = str(row.get("ShortDescriptionStr") or "")
