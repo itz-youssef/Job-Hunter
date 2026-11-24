@@ -76,3 +76,17 @@ def test_added_registry_unique():
     names=[x["name"] for x in companies]
     assert len(names)==len(set(names))
     assert all(x in names for x in ("Yassir","Integrant","inDrive","Incorta","SOUM","robusta / RTG"))
+
+def test_indrive_follows_filtered_pagination_and_keeps_nontech_jobs():
+    a="https://indrive.pinpointhq.com/en/postings/c24f7a18-ad17-4c0b-aceb-8d89005a7321"
+    b="https://indrive.pinpointhq.com/en/postings/e0f9f279-25b5-4860-a667-54c6618cbcc5"
+    calls=[]
+    def fetch(url):
+        calls.append(url)
+        if "/page/2/" in url:
+            assert "country=Egypt" in url
+            return f'<a href="{b}">HR Specialist Onsite - Full Time - People Egypt</a>'.encode()
+        return f'<a href="{a}">ML Engineer Hybrid - Full Time - Technology Egypt</a><a rel="next" href="/vacancies/page/2/">Next</a>'.encode()
+    jobs=indrive_egypt_partial("inDrive",fetch,cs._job)
+    assert len(calls)==2
+    assert {j["title"] for j in jobs}=={"HR Specialist","ML Engineer"}
