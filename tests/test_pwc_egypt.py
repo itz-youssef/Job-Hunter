@@ -29,3 +29,12 @@ def test_incomplete_page_rejected():
 def test_nested_office_facets_include_both_etic_ids():
     facets=[{"facetParameter":"locationMainGroup","values":[{"facetParameter":"locations","values":[{"descriptor":"Cairo","id":"regular"},{"descriptor":"Cairo - ETIC","id":"etic1"},{"descriptor":"Cairo - ETIC","id":"etic2"},{"descriptor":"Dubai","id":"foreign"}]}]}]
     assert egypt_facet(facets)=={"locations":["regular","etic1","etic2"]}
+
+def test_strategy_keeps_only_explicit_egypt_and_multilocation_jobs():
+    from app.pwc_egypt import strategy_egypt
+    rows=[{"id":1,"title":"Consultant","location":{"name":"Cairo, Beirut, Dubai"},"offices":[],"content":"Description"},
+          {"id":2,"title":"Analyst","location":{"name":"Dubai"},"offices":[]},
+          {"id":3,"title":"Manager","location":{"name":"Middle East"},"offices":[{"name":"Cairo"}]}]
+    jobs=strategy_egypt("PwC Egypt",lambda _:{"jobs":rows,"meta":{"total":3}},_job)
+    assert {j["external_id"] for j in jobs}=={"strategy-1","strategy-3"}
+    assert all(j["company"]=="PwC Egypt" and "Egypt" in j["location"] for j in jobs)
