@@ -42,7 +42,10 @@ def egypt_location(location,code=""):
     if code in ("AE","ARE","UAE","DE","DEU","US","USA","GB","GBR",
                 "SA","SAU","IN","IND"):return False
     text=location_text(location)
-    return bool(EGYPT.search(text) and not OVERSEAS.search(text))
+    # A single requisition may explicitly include Egypt alongside UAE or
+    # another country: it remains an Egyptian vacancy in the official board.
+    # Explicit foreign country codes above are still rejected.
+    return bool(EGYPT.search(text))
 
 
 def listing_key(url):
