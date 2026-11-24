@@ -78,6 +78,15 @@ def main() -> None:
             )
         ]
 
+        # Retire the disconnected legacy built-in VOIS source from the public
+        # catalog. The separately managed VOIS entry in companies.json and
+        # its Custom Careers jobs are intentionally left untouched.
+        legacy_names = {"vodafone / vois", "vois"}
+        legacy_ids = {source["id"] for source in sources
+                      if str(source.get("name", "")).strip().casefold() in legacy_names}
+        sources = [source for source in sources if source["id"] not in legacy_ids]
+        jobs = [job for job in jobs if job["source_id"] not in legacy_ids]
+
         # Export only these non-sensitive preferences.
         public_settings = {
             "keywords": "",

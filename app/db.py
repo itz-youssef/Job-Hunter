@@ -29,7 +29,7 @@ def init():
         for column in ("requirements","department","seniority","source_detail_status"):
             if column not in current:
                 c.execute(f"ALTER TABLE jobs ADD COLUMN {column} TEXT")
-        seeds=[('Vodafone / VOIS','https://jobs.vodafone.com/careers?filter_country=Egypt','eightfold'),('Siemens','https://jobs.siemens.com/en_US/externaljobs','avature'),('Valeo','https://valeo.wd3.myworkdayjobs.com/en-US/valeo_jobs','workday'),('Microsoft','https://apply.careers.microsoft.com/careers','microsoft'),('Fawry','https://www.fawry.com/jobs/','jsonld')]
+        seeds=[('Siemens','https://jobs.siemens.com/en_US/externaljobs','avature'),('Valeo','https://valeo.wd3.myworkdayjobs.com/en-US/valeo_jobs','workday'),('Microsoft','https://apply.careers.microsoft.com/careers','microsoft'),('Fawry','https://www.fawry.com/jobs/','jsonld')]
         c.executemany('INSERT OR IGNORE INTO sources(name,url,kind) VALUES (?,?,?)',seeds)
         for k,v in {'interval':30,'email':'','email_enabled':False,'paused':False,'keywords':'python,software,backend,machine learning,computer vision,deep learning,mlops,data scientist,artificial intelligence','locations':'egypt,cairo,giza','min_score':3}.items():
             c.execute('INSERT OR IGNORE INTO settings VALUES (?,?)',(k,json.dumps(v)))
