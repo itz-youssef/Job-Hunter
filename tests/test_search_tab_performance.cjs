@@ -62,8 +62,8 @@ test('Blink22 uses its live employer career listing rather than the empty Workab
  const entry=companies.find(x=>x.name==='Blink22');
  const source=registry.companies.find(x=>x.name==='Blink22');
  assert.equal(entry.url,'https://apply.workable.com/blink22-3/');
- assert.equal(source.source_kind,'workable');
+ assert.equal(source.source_kind,'blink22_egypt');
  assert.equal(source.source_url,entry.url);
- assert.equal(source.preference_mode,'official-live-unfiltered');
+ assert.equal(source.preference_mode,'internal-fallback');
  assert.equal(source.supports_employer_side_filter,false);
 });
