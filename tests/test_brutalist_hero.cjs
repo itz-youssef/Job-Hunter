@@ -21,7 +21,7 @@ test('hero remains genuine interactive HTML and new style loads by versioned URL
  assert.match(js,/data-navigate="jobs"/);
  assert.match(js,/data-home-scroll="how"/);
  assert.match(js,/class="jh-intro-preview"/);
- assert.match(index,/secretj-jobhunter-intro\.css\?v=concrete-photo-20261124/);
+ assert.match(index,/secretj-jobhunter-intro\.css\?v=editorial-geometry-20261124/);
 });
 test('brutalist artwork remains visible on stacked phone and tablet breakpoints',()=>{
  const final=css.slice(css.indexOf('/* Monochrome Brutalism'));
