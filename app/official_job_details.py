@@ -24,6 +24,8 @@ MAX_DETAILS_PER_COMPANY=32
 SELECTORS=(
   '[itemprop="description"]', '#jobDescriptionText','.jobDescriptionText',
   '#job-description','.job-description','.jobDescription','.job_description',
+  '.jobdescription','.jobDescriptionText','#jobDescriptionText',
+  '[class*="jobdescription"]','[class*="jobDescription"]',
   '[data-testid="job-description"]','article.job','section.job-description',
   '.career-job-description','div.job-content','.job-details__description'
 )
