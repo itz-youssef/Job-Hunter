@@ -542,7 +542,8 @@ a:hover{color:var(--ink)}
     const all=allPublicJobs();
     // Review All Jobs and explicit search always use the unrestricted catalog.
     if(state.reviewExcluded||String(state.query||'').trim()||
-       state.jobType==='internship'||!state.member||!state.memberPrefsConfigured)return all;
+       state.companyFilter!=='all'||state.jobType==='internship'||
+       !state.member||!state.memberPrefsConfigured)return all;
     // Strict feed contract: public catalog provisional matches have not
     // passed the server-side qualification engine, so they never count as
     // personalized matches. Pending jobs remain inspectable in Review All.
@@ -1159,7 +1160,7 @@ a:hover{color:var(--ink)}
     const result=list.filter(j=>{
       if(q && !searchScore(j))return false;
       if(!matchesRole(j,state.role))return false;
-      if(state.companyFilter!=='all' && companyOf(j)!==state.companyFilter)return false;
+      if(state.companyFilter!=='all' && where(companyOf(j))!==where(state.companyFilter))return false;
       // Use precisely the same matching semantics as entering 'intern' in Search.
       if(state.jobType==='internship'&&!window.SecretJJobSearch?.matches(j,'intern',window.SecretJJobPreferences?.classify))return false;
       if(state.jobType==='junior' && /\b(intern(?:ship)?s?|trainee)\b/i.test(titleOf(j)))return false;
@@ -1185,9 +1186,9 @@ a:hover{color:var(--ink)}
   // The navbar's count is the same filtered list used to render job cards.
   // Recompute on auth completion, periodic snapshot refresh, and each filter.
   function jobsPage(saved=false){
-    if(!saved&&state.memberLoading)return top('YOUR JOB FEED','Loading your opportunities','We are securely loading your preferences.')+
+    if(!saved&&state.companyFilter==='all'&&state.memberLoading)return top('YOUR JOB FEED','Loading your opportunities','We are securely loading your preferences.')+
       loadingSkeleton('Preparing your personalized feed','Checking your account and saved filters…',6);
-    if(!saved&&state.member&&state.memberPrefsConfigured&&!state.watchFeedLoaded&&
+    if(!saved&&state.companyFilter==='all'&&state.member&&state.memberPrefsConfigured&&!state.watchFeedLoaded&&
        (state.watchFeedLoading||state.watchFeedPendingSince>0&&Date.now()-state.watchFeedPendingSince<45000))
       return top('YOUR JOB FEED','Matching opportunities','Your filters are being applied.')+
         loadingSkeleton(state.watchFeedPendingSince?'Applying updated preferences…':'Loading matching opportunities',
@@ -1196,15 +1197,32 @@ a:hover{color:var(--ink)}
     const all=validJobs(), whole=saved?(state.member?(state.savedRecords||[]).map(row=>({...(row.job_snapshot||{}),id:row.job_key})):all.filter(j=>state.saved.has(jobKey(j)))):all;
     const list=filterJobs(whole);
     const visible=list.slice(0,state.feedLimit);
-    const companies=[...new Set(whole.map(companyOf))].sort((a,b)=>a.localeCompare(b));
+    // Company browsing must use the entire published catalog and all tracked
+    // company names, never the user's personalized feed subset.
+    const catalog=allPublicJobs();
+    const companyCounts=new Map();
+    for(const job of catalog){
+      const company=String(companyOf(job)).trim();
+      if(!company||where(company)==='unknown company')continue;
+      const key=where(company);
+      const item=companyCounts.get(key);
+      if(item)item.count++;
+      else companyCounts.set(key,{name:company,count:1});
+    }
+    if(!saved)for(const source of monitoredSources()){
+      const name=String(source.name||'').trim();
+      if(name&&!companyCounts.has(where(name)))companyCounts.set(where(name),{name,count:0});
+    }
+    const companies=[...companyCounts.values()].sort((a,b)=>a.name.localeCompare(b.name));
     const option=(v,text,current)=>`<option value="${esc(v)}" ${current===v?'selected':''}>${esc(text)}</option>`;
     const roleOptions=availableRoleOptions();
     if(state.role!=='all'&&!roleOptions.some(c=>c.key===state.role))state.role='all';
     const personalized=Boolean(state.member&&state.memberPrefsConfigured);
     const globalSearch=Boolean(state.query.trim());
     const hiddenCount=personalized?allPublicJobs().length:0;
-    const personalizedView=personalized&&!state.reviewExcluded&&!globalSearch&&state.jobType!=='internship';
-    const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':globalSearch?'Search all detected opportunities':personalized?'Your personalized job feed':'All detected opportunities',saved?(state.member?'Jobs saved to your account.':'Jobs you’ve bookmarked on this device.'):globalSearch?'Searching all published listings, including those outside your saved preferences. Email alerts remain personalized.':personalized?'Opportunities detected by your personalized monitoring system, the same source used for email alerts.':'Explore every discovered opening with a valid application link. Sign in and save preferences to personalize your feed and alerts.');
+    const companyBrowsing=!saved&&state.companyFilter!=='all';
+    const personalizedView=personalized&&!state.reviewExcluded&&!globalSearch&&!companyBrowsing&&state.jobType!=='internship';
+    const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':companyBrowsing?'All jobs at '+state.companyFilter:globalSearch?'Search all detected opportunities':personalized?'Your personalized job feed':'All detected opportunities',saved?(state.member?'Jobs saved to your account.':'Jobs you’ve bookmarked on this device.'):companyBrowsing?'Showing every published job we currently have for this company, across all career levels and fields. Your personal email alerts are unchanged.':globalSearch?'Searching all published listings, including those outside your saved preferences. Email alerts remain personalized.':personalized?'Opportunities detected by your personalized monitoring system, the same source used for email alerts.':'Explore every discovered opening with a valid application link. Sign in and save preferences to personalize your feed and alerts.');
     return h+
       `${personalizedView&&state.watchFeedLoading?
         '<div class="sj-loading-inline" role="status" aria-live="polite"><span class="sj-loading-ring" aria-hidden="true"></span>Refreshing your matching jobs…</div>':''}`+
@@ -1212,19 +1230,19 @@ a:hover{color:var(--ink)}
       <section class="job-filter-panel" aria-label="Job search filters">
         <div class="job-filter-row"><label class="filter-field filter-search">Search<input class="search-box" id="job-search" type="search" placeholder="Title, company or skills" value="${esc(state.query)}" aria-label="Search jobs"></label>
         <label class="filter-field">Role family<select class="filter-select" id="role-filter">${option('all','All '+(state.memberPrefs?.role_families?.length?'selected':'')+' roles',state.role)}${roleOptions.map(c=>option(c.key,c.label,state.role)).join('')}</select></label>
-        <label class="filter-field">Company<select class="filter-select" id="company-filter">${option('all','All companies',state.companyFilter)}${companies.map(c=>option(c,c,state.companyFilter)).join('')}</select></label></div>
+        <label class="filter-field">Browse all jobs by company<select class="filter-select" id="company-filter" aria-label="Browse all published jobs by company">${option('all','All companies ('+catalog.length+' jobs)',state.companyFilter)}${companies.map(c=>option(c.name,c.name+' ('+c.count+' jobs)',state.companyFilter)).join('')}</select></label></div>
         <div class="job-filter-row">
         <label class="filter-field">Job type<select class="filter-select" id="type-filter">${option('all','All job types',state.jobType)}${option('internship','Internships / training',state.jobType)}${option('junior','Junior / full-time',state.jobType)}</select></label>
         <label class="filter-field">Date based on<select class="filter-select" id="date-basis">${option('posted','Employer posted date',state.dateBasis)}${option('firstseen','First seen by Job Hunter',state.dateBasis)}</select></label>
         <label class="filter-field">Date range<select class="filter-select" id="date-filter">${option('all','Any date',state.dateFilter)}${option('1h','Past hour',state.dateFilter)}${option('6h','Past 6 hours',state.dateFilter)}${option('12h','Past 12 hours',state.dateFilter)}${option('1','Past 24 hours',state.dateFilter)}${option('3','Past 3 days',state.dateFilter)}${option('7','Past 7 days',state.dateFilter)}${option('14','Past 14 days',state.dateFilter)}${option('30','Past 30 days',state.dateFilter)}${option('90','Past 90 days',state.dateFilter)}</select></label>
         <label class="filter-field">Sort<select class="filter-select" id="sort-filter">${option('score','Best match',state.sortBy)}${option('recent','Newest employer posting',state.sortBy)}${option('company','Company A–Z',state.sortBy)}</select></label>
         <button class="btn secondary clear-job-filters" data-reset-filters type="button">Reset filters</button></div>
-        <p class="tiny">Employer posted date is verified source metadata when supplied; unknown dates are excluded from posted-date ranges, never replaced with detection timestamps. First seen is separate.</p>
+        <p class="tiny">Choose a company to browse all its published jobs from the full company catalog — regardless of your saved career preferences. Choosing a company clears the other search filters. Companies with no currently published jobs show 0. Employer posted dates come from source metadata; unknown dates are not substituted with detection timestamps.</p>
       </section>
       <div class="cards" id="jobs-list">${visible.length?visible.map(jobCard).join(''):empty('No jobs match these filters','Change the date range or reset filters to see available opportunities.')}</div>
       <div id="jobs-load-more-wrap" style="text-align:center;margin:18px 0">${list.length>visible.length?
         `<button type="button" class="btn secondary" data-load-more-jobs>Load more jobs (${visible.length} of ${list.length})</button>`:''}</div>
-      <p class="tiny" id="jobs-count-summary">${visible.length} of ${list.length} matching results · ${whole.length} ${personalized?'preference-matched':'detected'} jobs shown. A matching score is not a hiring probability; other roles may have no score.</p>`;
+      <p class="tiny" id="jobs-count-summary">${visible.length} of ${list.length} matching results · ${whole.length} ${companyBrowsing?'published':personalized&&!state.reviewExcluded&&!globalSearch?'preference-matched':'detected'} jobs shown. A matching score is not a hiring probability; other roles may have no score.</p>`;
   }
   // Search updates only job cards, result count and title. The search input
   // remains mounted, preventing keyboard stalls and lost focus on every term.
@@ -1809,7 +1827,18 @@ a:hover{color:var(--ink)}
     });
     document.addEventListener('change',async event=>{
       const fields={'role-filter':'role','company-filter':'companyFilter','date-filter':'dateFilter','date-basis':'dateBasis','sort-filter':'sortBy','type-filter':'jobType'};
-      if(fields[event.target.id]){clearTimeout(searchTimer);state[fields[event.target.id]]=event.target.value;state.feedLimit=FEED_PAGE_SIZE;syncFeedCount();render();}
+      if(fields[event.target.id]){
+        clearTimeout(searchTimer);
+        if(event.target.id==='company-filter'&&event.target.value!=='all'){
+          // Selecting a company is a full-catalog drilldown, not an additional
+          // filter on the personalized feed or a previously restricted search.
+          Object.assign(state,{query:'',role:'all',jobType:'all',dateFilter:'all',
+            reviewExcluded:false,sortBy:'recent'});
+        }
+        state[fields[event.target.id]]=event.target.value;
+        state.feedLimit=FEED_PAGE_SIZE;
+        syncFeedCount();render();
+      }
       if(event.target.id==='cv-upload'){
         try{
           await acceptCV(event.target.files?.[0]);
