@@ -32,7 +32,7 @@ test('career level alone matches jobs from unrelated fields, not only selected s
 test('signup displays required confirmation field and checks equality before API',()=>{
  assert.match(markup,/id="confirm-password-label" hidden>Confirm password/);
  assert.match(markup,/name="confirm_password" autocomplete="new-password"/);
- assert.match(account,/form\.elements\.confirm_password\.required=register/);
+ assert.match(account,/elements\.confirm_password\.required=register/);
  assert.match(account,/if\(values\.password!==values\.confirm_password\)/);
  assert.match(account,/delete values\.confirm_password/);
 });
