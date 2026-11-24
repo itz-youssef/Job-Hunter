@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "scripts/reconcile-official-egypt-jobs.py"
+      - "scripts/combine-official-egypt-reconciliation.py"
       - "tests/test_independent_live_ats_reconciliation.py"
       - ".github/workflows/independent-egypt-ats-reconciliation.yml"
   workflow_dispatch:
@@ -40,4 +41,32 @@ jobs:
         with:
           name: official-egypt-reconciliation-${{ matrix.part }}
           path: reports/live-reconciliation/shard-${{ matrix.part }}.json
+          retention-days: 30
+
+  summarize:
+    name: Publish the full employer-by-employer Egypt count and missing jobs report
+    needs: compare
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: official-egypt-reconciliation-*
+          path: reports/live-reconciliation
+          merge-multiple: true
+      - name: Validate all configured employers and combine independent comparisons
+        run: python scripts/combine-official-egypt-reconciliation.py
+      - name: Publish human-readable company-by-company results
+        if: success()
+        run: cat reports/live-reconciliation/combined/reconciliation.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: official-egypt-full-company-reconciliation-report
+          path: reports/live-reconciliation/combined/
           retention-days: 30
