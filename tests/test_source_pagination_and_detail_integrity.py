@@ -22,6 +22,23 @@ def test_workday_scans_beyond_original_five_page_limit(monkeypatch):
     assert offsets==[0,20,40,60,80,100,120]
 
 
+def test_workday_small_live_count_drift_keeps_jobs_but_marks_partial(monkeypatch):
+    def fake_json(url,body=None):
+        if url.endswith("/jobs"):
+            offset=body["offset"]
+            total=33 if offset==0 else 34
+            size=min(20,34-offset)
+            return {"total":total,"jobPostings":[
+                {"title":f"Job {n}","externalPath":f"/job/EG/ROLE_{n}"}
+                for n in range(offset,offset+size)
+            ]}
+        return {"jobPostingInfo":{}}
+    monkeypatch.setattr(cs,"_json",fake_json)
+    jobs=cs._board_jobs("Example","https://example.wd3.myworkdayjobs.com/Example")
+    assert len(jobs)==34
+    assert all(j["source_pagination_consistency"]=="changed-during-scan" for j in jobs)
+
+
 def test_workday_repeating_page_is_not_reported_complete(monkeypatch):
     def fake_json(url,body=None):
         if url.endswith("/jobs"):
