@@ -1016,6 +1016,14 @@ def _board_jobs(name: str, url: str) -> list[dict]:
                 raise ValueError("Workday reported total missing") from exc
             if total < 0:
                 raise ValueError("Workday reported invalid total")
+            if reported_total and total == 0:
+                # Some live Workday boards (Konecta, observed 2026-11-24)
+                # return total=0 on a later page after a nonzero first total.
+                # Never throw away already collected real jobs or claim complete.
+                count_drift = True
+                if not rows:
+                    break
+                total = reported_total
             totals_seen.add(total)
             if reported_total is None:
                 reported_total = total
@@ -1023,8 +1031,8 @@ def _board_jobs(name: str, url: str) -> list[dict]:
                 # Real careers boards update while we page. Preserve observed
                 # jobs but mark coverage PARTIAL on a small concurrent change.
                 # Larger changes indicate an unstable source, not a complete scan.
-                if abs(total-reported_total)>max(3,reported_total//10):
-                    raise ValueError(f"Workday total changed during pagination: {reported_total} -> {total}")
+                # A live board may move or re-count results between pages.
+                # Keep verifiable rows but explicitly downgrade coverage.
                 count_drift = True
                 reported_total = max(reported_total,total)
             if not rows and page*20 < total:
@@ -1099,7 +1107,7 @@ def _board_jobs(name: str, url: str) -> list[dict]:
             raise ValueError("Workday total exceeds verified pagination budget")
         # Do not mark a truncated list complete, even if page size varies.
         if totals_seen and len(seen_paths) < min(totals_seen):
-            raise ValueError("Workday listing count does not match official total")
+            count_drift = True  # Never label an incomplete source as complete.
         if count_drift:
             for job in jobs:
                 job["source_pagination_consistency"]="changed-during-scan"
