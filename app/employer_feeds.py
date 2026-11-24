@@ -76,7 +76,7 @@ def ibm_egypt(name, post_json, make_job):
 
 
 
-def paymob_recruitera(name, get_json, make_job):
+def paymob_recruitera(name, get_json, make_job, get_bytes=None):
     """Paymob's publicly listed Recruitera employer board with cursor paging."""
     from urllib.parse import quote
     endpoint = "https://app.recruitera.ai/api/public/v1/paymob/opportunities"
@@ -130,6 +130,35 @@ def paymob_recruitera(name, get_json, make_job):
             if not foreign and (explicit_egypt or slug_egypt or country.upper() in ("EG","EGY")):
                 if not re.search(r"\bEgypt\b",location,re.I):
                     location = (location+", Egypt") if location else "Egypt"
+            # If list metadata is ambiguous, read the vacancy's own structured
+            # work-location field. Never use a corporate footer or a market
+            # mentioned in the title as proof of where the employee works.
+            if get_bytes and not re.search(r"\b(?:Egypt|Cairo|Giza|Alexandria|UAE|Dubai|Saudi Arabia|KSA|Oman|Jordan|Pakistan)\b",location,re.I):
+                try:
+                    from bs4 import BeautifulSoup
+                    import json
+                    doc=BeautifulSoup(get_bytes(url).decode("utf-8","replace"),"html.parser")
+                    for tag in doc.select('script[type="application/ld+json"]'):
+                        data=json.loads(tag.string or tag.get_text())
+                        candidates=data if isinstance(data,list) else [data]
+                        for record in candidates:
+                            if not isinstance(record,dict) or record.get("@type")!="JobPosting":continue
+                            if str(record.get("title") or "").strip().casefold()!=title.casefold():continue
+                            places=record.get("jobLocation") or []
+                            if isinstance(places,dict):places=[places]
+                            if not isinstance(places,list):continue
+                            parts=[]
+                            for place in places:
+                                address=place.get("address",{}) if isinstance(place,dict) else {}
+                                if not isinstance(address,dict):continue
+                                country=address.get("addressCountry","")
+                                if isinstance(country,dict):country=country.get("name","")
+                                if str(country).upper() in ("EG","EGY"):country="Egypt"
+                                label=", ".join(str(v) for v in (address.get("addressLocality"),address.get("addressRegion"),country) if v)
+                                if label:parts.append(label)
+                            if parts:location="; ".join(parts)
+                except (OSError,ValueError,TypeError,AttributeError):
+                    pass
             description = str(row.get("excerpt") or "")
             job = make_job(
                 name, title, location, url, description, "",
