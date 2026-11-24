@@ -1,5 +1,5 @@
 name: Independent Egypt Official ATS Reconciliation
-# 2026-11-24: reconcile multi-location ATS duplicates by stable URL
+# 2026-11-24: extend standalone comparison to additional employer ATS platforms
 on:
   pull_request:
     paths:
