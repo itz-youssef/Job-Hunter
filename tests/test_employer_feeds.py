@@ -181,3 +181,15 @@ def test_paymob_invalid_record_does_not_fake_incomplete_pagination():
     jobs = paymob_recruitera("Paymob", lambda _: data, cs._job)
     assert len(jobs) == 1
     assert jobs[0]["id"] == "custom-paymob-123"
+
+def test_paymob_explicit_egypt_in_employer_slug_is_preserved():
+    from app.employer_feeds import paymob_recruitera
+    payload={"data":[
+        {"id":"1","title":"Sales","slug":"sales-paymob-cairo-egypt-123","location":"Paymob Head Office"},
+        {"id":"2","title":"Sales","slug":"sales-paymob-dubai-456","location":"Dubai, UAE"},
+        {"id":"3","title":"Sales","slug":"sales-paymob-789","location":"Paymob Head Office"},
+    ],"meta":{"found":3,"next_cursor":None}}
+    jobs=paymob_recruitera("Paymob",lambda _:payload,cs._job)
+    assert jobs[0]["location"]=="Paymob Head Office, Egypt"
+    assert jobs[1]["location"]=="Dubai, UAE"
+    assert jobs[2]["location"]=="Paymob Head Office"
