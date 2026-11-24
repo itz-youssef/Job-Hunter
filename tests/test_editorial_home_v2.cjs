@@ -247,7 +247,7 @@ test('Job Hunter hero uses local monochrome architectural shadow artwork in both
  assert.match(block,/jobhunter-abstract-dark\.svg/);
  assert.match(block,/html\[data-theme="dark"\] \.jh-intro \.jh-intro-hero::before/);
  assert.match(block,/pointer-events:none/);
- assert.match(block,/images\.unsplash\.com\/photo-1760284739389-8a833519d6a5/);
+ assert.match(block,/jobhunter-editorial-geometry-light\.svg/);
  assert.doesNotMatch(block,/sticky|stationery|saturate\(/);
  assert.match(main,/\/assets\/secretj-jobhunter-intro\.css\?v=[\w-]+/);
  for(const image of [light,dark]){
