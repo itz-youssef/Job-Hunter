@@ -21,8 +21,8 @@ def test_workable_independent_collector_keeps_nontech_egypt():
     def fetch(url):
         urls.append(url)
         return {"jobs":[
-           {"title":"Accountant","shortcode":"AA","location":{"city":"Cairo","country":"Egypt"}},
-           {"title":"Senior Engineer","shortcode":"BB","location":{"city":"Dubai","country":"UAE"}},
+           {"title":"Accountant","shortcode":"AA","country":"Egypt","city":"Cairo"},
+           {"title":"Senior Engineer","shortcode":"BB","country":"UAE","city":"Dubai"},
            {"title":"Marketing Intern","shortcode":"CC","location":{"city":"Giza","country":"Egypt"}},
         ]}
     kind,jobs,count=mod.raw_ats(company,fetch)
