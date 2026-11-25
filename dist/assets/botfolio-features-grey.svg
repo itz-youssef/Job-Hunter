@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1648 700" preserveAspectRatio="none" fill="none">
+<defs><linearGradient id="paper" x2="1" y2="1"><stop stop-color="#eeeeee"/><stop offset=".45" stop-color="#f8f8f8"/><stop offset="1" stop-color="#ededed"/></linearGradient><linearGradient id="diag" x2="1" y2="1"><stop stop-color="#e0e0e0" stop-opacity=".64"/><stop offset="1" stop-color="#f5f5f5" stop-opacity="0"/></linearGradient><pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" stroke="#bcbcbc" stroke-opacity=".26" stroke-width=".7"/></pattern><radialGradient id="fade"><stop stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><mask id="gridfade"><ellipse cx="85" cy="75" rx="210" ry="180" fill="url(#fade)"/><ellipse cx="115" cy="625" rx="240" ry="140" fill="url(#fade)"/></mask><pattern id="dots" width="21" height="19" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.3" fill="#9d9d9d"/></pattern></defs>
+<path d="M0 0H1648V700H0Z" fill="url(#paper)"/>
+<path d="M0 0H360L0 290Z" fill="url(#diag)"/><path d="M1648 467V700H1390Z" fill="url(#diag)" opacity=".65"/>
+<path d="M0 420C352-9 750-72 1160-30M0 570C474 858 1101 594 1648 220" stroke="#9e9e9e" stroke-opacity=".38" stroke-width="1" vector-effect="non-scaling-stroke"/>
+<path d="M0 0H350V700H0Z" fill="url(#grid)" mask="url(#gridfade)"/>
+<path d="M1360 54h222v74h-222zM1292 581h220v64h-220z" fill="url(#dots)" opacity=".62"/>
+<circle cx="992" cy="0" r="5" fill="#aeaeae"/><circle cx="884" cy="604" r="5" fill="#b0b0b0"/>
+<path d="M70 34h50M95 9v50M107 558h44M129 536v44" stroke="#a7a7a7" stroke-opacity=".6" stroke-width=".8"/>
+</svg>
