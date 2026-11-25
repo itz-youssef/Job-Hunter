@@ -19,7 +19,7 @@ module.exports=async function(req,res){
    const message=valid(body.message,900,'Question');if(!message)throw core.fail(400,'Enter a question.');
    if(bot.embedding_model!==B.EMBED_MODEL)throw core.fail(503,'This portfolio needs to be re-indexed.');
    const ip=String(req.headers?.['x-forwarded-for']||'unknown').slice(0,100);
-   await B.consume('ip:'+core.hash(ip),1,15);await B.consume('bot:'+bot.id,1,20);
+   await B.consume('ip:'+core.hash(ip),1,B.MAX_IP_CHATS);await B.consume('bot:'+bot.id,1,B.MAX_BOT_CHATS);
    const answer=await B.answer(req.env,bot,message,body.history);
    return core.reply(res,200,{ok:true,answer});
   }
@@ -36,7 +36,7 @@ module.exports=async function(req,res){
    const chunks=B.splitText(body.knowledge),ai=B.getAI(req.env);
    const free=await core.query('SELECT count(*)::int AS n FROM public.sj_botfolio_bots WHERE user_id=$1',[uid]);
    if(Number(free[0]?.n)>=B.MAX_BOTS)throw core.fail(409,'You can create up to 5 portfolios in this pilot.');
-   await B.consume('create:'+uid,1,5);
+   await B.consume('create:'+uid,1,B.MAX_INDEX_ATTEMPTS);
    const vectors=await B.embed(ai,chunks),knowledge=chunks.map((text,i)=>({text,vector:vectors[i]}));
    const rows=await core.query('INSERT INTO public.sj_botfolio_bots(id,user_id,slot,name,headline,knowledge,embedding_model,published) SELECT $1,$2,s,$3,$4,$5::jsonb,$6,false FROM generate_series(1,5) s WHERE NOT EXISTS (SELECT 1 FROM public.sj_botfolio_bots WHERE user_id=$2 AND slot=s) ORDER BY s LIMIT 1 RETURNING '+fields,[core.randomUUID(),uid,name,headline,JSON.stringify(knowledge),B.EMBED_MODEL]);
    if(!rows.length)throw core.fail(409,'Portfolio limit reached.');

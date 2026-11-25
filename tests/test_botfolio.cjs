@@ -30,7 +30,7 @@ test('create embeddings and chat with mocked provider, separate tenant and bound
  const ai={run:async(model,body)=>{models.push(model);assert.equal(model,B.EMBED_MODEL);return {data:body.text.map(()=>vector)};}};
  global.fetch=async(url,options)=>{groqCalls++;assert.equal(url,'https://api.groq.com/openai/v1/chat/completions');assert.equal(options.headers.Authorization,'Bearer test-groq-key');const body=JSON.parse(options.body);assert.equal(body.model,'openai/gpt-oss-120b');assert.equal(body.reasoning_effort,'low');assert.equal(body.include_reasoning,false);assert.match(body.messages[1].content,/software engineer/);return {ok:true,status:200,json:async()=>({choices:[{finish_reason:'stop',message:{content:'Alex worked as a software engineer.'}}],usage:{total_tokens:280}})};};
  try{const c=req('POST','create',{name:'Alex',headline:'Engineer',knowledge:'Alex worked as a software engineer on application development.',reviewed:true});c.env.BOTFOLIO_AI=ai;assert.equal((await call(c)).status,201);
- const q=req('POST','chat',{id:ID,message:'Experience?'},ID,false);q.env.BOTFOLIO_AI=ai;q.env.GROQ_API_KEY='test-groq-key';const r=await call(q);assert.equal(r.status,200);assert.match(r.data.answer,/software engineer/);assert.deepEqual(models,[B.EMBED_MODEL,B.EMBED_MODEL]);assert.equal(groqCalls,1);assert.equal(groqDebits[0][2],35000);assert.deepEqual(groqSettles[0],[groqDebits[0][0],280]);assert.ok(reserve.some(x=>x[0]==='global:neurons'&&x[2]===B.DAILY_NEURONS));assert.equal(reserve.filter(x=>x[0]==='global:neurons').length,2);
+ const q=req('POST','chat',{id:ID,message:'Experience?'},ID,false);q.env.BOTFOLIO_AI=ai;q.env.GROQ_API_KEY='test-groq-key';const r=await call(q);assert.equal(r.status,200);assert.match(r.data.answer,/software engineer/);assert.deepEqual(models,[B.EMBED_MODEL,B.EMBED_MODEL]);assert.equal(groqCalls,1);assert.equal(groqDebits[0][2],35000);assert.deepEqual(groqSettles[0],[groqDebits[0][0],280,'success']);assert.ok(reserve.some(x=>x[0]==='global:neurons'&&x[2]===B.DAILY_NEURONS));assert.equal(reserve.filter(x=>x[0]==='global:neurons').length,2);
  const repeat=await call(q);assert.equal(repeat.status,200);assert.equal(repeat.data.answer,r.data.answer);assert.equal(groqCalls,1);assert.equal(models.length,2);
  }finally{global.fetch=originalFetch;core.setQueryForTests(null);}
 });
@@ -47,8 +47,8 @@ test('Groq quota, missing credentials, provider 429 and no paid fallback',async(
  try{
   core.setQueryForTests(async()=>[]);
   await assert.rejects(B.generate({GROQ_API_KEY:'test'},messages),e=>e.status===429);assert.equal(calls,0);
-  core.setQueryForTests(async(sql)=>{assert.match(sql,/INSERT INTO public.sj_botfolio_groq_budget/);return [{id:1}];});
-  await assert.rejects(B.generate({GROQ_API_KEY:'test'},messages),e=>e.status===429);assert.equal(calls,1);
+  const settlements=[];core.setQueryForTests(async(sql,args)=>{if(sql.includes('UPDATE public.sj_botfolio_groq_budget')){settlements.push(args);return [];}assert.match(sql,/INSERT INTO public.sj_botfolio_groq_budget/);return [{id:1}];});
+  await assert.rejects(B.generate({GROQ_API_KEY:'test'},messages),e=>e.status===429);assert.equal(calls,1);assert.equal(settlements.length,1);assert.deepEqual(settlements[0].slice(1),[null,'rate_limited']);
   assert.equal(B.ready({BOTFOLIO_AI:{run(){}}}),!!process.env.GROQ_API_KEY);
   assert.equal(B.ready({BOTFOLIO_AI:{run(){}},GROQ_API_KEY:'test'}),true);
  }finally{global.fetch=originalFetch;core.setQueryForTests(null);}
@@ -56,4 +56,14 @@ test('Groq quota, missing credentials, provider 429 and no paid fallback',async(
 test('Botfolio-only Groq ledger migration is private and additive',()=>{
  const sql=fs.readFileSync('database/migrations/014_botfolio_groq_budget.sql','utf8');
  assert.match(sql,/CREATE TABLE IF NOT EXISTS public.sj_botfolio_groq_budget/);assert.match(sql,/ENABLE ROW LEVEL SECURITY/);assert.match(sql,/REVOKE ALL/);assert.doesNotMatch(sql,/DROP TABLE|TRUNCATE/);
+});
+
+test('usage reports rolling reservations separately from confirmed provider tokens and daily embedding estimates',async()=>{
+ core.setQueryForTests(async(sql)=>{
+  if(sql.includes('WITH active AS')){assert.match(sql,/86400/);return [{requests:5,tokens:12000,reported_tokens:3000,reported_requests:2,successful:2,failed:1,pending:1,last_outcome:'rate_limited'}];}
+  assert.match(sql,/AT TIME ZONE 'UTC'/);return [{neurons:32,chat_attempts:8,indexing_attempts:2}];
+ });
+ try{const u=await B.usage({GROQ_API_KEY:'private-test-key',BOTFOLIO_AI:{run(){}}});
+ assert.equal(u.generation.configured,true);assert.equal(u.generation.requests_24h,5);assert.equal(u.generation.unknown,1);assert.equal(u.generation.remaining_tokens,23000);assert.equal(u.generation.unverified_tokens_24h,9000);assert.equal(u.generation.global_request_limit,null);assert.equal(u.embeddings.remaining_neurons,1768);assert.equal(u.daily.per_bot,20);assert.doesNotMatch(JSON.stringify(u),/private-test-key/);
+ }finally{core.setQueryForTests(null);}
 });

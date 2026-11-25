@@ -16,6 +16,8 @@ async function call(method,action,body={},role='admin',id=me){
    return [{id,email:'owner@example.com',role,is_active:true}];
   if(sql.includes('FROM public.sj_users u')&&sql.includes('WHERE u.id=$1 LIMIT 1'))
    return [{id:other,email:'member@example.com',role:'member',is_active:true,saved_jobs:2}];
+  if(sql.includes('WITH active AS')&&sql.includes('sj_botfolio_groq_budget'))return [{requests:3,tokens:4000,reported_tokens:1000,reported_requests:1,successful:1,failed:1,pending:1,last_outcome:'rate_limited'}];
+  if(sql.includes('FROM public.sj_botfolio_limits'))return [{neurons:12,chat_attempts:4,indexing_attempts:1}];
   if(sql.includes('SELECT count(*)::int AS total'))return [{total:2,active:2,admins:1,joined_week:1}];
   if(sql.includes('sj_email_alert_log WHERE status='))return [{opted_in:2,verified:1,sent:4,failed:0,pending:0}];
   if(sql.includes('INSERT INTO public.sj_admin_audit'))return [{target_user_id:other}];
@@ -107,4 +109,13 @@ test('export serializes real family title patterns without changing matcher',()=
  assert.ok(data.categories.find(c=>c.key==='ai_ml').title_pattern.pattern);
  assert.ok(data.title_aliases.some(x=>x.family==='ai_ml'));
  assert.ok(prefs.classify({title:'Machine Learning Engineer'}).includes('ai_ml'));
+});
+
+test('Botfolio usage is admin-only, aggregate and read-only',async()=>{
+ const member=await call('GET','botfolio-usage',{},'member');assert.equal(member.response.statusCode,403);assert.equal(member.queries.length,1);
+ const {response,queries}=await call('GET','botfolio-usage');assert.equal(response.statusCode,200);const u=response.body.usage;
+ assert.equal(u.generation.model,'openai/gpt-oss-120b');assert.equal(u.generation.requests_24h,3);assert.equal(u.generation.remaining_tokens,31000);assert.equal(u.generation.reported_tokens_24h,1000);assert.equal(u.embeddings.remaining_neurons,1788);assert.equal(u.daily.per_ip,15);
+ assert.equal(queries.length,3);assert.ok(queries.slice(1).every(q=>!(/\b(?:INSERT INTO|UPDATE|DELETE FROM)\b/i.test(q.sql))));
+ assert.doesNotMatch(JSON.stringify(response.body),/knowledge|vector|reservations|GROQ_API_KEY|password_hash/);
+ const js=fs.readFileSync('dist/assets/secretj-admin-console.js','utf8');assert.match(js,/Botfolio AI Usage/);assert.match(js,/botfolio-usage/);assert.match(js,/data-bf-usage-refresh/);assert.match(js,/Not configured on this host/);
 });
