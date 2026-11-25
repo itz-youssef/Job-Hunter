@@ -29,7 +29,8 @@ test('employer-scoped branded alias needs live evidence and explicit level',()=>
  assert.notEqual(E.shadow({title:'Future X',company:'Different'},rules).level,'internship');
  assert.equal(check(p,{...d,live:false}),null);
  assert.equal(check({...p,level:'senior'},d),null);
- assert.equal(E.mergeRules(rules,[{...a,key:'different',level:'entry'}]).every(r=>r.status==='conflict'),true);
+ const conflicting=E.mergeRules(rules,[{...a,key:'different',level:'entry'}]);
+ assert.deepEqual(conflicting[0],rules[0]);assert.equal(conflicting[1].status,'conflict');
 });
 test('free-only IDs, shared budget and Cairo rotation',()=>{
  assert.ok(A.MODELS.every(m=>m.endsWith(':free')));
@@ -116,4 +117,23 @@ test('independent tasks send only relevant evidence and keep quotes verifiable',
  assert.ok(c.payload.documents.every(d=>d.text.length<=A.TASK_TEXT_CHARS));
  assert.ok(f.payload.documents.every(d=>d.text.length<=A.TASK_TEXT_CHARS));
  assert.ok(A.cooldownMs({retryAfter:120000})>=120000);
+});
+
+test('append only preserves existing evidence and classifications, adds independent confirmations',()=>{
+ const a=check(proposal),b=check(proposal,doc,A.MODELS[1]);assert.ok(a&&b);
+ const updated=E.mergeRules([a],[{...b,evidence:{...b.evidence,checked_at:'2026-11-26'}}]);
+ assert.deepEqual(updated[0].evidence,a.evidence);
+ assert.equal(updated[0].status,'cross-checked');assert.deepEqual(updated[0].models,[A.MODELS[0],A.MODELS[1]]);
+ assert.deepEqual(E.mergeRules(updated,[]),updated);
+ assert.deepEqual(E.mergeRules(updated,[{...a,evidence:{quote:'replacement'}}]),updated);
+ assert.throws(()=>E.assertAdditive(updated,[]),/rule-removal/);
+ assert.throws(()=>E.assertAdditive(updated,[{...updated[0],family:'marketing'}]),/rule-overwrite/);
+ assert.throws(()=>E.assertAdditive(updated,[{...updated[0],status:'candidate'}]),/status-downgrade/);
+ assert.throws(()=>E.assertAdditive(updated,[{...updated[0],models:[]}]),/model-removal/);
+});
+test('new conflicting aliases are quarantined without mutating an existing accepted rule',()=>{
+ const a={key:'a',kind:'career',company:'Example',alias:'Future X',level:'entry',models:[A.MODELS[0],A.MODELS[1]],status:'cross-checked',evidence:{quote:'original'}};
+ const b={...a,key:'b',level:'internship'};
+ const r=E.mergeRules([a],[b]);assert.deepEqual(r[0],a);assert.equal(r[1].status,'conflict');
+ const fresh=E.mergeRules([],[a,b]);assert.ok(fresh.every(x=>x.status==='conflict'));
 });
