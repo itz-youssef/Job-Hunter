@@ -74,3 +74,26 @@ test('missing credentials fail closed without modifying any candidate dictionari
   assert.equal(fs.existsSync(path.join(dir,'state.json')),false);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test('ERNIE replaces unavailable Kimi; Nemotron retained; daily batch budget covers 60 companies',()=>{
+ assert.deepEqual(A.MODELS,['baidu/ernie-5.5-flash-preview:free','nvidia/nemotron-3-ultra-550b-a55b:free']);
+ assert.equal(A.BATCH_COMPANIES,2);assert.ok(Math.ceil(60/A.BATCH_COMPANIES)<A.MODEL_BUDGET);
+});
+test('provider parsing accepts complete JSON, fenced JSON and text parts; never repairs incomplete JSON',()=>{
+ const data=JSON.stringify({proposals:[]});
+ assert.deepEqual(A.parseJSON(data),{proposals:[]});
+ assert.deepEqual(A.parseJSON('\x60\x60\x60json\n'+data+'\n\x60\x60\x60'),{proposals:[]});
+ assert.deepEqual(A.parseJSON('Here is the result:\n'+data),{proposals:[]});
+ assert.deepEqual(A.parseJSON([{type:'text',text:data}]),{proposals:[]});
+ assert.deepEqual(A.parseJSON('<think>ignore {bad}</think>'+data),{proposals:[]});
+ assert.throws(()=>A.parseJSON('{"proposals":['),/truncated-json/);
+ assert.throws(()=>A.parseJSON('prefix {} {}'),/multiple-json-objects/);
+ assert.throws(()=>A.decodeResponse({choices:[{finish_reason:'length',message:{content:data}}]}),/output-token-limit/);
+ assert.throws(()=>A.decodeResponse({error:{code:404,message:'private provider text'}}),e=>e.status===404&&A.diagnostic(e)==='provider-http-404');
+});
+test('compact evidence is a contiguous source excerpt; diagnostic messages never leak provider body',()=>{
+ const text='x'.repeat(6000)+' Responsibilities: Develop machine learning models for clients. '+ 'y'.repeat(6000);
+ const d=A.compactDoc({id:'abc',text});
+ assert.equal(d.id,'abc');assert.ok(d.text.length<=A.DOC_CHARS);assert.ok(text.includes(d.text));assert.match(d.text,/machine learning/);
+ assert.equal(A.diagnostic(new Error('sensitive provider body')),'network-or-response-error');
+});
