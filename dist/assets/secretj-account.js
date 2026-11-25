@@ -217,7 +217,12 @@ async function showView(view,{reuse=false}={}) {
     else if(view==='preferences')await preferences(target);
     else if(view==='documents')await documents(target);
     else if(view==='admin')return await admin(root);
-    if(!current())return;
+    if(!current()){
+      // A write or another tab may invalidate data while this view loads.
+      // Restart only if this is still the visible view for the same account.
+      if(request===accountViewRequest&&state.user?.id===userId&&generation!==accountViewGeneration)return showView(view);
+      return;
+    }
     root.innerHTML=target.innerHTML;
     if(target.sjProfile!==undefined)state.profile=target.sjProfile;
     if(target.sjWelcomeName!==undefined)$('#welcome-name').textContent=target.sjWelcomeName;
