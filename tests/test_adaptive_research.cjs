@@ -75,9 +75,9 @@ test('missing credentials fail closed without modifying any candidate dictionari
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
 
-test('ERNIE replaces unavailable Kimi; Nemotron retained; daily batch budget covers 60 companies',()=>{
+test('ERNIE replaces unavailable Kimi; Nemotron retained; daily rotating cohort fits free budget',()=>{
  assert.deepEqual(A.MODELS,['baidu/ernie-5.5-flash-preview:free','nvidia/nemotron-3-ultra-550b-a55b:free']);
- assert.equal(A.BATCH_COMPANIES,2);assert.ok(Math.ceil(60/A.BATCH_COMPANIES)<A.MODEL_BUDGET);
+ assert.equal(A.BATCH_COMPANIES,1);assert.ok(A.DAILY_COMPANIES*2<A.MODEL_BUDGET);
 });
 test('provider parsing accepts complete JSON, fenced JSON and text parts; never repairs incomplete JSON',()=>{
  const data=JSON.stringify({proposals:[]});
@@ -96,4 +96,24 @@ test('compact evidence is a contiguous source excerpt; diagnostic messages never
  const d=A.compactDoc({id:'abc',text});
  assert.equal(d.id,'abc');assert.ok(d.text.length<=A.DOC_CHARS);assert.ok(text.includes(d.text));assert.match(d.text,/machine learning/);
  assert.equal(A.diagnostic(new Error('sensitive provider body')),'network-or-response-error');
+});
+
+test('cohort revisits same employers when model roles swap; benchmark small',()=>{
+ const companies=Array.from({length:60},(_,i)=>({name:'Company '+i})),s=A.newState(),m=A.MODELS[0];
+ const first=A.cohort(companies,s,'2026-11-25',m,'daily');assert.equal(first.length,10);
+ s.research_cohort={day:'2026-11-25',model:m,names:first.map(c=>c.name)};
+ assert.deepEqual(A.cohort(companies,s,'2026-11-26',A.MODELS[1],'daily'),first);
+ assert.deepEqual(A.taskModels('career',m,'daily'),[m]);assert.deepEqual(A.taskModels('family',m,'daily'),[A.MODELS[1]]);
+ assert.deepEqual(A.taskModels('family',m,'benchmark'),A.MODELS);
+ assert.equal(A.cohort(companies,s,'2026-11-25',m,'benchmark').length,2);
+});
+test('independent tasks send only relevant evidence and keep quotes verifiable',()=>{
+ const group={company:{name:job.company},documents:[doc,{id:'web',url:'https://example.com',company:job.company,live:true,text:'Our Future X programme is an internship for university students.'}],jobs:new Map([[id,job]])};
+ const c=A.makeTask(group,'career',[]),f=A.makeTask(group,'family',[]);
+ assert.equal(c.payload.documents.length,1);assert.equal(c.payload.documents[0].id,'web');
+ assert.equal(f.payload.documents.length,1);assert.equal(f.payload.documents[0].job_id,id);
+ assert.ok(f.docs[0].text.includes(proposal.quote));assert.ok(E.validate(proposal,new Map([[doc.id,f.docs[0]]]),f.jobs,A.MODELS[1],'2026-11-25'));
+ assert.ok(c.payload.documents.every(d=>d.text.length<=A.TASK_TEXT_CHARS));
+ assert.ok(f.payload.documents.every(d=>d.text.length<=A.TASK_TEXT_CHARS));
+ assert.ok(A.cooldownMs({retryAfter:120000})>=120000);
 });
