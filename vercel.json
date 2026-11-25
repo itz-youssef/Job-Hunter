@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/email-destination",
+      "destination": "/api/legacy-email?__legacy_email_route=destination"
+    },
+    {
+      "source": "/api/test-email",
+      "destination": "/api/legacy-email?__legacy_email_route=test"
+    }
+  ]
+}

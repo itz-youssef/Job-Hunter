@@ -6,7 +6,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const companies = require('../api/companies.js');
-const email = require('../api/email-destination.js');
+const email = require('../lib/legacy-email/email-destination.js');
 
 const SECRET = 'test-admin-token-12345678901234567890';
 
