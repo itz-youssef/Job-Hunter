@@ -21,6 +21,16 @@ module.exports=async function handler(req,res){
         throw core.fail(404,'Member account not found or cannot be deleted');
       return core.reply(res,200,{ok:true,deleted:true});
     }
+    if(req.method==='GET' && action==='research-shadow'){
+      // Both hosting platforms already route this authenticated admin handler.
+      try{
+        const response=await fetch('https://raw.githubusercontent.com/itz-youssef/Job-Hunter/research/shadow-state/research-results/report.json',{signal:AbortSignal.timeout(5000),cache:'no-store'});
+        if(!response.ok)return core.reply(res,200,{ok:true,report:null});
+        const report=await response.json();
+        if(report?.mode!=='shadow'||report?.production_unchanged!==true)return core.reply(res,200,{ok:true,report:null});
+        return core.reply(res,200,{ok:true,report});
+      }catch{return core.reply(res,200,{ok:true,report:null});}
+    }
     if(req.method==='GET' && action==='summary'){
       const [stats,latest]=await Promise.all([
         core.query(`SELECT

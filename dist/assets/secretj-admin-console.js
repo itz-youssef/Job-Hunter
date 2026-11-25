@@ -28,10 +28,28 @@ async function render(root,api,state){
  '<section class="sj-admin-section"><div class="sj-admin-heading"><div><h3>👥 User management</h3><p class="muted">Role access, account activation, session security and private usage metadata</p></div><input id="sj-admin-search" type="search" placeholder="Search accounts" aria-label="Search accounts"></div>'+
  '<div class="sj-admin-users" id="sj-admin-users"></div><div id="sj-admin-detail" class="sj-admin-detail" hidden></div></section>'+
  '<section class="sj-admin-section"><div class="sj-admin-heading"><h3>⚙️ Operations & monitor health</h3><a href="https://github.com/itz-youssef/Job-Hunter/actions" target="_blank" rel="noopener noreferrer">GitHub Actions ↗</a></div><div id="sj-admin-ops" class="sj-admin-ops muted">Checking published scan status…</div></section>'+ 
+ '<section class="sj-admin-section"><div class="sj-admin-heading"><div><h3>AI Intelligence Lab</h3><p class="muted">Experimental career-level and occupational dictionaries. Production matching and alerts remain unchanged.</p></div><a href="https://github.com/itz-youssef/Job-Hunter/actions/workflows/adaptive-dictionary-research.yml" target="_blank" rel="noopener noreferrer">Research runs ↗</a></div><div id="sj-admin-research" class="muted">Loading shadow evaluation…</div></section>'+
  '<section class="sj-admin-section"><h3>🛡️ Administrative activity</h3>'+
  (overview.activity||[]).map(a=>'<div class="sj-admin-activity"><strong>'+html(a.action)+'</strong><span>'+html(a.actor_email||'Administrator')+'</span><small>'+html(day(a.created_at))+'</small></div>').join('')+
  (!overview.activity?.length?'<p class="muted">No administrative actions yet.</p>':'')+'</section>'+
  '<div class="notice">Security: actions are checked on the server against your active administrator session. This console does not expose passwords, session tokens, or private CV file contents.</div>';
+ api(url+'research-shadow').then(result=>{
+  const el=root.querySelector('#sj-admin-research');if(!el)return;
+  const r=result.report;
+  if(!r){el.textContent='Shadow mode · No research report yet. Add the two GitHub Actions secrets and run the benchmark.';return;}
+  const c=r.comparison||{},m=c.benchmark||{},u=r.usage||{},rules=r.rules||{};
+  const percent=n=>typeof n==='number'?(n*100).toFixed(1)+'%':'—';
+  el.innerHTML='<p>'+badge('Shadow only',false)+' '+badge('Production unchanged',true)+' · '+html(r.status)+' · '+html(day(r.updated_at))+'</p>'+
+   (Array.isArray(r.missing)&&r.missing.length?'<p>Missing Actions secrets: '+html(r.missing.join(', '))+'</p>':'')+
+   '<div class="sj-admin-kpis">'+[
+    ['Companies reviewed',r.companies_reviewed],['Companies with evidence',r.companies_with_evidence],['Live source pages',r.live_sources],['Job documents',r.job_documents],['Validated proposals',r.validated],['Career candidates',rules.career],['Family candidates',rules.family],['Cross-checked rules',rules.cross_checked],['Rejected proposals',r.rejected],['Changed career levels',c.changed_level],['Changed job families',c.changed_family],['Model calls today',u.model_requests_today],['Search credits this month',u.search_credits_month]
+   ].map(([k,v])=>'<div class="sj-admin-kpi"><strong>'+html(v??'—')+'</strong><small>'+html(k)+'</small></div>').join('')+'</div>'+
+   '<p>Models: '+html((r.models_used||[]).join(', ')||'Not run')+' · Failed batches: '+html(r.failed_batches??'—')+'</p>'+
+   '<p><strong>Existing semantic-role regression set:</strong> '+html(m.old?.n??'—')+' cases. Current precision '+html(percent(m.old?.precision))+' / recall '+html(percent(m.old?.recall))+'; shadow precision '+html(percent(m.shadow?.precision))+' / recall '+html(percent(m.shadow?.recall))+'. Not a production accuracy estimate.</p>'+
+   (Array.isArray(r.model_benchmark)?'<h4>Model benchmark — existing reference</h4>'+r.model_benchmark.map(x=>'<div class="sj-admin-activity"><strong>'+html(x.model)+'</strong><small>Answered '+html(x.answered)+' / '+html(x.expected_cases)+' · Precision '+html(percent(x.metrics?.precision))+' · Recall '+html(percent(x.metrics?.recall))+'</small></div>').join(''):'')+
+   '<p>'+html(r.note||'No research model has access to email dispatch.')+'</p>'+
+   (Array.isArray(c.changes)&&c.changes.length?'<h4>Sample differences — review required</h4>'+c.changes.slice(0,20).map(j=>'<div class="sj-admin-activity"><strong>'+html(j.company)+' · '+html(j.title)+'</strong><small>'+html((j.before?.families||[]).join(', '))+' / '+html(j.before?.level||'unknown')+' → '+html((j.after?.families||[]).join(', '))+' / '+html(j.after?.level||'unknown')+'</small></div>').join(''):'');
+ }).catch(()=>{const el=root.querySelector('#sj-admin-research');if(el)el.textContent='Research report unavailable. Production unaffected.';});
  const list=root.querySelector('#sj-admin-users');
  function paint(filter=''){
   const matching=(users.users||[]).filter(u=>
