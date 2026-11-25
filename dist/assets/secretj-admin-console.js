@@ -29,6 +29,7 @@ async function render(root,api,state){
  '<div class="sj-admin-users" id="sj-admin-users"></div><div id="sj-admin-detail" class="sj-admin-detail" hidden></div></section>'+
  '<section class="sj-admin-section"><div class="sj-admin-heading"><h3>⚙️ Operations & monitor health</h3><a href="https://github.com/itz-youssef/Job-Hunter/actions" target="_blank" rel="noopener noreferrer">GitHub Actions ↗</a></div><div id="sj-admin-ops" class="sj-admin-ops muted">Checking published scan status…</div></section>'+ 
  '<section class="sj-admin-section"><div class="sj-admin-heading"><div><h3>AI Intelligence Lab</h3><p class="muted">Experimental career-level and occupational dictionaries. Production matching and alerts remain unchanged.</p></div><a href="https://github.com/itz-youssef/Job-Hunter/actions/workflows/adaptive-dictionary-research.yml" target="_blank" rel="noopener noreferrer">Research runs ↗</a></div><div id="sj-admin-research" class="muted">Loading shadow evaluation…</div></section>'+
+ '<section class="sj-admin-section"><div class="sj-admin-heading"><div><h3>Dictionary conflict review</h3><p class="muted">Approve or reject conflicting proposals. Decisions apply to reviewed shadow dictionaries, not live matching or alerts.</p></div><button class="btn secondary" data-dictionary-export>Download dictionaries (.json)</button></div><div id="sj-admin-dictionary-review" aria-live="polite" class="muted">Loading conflicts…</div></section>'+ 
  '<section class="sj-admin-section"><h3>🛡️ Administrative activity</h3>'+
  (overview.activity||[]).map(a=>'<div class="sj-admin-activity"><strong>'+html(a.action)+'</strong><span>'+html(a.actor_email||'Administrator')+'</span><small>'+html(day(a.created_at))+'</small></div>').join('')+
  (!overview.activity?.length?'<p class="muted">No administrative actions yet.</p>':'')+'</section>'+
@@ -50,6 +51,42 @@ async function render(root,api,state){
    '<p>'+html(r.note||'No research model has access to email dispatch.')+'</p>'+
    (Array.isArray(c.changes)&&c.changes.length?'<h4>Sample differences — review required</h4>'+c.changes.slice(0,20).map(j=>'<div class="sj-admin-activity"><strong>'+html(j.company)+' · '+html(j.title)+'</strong><small>'+html((j.before?.families||[]).join(', '))+' / '+html(j.before?.level||'unknown')+' → '+html((j.after?.families||[]).join(', '))+' / '+html(j.after?.level||'unknown')+'</small></div>').join(''):'');
  }).catch(()=>{const el=root.querySelector('#sj-admin-research');if(el)el.textContent='Research report unavailable. Production unaffected.';});
+ const reviewEl=root.querySelector('#sj-admin-dictionary-review');
+ const evidence=r=>{
+  const quote=r.evidence?.quote,link=r.evidence?.url;
+  let source='';try{const u=new URL(link);if(u.protocol==='https:')source='<a href="'+html(u.href)+'" target="_blank" rel="noopener noreferrer">Open source ↗</a>';}catch{}
+  return '<div style="overflow-wrap:anywhere;min-width:0"><strong>'+html(r.level||r.family||'Unknown')+'</strong> · '+html(r.alias||r.title||'')+' <small>'+html(r.source||r.status||'')+'</small>'+(quote?'<p>'+html(quote)+'</p>':'')+(r.evidence?.corroboration?'<p>'+html(r.evidence.corroboration)+'</p>':'')+source+(r.models?.length?'<p class="muted">'+html(r.models.join(', '))+'</p>':'')+'</div>';
+ };
+ async function loadReview(){
+  try{
+   const r=await api(url+'dictionary-review');
+   if(!root.isConnected)return;
+   const rows=r.conflicts||[],counts=r.counts||{};
+   reviewEl.innerHTML='<p>'+badge((counts.pending||0)+' pending',false)+' '+badge((counts.reviewed||0)+' reviewed',true)+' · '+html(counts.career||0)+' career proposals · '+html(counts.family||0)+' family proposals</p>'+
+    (rows.length?rows.map(c=>'<article class="sj-admin-section" style="margin:12px 0;overflow-wrap:anywhere"><div class="sj-admin-heading"><div><strong>'+html(c.proposal.company)+' · '+html(c.proposal.alias||c.proposal.title||'')+'</strong><p class="muted">'+html(c.reason)+'</p></div>'+badge(c.decision?c.decision.decision==='approve'?'Approved':'Rejected':'Pending review',!!c.decision)+'</div><div class="sj-admin-cols"><div><h4>Existing rule / alternatives</h4>'+(c.existing.length?c.existing.map(evidence).join('<hr>'):'<p class="muted">No existing rule in the snapshot.</p>')+'</div><div><h4>Proposed change</h4>'+evidence(c.proposal)+'</div></div>'+
+     (c.decision?'<p class="muted">Reviewed '+html(day(c.decision.reviewed_at))+(c.selected_rule_key&&c.selected_rule_key!==c.key?' · Another proposal selected for this alias':'')+'</p>':'<div class="item-actions"><button class="btn" data-dictionary-decision="approve" data-rule-key="'+html(c.key)+'" data-rule-revision="'+html(c.revision)+'">Approve proposed rule</button><button class="btn secondary" data-dictionary-decision="reject" data-rule-key="'+html(c.key)+'" data-rule-revision="'+html(c.revision)+'">Reject · keep existing</button></div>')+'</article>').join(''):'<p class="muted">No conflicts to review yet. New conflicts appear after the daily research run.</p>');
+  }catch(err){reviewEl.textContent='Dictionary review unavailable: '+err.message;}
+ }
+ loadReview();
+ reviewEl.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-dictionary-decision]');if(!b||b.disabled)return;
+  const action=b.dataset.dictionaryDecision;
+  if(!confirm(action==='approve'?'Approve this proposed rule in the reviewed shadow dictionary? Production remains unchanged.':'Reject this proposal and keep the existing reviewed rules?'))return;
+  [...reviewEl.querySelectorAll('button')].forEach(x=>x.disabled=true);
+  try{await api(url+'dictionary-review','PATCH',{key:b.dataset.ruleKey,revision:b.dataset.ruleRevision,decision:action});await loadReview();}
+  catch(err){alert('Could not save review: '+err.message);await loadReview();}
+ });
+ root.querySelector('[data-dictionary-export]').addEventListener('click',async e=>{
+  const b=e.currentTarget;b.disabled=true;
+  try{
+   const data=await api(url+'dictionary-export');
+   if(data?.mode!=='admin-reviewed-shadow')throw Error('Invalid dictionary export');
+   const blob=new Blob([JSON.stringify(data,null,2)+'\n'],{type:'application/json'});
+   const link=document.createElement('a'),objectUrl=URL.createObjectURL(blob);
+   link.href=objectUrl;link.download='secretj-dictionaries-'+new Date().toISOString().slice(0,10)+'.json';
+   document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),1000);
+  }catch(err){alert('Could not download dictionaries: '+err.message);}finally{b.disabled=false;}
+ });
  const list=root.querySelector('#sj-admin-users');
  function paint(filter=''){
   const matching=(users.users||[]).filter(u=>

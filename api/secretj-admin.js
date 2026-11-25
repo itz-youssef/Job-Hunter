@@ -3,6 +3,7 @@
 /** Admin-only operations. Never accept role assignment from registration. */
 const core=require('../lib/secretj/core');
 const {removeMember}=require('../lib/secretj/account-deletion');
+const review=require('../lib/secretj/dictionary-review');
 
 module.exports=async function handler(req,res){
   try {
@@ -20,6 +21,17 @@ module.exports=async function handler(req,res){
       if(!(await removeMember(id,admin.id)))
         throw core.fail(404,'Member account not found or cannot be deleted');
       return core.reply(res,200,{ok:true,deleted:true});
+    }
+    if(req.method==='GET' && action==='dictionary-review'){
+      const {conflicts,counts}=await review.load();
+      return core.reply(res,200,{ok:true,conflicts,counts});
+    }
+    if(req.method==='GET' && action==='dictionary-export'){
+      const view=await review.load();
+      return core.reply(res,200,view.export);
+    }
+    if(req.method==='PATCH' && action==='dictionary-review'){
+      return core.reply(res,200,await review.decide(admin,core.parseBody(req)));
     }
     if(req.method==='GET' && action==='research-shadow'){
       // Both hosting platforms already route this authenticated admin handler.

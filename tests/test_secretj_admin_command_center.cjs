@@ -76,3 +76,35 @@ test('admin role and suspend mutation preserve a last-active-admin safeguard',()
  assert.match(src,/SELECT count\(\*\) FROM public\.sj_users WHERE role='admin' AND is_active/);
  assert.match(src,/sj_admin_audit/);
 });
+
+test('dictionary review and export are inaccessible to regular members',async()=>{
+ for(const [method,action] of [['GET','dictionary-review'],['GET','dictionary-export'],['PATCH','dictionary-review']]){
+  const {response,queries}=await call(method,action,{},'member');assert.equal(response.statusCode,403);assert.equal(queries.length,1);
+ }
+});
+test('reviewed export preserves baseline and raw rules, only approved conflict changes effective alias',()=>{
+ const R=require('../lib/secretj/dictionary-review'),base={entry:{company_brand_names:{Example:['Future X']}},internship:{company_brand_names:{}}};
+ const original={key:'a'.repeat(64),kind:'career',company:'Example',alias:'Future X',level:'entry',status:'cross-checked',evidence:{quote:'Original evidence'}};
+ const proposal={...original,key:'b'.repeat(64),level:'internship',status:'conflict',evidence:{quote:'New evidence'}};
+ const state={career_rules:[original,proposal],family_rules:[]},family={categories:[]};
+ const first=R.buildView(state,[],base,family);assert.equal(first.counts.pending,1);
+ assert.deepEqual(first.export.career_level_dictionary.effective.entry.company_brand_names.Example,['Future X']);
+ const event={detail:{rule_key:proposal.key,revision:R.revision(proposal),scope:'career:example|future x',decision:'approve'},created_at:'2026-11-25T00:00:00Z'};
+ const approved=R.buildView(state,[event],base,family);
+ assert.deepEqual(approved.export.career_level_dictionary.original,base);
+ assert.deepEqual(approved.export.career_level_dictionary.research_rules,state.career_rules);
+ assert.deepEqual(approved.export.career_level_dictionary.effective.entry.company_brand_names.Example,[]);
+ assert.deepEqual(approved.export.career_level_dictionary.effective.internship.company_brand_names.Example,['Future X']);
+ assert.equal(approved.counts.pending,0);
+ const rejected=R.buildView(state,[{...event,detail:{...event.detail,decision:'reject'}}],base,family);
+ assert.deepEqual(rejected.export.career_level_dictionary.effective.entry.company_brand_names.Example,['Future X']);
+ assert.equal(rejected.export.career_level_dictionary.effective_rules.length,1);
+ assert.equal(R.buildView(state,[{...event,detail:{...event.detail,revision:'stale'}}],base,family).counts.pending,1);
+ assert.equal(R.decisionId(proposal.key,R.revision(proposal)),R.decisionId(proposal.key,R.revision(proposal)));
+});
+test('export serializes real family title patterns without changing matcher',()=>{
+ const prefs=require('../dist/assets/secretj-job-preferences'),data=prefs.exportDictionary();
+ assert.ok(data.categories.find(c=>c.key==='ai_ml').title_pattern.pattern);
+ assert.ok(data.title_aliases.some(x=>x.family==='ai_ml'));
+ assert.ok(prefs.classify({title:'Machine Learning Engineer'}).includes('ai_ml'));
+});
