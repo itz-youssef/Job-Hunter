@@ -222,10 +222,10 @@ html[data-theme="light"] .nav button.active *{
   <script src="/assets/secretj-career-level.js?v=level-classifier-1" defer></script>
   <script src="/assets/secretj-job-preferences.js?v=constraint-aware-f-1" defer></script>
 <script src="/assets/secretj-account-theme.js?v=dashboard-theme-20261124" defer></script>
-<script src="/assets/secretj-account.js?v=email-code-confirm-password-20261124" defer></script>
+<script src="/assets/secretj-account.js?v=global-startup-20261125" defer></script>
 <script src="/assets/secretj-welcome-tour.js?v=welcome-1" defer></script>
 <link rel="stylesheet" href="/assets/responsive.css?v=20261113-mobile-1">
-<link rel="stylesheet" href="/assets/secretj-loading.css?v=20261123-loader-1">
+<link rel="stylesheet" href="/assets/secretj-loading.css?v=global-startup-20261125">
 
 <style>
 /* LinkedIn branding and destructive account management, in both themes. */
@@ -254,8 +254,29 @@ html[data-theme="dark"] body .sj-delete-account:hover{
 .sj-danger-zone h3{margin:0 0 9px}
 .sj-danger-zone p{color:var(--muted);font-size:13px;margin:0 0 16px}
 </style>
+<script id="sj-startup-script">
+(()=>{
+  const root=document.documentElement;
+  const finish=()=>{clearTimeout(deadline);root.removeAttribute('data-sj-startup');};
+  const deadline=setTimeout(finish,4000);
+  window.SecretJStartup={finish};
+  try{
+    const theme=localStorage.getItem('jh-theme');
+    root.dataset.theme=theme==='dark'?'dark':theme==='light'?'light':matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+  }catch{}
+  root.setAttribute('data-sj-startup','');
+  window.addEventListener('pageshow',event=>{if(event.persisted)finish();});
+})();
+</script>
 </head>
 <body>
+<div id="sj-startup-loader" class="sj-startup-loader" role="status" aria-live="polite">
+  <div class="sj-startup-inner">
+    <span class="sj-startup-brand" aria-hidden="true">Secret J.</span>
+    <span class="sj-startup-ring" aria-hidden="true"></span>
+    <span class="sj-startup-label">Loading your workspace…</span>
+  </div>
+</div>
 <header><a class="brand" href="/"><img src="/assets/secretj-mark.svg" alt="" width="35" height="35" style="vertical-align:middle;border-radius:9px;margin-right:9px">SECRET <span>J.</span> <span style="font-size:12px;color:var(--muted)">/ JOB HUNTER</span></a><div class="top-links"><button id="account-theme-toggle" class="account-theme-toggle" type="button" aria-label="Switch theme" aria-pressed="false"><span id="account-theme-icon" aria-hidden="true">◐</span><span id="account-theme-label">Dark</span></button><a class="account-back" href="/" aria-label="Back to Secret J"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m14 6-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Back to Secret J</span></a>
 <details id="account-profile-menu" class="top-profile" hidden>
 <summary aria-label="Open profile menu"><span class="profile-avatar-icon" id="account-profile-initial">SJ</span><img id="account-profile-photo" class="profile-avatar-picture" alt="Your profile photo" hidden><span class="account-menu-label">Profile</span><svg class="account-menu-chevron" aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>

@@ -226,13 +226,34 @@ a:hover{color:var(--ink)}
   <script src="/assets/secretj-job-search.js?v=catalog-search-1" defer></script>
   <script src="/assets/secretj-welcome-tour.js?v=welcome-1" defer></script>
 <link rel="stylesheet" href="/assets/responsive.css?v=mobile-workspace-nav-20261124">
-<link rel="stylesheet" href="/assets/secretj-loading.css?v=20261123-loader-1">
+<link rel="stylesheet" href="/assets/secretj-loading.css?v=global-startup-20261125">
 <link rel="stylesheet" href="/assets/secretj-landing.css?v=oxblood-leather-open-glow-20261124">
 <script src="/assets/secretj-landing.js?v=product-open-buttons-20261124"></script>
 <link rel="stylesheet" href="/assets/secretj-jobhunter-intro.css?v=soft-concrete-curves-20261124">
 <script src="/assets/secretj-jobhunter-intro.js?v=footer-match-home-20261124"></script>
+<script id="sj-startup-script">
+(()=>{
+  const root=document.documentElement;
+  const finish=()=>{clearTimeout(deadline);root.removeAttribute('data-sj-startup');};
+  const deadline=setTimeout(finish,4000);
+  window.SecretJStartup={finish};
+  try{
+    const theme=localStorage.getItem('jh-theme');
+    root.dataset.theme=theme==='dark'?'dark':theme==='light'?'light':matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+  }catch{}
+  root.setAttribute('data-sj-startup','');
+  window.addEventListener('pageshow',event=>{if(event.persisted)finish();});
+})();
+</script>
 </head>
 <body>
+<div id="sj-startup-loader" class="sj-startup-loader" role="status" aria-live="polite">
+  <div class="sj-startup-inner">
+    <span class="sj-startup-brand" aria-hidden="true">Secret J.</span>
+    <span class="sj-startup-ring" aria-hidden="true"></span>
+    <span class="sj-startup-label">Loading your workspace…</span>
+  </div>
+</div>
   <div class="layout">
     <aside class="sidebar" aria-label="Main navigation">
       <a class="brand" href="#home" aria-label="Secret J home"><img src="/assets/secretj-mark.svg" width="30" height="30" style="border-radius:7px" alt=""><span>Secret J<span class="brand-dot">.</span></span></a>
@@ -1925,8 +1946,9 @@ a:hover{color:var(--ink)}
     el('#account-link').href='/account.html';
     go(location.hash.replace('#','')||'home');
     syncFeedCount();
-    hydrateMember();
-    refresh(true);
+    const initialMember=hydrateMember();
+    const initialCatalog=refresh(true);
+    Promise.allSettled([initialMember,initialCatalog]).then(()=>window.SecretJStartup?.finish());
     // Public catalog and private source-watch results refresh independently.
     setInterval(()=>{
       // Never refresh, rerender or download data for a hidden tab.
