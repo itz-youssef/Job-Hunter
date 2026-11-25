@@ -3,24 +3,25 @@
   "mode": "shadow",
   "run_type": "benchmark",
   "production_unchanged": true,
-  "updated_at": "2026-11-25T13:28:26.875Z",
+  "updated_at": "2026-11-25T13:43:13.045Z",
   "cairo_day": "2026-11-25",
-  "preferred_model": "moonshotai/kimi-k2.6:free",
+  "preferred_model": "baidu/ernie-5.5-flash-preview:free",
   "companies_total": 60,
-  "companies_reviewed": 6,
-  "companies_with_evidence": 6,
-  "live_sources": 14,
-  "job_documents": 24,
+  "companies_reviewed": 4,
+  "companies_with_evidence": 4,
+  "live_sources": 11,
+  "job_documents": 16,
   "proposals": 0,
   "rejected": 0,
   "validated": 0,
-  "failed_batches": 4,
+  "failed_batches": 3,
   "models_used": [],
-  "model_requests": 8,
+  "model_requests": 6,
   "search_credits": 6,
   "errors": [
-    "provider-http-404",
-    "invalid-or-unavailable-response"
+    "output-token-limit",
+    "request-timeout",
+    "provider-http-429"
   ],
   "search_success": 6,
   "search_failures": 0,
@@ -32,16 +33,16 @@
   },
   "usage": {
     "day": "2026-11-25",
-    "model_requests_today": 8,
-    "search_credits_today": 6,
-    "search_credits_month": 6
+    "model_requests_today": 14,
+    "search_credits_today": 12,
+    "search_credits_month": 12
   },
   "comparison": {
     "catalog_jobs": 2324,
     "changed_level": 0,
     "changed_family": 0,
-    "baseline_unknown": 1382,
-    "shadow_unknown": 1382,
+    "baseline_unknown": 1383,
+    "shadow_unknown": 1383,
     "changes": [],
     "benchmark": {
       "basis": "Existing limited semantic-role reference; not production accuracy.",
@@ -67,12 +68,44 @@
       }
     }
   },
+  "model_diagnostics": [
+    {
+      "model": "baidu/ernie-5.5-flash-preview:free",
+      "stage": "research",
+      "code": "output-token-limit",
+      "companies": [
+        "VOIS",
+        "Deloitte"
+      ]
+    },
+    {
+      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "stage": "research",
+      "code": "request-timeout",
+      "companies": [
+        "VOIS",
+        "Deloitte"
+      ]
+    },
+    {
+      "model": "baidu/ernie-5.5-flash-preview:free",
+      "stage": "research",
+      "code": "provider-http-429",
+      "companies": [
+        "PwC Egypt",
+        "Ericsson"
+      ]
+    }
+  ],
   "model_benchmark": [
     {
-      "model": "moonshotai/kimi-k2.6:free",
+      "model": "baidu/ernie-5.5-flash-preview:free",
+      "errors": [
+        "provider-http-429"
+      ],
       "expected_cases": 12,
       "answered": 0,
-      "failed_batches": 2,
+      "failed_batches": 1,
       "metrics": {
         "n": 0,
         "tp": 0,
@@ -93,6 +126,7 @@
     },
     {
       "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "errors": [],
       "expected_cases": 12,
       "answered": 12,
       "failed_batches": 0,

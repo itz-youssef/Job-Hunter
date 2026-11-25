@@ -4,10 +4,10 @@
   "family_rules": [],
   "usage": {
     "month": "2026-11",
-    "search": 6,
+    "search": 12,
     "day": "2026-11-25",
-    "model": 8,
-    "search_day": 6
+    "model": 14,
+    "search_day": 12
   },
   "cursor": 0,
   "last_attempt": "",
@@ -18,6 +18,15 @@
       "run_type": "benchmark",
       "status": "partial",
       "model_requests": 8,
+      "validated": 0,
+      "changed_family": 0,
+      "changed_level": 0
+    },
+    {
+      "day": "2026-11-25",
+      "run_type": "benchmark",
+      "status": "partial",
+      "model_requests": 6,
       "validated": 0,
       "changed_family": 0,
       "changed_level": 0
