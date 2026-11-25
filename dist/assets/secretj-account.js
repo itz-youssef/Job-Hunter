@@ -130,15 +130,18 @@ async function signedIn(user,{newAccount=false}={}) {
   await syncHeaderPhoto();
   const target=new URLSearchParams(location.search).get('view');
   await showView(['overview','profile','saved','applications','preferences','documents','admin'].includes(target)?target:(user.role==='admin'?'admin':'overview'));
-  const goHome=new URLSearchParams(location.search).get('after')==='home';
+  const after=new URLSearchParams(location.search).get('after');
+  const goHome=after==='home';
+  const goBotfolio=after==='botfolio';
+  const returnToProduct=()=>{if(goHome)location.assign('/');else if(goBotfolio)location.assign('/botfolio.html');};
   if(newAccount){
     // Trigger onboarding only after the server has successfully created the
     // new account (including verification for OTP signups).
     const displayed=window.SecretJWelcomeTour?.showForNewAccount?.(user.id,()=>{
-      if(goHome)location.assign('/');
+      returnToProduct();
     });
-    if(goHome&&!displayed)location.assign('/');
-  }else if(goHome)location.assign('/');
+    if((goHome||goBotfolio)&&!displayed)returnToProduct();
+  }else if(goHome||goBotfolio)returnToProduct();
 }
 let isRegistration=false;
 let loginChallenge=null;

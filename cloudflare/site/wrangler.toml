@@ -16,6 +16,9 @@ directory = "../../dist"
 binding = "ASSETS"
 run_worker_first = true
 
+[ai]
+binding = "BOTFOLIO_AI"
+
 [vars]
 NODE_ENV = "production"
 # Pilot switch: signup only works when a private DATABASE_URL secret has
