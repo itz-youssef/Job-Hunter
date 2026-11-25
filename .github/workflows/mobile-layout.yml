@@ -24,4 +24,6 @@ jobs:
         if: always()
         with:
           name: mobile-layout-preview
-          path: mobile-account.png
+          path: |
+            mobile-account.png
+            botfolio-hero-*.png
