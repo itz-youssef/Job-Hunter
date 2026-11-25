@@ -105,22 +105,27 @@ export async function scheduled(controller,env){
     if(env.SECRETJ_NATIVE_MONITOR_ENABLED==='true'){
       // Independent five-minute subscriber checks; public discovery stays intact.
       const when=new Date(controller?.scheduledTime||Date.now());
-      if(when.getUTCMinutes()%5!==0)return;
+      if(when.getUTCMinutes()%5!==0){
+        const queue=await nativeMonitor.deliverQueued(env);
+        console.log('secretj-alert-outbox',{status:queue.status,sent:queue.sent||0,failed:queue.failed||0});
+        return;
+      }
       const result=await nativeMonitor.deliver(env);
       console.log('secretj-native-preferences',{
         status:result.status,processed:result.processed||0,
         sent:result.sent||0,failed:result.failed||0,
         nativeBoards:result.nativeBoards||0,
-        failedSources:result.failedSources||0
+        failedSources:result.failedSources||0,mailReady:result.mailReady===true
       });
     }else{
       const result=await memberAlerts.deliver(env);
       console.log('secretj-member-alerts',{status:result.status,
         delivered:result.delivered||0,failed:result.failed||0});
     }
-  }catch{
+  }catch(error){
     // Never log recipients, profile fields, secrets, or CV contents.
-    console.warn('secretj-personalized-alerts',{status:'failed'});
+    console.warn('secretj-personalized-alerts',{status:'failed',code:String(error?.code||'runtime_error').slice(0,30)});
+    throw error;
   }
 }
 export default {fetch:handleRequest,scheduled};

@@ -3,6 +3,7 @@
 import logging
 import os
 import sys
+import time
 
 from app.db import db, init
 from app.worker import scan
@@ -43,8 +44,14 @@ def main() -> int:
         return 1
 
     failures = 0
+    skipped = 0
 
     for source in sources:
+        # Respect a provider's rate-limit backoff across scheduled runs.
+        if source.get('error') and float(source.get('next_check') or 0) > time.time():
+            skipped += 1
+            logging.warning('%s: deferred until source backoff expires', source['name'])
+            continue
         logging.info("Checking %s", source["name"])
         scan(source)
 
@@ -63,12 +70,14 @@ def main() -> int:
             logging.info("%s: scan completed", source["name"])
 
     logging.info(
-        "Finished: %s successful, %s failed",
-        len(sources) - failures,
+        "Finished: %s successful, %s failed, %s deferred",
+        len(sources) - failures - skipped,
         failures,
+        skipped,
     )
 
-    return 1 if failures else 0
+    # The workflow publishes partial success and marks failed sources honestly.
+    return 1 if failures and failures == len(sources) - skipped else 0
 
 
 if __name__ == "__main__":

@@ -40,7 +40,9 @@ test('strict AI environment setting cannot suppress matching titles',async()=>{
 });
 test('baseline and sent status are preserved during dictionary migration',()=>{
  const code=fs.readFileSync('lib/secretj/native-preference-monitor.js','utf8');
- assert.match(code,/existing\.user_id=\$1 AND existing\.job_key=x\.key/);
+ assert.match(code,/ON CONFLICT\(user_id,job_key\) DO UPDATE SET/);
+ assert.match(code,/WHEN public\.sj_native_watch_jobs\.status='sent' THEN 'sent'/);
+ assert.match(code,/ELSE public\.sj_native_watch_jobs\.status END/);
  assert.match(code,/THEN 'baseline' ELSE 'pending' END/);
  assert.match(code,/IS DISTINCT FROM 'dictionary-title-v1'/);
 });

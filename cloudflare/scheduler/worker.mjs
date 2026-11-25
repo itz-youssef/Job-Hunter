@@ -62,7 +62,13 @@ export async function dispatchDue(
       run.head_branch === "main",
   );
   const activeRun = relevant.find((run) => ACTIVE.has(run.status));
-  if (activeRun) {
+  // Core's 15-minute slot must not be lost merely because a 5-minute
+  // custom scan is still running. Queue one core run behind that scanner;
+  // the shared GitHub concurrency group serializes publication.
+  const queueCore = workflow === 'monitor.yml' && activeRun &&
+    activeRun.path === '.github/workflows/custom-companies.yml' &&
+    !relevant.some(run=>run.path === '.github/workflows/monitor.yml'&&ACTIVE.has(run.status));
+  if (activeRun && !queueCore) {
     return {
       result: "skipped",
       reason: "another-scanner-active",
