@@ -60,11 +60,11 @@ test('Botfolio-only Groq ledger migration is private and additive',()=>{
 
 test('usage reports rolling reservations separately from confirmed provider tokens and daily embedding estimates',async()=>{
  core.setQueryForTests(async(sql)=>{
-  if(sql.includes('WITH active AS')){assert.match(sql,/86400/);return [{requests:5,tokens:12000,reported_tokens:3000,reported_requests:2,successful:2,failed:1,pending:1,last_outcome:'rate_limited'}];}
+  if(sql.includes('WITH active AS')){assert.match(sql,/86400/);return [{requests:5,tokens:12000,reported_tokens:3000,reported_requests:2,successful:2,failed:1,pending:1,last_outcome:'rate_limited',next_release_at:'2026-11-26T06:00:00.000Z',full_release_at:'2026-11-26T10:00:00.000Z'}];}
   assert.match(sql,/AT TIME ZONE 'UTC'/);return [{neurons:32,chat_attempts:8,indexing_attempts:2}];
  });
  try{const u=await B.usage({GROQ_API_KEY:'private-test-key',BOTFOLIO_AI:{run(){}}});
- assert.equal(u.generation.configured,true);assert.equal(u.generation.requests_24h,5);assert.equal(u.generation.unknown,1);assert.equal(u.generation.remaining_tokens,23000);assert.equal(u.generation.system_token_limit,35000);assert.equal(u.generation.remaining_requests,895);assert.equal(u.generation.unverified_tokens_24h,9000);assert.equal(u.generation.global_request_limit,900);assert.equal(u.embeddings.remaining_neurons,1768);assert.equal(u.daily.per_bot,20);assert.doesNotMatch(JSON.stringify(u),/private-test-key/);
+ assert.equal(u.generation.configured,true);assert.equal(u.generation.requests_24h,5);assert.equal(u.generation.unknown,1);assert.equal(u.generation.remaining_tokens,23000);assert.equal(u.generation.system_token_limit,35000);assert.equal(u.generation.remaining_requests,895);assert.equal(u.generation.next_release_at,'2026-11-26T06:00:00.000Z');assert.equal(u.generation.full_release_at,'2026-11-26T10:00:00.000Z');assert.equal(u.generation.unverified_tokens_24h,9000);assert.equal(u.generation.global_request_limit,900);assert.equal(u.embeddings.remaining_neurons,1768);assert.equal(u.daily.per_bot,20);assert.doesNotMatch(JSON.stringify(u),/private-test-key/);
  }finally{core.setQueryForTests(null);}
 });
 
