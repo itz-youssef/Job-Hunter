@@ -25,16 +25,35 @@ test('owner auth, scope checks, explicit public sharing and public metadata only
  }finally{core.setQueryForTests(null);}
 });
 test('create embeddings and chat with mocked provider, separate tenant and bounded budget',async()=>{
- const vector=Array(1024).fill(0);vector[0]=1;let inserted,models=[],reserve=[];
- core.setQueryForTests(async(sql,args)=>{if(sql.includes('sj_sessions'))return [{id:UID,role:'member'}];if(sql.includes('count(*)'))return [{n:0}];if(sql.includes('sj_botfolio_limits')){reserve.push(args);return [{used:args[1]}];}if(sql.includes('INSERT INTO public.sj_botfolio_bots')){inserted=JSON.parse(args[4]);assert.equal(args[1],UID);assert.match(sql,/\$6,false/);return [{id:ID,name:'Alex',published:false}];}if(sql.includes('JOIN public.sj_users'))return [{id:ID,name:'Alex',headline:'Engineer',knowledge:inserted,embedding_model:B.EMBED_MODEL}];throw Error(sql);});
- const ai={run:async(model,body)=>{models.push(model);if(model===B.EMBED_MODEL)return {data:body.text.map(()=>vector)};assert.equal(model,B.CHAT_MODEL);assert.match(body.messages[1].content,/software engineer/);return {choices:[{message:{content:'Alex worked as a software engineer.'}}]};}};
+ const vector=Array(1024).fill(0);vector[0]=1;let inserted,models=[],reserve=[],groqCalls=0,groqDebits=[],groqSettles=[];const originalFetch=global.fetch;
+ core.setQueryForTests(async(sql,args)=>{if(sql.includes('sj_sessions'))return [{id:UID,role:'member'}];if(sql.includes('count(*)'))return [{n:0}];if(sql.includes('INSERT INTO public.sj_botfolio_groq_budget')){groqDebits.push(args);return [{id:1}];}if(sql.includes('UPDATE public.sj_botfolio_groq_budget')){groqSettles.push(args);return [];}if(sql.includes('sj_botfolio_limits')){reserve.push(args);return [{used:args[1]}];}if(sql.includes('INSERT INTO public.sj_botfolio_bots')){inserted=JSON.parse(args[4]);assert.equal(args[1],UID);assert.match(sql,/\$6,false/);return [{id:ID,name:'Alex',published:false}];}if(sql.includes('JOIN public.sj_users'))return [{id:ID,name:'Alex',headline:'Engineer',knowledge:inserted,embedding_model:B.EMBED_MODEL}];throw Error(sql);});
+ const ai={run:async(model,body)=>{models.push(model);assert.equal(model,B.EMBED_MODEL);return {data:body.text.map(()=>vector)};}};
+ global.fetch=async(url,options)=>{groqCalls++;assert.equal(url,'https://api.groq.com/openai/v1/chat/completions');assert.equal(options.headers.Authorization,'Bearer test-groq-key');const body=JSON.parse(options.body);assert.equal(body.model,'openai/gpt-oss-120b');assert.equal(body.reasoning_effort,'low');assert.equal(body.include_reasoning,false);assert.match(body.messages[1].content,/software engineer/);return {ok:true,status:200,json:async()=>({choices:[{finish_reason:'stop',message:{content:'Alex worked as a software engineer.'}}],usage:{total_tokens:280}})};};
  try{const c=req('POST','create',{name:'Alex',headline:'Engineer',knowledge:'Alex worked as a software engineer on application development.',reviewed:true});c.env.BOTFOLIO_AI=ai;assert.equal((await call(c)).status,201);
- const q=req('POST','chat',{id:ID,message:'Experience?'},ID,false);q.env.BOTFOLIO_AI=ai;const r=await call(q);assert.equal(r.status,200);assert.match(r.data.answer,/software engineer/);assert.deepEqual(models,[B.EMBED_MODEL,B.EMBED_MODEL,B.CHAT_MODEL]);assert.ok(reserve.some(x=>x[0]==='global:neurons'&&x[2]===B.DAILY_NEURONS));
- }finally{core.setQueryForTests(null);}
+ const q=req('POST','chat',{id:ID,message:'Experience?'},ID,false);q.env.BOTFOLIO_AI=ai;q.env.GROQ_API_KEY='test-groq-key';const r=await call(q);assert.equal(r.status,200);assert.match(r.data.answer,/software engineer/);assert.deepEqual(models,[B.EMBED_MODEL,B.EMBED_MODEL]);assert.equal(groqCalls,1);assert.equal(groqDebits[0][2],35000);assert.deepEqual(groqSettles[0],[groqDebits[0][0],280]);assert.ok(reserve.some(x=>x[0]==='global:neurons'&&x[2]===B.DAILY_NEURONS));assert.equal(reserve.filter(x=>x[0]==='global:neurons').length,2);
+ const repeat=await call(q);assert.equal(repeat.status,200);assert.equal(repeat.data.answer,r.data.answer);assert.equal(groqCalls,1);assert.equal(models.length,2);
+ }finally{global.fetch=originalFetch;core.setQueryForTests(null);}
 });
 test('schema is additive and private, route and public share UI are present',()=>{
  const sql=fs.readFileSync('database/migrations/013_botfolio.sql','utf8');assert.match(sql,/REFERENCES public.sj_users\(id\) ON DELETE CASCADE/);assert.match(sql,/ENABLE ROW LEVEL SECURITY/);assert.match(sql,/REVOKE ALL ON TABLE/);assert.doesNotMatch(sql,/DROP TABLE|TRUNCATE/);
  assert.match(fs.readFileSync('cloudflare/site/worker.mjs','utf8'),/secretj-botfolio/);
  for(const path of ['wrangler.toml','cloudflare/site/wrangler.toml'])assert.match(fs.readFileSync(path,'utf8'),/binding = "BOTFOLIO_AI"/);
  const js=fs.readFileSync('dist/assets/botfolio.js','utf8');assert.match(js,/scope=cv/);assert.match(js,/Copy HTML/);assert.match(js,/Copy link/);assert.match(js,/reviewed/);
+});
+
+test('Groq quota, missing credentials, provider 429 and no paid fallback',async()=>{
+ const originalFetch=global.fetch;const messages=B.buildMessages({name:'Test',headline:'Engineer'},[{text:'Works with Python'}],'What skills?',[]);
+ let calls=0;global.fetch=async()=>{calls++;return {ok:false,status:429};};
+ try{
+  core.setQueryForTests(async()=>[]);
+  await assert.rejects(B.generate({GROQ_API_KEY:'test'},messages),e=>e.status===429);assert.equal(calls,0);
+  core.setQueryForTests(async(sql)=>{assert.match(sql,/INSERT INTO public.sj_botfolio_groq_budget/);return [{id:1}];});
+  await assert.rejects(B.generate({GROQ_API_KEY:'test'},messages),e=>e.status===429);assert.equal(calls,1);
+  assert.equal(B.ready({BOTFOLIO_AI:{run(){}}}),!!process.env.GROQ_API_KEY);
+  assert.equal(B.ready({BOTFOLIO_AI:{run(){}},GROQ_API_KEY:'test'}),true);
+ }finally{global.fetch=originalFetch;core.setQueryForTests(null);}
+});
+test('Botfolio-only Groq ledger migration is private and additive',()=>{
+ const sql=fs.readFileSync('database/migrations/014_botfolio_groq_budget.sql','utf8');
+ assert.match(sql,/CREATE TABLE IF NOT EXISTS public.sj_botfolio_groq_budget/);assert.match(sql,/ENABLE ROW LEVEL SECURITY/);assert.match(sql,/REVOKE ALL/);assert.doesNotMatch(sql,/DROP TABLE|TRUNCATE/);
 });
