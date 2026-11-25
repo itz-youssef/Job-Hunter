@@ -99,3 +99,44 @@ html[data-theme=dark] .bf-dashboard .bf-nav #bf-signout{color:#ff9c9c}
 
 /* Keep the summary as the pointer target even when the async avatar replaces the fallback. */
 .bf-profile-menu>summary>*{pointer-events:none}
+
+/* Approved monochrome sections. Light mode only; no changes to the hero or tools. */
+html:not([data-theme=dark]) .bf-intro-alt,html:not([data-theme=dark]) .bf-intro-close{position:relative;isolation:isolate;overflow:hidden;background:#f4f4f4;color:#171717;width:100%;padding-block:clamp(58px,7cqw,116px)}
+html:not([data-theme=dark]) .bf-intro-alt::before,html:not([data-theme=dark]) .bf-intro-close::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background-position:center;background-size:100% 100%;background-repeat:no-repeat;opacity:1}
+html:not([data-theme=dark]) .bf-intro-alt::before{background-image:url("/assets/botfolio-features-grey.svg")}
+html:not([data-theme=dark]) .bf-intro-close::before{background-image:url("/assets/botfolio-closing-grey.svg")}
+html:not([data-theme=dark]) .bf-intro-close::after{content:none}
+html:not([data-theme=dark]) :is(.bf-intro-alt,.bf-intro-close) .bf-intro-inner{position:relative;z-index:1;width:min(1600px,100%);padding-inline:clamp(20px,6.5cqw,115px)}
+html:not([data-theme=dark]) :is(.bf-intro-alt,.bf-intro-close) .eyebrow{color:#414141;letter-spacing:.16em}
+html:not([data-theme=dark]) :is(.bf-intro-alt,.bf-intro-close) h2{color:#171717;font-size:clamp(30px,3.6cqw,60px);letter-spacing:-.055em}
+html:not([data-theme=dark]) :is(.bf-intro-alt,.bf-intro-close) .bf-intro-sub{color:#515151;font-size:clamp(15px,1.3cqw,20px);line-height:1.6;max-width:800px}
+html:not([data-theme=dark]) .bf-intro-alt .bf-intro-features{grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(14px,1.3cqw,22px);margin-top:clamp(28px,3.4cqw,48px)}
+html:not([data-theme=dark]) .bf-intro-alt .bf-intro-features article{background:#fcfcfc;border:1px solid #d7d7d7;border-radius:16px;padding:clamp(18px,2cqw,29px);box-shadow:0 12px 24px #00000009,0 1px 2px #0000000b}
+html:not([data-theme=dark]) .bf-intro-alt .bf-intro-features h3{color:#171717;font-size:clamp(18px,1.45cqw,24px);margin:18px 0 9px;overflow-wrap:anywhere}
+html:not([data-theme=dark]) .bf-intro-alt .bf-intro-features p{color:#515151;line-height:1.65;font-size:clamp(14px,1.04cqw,17px)}
+html:not([data-theme=dark]) .bf-intro-alt .bf-intro-features article>span{font-size:0;display:grid;place-items:center;width:48px;height:48px;background:#eeeeee;border-radius:13px}
+html:not([data-theme=dark]) .bf-intro-alt .bf-intro-features article>span::before{content:"";width:27px;height:27px;background-size:contain;background-position:center;background-repeat:no-repeat}
+html:not([data-theme=dark]) .bf-intro-alt .bf-intro-features article:nth-child(1)>span::before{background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23242424%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%202c1.4%205.6%204.4%208.6%2010%2010-5.6%201.4-8.6%204.4-10%2010C10.6%2016.4%207.6%2013.4%202%2012c5.6-1.4%208.6-4.4%2010-10Z%22%2F%3E%3C%2Fsvg%3E")}
+html:not([data-theme=dark]) .bf-intro-alt .bf-intro-features article:nth-child(2)>span::before{background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23242424%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m12%203%2010%205-10%205L2%208zM2%2012l10%205%2010-5M2%2016l10%205%2010-5%22%2F%3E%3C%2Fsvg%3E")}
+html:not([data-theme=dark]) .bf-intro-alt .bf-intro-features article:nth-child(3)>span::before{background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23242424%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%2021v-5a5%205%200%200%201%205-5h3M11%2016%2021%204M12%204h9v9%22%2F%3E%3C%2Fsvg%3E")}
+html:not([data-theme=dark]) .bf-intro-alt .bf-intro-features article:nth-child(4)>span::before{background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23242424%22%20stroke-width%3D%221.65%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m8%205-6%207%206%207m8-14%206%207-6%207M14%203l-4%2018%22%2F%3E%3C%2Fsvg%3E")}
+html:not([data-theme=dark]) .bf-intro-close{padding-block:clamp(70px,8.7cqw,142px) clamp(100px,11cqw,176px)}
+html:not([data-theme=dark]) .bf-intro-close h2{max-width:850px}
+html:not([data-theme=dark]) .bf-intro-close .bf-intro-sub{max-width:750px}
+html:not([data-theme=dark]) .bf-intro-close .actions{margin-top:30px;gap:14px}
+html:not([data-theme=dark]) .bf-intro-close .primary{background:#1d1d1d;color:#fff;border-color:#1d1d1d}
+html:not([data-theme=dark]) .bf-intro-close .primary:hover{background:#363636}
+html:not([data-theme=dark]) .bf-intro-close .bf-secondary{background:#fafafa;border-color:#bdbdbd;color:#171717}
+html:not([data-theme=dark]) .bf-intro-close .bf-secondary:hover{background:#fff;border-color:#757575}
+@container bf-intro (min-width:1120px){
+ html:not([data-theme=dark]) .bf-intro-alt .bf-intro-features{grid-template-columns:repeat(4,minmax(0,1fr))}
+ html:not([data-theme=dark]) .bf-intro-alt::after{content:"";position:absolute;top:clamp(20px,3cqw,50px);right:clamp(26px,5cqw,90px);width:clamp(250px,29cqw,470px);aspect-ratio:550/290;background:url("/assets/botfolio-features-wireframe.svg") center/contain no-repeat;pointer-events:none;z-index:-1;opacity:.68}
+ html:not([data-theme=dark]) .bf-intro-alt h2{max-width:70%}
+ html:not([data-theme=dark]) .bf-intro-alt .bf-intro-sub{max-width:65%}
+}
+@container bf-intro (max-width:599px){
+ html:not([data-theme=dark]) .bf-intro-alt,html:not([data-theme=dark]) .bf-intro-close{padding-block:48px}
+ html:not([data-theme=dark]) :is(.bf-intro-alt,.bf-intro-close) .bf-intro-inner{padding-inline:16px}
+ html:not([data-theme=dark]) .bf-intro-alt .bf-intro-features{grid-template-columns:minmax(0,1fr);gap:12px}
+ html:not([data-theme=dark]) .bf-intro-close::before{opacity:.55}
+}

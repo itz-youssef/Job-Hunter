@@ -80,6 +80,22 @@ for(const w of [320,375,390,430,600,768,900,1024,1280,1440,1920,2560,3840]){
    if(!(await page.request.get('http://127.0.0.1:8765/assets/botfolio-hero-icons.svg')).ok())failures.push({botfolio_art_asset:w});
   }else if(await page.locator('.bf-intro-hero h1').evaluate(el=>getComputedStyle(el).textTransform)!=='uppercase')failures.push({botfolio_dark_title:w});
   if([375,1440,2560].includes(w)){await page.locator('.bf-intro-hero').screenshot({path:'botfolio-hero-'+theme+'-'+w+'.png',animations:'disabled'});}
+  for(const [selector,assetName] of [['.bf-intro-alt','botfolio-features-grey.svg'],['.bf-intro-close','botfolio-closing-grey.svg']]){
+   const section=page.locator(selector);
+   const g=await section.evaluate(el=>{
+    const r=el.getBoundingClientRect(),main=document.querySelector('.bf-workspace').getBoundingClientRect(),art=getComputedStyle(el,'::before');
+    const children=[...el.querySelectorAll('article,h2,.actions')].map(x=>x.getBoundingClientRect());
+    const grid=el.querySelector('.bf-intro-features'),icon=grid?.querySelector('article>span');
+    return {width:r.width,left:r.left,right:r.right,mainLeft:main.left,mainRight:main.right,art:art.backgroundImage,size:art.backgroundSize,extra:getComputedStyle(el,'::after').backgroundImage,contained:children.every(x=>x.left>=r.left-1&&x.right<=r.right+1),columns:grid?getComputedStyle(grid).gridTemplateColumns.split(' ').length:0,icon:icon?getComputedStyle(icon,'::before').backgroundImage:null,eyebrow:getComputedStyle(el.querySelector('.eyebrow')).color};
+   });
+   if(!g.contained||Math.abs(g.left-g.mainLeft)>1||Math.abs(g.right-g.mainRight)>1)failures.push({botfolio_section:selector,w,theme,...g});
+   if(theme==='light'){
+    if(!g.art.includes(assetName)||g.size!=='100% 100%'||g.eyebrow!=='rgb(65, 65, 65)')failures.push({botfolio_section_art:selector,w,...g});
+    if(selector==='.bf-intro-alt'&&(g.columns!==(g.width>=1120?4:g.width>=600?2:1)||!g.icon.includes('data:image/svg+xml')||g.extra.includes('botfolio-features-wireframe.svg')!==(g.width>=1120)))failures.push({botfolio_feature_grid:w,...g});
+    if(!(await page.request.get('http://127.0.0.1:8765/assets/'+assetName)).ok())failures.push({botfolio_section_asset:assetName,w});
+   }else if(g.art.includes('-grey.svg')||g.extra.includes('botfolio-features-wireframe.svg')||(selector==='.bf-intro-close'&&!g.art.includes('jobhunter-abstract-dark.svg')))failures.push({botfolio_dark_section:selector,w,...g});
+   if([375,1440,2560].includes(w))await section.screenshot({path:'botfolio-section-'+(selector.endsWith('alt')?'features':'closing')+'-'+theme+'-'+w+'.png',animations:'disabled'});
+  }
   for(const view of ['home','botfolio','create','guides']){
    await page.locator('.bf-sidebar nav [data-bf-view="'+view+'"]').click();
    await page.waitForFunction(v=>document.querySelector('.bf-sidebar nav [aria-current="page"]')?.dataset.bfView===v,view);
