@@ -329,3 +329,28 @@ test('reset timestamps are timezone aware and Groq provider reset is based on re
  assert.equal(u[A.GROQ].provider_reset_at,'2026-11-25T15:02:59.560Z');
  assert.equal(u[A.NEMOTRON].provider_reset_at,null);
 });
+
+test('detailed rejection reason uses same validation gate and does not change acceptance',()=>{
+ const docs=new Map([[doc.id,doc]]),jobs=new Map([[id,job]]);
+ const detail=p=>E.validateDetailed(p,docs,jobs,A.HYDROGEN,'2026-11-25');
+ assert.deepEqual(detail(proposal),{rule:check(proposal),reason:null});
+ for(const [p,reason] of [
+  [{...proposal,quote:'invented machine learning responsibilities'},'quote-not-in-source'],
+  [{...proposal,evidence_id:'missing'},'unknown-evidence-id'],
+  [{...proposal,quote:'short'},'quote-length'],
+  [{...proposal,family:'cybersecurity'},'missing-job-family-anchor'],
+  [{...proposal,job_id:'other'},'unknown-job-id'],
+  [{...proposal,corroboration:proposal.quote},'corroboration-not-independent']
+ ]){assert.deepEqual(detail(p),{rule:null,reason});assert.equal(check(p),null);}
+ const d={id:'live',company:'Example',url:'https://example.com/careers',live:true,text:'Our Future X programme is an internship for university students.'};
+ const p={kind:'career',evidence_id:d.id,alias:'Future X',level:'senior',quote:d.text};
+ assert.equal(E.validateDetailed(p,new Map([[d.id,d]]),jobs,A.HYDROGEN,'2026-11-25').reason,'missing-career-level-signal');
+});
+test('rejection log records actual endpoint, bounded public evidence and excludes arbitrary fields',()=>{
+ const p={...proposal,quote:'invented machine learning responsibilities',url:'https://untrusted.example/',secret:'DO NOT STORE'};
+ const x=A.rejectedProposalRecord(p,new Map([[doc.id,doc]]),new Map([[id,job]]),{company:job.company,kind:'family',model:A.GROQ,slot:A.HYDROGEN,reason:'quote-not-in-source',day:'2026-11-25'});
+ assert.equal(x.actual_model,A.GROQ);assert.equal(x.voting_slot,A.HYDROGEN);
+ assert.equal(x.reason,'quote-not-in-source');assert.equal(x.evidence.url,doc.url);assert.equal(x.evidence.quote_found,false);
+ assert.equal(x.proposal.job_title,job.title);assert.equal(x.proposal.quote,p.quote);
+ assert.ok(!JSON.stringify(x).includes('DO NOT STORE'));assert.ok(!JSON.stringify(x).includes('untrusted.example'));
+});
