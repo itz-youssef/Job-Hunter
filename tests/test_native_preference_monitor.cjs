@@ -38,7 +38,7 @@ function fixture(){
    return [...queue.values()].some(x=>['pending','failed'].includes(x.status))?[{user_id:ID}]:[];
   }
   if(sql.includes('FOR UPDATE SKIP LOCKED')){
-   const batch=[...queue.values()].filter(x=>['pending','failed'].includes(x.status)).slice(0,5);
+   const batch=[...queue.values()].filter(x=>['pending','failed'].includes(x.status)).slice(0,20);
    batch.forEach(x=>x.status='pending');return batch;
   }
   if(sql.includes("SET status='sent'")){for(const key of args[1])queue.get(key).status='sent';return [];}
@@ -168,4 +168,32 @@ test('subscribers are not silently dropped after an arbitrary first-100 cap',()=
  assert.match(source,/ORDER BY MIN\(discovered_at\) ASC/);
  assert.match(source,/WHERE user_id=ANY\(\$1::uuid\[\]\)/);
  assert.match(source,/Lever board exceeds verified pagination cap/);
+});
+
+test('already queued notifications drain without any source scan',async()=>{
+ const f=fixture();
+ try{
+  await f.run();
+  const job=other('queued','Junior AI Engineer','Develop ML models');
+  f.queue.set(job.url,{job_key:job.url,job_snapshot:{...job,qualification_status:'accepted'},status:'pending'});
+  const requests=f.responses.length;
+  const env={SECRETJ_ALERTS_ENABLED:'true',RESEND_API_KEY:'test',SECRETJ_EMAIL_FROM:'alerts@example.org'};
+  const result=await monitor.deliverQueued(env,async(to,subject,body,config)=>{
+    f.sent.push({to,subject,body});
+    assert.match(config.IDEMPOTENCY_KEY,/^native-alert-[a-f0-9]{64}$/);
+  });
+  assert.equal(result.sent,1);
+  assert.equal(f.responses.length,requests,'Outbox must not fetch employer boards');
+  assert.equal(f.queue.get(job.url).status,'sent');
+ }finally{f.finish();}
+});
+test('cron has standalone queue draining and source failures cannot suppress existing outbox',()=>{
+ const source=fs.readFileSync('lib/secretj/native-preference-monitor.js','utf8');
+ const worker=fs.readFileSync('cloudflare/site/worker.mjs','utf8');
+ assert.match(worker,/nativeMonitor\.deliverQueued\(env\)/);
+ assert.ok(source.indexOf('const before=await deliverQueued')<source.indexOf('const result=await gather(env,fetchImpl);',source.indexOf('async function deliver(env')));
+ assert.match(source,/w\.updated_at>=p\.updated_at/);
+ assert.match(source,/job_snapshot->>'qualification_preference_signature'=\$2/);
+ assert.match(source,/job_snapshot->>'source_catalog_stale' IS DISTINCT FROM 'true'/);
+ assert.doesNotMatch(source,/DELETE FROM public\.sj_native_watch_jobs WHERE user_id=\$1/);
 });

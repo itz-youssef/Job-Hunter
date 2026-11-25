@@ -66,6 +66,7 @@ jobs:
 
       - name: Check careers websites
         id: scan
+        continue-on-error: true
         run: python -m app.run_once
 
       - name: Save job history
@@ -100,6 +101,7 @@ jobs:
 
           if ! git diff --cached --quiet; then
             git commit -m "Update job monitoring history"
+            git pull --rebase origin main
             git push origin HEAD:main
           fi
 
@@ -117,10 +119,17 @@ jobs:
           git add -f dist/data.json
           if ! git diff --cached --quiet; then
             git commit -m "Update public job snapshot"
+            git pull --rebase origin main
             git push origin HEAD:main
           fi
 
         
+      - name: Report source scan failure after preserving data
+        if: steps.scan.outcome == 'failure'
+        run: |
+          echo '::error::All attempted built-in sources failed; last known snapshot and diagnostics were preserved.'
+          exit 1
+
       - name: Prepare public website
         run: |
           mkdir -p public-site

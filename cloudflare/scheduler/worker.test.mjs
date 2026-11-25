@@ -70,11 +70,17 @@ test("missing Cloudflare secret fails closed and never dispatches", async () => 
   assert.equal(calls.length, 0);
 });
 
-test("queued custom scan blocks new custom or monitor dispatch", async () => {
-  const { calls, mock } = fetchMock([run("custom-companies.yml", "queued")]);
+test("core slot queues behind an active custom scan without starving", async () => {
+  const { calls, mock } = fetchMock([run("custom-companies.yml", "in_progress")]);
+  const result = await dispatchDue({ cron: MONITOR }, ENV, mock, NOW);
+  assert.equal(result.result, "dispatched");
+  assert.equal(result.workflow, "monitor.yml");
+  assert.equal(calls.length, 2);
+});
+test("a queued core scan prevents duplicate dispatch", async () => {
+  const { calls, mock } = fetchMock([run("custom-companies.yml", "in_progress"),run("monitor.yml","queued")]);
   const result = await dispatchDue({ cron: MONITOR }, ENV, mock, NOW);
   assert.equal(result.result, "skipped");
-  assert.equal(result.reason, "another-scanner-active");
   assert.equal(calls.length, 1);
 });
 

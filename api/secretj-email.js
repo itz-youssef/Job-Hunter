@@ -15,7 +15,8 @@ async function send(to,subject,text,config=process.env){
   const response=await fetch('https://api.resend.com/emails',{
     method:'POST',headers:{
       Authorization:'Bearer '+config.RESEND_API_KEY,
-      'Content-Type':'application/json'
+      'Content-Type':'application/json',
+      ...(config.IDEMPOTENCY_KEY?{'Idempotency-Key':config.IDEMPOTENCY_KEY}:{})
     },
     body:JSON.stringify({
       from:config.SECRETJ_EMAIL_FROM,
@@ -23,7 +24,7 @@ async function send(to,subject,text,config=process.env){
     }),
     signal:AbortSignal.timeout(15000)
   });
-  if(!response.ok)throw core.fail(503,'Email provider did not accept the message');
+  if(!response.ok)throw Object.assign(core.fail(503,'Email provider did not accept the message'),{providerStatus:response.status});
   return true;
 }
 function matchesHash(a,b){

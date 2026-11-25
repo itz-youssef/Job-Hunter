@@ -28,6 +28,8 @@ SECRETJ_SIGNUP_OTP_ENABLED = "true"
 SECRETJ_ALERTS_ENABLED = "true"
 # Independent source-aware personalized monitoring supersedes snapshot-only alerts.
 SECRETJ_NATIVE_MONITOR_ENABLED = "true"
+# Read newly published scanner snapshots independently of UI deployments.
+SECRETJ_LIVE_CATALOG = "true"
 # Saved preference matching uses the deterministic title dictionary (no AI binding).
 
 # Separate from the existing scanner scheduler. The site worker only handles

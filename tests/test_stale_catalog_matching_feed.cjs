@@ -26,7 +26,7 @@ test('stale public catalog still supplies personalized feed candidates',async()=
   assert.equal(qualified.accepted.length,1);
   assert.equal(qualified.accepted[0].qualification_mode,'dictionary-title-v1');
 });
-test('stale records cannot become new emails when reintroduced from the catalog',async()=>{
+test('stale records remain queued but cannot be emailed until fresh evidence arrives',async()=>{
   const user={id:'e07bb2d6-a213-45d0-ab23-e5051967a616',...preferences};
   let write=null;
   core.setQueryForTests(async(sql,args=[])=>{
@@ -40,7 +40,7 @@ test('stale records cannot become new emails when reintroduced from the catalog'
       ...oldJob,source_catalog_stale:true,qualification_status:'accepted',
       qualification_mode:'dictionary-title-v1'}]);
     assert.ok(write,'Stale matching job should still be stored for display');
-    assert.match(write.sql,/x\.job->>'source_catalog_stale'='true'/);
+    assert.match(write.sql,/EXCLUDED\.job_snapshot->>'source_catalog_stale'='true'/);
     assert.equal(JSON.parse(write.args[1])[0].job.source_catalog_stale,true);
     assert.equal(write.args[2],'pending','Fresh jobs remain eligible for email');
   }finally{core.setQueryForTests(null);}
