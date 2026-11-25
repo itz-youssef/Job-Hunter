@@ -66,6 +66,19 @@ for(const w of [320,375,390,430,600,768,900,1024,1280,1440,1920,2560,3840]){
   if(!heroArtwork.includes(expectedArtwork))failures.push({botfolio_hero:w,theme,heroArtwork,expectedArtwork});
   const asset=await page.request.get('http://127.0.0.1:8765/assets/'+expectedArtwork);
   if(!asset.ok())failures.push({botfolio_hero_asset:w,theme,status:asset.status()});
+  if(theme==='light'){
+   const geometry=await page.locator('.bf-intro-hero').evaluate(el=>{
+    const box=e=>{const r=e.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height};};
+    const hero=box(el),main=box(document.querySelector('.bf-workspace')),copy=box(el.querySelector('.bf-intro-copy')),preview=box(el.querySelector('.bf-intro-preview'));
+    const art=getComputedStyle(el,'::before'),robot=getComputedStyle(el,'::after');
+    const left=hero.left+parseFloat(robot.left),top=hero.top+parseFloat(robot.top);
+    const mascot={left,top,right:left+parseFloat(robot.width),bottom:top+parseFloat(robot.height)};
+    const overlap=(a,b)=>a.left<b.right-1&&a.right>b.left+1&&a.top<b.bottom-1&&a.bottom>b.top+1;
+    return {hero,main,copy,preview,mascot,artSize:art.backgroundSize,artBounds:[art.top,art.right,art.bottom,art.left],robotImage:robot.backgroundImage,overlap:overlap(mascot,copy)||overlap(mascot,preview),contained:[mascot.left,mascot.top,mascot.right,mascot.bottom].every(Number.isFinite)&&mascot.left>=hero.left-1&&mascot.right<=hero.right+1&&mascot.top>=hero.top-1&&mascot.bottom<=hero.bottom+1,stacked:preview.top>=copy.bottom-1};
+   });
+   if(Math.abs(geometry.hero.left-geometry.main.left)>1||Math.abs(geometry.hero.right-geometry.main.right)>1||!geometry.artSize.includes('100% 100%')||geometry.artBounds.some(x=>x!=='0px')||!geometry.robotImage.includes('botfolio-hero-robot.svg')||geometry.overlap||!geometry.contained||geometry.stacked!==(geometry.hero.width<960))failures.push({botfolio_hero_geometry:w,...geometry});
+   for(const asset of ['botfolio-hero-robot.svg','botfolio-hero-icons.svg'])if(!(await page.request.get('http://127.0.0.1:8765/assets/'+asset)).ok())failures.push({botfolio_art_asset:w,asset});
+  }
   for(const view of ['home','botfolio','create','guides']){
    await page.locator('.bf-sidebar nav [data-bf-view="'+view+'"]').click();
    await page.waitForFunction(v=>document.querySelector('.bf-sidebar nav [aria-current="page"]')?.dataset.bfView===v,view);
