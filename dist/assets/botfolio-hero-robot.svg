@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 265 250 325" fill="none"><defs>
+<linearGradient id="paper" x1="0" y1="0" x2="1800" y2="790" gradientUnits="userSpaceOnUse"><stop stop-color="#eeebe8"/><stop offset=".42" stop-color="#faf8f5"/><stop offset=".8" stop-color="#f6f3ef"/><stop offset="1" stop-color="#e9e4e0"/></linearGradient>
+<linearGradient id="wine" x1="0" y1="0" x2="340" y2="260" gradientUnits="userSpaceOnUse"><stop stop-color="#634048"/><stop offset="1" stop-color="#30151f"/></linearGradient>
+<linearGradient id="shell" x1="0" y1="0" x2="150" y2="180" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"/><stop offset=".55" stop-color="#f6f3ef"/><stop offset="1" stop-color="#c9c1bd"/></linearGradient>
+<linearGradient id="face" x1="30" y1="35" x2="130" y2="100" gradientUnits="userSpaceOnUse"><stop stop-color="#28151e"/><stop offset="1" stop-color="#65434c"/></linearGradient>
+<linearGradient id="fold" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".86"/><stop offset="1" stop-color="#c8beba" stop-opacity=".48"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#fff" stop-opacity=".96"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+<filter id="shadow" x="-60%" y="-60%" width="220%" height="240%"><feDropShadow dx="1" dy="12" stdDeviation="13" flood-color="#381c26" flood-opacity=".18"/></filter>
+<g id="star"><path d="M0-14Q3-3 14 0Q3 3 0 14Q-3 3-14 0Q-3-3 0-14Z" fill="#66414b"/></g>
+<g id="tile"><rect x="-43" y="-43" width="86" height="86" rx="22" fill="url(#shell)" stroke="#fff" stroke-width="1.6"/></g>
+</defs><!-- Friendly sculptural robot, isolated at the far left edge -->
+<g transform="translate(32 322) rotate(-12 97 110)" filter="url(#shadow)">
+<path d="M61 132Q38 148 39 190Q40 223 83 238H123Q157 222 158 184Q157 148 132 132Z" fill="url(#shell)" stroke="#d7cfca"/>
+<rect x="56" y="161" width="89" height="59" rx="16" fill="#fcfaf7" stroke="#e5ded9"/>
+<path d="M104 173v26c0 10-5 14-13 14-7 0-12-3-15-10l7-3c2 4 4 6 8 6 4 0 6-3 6-7v-26Z" fill="#47232e"/><circle cx="112" cy="175" r="5" fill="#47232e"/>
+<rect x="13" y="62" width="31" height="53" rx="14" fill="#64424b"/><rect x="147" y="62" width="30" height="53" rx="14" fill="#64424b"/>
+<rect x="27" y="25" width="137" height="119" rx="55" fill="url(#shell)" stroke="#fff" stroke-width="2"/>
+<rect x="42" y="45" width="108" height="79" rx="35" fill="url(#face)"/>
+<path d="M64 84q11-17 22 0M104 84q11-17 22 0" stroke="#fffaf5" stroke-width="5" stroke-linecap="round"/>
+<path d="M90 103q7 5 14 0" stroke="#e9dcd8" stroke-width="3" stroke-linecap="round"/>
+<path d="M96 25V9" stroke="#57323f" stroke-width="5" stroke-linecap="round"/><circle cx="96" cy="6" r="7" fill="#57323f"/>
+</g>
+<path d="M37 305l-12-18M61 296l-2-23" stroke="#613d47" stroke-width="5" stroke-linecap="round"/>
+<use href="#star" transform="translate(220 458) scale(.6)" opacity=".68"/>
+</svg>
