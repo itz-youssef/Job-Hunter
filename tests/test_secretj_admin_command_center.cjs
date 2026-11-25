@@ -126,3 +126,14 @@ test('provider reset times use the shared research snapshot and yellow timestamp
  assert.equal((js.match(/api\(url\+'research-shadow'\)/g)||[]).length,1);
  assert.match(page,/\.sj-provider-reset-time\{color:#856000!important/);assert.match(page,/\.sj-provider-reset-time\{color:#facc15!important/);
 });
+
+test('provider calendar reset and freshest Groq response are rendered without a provider probe',()=>{
+ const js=fs.readFileSync('dist/assets/secretj-admin-console.js','utf8');
+ const helpers=new Function(js.slice(js.indexOf('const nextProviderMidnight='),js.indexOf('const modelBudgetCards='))+'return {nextProviderMidnight,providerSchedule,latestGroqReset};')();
+ assert.equal(helpers.nextProviderMidnight('UTC',Date.parse('2026-11-26T00:10:00Z')),'2026-11-27T00:00:00.000Z');
+ assert.equal(helpers.nextProviderMidnight('America/Los_Angeles',Date.parse('2026-11-26T00:10:00Z')),'2026-11-26T08:00:00.000Z');
+ assert.equal(helpers.providerSchedule('nvidia/nemotron-3-ultra-550b-a55b:free'),'UTC');
+ const report={updated_at:'2026-11-25T15:00:00Z',usage:{per_model:{'openai/gpt-oss-120b':{provider_reset_at:'2026-11-25T16:00:00Z'}}}};
+ const recent={reset_at:'2026-11-26T12:00:00Z',observed_at:'2026-11-26T00:10:00Z'};
+ assert.deepEqual(helpers.latestGroqReset(report,{generation:{provider_reset:{rpd:recent}}},'rpd'),recent);assert.equal(helpers.latestGroqReset(report,null,'tpm'),null);
+});

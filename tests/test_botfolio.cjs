@@ -30,7 +30,7 @@ test('create embeddings and chat with mocked provider, separate tenant and bound
  const ai={run:async(model,body)=>{models.push(model);assert.equal(model,B.EMBED_MODEL);return {data:body.text.map(()=>vector)};}};
  global.fetch=async(url,options)=>{groqCalls++;assert.equal(url,'https://api.groq.com/openai/v1/chat/completions');assert.equal(options.headers.Authorization,'Bearer test-groq-key');const body=JSON.parse(options.body);assert.equal(body.model,'openai/gpt-oss-120b');assert.equal(body.reasoning_effort,'low');assert.equal(body.include_reasoning,false);assert.match(body.messages[1].content,/software engineer/);return {ok:true,status:200,json:async()=>({choices:[{finish_reason:'stop',message:{content:'Alex worked as a software engineer.'}}],usage:{total_tokens:280}})};};
  try{const c=req('POST','create',{name:'Alex',headline:'Engineer',knowledge:'Alex worked as a software engineer on application development.',reviewed:true});c.env.BOTFOLIO_AI=ai;assert.equal((await call(c)).status,201);
- const q=req('POST','chat',{id:ID,message:'Experience?'},ID,false);q.env.BOTFOLIO_AI=ai;q.env.GROQ_API_KEY='test-groq-key';const r=await call(q);assert.equal(r.status,200);assert.match(r.data.answer,/software engineer/);assert.deepEqual(models,[B.EMBED_MODEL,B.EMBED_MODEL]);assert.equal(groqCalls,1);assert.equal(groqDebits[0][2],900);assert.equal(groqDebits[0][3],35000);assert.deepEqual(groqSettles[0],[groqDebits[0][0],280,'success']);assert.ok(reserve.some(x=>x[0]==='global:neurons'&&x[2]===B.DAILY_NEURONS));assert.equal(reserve.filter(x=>x[0]==='global:neurons').length,2);
+ const q=req('POST','chat',{id:ID,message:'Experience?'},ID,false);q.env.BOTFOLIO_AI=ai;q.env.GROQ_API_KEY='test-groq-key';const r=await call(q);assert.equal(r.status,200);assert.match(r.data.answer,/software engineer/);assert.deepEqual(models,[B.EMBED_MODEL,B.EMBED_MODEL]);assert.equal(groqCalls,1);assert.equal(groqDebits[0][2],900);assert.equal(groqDebits[0][3],35000);assert.deepEqual(groqSettles[0],[groqDebits[0][0],280,'success','{}']);assert.ok(reserve.some(x=>x[0]==='global:neurons'&&x[2]===B.DAILY_NEURONS));assert.equal(reserve.filter(x=>x[0]==='global:neurons').length,2);
  const repeat=await call(q);assert.equal(repeat.status,200);assert.equal(repeat.data.answer,r.data.answer);assert.equal(groqCalls,1);assert.equal(models.length,2);
  }finally{global.fetch=originalFetch;core.setQueryForTests(null);}
 });
@@ -48,7 +48,7 @@ test('Groq quota, missing credentials, provider 429 and no paid fallback',async(
   core.setQueryForTests(async()=>[]);
   await assert.rejects(B.generate({GROQ_API_KEY:'test'},messages),e=>e.status===429);assert.equal(calls,0);
   const settlements=[];core.setQueryForTests(async(sql,args)=>{if(sql.includes('UPDATE public.sj_botfolio_groq_budget')){settlements.push(args);return [];}assert.match(sql,/INSERT INTO public.sj_botfolio_groq_budget/);return [{id:1}];});
-  await assert.rejects(B.generate({GROQ_API_KEY:'test'},messages),e=>e.status===429);assert.equal(calls,1);assert.equal(settlements.length,1);assert.deepEqual(settlements[0].slice(1),[null,'rate_limited']);
+  await assert.rejects(B.generate({GROQ_API_KEY:'test'},messages),e=>e.status===429);assert.equal(calls,1);assert.equal(settlements.length,1);assert.deepEqual(settlements[0].slice(1),[null,'rate_limited','{}']);
   assert.equal(B.ready({BOTFOLIO_AI:{run(){}}}),!!process.env.GROQ_API_KEY);
   assert.equal(B.ready({BOTFOLIO_AI:{run(){}},GROQ_API_KEY:'test'}),true);
  }finally{global.fetch=originalFetch;core.setQueryForTests(null);}
@@ -91,4 +91,9 @@ test('Botfolio enforces both rolling request and token budgets independently',as
   used=0;
   assert.equal(await B.generate({GROQ_API_KEY:'test'},msgs),'Answer');assert.equal(calls,2);
  }finally{global.fetch=originalFetch;core.setQueryForTests(null);}
+});
+
+test('Groq reset telemetry distinguishes RPD from TPM without inventing daily token reset',()=>{
+ const snapshot=B.groqResetSnapshot(new Headers({'x-ratelimit-reset-requests':'3h2m','x-ratelimit-reset-tokens':'7.66s'}),new Date('2026-11-26T00:00:00Z'));
+ assert.deepEqual(snapshot,{rpd:{reset_at:'2026-11-26T03:02:00.000Z',observed_at:'2026-11-26T00:00:00.000Z'},tpm:{reset_at:'2026-11-26T00:00:07.660Z',observed_at:'2026-11-26T00:00:00.000Z'}});assert.deepEqual(B.groqResetSnapshot(new Headers({'x-ratelimit-reset-requests':'unknown'})),{});
 });

@@ -2,8 +2,9 @@ name: Adaptive Dictionary Research (Shadow)
 
 on:
   schedule:
-    # Midnight Cairo is 21:00 UTC in summer and 22:00 UTC in winter.
-    - cron: '0 21,22 * * *'
+    # Native timezone scheduling follows Cairo DST; one daily trigger.
+    - cron: '15 10 * * *'
+      timezone: 'Africa/Cairo'
   workflow_dispatch:
     inputs:
       mode:
