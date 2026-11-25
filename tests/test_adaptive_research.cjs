@@ -215,9 +215,9 @@ test('shared Google auth failure bypasses all remaining Google models but never 
 test('Groq exhaustion does not block NVIDIA or exceed the shared research cap',()=>{
  const s=A.newState(),now=new Date(),h={googleDisabled:true,groqEnabled:true,disabledModels:new Set()};
  for(let i=0;i<A.MODEL_LIMITS[A.GROQ];i++)A.recordCall(s,A.GROQ,now);
- assert.equal(A.slotAvailable(s,A.HYDROGEN,h,now),false);
+ assert.equal(A.slotAvailable(s,A.HYDROGEN,h,now),true);
  assert.equal(A.slotAvailable(s,A.NEMOTRON,h,now),true);
- s.usage.model=A.MODEL_BUDGET;assert.equal(A.canCall(s,A.GROQ,now),false);
+ s.usage.model=A.EMERGENCY_MODEL_BUDGET;assert.equal(A.canCall(s,A.GROQ,now),false);
  assert.ok(fs.readFileSync('.github/workflows/adaptive-dictionary-research.yml','utf8').includes('secrets.GROQ_API_KEY'));
 });
 
@@ -273,6 +273,8 @@ test('system limit skips each saturated endpoint without sending a request and r
  assert.deepEqual(h.attempts.slice(0,3).map(x=>[x.model,x.outcome,x.code,x.charged]),A.GOOGLE_MODELS.map(m=>[m,'skipped','system-limit',false]));
  const u=A.usageView(s,now);assert.equal(u[A.HYDROGEN].system_used,18);assert.equal(u[A.HYDROGEN].system_limit_reached,true);
  for(let i=0;i<A.MODEL_LIMITS[A.GROQ];i++)A.recordCall(s,A.GROQ,now);
+ assert.equal(A.slotAvailable(s,A.HYDROGEN,h),true);
+ for(const model of A.RESEARCH_POOL)for(let i=A.MODEL_LIMITS[model];i<A.EMERGENCY_LIMITS[model];i++)A.recordCall(s,model,now,true);
  assert.equal(A.slotAvailable(s,A.HYDROGEN,h),false);
  await assert.rejects(A.inferSlot(A.HYDROGEN,'s',{},s,{groq:'mock'},{stage:'family'},h,send),e=>e.code==='model-budget');
  assert.deepEqual(seen,[A.GROQ]);assert.equal(A.slotAvailable(s,A.NEMOTRON,h),true);
@@ -287,4 +289,43 @@ test('nightly reserve and local quota exceptions fail over without quarantine or
  assert.deepEqual(seen,[next,third]);assert.equal(h.attempts[0].code,'nightly-reserve');
  assert.equal(h.attempts[1].outcome,'skipped');assert.equal(h.attempts[1].charged,false);assert.equal(h.failedGoogle.has(next),false);
  assert.equal(A.usageView(s,now)[A.HYDROGEN].system_limit_reached,false);
+});
+
+test('emergency routes by provider headroom only after normal exhaustion, keeps one vote, respects hard caps',async()=>{
+ const s=A.newState(),now=new Date(),h={disabledModels:new Set(),cooldowns:new Map(),failedGoogle:new Set(),attempts:[],groqEnabled:true},seen=[];
+ A.ledger(s,A.localDate(now));s.runMode='daily';
+ for(const model of A.RESEARCH_POOL)for(let i=0;i<A.MODEL_LIMITS[model];i++)A.recordCall(s,model,now);
+ assert.deepEqual(A.emergencyCandidates(s,h,now),[A.GROQ,...A.GOOGLE_MODELS]);
+ const send=async (model,system,payload,state,keys,opts)=>{assert.equal(opts.emergency,true);seen.push(model);A.recordCall(state,model,new Date(),true);return {proposals:[]};};
+ await A.inferSlot(A.HYDROGEN,'s',{},s,{groq:'mock'},{stage:'career'},h,send);
+ assert.deepEqual(seen,[A.GROQ]);assert.equal(h.attempts.at(-1).tier,'emergency');assert.equal(h.attempts.at(-1).slot,A.HYDROGEN);
+ for(let i=A.MODEL_LIMITS[A.GROQ]+1;i<A.EMERGENCY_LIMITS[A.GROQ];i++)A.recordCall(s,A.GROQ,now,true);
+ for(const model of A.GOOGLE_MODELS)await A.inferSlot(A.HYDROGEN,'s',{},s,{groq:'mock'},{stage:'family'},h,send);
+ assert.deepEqual(seen,[A.GROQ,...A.GOOGLE_MODELS]);assert.equal(A.slotAvailable(s,A.HYDROGEN,h),false);
+ assert.equal(A.EMERGENCY_MODEL_BUDGET,157);
+ assert.equal(A.usageView(s,now)[A.GROQ].emergency_used,30);
+ assert.equal(A.usageView(s,now)[A.HYDROGEN].estimated_provider_headroom,1);
+ assert.throws(()=>A.recordCall(s,A.NEMOTRON,now,true),/model-budget/);
+});
+test('emergency cannot spend a protected benchmark reserve or override Groq token cap',()=>{
+ const s=A.newState(),now=new Date(),h={groqEnabled:true};A.ledger(s,A.localDate(now));s.runMode='benchmark';
+ for(const model of A.RESEARCH_POOL)for(let i=0;i<A.effectiveLimit(s,model);i++)A.recordCall(s,model,now);
+ assert.deepEqual(A.emergencyCandidates(s,h,now),[]);
+ s.runMode='daily';
+ for(const model of A.RESEARCH_POOL)for(let i=A.effectiveLimit({...s,runMode:'benchmark'},model);i<A.MODEL_LIMITS[model];i++)A.recordCall(s,model,now);
+ A.reserveGroqTokens(s,A.GROQ_TOKEN_BUDGET,now);
+ assert.deepEqual(A.emergencyCandidates(s,h,now),A.GOOGLE_MODELS);
+});
+test('reset timestamps are timezone aware and Groq provider reset is based on returned duration',()=>{
+ const now=new Date('2026-11-25T15:00:00Z'),s=A.newState();A.ledger(s,A.localDate(now));
+ assert.equal(A.nextDayReset('Africa/Cairo',now),'2026-11-25T22:00:00.000Z');
+ assert.equal(A.nextDayReset('UTC',now),'2026-11-26T00:00:00.000Z');
+ assert.equal(A.nextDayReset('America/Los_Angeles',now),'2026-11-26T08:00:00.000Z');
+ assert.equal(A.durationMs('2m59.56s'),179560);
+ assert.equal(A.durationMs('1h2m3s'),3723000);
+ A.captureGroqReset(s,{get:()=> '2m59.56s'},now);
+ const u=A.usageView(s,now);
+ assert.equal(u[A.HYDROGEN].provider_reset_at,'2026-11-26T08:00:00.000Z');
+ assert.equal(u[A.GROQ].provider_reset_at,'2026-11-25T15:02:59.560Z');
+ assert.equal(u[A.NEMOTRON].provider_reset_at,null);
 });
