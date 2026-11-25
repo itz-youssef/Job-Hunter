@@ -18,7 +18,9 @@ test('live Job Hunter has Explore and direct Open Job Hunter actions side by sid
 test('Botfolio beta links to its isolated product',()=>{
  const botfolio=products.slice(products.indexOf('<article class="sj-land-product pending">'));
  assert.match(botfolio,/BETA/);
- assert.match(botfolio,/href="\/botfolio.html" class="sj-land-btn sj-land-product-open">Open Botfolio/);
+ assert.match(botfolio,/href="\/botfolio\.html#home" class="sj-land-btn dark">Explore Botfolio/);
+ assert.match(botfolio,/href="\/botfolio\.html#botfolio" class="sj-land-btn sj-land-product-open">Open Botfolio/);
+ assert.ok(botfolio.indexOf("Explore Botfolio")<botfolio.indexOf("Open Botfolio"));
 });
 test('burgundy light and gold dark glows plus disabled and reduced-motion states',()=>{
  const styles=css.slice(css.lastIndexOf('/* Meet Our Products: distinct open-product CTAs'));
@@ -29,5 +31,5 @@ test('burgundy light and gold dark glows plus disabled and reduced-motion states
  assert.match(styles,/pointer-events:none/);
  assert.match(styles,/@media\(prefers-reduced-motion:reduce\)/);
  assert.match(index,/secretj-landing\.css\?v=oxblood-leather-open-glow-20261124/);
- assert.match(index,/secretj-landing\.js\?v=botfolio-beta-20261125/);
+ assert.match(index,/secretj-landing\.js\?v=botfolio-explore-20261125/);
 });

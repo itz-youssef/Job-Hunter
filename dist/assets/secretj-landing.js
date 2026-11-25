@@ -99,7 +99,7 @@
          <div class="sj-land-product-meta"><span>02 / AI PORTFOLIO</span><span class="sj-land-product-state">BETA</span></div>
          <div><span class="sj-land-eyebrow">YOUR WORK, PRESENTED</span><h3>Botfolio ✦</h3>
           <p>Turn your CV into a conversational AI portfolio. Create a shareable chatbot and embed it in your professional website.</p></div>
-         <div class="sj-land-product-actions"><span class="sj-land-muted-action">Your experience, in conversation.</span><a href="/botfolio.html" class="sj-land-btn sj-land-product-open">Open Botfolio ↗</a></div>
+         <div class="sj-land-product-actions"><a href="/botfolio.html#home" class="sj-land-btn dark">Explore Botfolio ↗</a><a href="/botfolio.html#botfolio" class="sj-land-btn sj-land-product-open">Open Botfolio ↗</a></div>
         </article>
        </div>
      </div></section>
