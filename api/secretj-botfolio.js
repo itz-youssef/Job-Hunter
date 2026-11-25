@@ -52,7 +52,7 @@ module.exports=async function(req,res){
    phase='embedding';
    const vectors=await B.embed(ai,chunks),knowledge=chunks.map((text,i)=>({text,vector:vectors[i]}));
    phase='save-draft';
-   const rows=await core.query('INSERT INTO public.sj_botfolio_bots(id,user_id,slot,name,headline,knowledge,embedding_model,published) SELECT $1::uuid,$2::uuid,CASE WHEN u.role='admin' THEN COALESCE((SELECT max(slot) FROM public.sj_botfolio_bots WHERE user_id=u.id),0)+1 ELSE 1 END,$3::text,$4::text,$5::jsonb,$6::text,false FROM public.sj_users u WHERE u.id=$2::uuid AND u.is_active=true AND (u.role='admin' OR NOT EXISTS (SELECT 1 FROM public.sj_botfolio_bots WHERE user_id=u.id)) ON CONFLICT(user_id,slot) DO NOTHING RETURNING '+fields,[core.randomUUID(),uid,name,headline,JSON.stringify(knowledge),B.EMBED_MODEL]);
+   const rows=await core.query(`INSERT INTO public.sj_botfolio_bots(id,user_id,slot,name,headline,knowledge,embedding_model,published) SELECT $1::uuid,$2::uuid,CASE WHEN u.role='admin' THEN COALESCE((SELECT max(slot) FROM public.sj_botfolio_bots WHERE user_id=u.id),0)+1 ELSE 1 END,$3::text,$4::text,$5::jsonb,$6::text,false FROM public.sj_users u WHERE u.id=$2::uuid AND u.is_active=true AND (u.role='admin' OR NOT EXISTS (SELECT 1 FROM public.sj_botfolio_bots WHERE user_id=u.id)) ON CONFLICT(user_id,slot) DO NOTHING RETURNING `+fields,[core.randomUUID(),uid,name,headline,JSON.stringify(knowledge),B.EMBED_MODEL]);
    if(!rows.length)throw core.fail(409,isAdmin?'Another portfolio was created at the same time. Please retry.':'Your account already has a portfolio.');
    return core.reply(res,201,{ok:true,bot:rows[0]});
   }
