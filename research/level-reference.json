@@ -1,0 +1,101 @@
+{
+  "basis": "Synthetic, explicitly labeled career-level regression cases; not representative production accuracy. null denotes insufficient evidence.",
+  "cases": [
+    {
+      "title": "Summer Software Engineering Intern",
+      "company": "Example",
+      "description": "Summer internship for university students.",
+      "expected": "internship"
+    },
+    {
+      "title": "Graduate Technology Trainee",
+      "company": "Example",
+      "description": "A full-time graduate training program for recent graduates.",
+      "expected": "entry"
+    },
+    {
+      "title": "Management Trainee",
+      "company": "Example",
+      "description": "Graduate management development program for new graduates.",
+      "expected": "entry"
+    },
+    {
+      "title": "Junior Backend Developer",
+      "company": "Example",
+      "description": "One year of professional experience.",
+      "expected": "junior"
+    },
+    {
+      "title": "Software Engineer II",
+      "company": "Example",
+      "description": "Intermediate software role, 3–5 years.",
+      "expected": "mid"
+    },
+    {
+      "title": "Senior Software Engineer",
+      "company": "Example",
+      "description": "At least six years experience.",
+      "expected": "senior"
+    },
+    {
+      "title": "Technical Lead",
+      "company": "Example",
+      "description": "Lead the engineering team and technical design.",
+      "expected": "lead"
+    },
+    {
+      "title": "Engineering Manager",
+      "company": "Example",
+      "description": "People manager responsible for engineering delivery.",
+      "expected": "manager"
+    },
+    {
+      "title": "Director of Engineering",
+      "company": "Example",
+      "description": "Director accountable for engineering strategy.",
+      "expected": "director_head_executive"
+    },
+    {
+      "title": "International Sales Representative",
+      "company": "Example",
+      "description": "Professional sales role. No student internship.",
+      "expected": null
+    },
+    {
+      "title": "Future X",
+      "company": "Example",
+      "description": "Program details and eligibility are not specified.",
+      "expected": null
+    },
+    {
+      "title": "Lead Generation Specialist",
+      "company": "Example",
+      "description": "Identify sales prospects, not team leadership.",
+      "expected": null
+    },
+    {
+      "title": "Technology Associate",
+      "company": "Example",
+      "description": "No career grade or experience requirements specified.",
+      "expected": null
+    },
+    {
+      "title": "Senior Associate",
+      "company": "Deloitte",
+      "description": "Senior associate grade.",
+      "expected": "senior"
+    },
+    {
+      "title": "Apprentice Software Engineer",
+      "company": "Example",
+      "description": "Structured apprenticeship placement for students.",
+      "expected": "internship"
+    },
+    {
+      "title": "Working Student — Software Engineering",
+      "company": "Example",
+      "description": "Part-time student placement.",
+      "expected": "internship"
+    }
+  ]
+}
