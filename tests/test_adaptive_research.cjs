@@ -165,3 +165,29 @@ test('Lite preserves original documents, accepts only verbatim evidence, and has
  assert.deepEqual(valid.docs,task.docs);assert.ok(!A.taskModels('family',A.HYDROGEN,'benchmark').includes(A.LITE));
  assert.ok(fs.readFileSync('.github/workflows/adaptive-dictionary-research.yml','utf8').includes('secrets.GEMINI_API_KEY'));
 });
+
+test('Google fallback changes endpoint, not the voting slot; failed model is not retried in same run',async()=>{
+ const s=A.newState(),h={disabledModels:new Set(),cooldowns:new Map(),failedGoogle:new Set(),attempts:[]},seen=[];
+ const send=async model=>{seen.push(model);if(model===A.HYDROGEN){const e=new Error('unavailable');e.status=503;throw e;}return {proposals:[]};};
+ const args=[A.HYDROGEN,'system',{},s,{}, {stage:'career'},h,send];
+ assert.deepEqual(await A.inferSlot(...args),{proposals:[]});
+ assert.deepEqual(await A.inferSlot(...args),{proposals:[]});
+ assert.deepEqual(seen,[A.HYDROGEN,A.GOOGLE_MODELS[1],A.GOOGLE_MODELS[1]]);
+ assert.ok(h.attempts.every(x=>x.slot===A.HYDROGEN));
+ assert.deepEqual(A.MODELS,[A.HYDROGEN,A.NEMOTRON]);
+ assert.ok(A.GOOGLE_MODELS.every(m=>A.MODEL_LIMITS[m]===15&&A.MODEL_INTERVALS[m]>=12000));
+ const one=check(proposal,doc,A.HYDROGEN),two=check(proposal,doc,A.HYDROGEN);
+ assert.equal(E.mergeRules([one],[two])[0].status,'candidate');
+ assert.equal(E.mergeRules([one],[check(proposal,doc,A.NEMOTRON)])[0].status,'cross-checked');
+});
+test('Google cascade respects quotas and stops on shared credential errors',async()=>{
+ const s=A.newState(),h={disabledModels:new Set(),cooldowns:new Map(),failedGoogle:new Set(),attempts:[]},seen=[];
+ const send=async model=>{seen.push(model);const e=new Error('provider');e.status=model===A.HYDROGEN?503:403;throw e;};
+ await assert.rejects(A.inferSlot(A.HYDROGEN,'s',{},s,{}, {},h,send),e=>e.status===403);
+ assert.deepEqual(seen,A.GOOGLE_MODELS.slice(0,2));assert.ok(h.disabledModels.has(A.LITE));assert.equal(A.slotAvailable(s,A.HYDROGEN,h),false);assert.equal(A.slotAvailable(s,A.NEMOTRON,h),true);
+});
+test('all Google endpoints failing returns failure, never a fabricated decision',async()=>{
+ const s=A.newState(),h={disabledModels:new Set(),cooldowns:new Map(),failedGoogle:new Set(),attempts:[]};
+ await assert.rejects(A.inferSlot(A.HYDROGEN,'s',{},s,{}, {},h,async()=>{const e=new Error('unavailable');e.status=503;throw e;}),e=>e.status===503);
+ assert.equal(h.attempts.length,3);assert.equal(A.slotAvailable(s,A.HYDROGEN,h),false);
+});
