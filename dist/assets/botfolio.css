@@ -41,8 +41,8 @@ html:not([data-theme=dark]) .bf-intro-hero h1{font-size:clamp(42px,7.6cqw,76px);
 html:not([data-theme=dark]) .bf-intro-hero h1 em{color:#79364d}
 html:not([data-theme=dark]) .bf-intro-hero .bf-intro-lead{color:#666165;font-size:clamp(16px,1.18cqw,21px);line-height:1.5;margin-bottom:26px;max-width:650px}
 html:not([data-theme=dark]) .bf-intro-hero .actions{gap:12px}
-html:not([data-theme=dark]) .bf-intro-hero .primary{background:linear-gradient(125deg,#8a4057,#703047);border-color:#79364d;color:#fff}
-html:not([data-theme=dark]) .bf-intro-hero .primary:hover{background:#693044}
+html:not([data-theme=dark]) .bf-intro-hero .primary{background:#151515;border-color:#151515;color:#fff}
+html:not([data-theme=dark]) .bf-intro-hero .primary:hover{background:#303030}
 html:not([data-theme=dark]) .bf-intro-hero .bf-secondary{background:rgba(255,255,255,.45);border-color:#bda4ad}
 html:not([data-theme=dark]) .bf-intro-hero .bf-secondary:hover{background:#fff;border-color:#79364d}
 html:not([data-theme=dark]) .bf-intro-copy>small{border-left:2px solid #92526a;padding-left:11px;color:#666165;margin-top:24px}
@@ -71,3 +71,31 @@ html:not([data-theme=dark]) .bf-intro-hero .bf-preview-prompt span{font-size:0;f
  html:not([data-theme=dark]) .bf-intro-hero .eyebrow::after{width:24px}
  html:not([data-theme=dark]) .bf-intro-hero .bf-preview-prompt{font-size:11px}
 }
+
+/* Shared account navigation appearance, scoped to the Botfolio header. */
+.bf-dashboard .bf-nav nav{gap:10px;justify-content:flex-end}
+.bf-dashboard .bf-nav #theme{border-radius:999px;min-width:87px;height:44px;padding:0 12px;gap:8px;font-size:12px;white-space:nowrap;line-height:1}
+.bf-dashboard .bf-nav #theme:hover{background:var(--soft);border-color:var(--ink)}
+.bf-profile-menu{position:relative;flex:none}
+.bf-profile-menu>summary{list-style:none;display:grid;place-items:center;width:44px;height:44px;border:1px solid var(--line);border-radius:50%;overflow:hidden;background:var(--paper);cursor:pointer}
+.bf-profile-menu>summary::-webkit-details-marker{display:none}
+.bf-profile-menu>summary:hover{border-color:var(--ink);box-shadow:0 0 0 3px #80808018}
+.bf-profile-menu>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+#bf-profile-fallback{display:grid;place-items:center;width:100%;height:100%}
+#bf-profile-fallback svg{width:24px;height:24px}
+#bf-profile-photo{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.bf-account-dropdown{position:absolute;right:0;top:calc(100% + 8px);z-index:80;width:225px;max-width:calc(100vw - 24px);display:grid;gap:2px;padding:9px;background:var(--paper);color:var(--ink);border:1px solid var(--line);box-shadow:0 18px 50px #0002;border-radius:13px;max-height:calc(100dvh - 80px);overflow:auto}
+.bf-profile-menu:not([open])>.bf-account-dropdown{display:none}
+.bf-dashboard .bf-nav .bf-account-dropdown :is(a,button){width:100%;display:flex;align-items:center;justify-content:flex-start;min-height:43px;padding:10px 12px;border:0;border-radius:7px;background:transparent;color:var(--ink);font-size:13px;font-weight:700;text-align:left;white-space:nowrap}
+.bf-dashboard .bf-nav .bf-account-dropdown :is(a,button):hover,.bf-dashboard .bf-nav .bf-account-dropdown :is(a,button):focus-visible{background:var(--soft)}
+.bf-account-divider{height:1px;background:var(--line);margin:5px 3px}
+.bf-dashboard .bf-nav #bf-signout{color:#b44141}
+html[data-theme=dark] .bf-dashboard .bf-nav #bf-signout{color:#ff9c9c}
+#bf-account-error{padding:4px 12px;color:var(--muted)}
+.bf-guest-nav{display:flex;align-items:center;gap:8px}
+.bf-dashboard .bf-nav .bf-guest-nav .primary{font-size:12px;min-height:40px;padding:8px 12px}
+@media(max-width:760px){.bf-dashboard .bf-nav #theme{min-width:40px;width:40px;height:40px;padding:0}.bf-dashboard #bf-theme-label{display:none}.bf-profile-menu>summary{width:40px;height:40px}}
+@media(max-width:600px){.bf-dashboard .bf-nav{flex-wrap:wrap}.bf-dashboard .bf-nav nav{gap:8px;flex-wrap:wrap}.bf-dashboard .bf-nav .bf-guest-nav{gap:6px}.bf-dashboard .bf-nav .bf-guest-nav .primary{min-height:36px;padding:6px 9px}}
+
+/* Keep the summary as the pointer target even when the async avatar replaces the fallback. */
+.bf-profile-menu>summary>*{pointer-events:none}

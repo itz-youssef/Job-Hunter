@@ -7,6 +7,7 @@ else if(u.pathname.includes('email'))Object.assign(data,{configured:true,verifie
 else if(u.pathname.includes('linkedin'))Object.assign(data,{configured:false});
 else if(u.pathname.includes('admin'))Object.assign(data,{users:[],summary:{users:1,active_users:1,applications:0},activity:[]});
 else if(scope==='preferences')data.preferences={egypt_only:true,internships:true,role_families:['software'],max_experience_years:2};
+else if(scope==='avatar')Object.assign(data,{found:true,file:{mime_type:'image/png',base64:'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jD1sAAAAASUVORK5CYII='}});
 else if(scope==='profile')data.profile={display_name:'Mobile Test',headline:'Software engineer'};
 else if(scope==='saved')data.jobs=[{job_key:'x'.repeat(100),job_snapshot:{title:'A long software engineering opportunity for mobile layouts',company:'Example',url:'https://example.com'},saved_at:new Date().toISOString()}];
 else if(scope==='applications')data.applications=[{job_key:'https://example.com/'+ 'x'.repeat(100),title:'A long software engineering opportunity for mobile layouts',company:'Example',stage:'applied'}];
@@ -73,9 +74,9 @@ for(const w of [320,375,390,430,600,768,900,1024,1280,1440,1920,2560,3840]){
     const art=getComputedStyle(el,'::before'),extra=getComputedStyle(el,'::after');
     const overlap=(a,b)=>a.left<b.right-1&&a.right>b.left+1&&a.top<b.bottom-1&&a.bottom>b.top+1;
     const contained=b=>b.left>=hero.left-1&&b.right<=hero.right+1&&b.top>=hero.top-1&&b.bottom<=hero.bottom+1;
-    return {hero,main,copy,preview,artSize:art.backgroundSize,artImage:art.backgroundImage,artBounds:[art.top,art.right,art.bottom,art.left],extra:extra.content,overlap:overlap(copy,preview),contained:contained(copy)&&contained(preview),stacked:preview.top>=copy.bottom-1,title:getComputedStyle(el.querySelector('h1')).textTransform,button:getComputedStyle(el.querySelector('.primary')).backgroundImage};
+    return {hero,main,copy,preview,artSize:art.backgroundSize,artImage:art.backgroundImage,artBounds:[art.top,art.right,art.bottom,art.left],extra:extra.content,overlap:overlap(copy,preview),contained:contained(copy)&&contained(preview),stacked:preview.top>=copy.bottom-1,title:getComputedStyle(el.querySelector('h1')).textTransform,button:getComputedStyle(el.querySelector('.primary')).backgroundImage,buttonColor:getComputedStyle(el.querySelector('.primary')).backgroundColor};
    });
-   if(Math.abs(geometry.hero.left-geometry.main.left)>1||Math.abs(geometry.hero.right-geometry.main.right)>1||!geometry.artSize.includes('100% 100%')||geometry.artBounds.some(x=>x!=='0px')||geometry.extra!=='none'||geometry.overlap||!geometry.contained||geometry.stacked!==(geometry.hero.width<960)||geometry.artImage.includes('robot')||geometry.artImage.includes('botfolio-hero-icons.svg')!==(geometry.hero.width>=960)||geometry.title==='uppercase'||!geometry.button.includes('gradient'))failures.push({botfolio_hero_geometry:w,...geometry});
+   if(Math.abs(geometry.hero.left-geometry.main.left)>1||Math.abs(geometry.hero.right-geometry.main.right)>1||!geometry.artSize.includes('100% 100%')||geometry.artBounds.some(x=>x!=='0px')||geometry.extra!=='none'||geometry.overlap||!geometry.contained||geometry.stacked!==(geometry.hero.width<960)||geometry.artImage.includes('robot')||geometry.artImage.includes('botfolio-hero-icons.svg')!==(geometry.hero.width>=960)||geometry.title==='uppercase'||geometry.button!=='none'||geometry.buttonColor!=='rgb(21, 21, 21)')failures.push({botfolio_hero_geometry:w,...geometry});
    if(!(await page.request.get('http://127.0.0.1:8765/assets/botfolio-hero-icons.svg')).ok())failures.push({botfolio_art_asset:w});
   }else if(await page.locator('.bf-intro-hero h1').evaluate(el=>getComputedStyle(el).textTransform)!=='uppercase')failures.push({botfolio_dark_title:w});
   if([375,1440,2560].includes(w)){await page.locator('.bf-intro-hero').screenshot({path:'botfolio-hero-'+theme+'-'+w+'.png',animations:'disabled'});}
@@ -98,8 +99,38 @@ for(const w of [375,1440]){
  await page.locator('#sj-landing .sj-land-logo').waitFor({state:'visible'});
  if(new URL(page.url()).hash!=='#home')failures.push({botfolio_navigation:'home',w,url:page.url()});
  await page.goto('http://127.0.0.1:8765/botfolio.html#botfolio');
+ await page.locator('#bf-profile-photo').waitFor({state:'visible'});
+ await page.locator('#bf-profile-menu summary').click();
+ await page.locator('.bf-account-dropdown').waitFor({state:'visible'});
+ const links=await page.locator('#bf-profile-menu .bf-account-dropdown a:visible').allTextContents();
+ if(links.join('|')!=='Dashboard|My profile|CV & photo|Saved jobs|Applications|Settings & alerts|Admin console')failures.push({botfolio_account_links:w,links});
+ const menuRect=await page.locator('.bf-account-dropdown').boundingBox();
+ if(!menuRect||menuRect.x<0||menuRect.x+menuRect.width>w+1)failures.push({botfolio_account_overflow:w,menuRect});
  await page.locator('#bf-account-link').click();
  await page.waitForURL(u=>u.pathname==='/account.html'&&u.searchParams.get('view')==='overview',{waitUntil:'domcontentloaded'});
  if(!new URL(page.url()).searchParams.get('view') || new URL(page.url()).searchParams.get('view')!=='overview')failures.push({botfolio_navigation:'account',w,url:page.url()});
 }
+// Member-only admin link, photo fallback, guest controls, safe signout.
+await page.setViewportSize({width:375,height:812});
+let mockUser={id:'member',role:'member'},logoutCalls=0;
+await page.route('**/api/secretj-auth?*',async route=>{
+ const action=new URL(route.request().url()).searchParams.get('action');
+ if(action==='logout'){if(route.request().method()!=='POST')throw Error('Logout must POST');logoutCalls++;mockUser=null;return route.fulfill({json:{ok:true}});}
+ return route.fulfill({json:{ok:true,user:mockUser}});
+});
+await page.route('**/api/secretj-data?scope=avatar',route=>route.fulfill({json:{ok:true,found:false}}));
+await page.goto('http://127.0.0.1:8765/botfolio.html#botfolio');
+await page.locator('#bf-profile-fallback').waitFor({state:'visible'});
+await page.locator('#bf-profile-menu summary').click();
+await page.locator('.bf-account-dropdown').waitFor({state:'visible'});
+if(await page.locator('#bf-admin-link').isVisible()||!await page.locator('#bf-profile-fallback').isVisible())failures.push({botfolio_member_menu:'role or fallback'});
+await page.keyboard.press('Escape');
+if(await page.locator('#bf-profile-menu').evaluate(el=>el.open))failures.push({botfolio_menu:'escape'});
+await page.locator('#bf-profile-menu summary').click();
+await page.locator('#bf-signout').click();
+await page.locator('#bf-guest-nav').waitFor({state:'visible'});
+if(logoutCalls!==1||await page.locator('#bf-profile-menu').isVisible()||await page.locator('#workspace').isVisible())failures.push({botfolio_signout:logoutCalls});
+await page.goto('http://127.0.0.1:8765/#home');
+const explore=page.locator('#products a:has-text("Explore Botfolio")'),open=page.locator('#products a:has-text("Open Botfolio")');
+if(await explore.getAttribute('href')!=='/botfolio.html#home'||await open.getAttribute('href')!=='/botfolio.html#botfolio')failures.push({botfolio_products:'incorrect routes'});
 console.log(JSON.stringify(failures,null,2));if(failures.length)process.exitCode=1;await page.setViewportSize({width:375,height:812});await page.goto('http://127.0.0.1:8765/account.html?view=preferences');await page.waitForTimeout(150);await page.screenshot({path:'mobile-account.png',fullPage:true});await browser.close();})();

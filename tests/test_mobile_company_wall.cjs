@@ -18,5 +18,5 @@ test('mobile logo bands are visible but desktop design stays unchanged',()=>{
  assert.match(css,/html\[data-theme="dark"\] \.sj-landing #companies \.sj-land-wall-brand/);
  assert.match(css,/pointer-events:none/);
  assert.match(index,/secretj-landing\.css\?v=oxblood-leather-open-glow-20261124/);
- assert.match(index,/secretj-landing\.js\?v=botfolio-beta-20261125/);
+ assert.match(index,/secretj-landing\.js\?v=botfolio-explore-20261125/);
 });
