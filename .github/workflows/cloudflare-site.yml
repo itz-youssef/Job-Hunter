@@ -81,6 +81,33 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npx --yes wrangler@4 deploy --config cloudflare/site/wrangler.toml
+      - name: Configure Botfolio Groq key on the existing WEBSITE Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$GROQ_API_KEY" ]; then
+            echo '::warning::Existing Groq Actions secret unavailable; Botfolio generation needs runtime configuration.'
+            exit 0
+          fi
+          printf '%s' "$GROQ_API_KEY" | npx --yes wrangler@4 secret put GROQ_API_KEY --config cloudflare/site/wrangler.toml >/dev/null
+          echo 'Botfolio Groq key configured (value not logged).'
+      - name: Smoke-test Groq GPT-OSS 120B using synthetic non-user data
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          node - <<'NODE'
+          (async()=>{
+            if(!process.env.GROQ_API_KEY){console.log('Groq smoke skipped: missing key');return;}
+            const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{Authorization:'Bearer '+process.env.GROQ_API_KEY,'Content-Type':'application/json'},body:JSON.stringify({model:'openai/gpt-oss-120b',messages:[{role:'user',content:'Reply with the word Ready.'}],reasoning_effort:'low',max_completion_tokens:80,include_reasoning:false,temperature:0.2,stream:false}),signal:AbortSignal.timeout(25000)});
+            console.log('Groq smoke HTTP:',r.status);
+            if(!r.ok){console.log('::warning::Groq smoke unavailable; check provider limits/configuration.');return;}
+            const d=await r.json();console.log('Groq generation response:',typeof d.choices?.[0]?.message?.content==='string'&&d.choices[0].message.content.trim()?'READY':'EMPTY');
+          })().catch(()=>console.log('::warning::Groq smoke request unavailable.'));
+          NODE
       - name: Confirm deployed Neon database API responds
         run: |
           SITE="https://jobhunter-youssef.yoyoyasso19.workers.dev"
