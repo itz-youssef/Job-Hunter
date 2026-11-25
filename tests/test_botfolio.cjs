@@ -97,3 +97,14 @@ test('Groq reset telemetry distinguishes RPD from TPM without inventing daily to
  const snapshot=B.groqResetSnapshot(new Headers({'x-ratelimit-reset-requests':'3h2m','x-ratelimit-reset-tokens':'7.66s'}),new Date('2026-11-26T00:00:00Z'));
  assert.deepEqual(snapshot,{rpd:{reset_at:'2026-11-26T03:02:00.000Z',observed_at:'2026-11-26T00:00:00.000Z'},tpm:{reset_at:'2026-11-26T00:00:07.660Z',observed_at:'2026-11-26T00:00:00.000Z'}});assert.deepEqual(B.groqResetSnapshot(new Headers({'x-ratelimit-reset-requests':'unknown'})),{});
 });
+
+test('Botfolio sidebar opens the existing shared account CV Holder',()=>{
+ const html=fs.readFileSync('dist/botfolio.html','utf8');
+ const tools=html.match(/<nav aria-label="Botfolio tools">([\s\S]*?)<\/nav>/)?.[1]||'';
+ assert.match(tools,/<a href="\/#cv">[\s\S]*?<span>CV Holder<\/span><\/a>/);
+ assert.equal((tools.match(/<span>CV Holder<\/span>/g)||[]).length,1);
+ const home=fs.readFileSync('dist/index.html','utf8');
+ assert.match(home,/state\.page==='cv'\?cvPage\(\)/);
+ assert.match(home,/Your saved account CV/);
+ assert.match(fs.readFileSync('dist/assets/botfolio.js','utf8'),/\/api\/secretj-data\?scope=cv/);
+});
