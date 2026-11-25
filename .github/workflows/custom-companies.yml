@@ -75,6 +75,21 @@ jobs:
 
           if ! git diff --cached --quiet; then
             git commit -m "Update custom careers and email status"
-            git pull --rebase origin main
-            git push origin HEAD:main
+            # A concurrent merge can advance main between fetch and push.
+            # Retry without force-pushing or overwriting conflicting snapshots.
+            for attempt in 1 2 3 4 5; do
+              echo "Publish attempt ${attempt}/5"
+              if ! git fetch origin main; then
+                echo "Fetch failed; retrying if attempts remain"
+              elif ! git rebase FETCH_HEAD; then
+                git rebase --abort
+                echo "::error::Concurrent changes conflict with scan results; refusing to overwrite main. Run a fresh scan."
+                exit 1
+              elif git push origin HEAD:main; then
+                exit 0
+              fi
+              if [[ "$attempt" -lt 5 ]]; then sleep "$((attempt * 2))"; fi
+            done
+            echo "::error::Unable to publish scan results after five attempts"
+            exit 1
           fi
