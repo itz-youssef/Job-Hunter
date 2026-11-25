@@ -4,10 +4,34 @@
   "family_rules": [],
   "usage": {
     "month": "2026-11",
-    "search": 12,
+    "search": 14,
     "day": "2026-11-25",
-    "model": 14,
-    "search_day": 12
+    "model": 26,
+    "search_day": 14,
+    "model_usage": {
+      "gemini-4-hydrogen": {
+        "day": "2026-11-25",
+        "provider_day": "2026-11-25",
+        "day_count": 6,
+        "provider_count": 6,
+        "last_at": 1795617055877
+      },
+      "nvidia/nemotron-3-ultra-550b-a55b:free": {
+        "day": "2026-11-25",
+        "provider_day": "2026-11-25",
+        "day_count": 6,
+        "provider_count": 6,
+        "last_at": 1795617059128
+      },
+      "gemini-3.5-flash-lite": {
+        "day": "2026-11-25",
+        "provider_day": "2026-11-25",
+        "day_count": 4,
+        "provider_count": 4,
+        "last_at": 1795617047450
+      }
+    },
+    "preprocess": 4
   },
   "cursor": 0,
   "last_attempt": "",
@@ -27,6 +51,15 @@
       "run_type": "benchmark",
       "status": "partial",
       "model_requests": 6,
+      "validated": 0,
+      "changed_family": 0,
+      "changed_level": 0
+    },
+    {
+      "day": "2026-11-25",
+      "run_type": "benchmark",
+      "status": "partial",
+      "model_requests": 12,
       "validated": 0,
       "changed_family": 0,
       "changed_level": 0

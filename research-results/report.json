@@ -3,27 +3,49 @@
   "mode": "shadow",
   "run_type": "benchmark",
   "production_unchanged": true,
-  "updated_at": "2026-11-25T13:43:13.045Z",
+  "updated_at": "2026-11-25T14:31:04.537Z",
   "cairo_day": "2026-11-25",
-  "preferred_model": "baidu/ernie-5.5-flash-preview:free",
+  "preferred_model": "gemini-4-hydrogen",
+  "architecture": "three-model-v4",
+  "companies_targeted": 2,
+  "task_stats": {
+    "career": {
+      "planned": 4,
+      "completed": 2,
+      "skipped": 0
+    },
+    "family": {
+      "planned": 4,
+      "completed": 2,
+      "skipped": 0
+    }
+  },
+  "evidence_preparation": {
+    "model": "gemini-3.5-flash-lite",
+    "planned": 4,
+    "completed": 2,
+    "excerpts_used": 0,
+    "fallback": 4,
+    "requests": 4
+  },
   "companies_total": 60,
-  "companies_reviewed": 4,
-  "companies_with_evidence": 4,
-  "live_sources": 11,
-  "job_documents": 16,
-  "proposals": 0,
-  "rejected": 0,
+  "companies_reviewed": 2,
+  "companies_with_evidence": 2,
+  "live_sources": 6,
+  "job_documents": 8,
+  "proposals": 3,
+  "rejected": 3,
   "validated": 0,
-  "failed_batches": 3,
-  "models_used": [],
-  "model_requests": 6,
-  "search_credits": 6,
-  "errors": [
-    "output-token-limit",
-    "request-timeout",
-    "provider-http-429"
+  "failed_batches": 4,
+  "models_used": [
+    "nvidia/nemotron-3-ultra-550b-a55b:free"
   ],
-  "search_success": 6,
+  "model_requests": 12,
+  "search_credits": 2,
+  "errors": [
+    "provider-http-503"
+  ],
+  "search_success": 2,
   "search_failures": 0,
   "rules": {
     "career": 0,
@@ -33,16 +55,37 @@
   },
   "usage": {
     "day": "2026-11-25",
-    "model_requests_today": 14,
-    "search_credits_today": 12,
-    "search_credits_month": 12
+    "model_requests_today": 26,
+    "preprocessing_requests_today": 4,
+    "per_model": {
+      "gemini-4-hydrogen": {
+        "used_today": 6,
+        "provider_day_used": 6,
+        "limit": 15,
+        "provider_day": "2026-11-25"
+      },
+      "nvidia/nemotron-3-ultra-550b-a55b:free": {
+        "used_today": 6,
+        "provider_day_used": 6,
+        "limit": 15,
+        "provider_day": "2026-11-25"
+      },
+      "gemini-3.5-flash-lite": {
+        "used_today": 4,
+        "provider_day_used": 4,
+        "limit": 100,
+        "provider_day": "2026-11-25"
+      }
+    },
+    "search_credits_today": 14,
+    "search_credits_month": 14
   },
   "comparison": {
-    "catalog_jobs": 2324,
+    "catalog_jobs": 2331,
     "changed_level": 0,
     "changed_family": 0,
-    "baseline_unknown": 1383,
-    "shadow_unknown": 1383,
+    "baseline_unknown": 1388,
+    "shadow_unknown": 1388,
     "changes": [],
     "benchmark": {
       "basis": "Existing limited semantic-role reference; not production accuracy.",
@@ -70,42 +113,67 @@
   },
   "model_diagnostics": [
     {
-      "model": "baidu/ernie-5.5-flash-preview:free",
-      "stage": "research",
-      "code": "output-token-limit",
+      "model": "gemini-4-hydrogen",
+      "stage": "career",
+      "code": "provider-http-503",
       "companies": [
-        "VOIS",
+        "VOIS"
+      ],
+      "attempt": 1
+    },
+    {
+      "model": "gemini-3.5-flash-lite",
+      "stage": "evidence-extraction",
+      "code": "provider-http-503",
+      "companies": [
+        "VOIS"
+      ]
+    },
+    {
+      "model": "gemini-4-hydrogen",
+      "stage": "family",
+      "code": "provider-http-503",
+      "companies": [
+        "VOIS"
+      ],
+      "attempt": 1
+    },
+    {
+      "model": "gemini-3.5-flash-lite",
+      "stage": "evidence-extraction",
+      "code": "provider-http-503",
+      "companies": [
         "Deloitte"
       ]
     },
     {
-      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
-      "stage": "research",
-      "code": "request-timeout",
+      "model": "gemini-4-hydrogen",
+      "stage": "career",
+      "code": "provider-http-503",
       "companies": [
-        "VOIS",
         "Deloitte"
-      ]
+      ],
+      "attempt": 1
     },
     {
-      "model": "baidu/ernie-5.5-flash-preview:free",
-      "stage": "research",
-      "code": "provider-http-429",
+      "model": "gemini-4-hydrogen",
+      "stage": "family",
+      "code": "provider-http-503",
       "companies": [
-        "PwC Egypt",
-        "Ericsson"
-      ]
+        "Deloitte"
+      ],
+      "attempt": 1
     }
   ],
   "model_benchmark": [
     {
-      "model": "baidu/ernie-5.5-flash-preview:free",
+      "model": "gemini-4-hydrogen",
       "errors": [
-        "provider-http-429"
+        "provider-http-503"
       ],
       "expected_cases": 12,
       "answered": 0,
-      "failed_batches": 1,
+      "failed_batches": 2,
       "metrics": {
         "n": 0,
         "tp": 0,
