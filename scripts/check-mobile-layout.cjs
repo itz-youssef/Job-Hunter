@@ -99,12 +99,13 @@ for(const w of [375,1440]){
  await page.locator('#sj-landing .sj-land-logo').waitFor({state:'visible'});
  if(new URL(page.url()).hash!=='#home')failures.push({botfolio_navigation:'home',w,url:page.url()});
  await page.goto('http://127.0.0.1:8765/botfolio.html#botfolio');
- await page.locator('#bf-profile-menu summary').click();
  await page.locator('#bf-profile-photo').waitFor({state:'visible'});
+ await page.locator('#bf-profile-menu summary').click();
+ await page.locator('.bf-account-dropdown').waitFor({state:'visible'});
  const links=await page.locator('#bf-profile-menu .bf-account-dropdown a:visible').allTextContents();
  if(links.join('|')!=='Dashboard|My profile|CV & photo|Saved jobs|Applications|Settings & alerts|Admin console')failures.push({botfolio_account_links:w,links});
  const menuRect=await page.locator('.bf-account-dropdown').boundingBox();
- if(menuRect.x<0||menuRect.x+menuRect.width>w+1)failures.push({botfolio_account_overflow:w,menuRect});
+ if(!menuRect||menuRect.x<0||menuRect.x+menuRect.width>w+1)failures.push({botfolio_account_overflow:w,menuRect});
  await page.locator('#bf-account-link').click();
  await page.waitForURL(u=>u.pathname==='/account.html'&&u.searchParams.get('view')==='overview',{waitUntil:'domcontentloaded'});
  if(!new URL(page.url()).searchParams.get('view') || new URL(page.url()).searchParams.get('view')!=='overview')failures.push({botfolio_navigation:'account',w,url:page.url()});
@@ -119,7 +120,9 @@ await page.route('**/api/secretj-auth?*',async route=>{
 });
 await page.route('**/api/secretj-data?scope=avatar',route=>route.fulfill({json:{ok:true,found:false}}));
 await page.goto('http://127.0.0.1:8765/botfolio.html#botfolio');
+await page.locator('#bf-profile-fallback').waitFor({state:'visible'});
 await page.locator('#bf-profile-menu summary').click();
+await page.locator('.bf-account-dropdown').waitFor({state:'visible'});
 if(await page.locator('#bf-admin-link').isVisible()||!await page.locator('#bf-profile-fallback').isVisible())failures.push({botfolio_member_menu:'role or fallback'});
 await page.keyboard.press('Escape');
 if(await page.locator('#bf-profile-menu').evaluate(el=>el.open))failures.push({botfolio_menu:'escape'});

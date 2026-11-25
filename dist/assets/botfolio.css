@@ -96,3 +96,6 @@ html[data-theme=dark] .bf-dashboard .bf-nav #bf-signout{color:#ff9c9c}
 .bf-dashboard .bf-nav .bf-guest-nav .primary{font-size:12px;min-height:40px;padding:8px 12px}
 @media(max-width:760px){.bf-dashboard .bf-nav #theme{min-width:40px;width:40px;height:40px;padding:0}.bf-dashboard #bf-theme-label{display:none}.bf-profile-menu>summary{width:40px;height:40px}}
 @media(max-width:600px){.bf-dashboard .bf-nav{flex-wrap:wrap}.bf-dashboard .bf-nav nav{gap:8px;flex-wrap:wrap}.bf-dashboard .bf-nav .bf-guest-nav{gap:6px}.bf-dashboard .bf-nav .bf-guest-nav .primary{min-height:36px;padding:6px 9px}}
+
+/* Keep the summary as the pointer target even when the async avatar replaces the fallback. */
+.bf-profile-menu>summary>*{pointer-events:none}
