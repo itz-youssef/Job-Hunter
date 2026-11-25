@@ -70,4 +70,18 @@ for(const w of [320,375,390,430,600,768,900,1024,1280,1440,1920,2560,3840]){
  }
 }
 
+// Verify actual cross-product navigation by clicking the shared brand and account link.
+for(const w of [375,1440]){
+ await page.setViewportSize({width:w,height:900});
+ await page.goto('http://127.0.0.1:8765/botfolio.html#botfolio');
+ await page.evaluate(()=>window.scrollTo(0,0));
+ await page.locator('.bf-nav .brand').click();
+ try{await page.waitForURL(u=>u.pathname==='/' || u.pathname==='/index.html',{waitUntil:'domcontentloaded',timeout:10000});}catch(err){throw new Error('Brand navigation failed at '+w+'; actual URL: '+page.url(),{cause:err});}
+ await page.locator('#sj-landing .sj-land-logo').waitFor({state:'visible'});
+ if(new URL(page.url()).hash!=='#home')failures.push({botfolio_navigation:'home',w,url:page.url()});
+ await page.goto('http://127.0.0.1:8765/botfolio.html#botfolio');
+ await page.locator('#bf-account-link').click();
+ await page.waitForURL(u=>u.pathname==='/account.html'&&u.searchParams.get('view')==='overview',{waitUntil:'domcontentloaded'});
+ if(!new URL(page.url()).searchParams.get('view') || new URL(page.url()).searchParams.get('view')!=='overview')failures.push({botfolio_navigation:'account',w,url:page.url()});
+}
 console.log(JSON.stringify(failures,null,2));if(failures.length)process.exitCode=1;await page.setViewportSize({width:375,height:812});await page.goto('http://127.0.0.1:8765/account.html?view=preferences');await page.waitForTimeout(150);await page.screenshot({path:'mobile-account.png',fullPage:true});await browser.close();})();
