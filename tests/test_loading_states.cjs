@@ -70,3 +70,43 @@ test('initial workspace loading and manual refresh have visible bounded progress
  assert.match(home,/button\.classList\.remove\('sj-refresh-busy'\)/);
  assert.match(css,/sj-loading-ring/);
 });
+
+test('global loader starts before first paint and fails open without a minimum delay',()=>{
+  const vm=require('node:vm');
+  for(const html of [home,account,fs.readFileSync('dist/manage-companies.html','utf8')]){
+    const script=html.match(/<script id="sj-startup-script">([\s\S]*?)<\/script>/);
+    assert.ok(script);
+    assert.ok(html.indexOf(script[0])<html.indexOf('<body>'));
+    assert.match(html,/<body>\s*<div id="sj-startup-loader"[^>]*role="status"/);
+    assert.match(html,/secretj-loading\.css\?v=global-startup-20261125/);
+    for(const theme of ['light','dark']){
+      const attrs=new Set();let timer;let delay;let restored;let cleared=false;
+      const root={dataset:{},setAttribute:name=>attrs.add(name),removeAttribute:name=>attrs.delete(name)};
+      const window={addEventListener:(name,callback)=>{if(name==='pageshow')restored=callback;}};
+      vm.runInNewContext(script[1],{document:{documentElement:root},window,
+        localStorage:{getItem:()=>theme},matchMedia:()=>({matches:false}),
+        setTimeout:(callback,ms)=>{timer=callback;delay=ms;return 1;},
+        clearTimeout:()=>{cleared=true;}});
+      assert.equal(root.dataset.theme,theme);
+      assert.ok(attrs.has('data-sj-startup'));
+      assert.equal(delay,4000);
+      window.SecretJStartup.finish();
+      assert.equal(attrs.has('data-sj-startup'),false);
+      assert.ok(cleared);
+      attrs.add('data-sj-startup');timer();
+      assert.equal(attrs.has('data-sj-startup'),false);
+      attrs.add('data-sj-startup');restored({persisted:true});
+      assert.equal(attrs.has('data-sj-startup'),false);
+    }
+  }
+  assert.match(css,/\.sj-startup-loader\{display:none\}/);
+  assert.match(css,/html\[data-theme="dark"\]\[data-sj-startup\]/);
+  assert.match(css,/prefers-reduced-motion:reduce\)\{\.sj-startup-ring\{animation:none\}/);
+});
+test('global loader releases after initial UI hydration and does not intercept later requests',()=>{
+  assert.match(home,/Promise\.allSettled\(\[initialMember,initialCatalog\]\)\.then\(\(\)=>window\.SecretJStartup\?\.finish\(\)\)/);
+  assert.match(accountJS,/showAuth\(\);\s*window\.SecretJStartup\?\.finish\(\)/);
+  assert.match(accountJS,/finally\{window\.SecretJStartup\?\.finish\(\);\}/);
+  const manage=fs.readFileSync('dist/manage-companies.html','utf8');
+  assert.match(manage,/load\(\)\.finally\(\(\)=>window\.SecretJStartup\?\.finish\(\)\)/);
+});

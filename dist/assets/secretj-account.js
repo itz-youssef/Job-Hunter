@@ -761,6 +761,7 @@ $('#account-content').addEventListener('change',async event=>{
     if(session.user)await signedIn(session.user);
     else {
       showAuth();
+      window.SecretJStartup?.finish();
       // An anonymous session response does not verify database connectivity.
       // Report configuration errors without showing credentials or internals.
       try {
@@ -788,5 +789,6 @@ $('#account-content').addEventListener('change',async event=>{
       }
     }
   }catch(e){showAuth();banner('Account services unavailable. The existing job feed still works; '+e.message,true);}
+  finally{window.SecretJStartup?.finish();}
 })();
 })();
