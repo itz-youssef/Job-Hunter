@@ -354,3 +354,21 @@ test('rejection log records actual endpoint, bounded public evidence and exclude
  assert.equal(x.proposal.job_title,job.title);assert.equal(x.proposal.quote,p.quote);
  assert.ok(!JSON.stringify(x).includes('DO NOT STORE'));assert.ok(!JSON.stringify(x).includes('untrusted.example'));
 });
+
+test('rejected proposal links are resolved from trusted catalog jobs, never model URLs',()=>{
+ const docs=new Map([[doc.id,doc]]),jobs=new Map([[id,job]]);
+ const meta={company:job.company,kind:'family',model:A.GROQ,slot:A.HYDROGEN,reason:'quote-not-in-source',day:'2026-11-25'};
+ const result=A.rejectedProposalRecord({...proposal,job_url:'https://untrusted.example/'},docs,jobs,meta);
+ assert.equal(result.proposal.job_url,job.url);
+ assert.equal(result.evidence.job_url,job.url);
+ assert.equal(result.evidence.job_title,job.title);
+ assert.ok(!JSON.stringify(result).includes('untrusted.example'));
+ const missing=A.rejectedProposalRecord({...proposal,job_id:'unknown'},docs,jobs,meta);
+ assert.equal(missing.proposal.job_url,null);
+ assert.equal(missing.evidence.job_url,job.url);
+ const careerDoc={id:'career',url:'https://example.com/careers',company:job.company,live:true,text:'Public programme information'};
+ const career=A.rejectedProposalRecord({kind:'career',evidence_id:'career',alias:'Future X'},new Map([['career',careerDoc]]),jobs,{...meta,kind:'career'});
+ assert.equal(career.proposal.job_url,null);assert.equal(career.evidence.job_url,null);assert.equal(career.evidence.url,careerDoc.url);
+ const unsafe=A.rejectedProposalRecord(proposal,docs,new Map([[id,{...job,url:'javascript:alert(1)',apply_url:'https://example.com/apply/1'}]]),meta);
+ assert.equal(unsafe.proposal.job_url,'https://example.com/apply/1');
+});

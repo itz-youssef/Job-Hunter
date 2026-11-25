@@ -391,11 +391,12 @@ function makeTask(group,kind,prior){
 // Only public-employer research. No raw provider bodies or model-supplied URLs.
 function rejectedProposalRecord(p,docs,jobs,meta){
  const clean=(x,n)=>typeof x==='string'?x.replace(/[\u0000-\u001f\u007f]/g,' ').slice(0,n):'';
- const d=docs.get(p?.evidence_id),j=jobs.get(p?.job_id);
+ const d=docs.get(p?.evidence_id),j=jobs.get(p?.job_id),sourceJob=d?.job_id?jobs.get(d.job_id):null;
+ const listingUrl=job=>{const url=cleanUrl(job?.url)||cleanUrl(job?.apply_url);return url&&url.href.length<=2000?url.href:null;};
  const actualQuote=typeof p?.quote==='string'?E.plain(p.quote):'',sourceText=d?E.plain(d.text):'';
  return {company:clean(meta.company,180),kind:meta.kind,actual_model:meta.model,voting_slot:meta.slot,reason:meta.reason,day:meta.day,
-  proposal:{kind:clean(p?.kind,40),alias:clean(p?.alias,160),level:clean(p?.level,80),family:clean(p?.family,80),job_title:clean(j?.title,220),evidence_id:clean(p?.evidence_id,120),quote:clean(p?.quote,500),corroboration:clean(p?.corroboration,500)},
-  evidence:{url:d?clean(d.url,2000):null,quote_found:!!actualQuote&&sourceText.includes(actualQuote),source_excerpt:clean(d?.text,900)}};
+  proposal:{kind:clean(p?.kind,40),alias:clean(p?.alias,160),level:clean(p?.level,80),family:clean(p?.family,80),job_title:clean(j?.title,220),job_url:listingUrl(j),evidence_id:clean(p?.evidence_id,120),quote:clean(p?.quote,500),corroboration:clean(p?.corroboration,500)},
+  evidence:{url:d?clean(d.url,2000):null,job_url:listingUrl(sourceJob),job_title:clean(sourceJob?.title,220),quote_found:!!actualQuote&&sourceText.includes(actualQuote),source_excerpt:clean(d?.text,900)}};
 }
 function cooldownMs(error){return Math.max(90000,Math.min(300000,error?.retryAfter||0));}
 function roster(registry){const out=new Map();for(const c of [...registry,...BUILTINS])if(c?.name&&cleanUrl(c.url))out.set(E.norm(c.name),{name:c.name,url:c.url});return [...out.values()];}
