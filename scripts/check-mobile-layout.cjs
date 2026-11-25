@@ -2,6 +2,7 @@ const {chromium}=require('playwright');
 (async()=>{const browser=await chromium.launch({headless:true}); const page=await browser.newPage();
 await page.route('**/api/**',async route=>{let u=new URL(route.request().url()),scope=u.searchParams.get('scope'),data={ok:true};
 if(u.pathname.includes('auth'))data.user={id:'test',email:'long.email.address.for.mobile.testing@example.com',role:'admin'};
+else if(u.pathname.includes('secretj-botfolio'))Object.assign(data,{ai_ready:true,bots:[{id:'123',name:'A long professional portfolio name for a software engineering candidate',headline:'AI and Software Engineer — computer vision and machine learning applications',published:true},{id:'456',name:'Private portfolio draft',headline:'Software engineer',published:false}]});
 else if(u.pathname.includes('email'))Object.assign(data,{configured:true,verified:false});
 else if(u.pathname.includes('linkedin'))Object.assign(data,{configured:false});
 else if(u.pathname.includes('admin'))Object.assign(data,{users:[],summary:{users:1,active_users:1,applications:0},activity:[]});
@@ -51,4 +52,22 @@ for(const width of [375,1024]){
  }
 }
 if(hoverFailures.length)failures.push({brand_hover: hoverFailures});
+// Botfolio-specific checks: authenticated workspace, all internal views, both themes,
+// small phones through 4K, and a sidebar anchored to the viewport on desktop.
+for(const w of [320,375,390,430,600,768,900,1024,1280,1440,1920,2560,3840]){
+ await page.setViewportSize({width:w,height:900});
+ for(const theme of ['light','dark']){
+  await page.goto('http://127.0.0.1:8765/botfolio.html#home');
+  await page.evaluate(t=>localStorage.setItem('jh-theme',t),theme);
+  await page.reload();
+  await page.waitForFunction(()=>!document.getElementById('workspace').hidden && document.getElementById('stat-total').textContent==='2');
+  for(const view of ['home','portfolios','create','guides']){
+   await page.locator('.bf-sidebar nav [data-bf-view="'+view+'"]').click();
+   await page.waitForFunction(v=>document.querySelector('.bf-sidebar nav [aria-current="page"]')?.dataset.bfView===v,view);
+   const layout=await page.evaluate(v=>{const rect=s=>document.querySelector(s).getBoundingClientRect();const side=rect('.bf-sidebar'),main=rect('.bf-workspace');return {scroll:document.documentElement.scrollWidth,width:innerWidth,sideLeft:side.left,mainRight:main.right,visible:!document.getElementById(({home:'home-intro',portfolios:'portfolio-view',create:'create',guides:'guides'})[v]).hidden,theme:document.documentElement.dataset.theme}},view);
+   if(layout.scroll>w+1||!layout.visible||layout.theme!==theme||(w>900&&(Math.abs(layout.sideLeft)>1||Math.abs(layout.mainRight-w)>20)))failures.push({botfolio:view,w,theme,...layout});
+  }
+ }
+}
+
 console.log(JSON.stringify(failures,null,2));if(failures.length)process.exitCode=1;await page.setViewportSize({width:375,height:812});await page.goto('http://127.0.0.1:8765/account.html?view=preferences');await page.waitForTimeout(150);await page.screenshot({path:'mobile-account.png',fullPage:true});await browser.close();})();
