@@ -20,7 +20,7 @@ test('owner auth, scope checks, explicit public sharing and public metadata only
   assert.equal((await call(req('PATCH','publish',{id:ID,published:true,consent:true}))).status,404);
   const update=calls.find(x=>x.sql.includes('UPDATE public.sj_botfolio_bots'));assert.match(update.sql,/WHERE id=\$1 AND user_id=\$2/);assert.equal(update.args[1],UID);
   const r=await call(req('GET','public',{},ID,false));assert.equal(r.status,200);assert.deepEqual(r.data.bot,{id:ID,name:'Alex',headline:'Engineer'});
-  const query=calls.find(x=>x.sql.includes('JOIN public.sj_users'));assert.match(query.sql,/published=true AND u.is_active=true/);
+  const query=calls.find(x=>x.sql.includes('FROM public.sj_botfolio_bots b JOIN public.sj_users'));assert.match(query.sql,/published=true AND u.is_active=true/);
   assert.equal((await call(req('POST','create',{name:'Alex',knowledge:'A'.repeat(80),reviewed:false}))).status,400);
  }finally{core.setQueryForTests(null);}
 });

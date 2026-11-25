@@ -6,12 +6,12 @@ const landing=fs.readFileSync('dist/assets/secretj-landing.js','utf8');
 const css=fs.readFileSync('dist/assets/secretj-landing.css','utf8');
 const account=fs.readFileSync('dist/account.html','utf8');
 const home=fs.readFileSync('dist/index.html','utf8');
-test('products menu retains live product and disabled coming-soon item',()=>{
+test('products menu retains Job Hunter and links to Botfolio beta',()=>{
  assert.match(landing,/class="sj-land-products-menu"/);
  assert.match(landing,/class="sj-land-products-trigger" aria-haspopup="true"/);
  assert.doesNotMatch(landing,/sj-land-nav-chevron/);
  assert.match(landing,/data-navigate="hunter">Job Hunter/);
- assert.match(landing,/aria-disabled="true">Botfolio/);
+ assert.match(landing,/href="\/botfolio.html">Botfolio/);
 });
 test('landing avatar menu provides account sections and sign-out',()=>{
  assert.match(landing,/class="sj-land-profile-menu"/);
