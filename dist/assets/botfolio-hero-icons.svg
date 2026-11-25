@@ -1,16 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="820 0 980 310" fill="none"><defs>
-<linearGradient id="paper" x1="0" y1="0" x2="1800" y2="790" gradientUnits="userSpaceOnUse"><stop stop-color="#eeebe8"/><stop offset=".42" stop-color="#faf8f5"/><stop offset=".8" stop-color="#f6f3ef"/><stop offset="1" stop-color="#e9e4e0"/></linearGradient>
-<linearGradient id="wine" x1="0" y1="0" x2="340" y2="260" gradientUnits="userSpaceOnUse"><stop stop-color="#634048"/><stop offset="1" stop-color="#30151f"/></linearGradient>
-<linearGradient id="shell" x1="0" y1="0" x2="150" y2="180" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"/><stop offset=".55" stop-color="#f6f3ef"/><stop offset="1" stop-color="#c9c1bd"/></linearGradient>
-<linearGradient id="face" x1="30" y1="35" x2="130" y2="100" gradientUnits="userSpaceOnUse"><stop stop-color="#28151e"/><stop offset="1" stop-color="#65434c"/></linearGradient>
-<linearGradient id="fold" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff" stop-opacity=".86"/><stop offset="1" stop-color="#c8beba" stop-opacity=".48"/></linearGradient>
-<radialGradient id="glow"><stop stop-color="#fff" stop-opacity=".96"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
-<filter id="shadow" x="-60%" y="-60%" width="220%" height="240%"><feDropShadow dx="1" dy="12" stdDeviation="13" flood-color="#381c26" flood-opacity=".18"/></filter>
-<g id="star"><path d="M0-14Q3-3 14 0Q3 3 0 14Q-3 3-14 0Q-3-3 0-14Z" fill="#66414b"/></g>
-<g id="tile"><rect x="-43" y="-43" width="86" height="86" rx="22" fill="url(#shell)" stroke="#fff" stroke-width="1.6"/></g>
-</defs><!-- Career and AI icons around the perimeter, never part of the content -->
-<g transform="translate(927 95) rotate(-13)" filter="url(#shadow)"><use href="#tile"/><path d="M-14-13-28 0-14 13M14-13 28 0 14 13M7-18-7 18" stroke="#56323f" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/></g>
-<g transform="translate(1398 72) rotate(12)" filter="url(#shadow)"><use href="#tile"/><path d="M0-23 29-8 0 7-29-8ZM-26 4 0 18 26 4M-26 17 0 30 26 17" stroke="#56323f" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/></g>
-<g transform="translate(1708 200) rotate(14)" filter="url(#shadow)"><use href="#tile"/><rect x="-25" y="-11" width="50" height="34" rx="5" stroke="#56323f" stroke-width="4.5"/><path d="M-10-11v-8q0-5 5-5h10q5 0 5 5v8M-25 2h50M-5 0v8h10V0" stroke="#56323f" stroke-width="4" stroke-linejoin="round"/></g>
-<use href="#star" transform="translate(1155 57) scale(.85)"/><use href="#star" transform="translate(850 255) scale(.75)" opacity=".38"/><use href="#star" transform="translate(1655 592) scale(.66)" opacity=".45"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1050 340" fill="none"><defs>
+<linearGradient id="tile" x2=".8" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#f8f5f4"/></linearGradient>
+<filter id="shadow" x="-70%" y="-70%" width="240%" height="250%"><feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#543541" flood-opacity=".12"/></filter>
+<g id="plate"><rect x="-35" y="-35" width="70" height="70" rx="18" fill="url(#tile)" stroke="#fff"/></g>
+</defs>
+<path d="M20 246C233-50 670-11 882 163Q1011 255 1034 331" stroke="#ab8593" stroke-opacity=".42" stroke-width="1.35"/>
+<g transform="translate(177 83) rotate(-15)" filter="url(#shadow)"><use href="#plate"/><path d="M-12-12-24 0-12 12M12-12 24 0 12 12M6-16-6 16" stroke="#79344a" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"/></g>
+<path d="M435 38q2 7 9 9-7 2-9 9-2-7-9-9 7-2 9-9Z" fill="#79344a"/>
+<g transform="translate(657 58) rotate(13)" filter="url(#shadow)"><use href="#plate"/><path d="M0-19 23-7 0 5-23-7ZM-21 4 0 15 21 4M-21 15 0 26 21 15" stroke="#79344a" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/></g>
+<g transform="translate(927 172) rotate(17)" filter="url(#shadow)"><use href="#plate"/><rect x="-23" y="-10" width="46" height="31" rx="4" stroke="#79344a" stroke-width="3"/><path d="M-9-10v-7q0-4 4-4h10q4 0 4 4v7M-23 1h46M-5 0v7H5V0" stroke="#79344a" stroke-width="3" stroke-linejoin="round"/></g>
 </svg>
