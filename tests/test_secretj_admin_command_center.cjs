@@ -114,7 +114,7 @@ test('export serializes real family title patterns without changing matcher',()=
 test('Botfolio usage is admin-only, aggregate and read-only',async()=>{
  const member=await call('GET','botfolio-usage',{},'member');assert.equal(member.response.statusCode,403);assert.equal(member.queries.length,1);
  const {response,queries}=await call('GET','botfolio-usage');assert.equal(response.statusCode,200);const u=response.body.usage;
- assert.equal(u.generation.model,'openai/gpt-oss-120b');assert.equal(u.generation.requests_24h,3);assert.equal(u.generation.remaining_tokens,31000);assert.equal(u.generation.system_token_limit,35000);assert.equal(u.generation.global_request_limit,900);assert.equal(u.generation.remaining_requests,897);assert.equal(u.generation.reported_tokens_24h,1000);assert.equal(u.embeddings.remaining_neurons,1788);assert.equal(u.daily.per_ip,15);
+ assert.equal(u.generation.model,'openai/gpt-oss-120b');assert.equal(u.generation.requests_24h,3);assert.equal(u.generation.remaining_tokens,116000);assert.equal(u.generation.system_token_limit,120000);assert.equal(u.generation.global_request_limit,900);assert.equal(u.generation.remaining_requests,897);assert.equal(u.generation.reported_tokens_24h,1000);assert.equal(u.embeddings.remaining_neurons,1788);assert.equal(u.daily.per_ip,15);
  assert.equal(queries.length,3);assert.ok(queries.slice(1).every(q=>!(/\b(?:INSERT INTO|UPDATE|DELETE FROM)\b/i.test(q.sql))));
  assert.doesNotMatch(JSON.stringify(response.body),/knowledge|vector|reservations|GROQ_API_KEY|password_hash/);
  const js=fs.readFileSync('dist/assets/secretj-admin-console.js','utf8');assert.match(js,/Botfolio AI Usage/);assert.match(js,/botfolio-usage/);assert.match(js,/data-bf-usage-refresh/);assert.match(js,/Not configured on this host/);assert.match(js,/Next request released/);assert.match(js,/Next token release/);assert.match(js,/All current tokens released/);assert.match(js,/timeZone:'Africa\/Cairo'/);assert.match(js,/Both local counters reset/);assert.match(js,/g\.requests_24h,g\.global_request_limit,g\.remaining_requests,'requests'/);assert.match(js,/g\.tokens_24h,g\.system_token_limit,g\.remaining_tokens,'tokens'/);
@@ -136,4 +136,10 @@ test('provider calendar reset and freshest Groq response are rendered without a 
  const report={updated_at:'2026-11-25T15:00:00Z',usage:{per_model:{'openai/gpt-oss-120b':{provider_reset_at:'2026-11-25T16:00:00Z'}}}};
  const recent={reset_at:'2026-11-26T12:00:00Z',observed_at:'2026-11-26T00:10:00Z'};
  assert.deepEqual(helpers.latestGroqReset(report,{generation:{provider_reset:{rpd:recent}}},'rpd'),recent);assert.equal(helpers.latestGroqReset(report,null,'tpm'),null);
+});
+
+test('Groq product allocations leave 5000 tokens unallocated and preserve request ceilings',()=>{
+ const B=require('../lib/secretj/botfolio'),A=require('../research/research-agent.cjs');
+ assert.equal(B.GROQ_ROLLING_TOKEN_CAP,120000);assert.equal(A.GROQ_TOKEN_BUDGET,75000);assert.equal(200000-B.GROQ_ROLLING_TOKEN_CAP-A.GROQ_TOKEN_BUDGET,5000);assert.equal(B.GROQ_ROLLING_REQUEST_CAP,900);assert.equal(A.EMERGENCY_LIMITS[A.GROQ],60);
+ const js=fs.readFileSync('dist/assets/secretj-admin-console.js','utf8');assert.match(js,/120,000 accounted tokens/);assert.match(js,/75,000 Job Hunter/);
 });

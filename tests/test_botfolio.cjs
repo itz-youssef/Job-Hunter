@@ -30,7 +30,7 @@ test('create embeddings and chat with mocked provider, separate tenant and bound
  const ai={run:async(model,body)=>{models.push(model);assert.equal(model,B.EMBED_MODEL);return {data:body.text.map(()=>vector)};}};
  global.fetch=async(url,options)=>{groqCalls++;assert.equal(url,'https://api.groq.com/openai/v1/chat/completions');assert.equal(options.headers.Authorization,'Bearer test-groq-key');const body=JSON.parse(options.body);assert.equal(body.model,'openai/gpt-oss-120b');assert.equal(body.reasoning_effort,'low');assert.equal(body.include_reasoning,false);assert.match(body.messages[1].content,/software engineer/);return {ok:true,status:200,json:async()=>({choices:[{finish_reason:'stop',message:{content:'Alex worked as a software engineer.'}}],usage:{total_tokens:280}})};};
  try{const c=req('POST','create',{name:'Alex',headline:'Engineer',knowledge:'Alex worked as a software engineer on application development.',reviewed:true});c.env.BOTFOLIO_AI=ai;assert.equal((await call(c)).status,201);
- const q=req('POST','chat',{id:ID,message:'Experience?'},ID,false);q.env.BOTFOLIO_AI=ai;q.env.GROQ_API_KEY='test-groq-key';const r=await call(q);assert.equal(r.status,200);assert.match(r.data.answer,/software engineer/);assert.deepEqual(models,[B.EMBED_MODEL,B.EMBED_MODEL]);assert.equal(groqCalls,1);assert.equal(groqDebits[0][2],900);assert.equal(groqDebits[0][3],35000);assert.deepEqual(groqSettles[0],[groqDebits[0][0],280,'success','{}']);assert.ok(reserve.some(x=>x[0]==='global:neurons'&&x[2]===B.DAILY_NEURONS));assert.equal(reserve.filter(x=>x[0]==='global:neurons').length,2);
+ const q=req('POST','chat',{id:ID,message:'Experience?'},ID,false);q.env.BOTFOLIO_AI=ai;q.env.GROQ_API_KEY='test-groq-key';const r=await call(q);assert.equal(r.status,200);assert.match(r.data.answer,/software engineer/);assert.deepEqual(models,[B.EMBED_MODEL,B.EMBED_MODEL]);assert.equal(groqCalls,1);assert.equal(groqDebits[0][2],900);assert.equal(groqDebits[0][3],120000);assert.deepEqual(groqSettles[0],[groqDebits[0][0],280,'success','{}']);assert.ok(reserve.some(x=>x[0]==='global:neurons'&&x[2]===B.DAILY_NEURONS));assert.equal(reserve.filter(x=>x[0]==='global:neurons').length,2);
  const repeat=await call(q);assert.equal(repeat.status,200);assert.equal(repeat.data.answer,r.data.answer);assert.equal(groqCalls,1);assert.equal(models.length,2);
  }finally{global.fetch=originalFetch;core.setQueryForTests(null);}
 });
@@ -64,7 +64,7 @@ test('usage reports rolling reservations separately from confirmed provider toke
   assert.match(sql,/AT TIME ZONE 'UTC'/);return [{neurons:32,chat_attempts:8,indexing_attempts:2}];
  });
  try{const u=await B.usage({GROQ_API_KEY:'private-test-key',BOTFOLIO_AI:{run(){}}});
- assert.equal(u.generation.configured,true);assert.equal(u.generation.requests_24h,5);assert.equal(u.generation.unknown,1);assert.equal(u.generation.remaining_tokens,23000);assert.equal(u.generation.system_token_limit,35000);assert.equal(u.generation.remaining_requests,895);assert.equal(u.generation.next_release_at,'2026-11-26T06:00:00.000Z');assert.equal(u.generation.full_release_at,'2026-11-26T10:00:00.000Z');assert.equal(u.generation.unverified_tokens_24h,9000);assert.equal(u.generation.global_request_limit,900);assert.equal(u.embeddings.remaining_neurons,1768);assert.equal(u.daily.per_bot,20);assert.doesNotMatch(JSON.stringify(u),/private-test-key/);
+ assert.equal(u.generation.configured,true);assert.equal(u.generation.requests_24h,5);assert.equal(u.generation.unknown,1);assert.equal(u.generation.remaining_tokens,108000);assert.equal(u.generation.system_token_limit,120000);assert.equal(u.generation.remaining_requests,895);assert.equal(u.generation.next_release_at,'2026-11-26T06:00:00.000Z');assert.equal(u.generation.full_release_at,'2026-11-26T10:00:00.000Z');assert.equal(u.generation.unverified_tokens_24h,9000);assert.equal(u.generation.global_request_limit,900);assert.equal(u.embeddings.remaining_neurons,1768);assert.equal(u.daily.per_bot,20);assert.doesNotMatch(JSON.stringify(u),/private-test-key/);
  }finally{core.setQueryForTests(null);}
 });
 
@@ -72,7 +72,7 @@ test('Botfolio enforces both rolling request and token budgets independently',as
  let count=899,used=0;const originalFetch=global.fetch;let calls=0;
  core.setQueryForTests(async(sql,args)=>{
  if(sql.includes('INSERT INTO public.sj_botfolio_groq_budget')){
-  assert.match(sql,/SELECT count\(\*\)/);assert.match(sql,/sum\(/);assert.equal(args[2],900);assert.equal(args[3],35000);
+  assert.match(sql,/SELECT count\(\*\)/);assert.match(sql,/sum\(/);assert.equal(args[2],900);assert.equal(args[3],120000);
   if(count>=args[2]||used+args[1]>args[3])return [];
   count++;used+=args[1];return [{id:1}];
  }
@@ -85,7 +85,7 @@ test('Botfolio enforces both rolling request and token budgets independently',as
   assert.equal(await B.generate({GROQ_API_KEY:'test'},msgs),'Answer');
   await assert.rejects(B.generate({GROQ_API_KEY:'test'},msgs),e=>e.status===429);
   assert.equal(calls,1);
-  count=1;used=35000;
+  count=1;used=120000;
   await assert.rejects(B.generate({GROQ_API_KEY:'test'},msgs),e=>e.status===429);
   assert.equal(calls,1);
   used=0;
