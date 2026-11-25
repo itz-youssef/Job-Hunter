@@ -200,6 +200,10 @@ html[data-theme="light"] .nav button.active *{
 .sj-quota-track{height:8px;border-radius:9px;background:var(--border);overflow:hidden;margin:8px 0}.sj-quota-track i{display:block;height:100%;border-radius:9px;background:#258b68}.sj-quota-track i.near{background:#b7791f}.sj-quota-track i.full{background:#c44848}
 .sj-quota-card small{display:block;color:var(--muted);font-size:11px;line-height:1.6}.sj-quota-card .sj-quota-status{color:var(--ink);font-weight:650;margin:7px 0}
 
+/* Admin-only exception: layered !important rules in the global monochrome theme
+   outrank unlayered page rules. Use the SAME layer with scoped selectors so
+   semantic text, quota bars and state indicators survive in both themes. */
+@layer secretj-theme {
 /* Semantic colors are intentionally confined to the administrator console. */
 html body .sj-admin-root{--sj-green:#087649;--sj-amber:#995000;--sj-red:#b42332;--sj-blue:#175ba6;--sj-violet:#7540a8}
 html[data-theme="dark"] body .sj-admin-root{--sj-green:#6fdfa4;--sj-amber:#ffc36d;--sj-red:#ff858d;--sj-blue:#8ac2ff;--sj-violet:#cfacff}
@@ -218,6 +222,7 @@ html body .sj-admin-root .sj-quota-title span,html body .sj-admin-root .sj-quota
 html body .sj-admin-root .sj-research-mode{padding:12px 14px;margin:12px 0;border:1px solid var(--border)!important;border-inline-start:3px solid var(--sj-status,var(--border))!important;border-radius:10px}
 html body .sj-admin-root .sj-research-mode strong{display:block;color:var(--sj-status,var(--ink))!important;font-size:15px}
 html body .sj-admin-root .sj-research-mode small{display:block;margin-top:4px;font-size:12px;overflow-wrap:anywhere}
+}
 
 #registration-consent:not([hidden]){display:flex}
 
