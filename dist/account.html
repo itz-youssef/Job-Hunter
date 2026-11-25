@@ -226,6 +226,26 @@ html body .sj-admin-root .sj-research-mode small{display:block;margin-top:4px;fo
 
 .sj-admin-root .sj-rejected-item{border:1px solid var(--border);border-radius:10px;margin:8px 0;padding:10px 12px;overflow-wrap:anywhere}.sj-admin-root .sj-rejected-item summary{cursor:pointer;line-height:1.6}.sj-admin-root .sj-rejected-body{font-size:13px;line-height:1.6;margin-top:10px}.sj-admin-root .sj-rejected-body p{margin:8px 0}
 .sj-admin-root .sj-rejected-links{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:12px}.sj-admin-root .sj-rejected-link{font-weight:650;text-decoration:underline}
+
+/* AI Intelligence Lab color exceptions stay inside the global theme layer. */
+@layer secretj-theme {
+html body .sj-admin-root #sj-admin-research{--sj-research-surface:#f5f8fc;--sj-research-text:#26364a;--sj-research-muted:#53647a;--sj-research-heading:#174b86;--sj-research-line:#d8e2ef}
+html[data-theme="dark"] body .sj-admin-root #sj-admin-research{--sj-research-surface:#111b2a;--sj-research-text:#dce8f5;--sj-research-muted:#a9bad0;--sj-research-heading:#a4ccff;--sj-research-line:#30445c}
+html body .sj-admin-root #sj-admin-research h4{color:var(--sj-research-heading)!important;border-bottom:1px solid var(--sj-research-line)!important;padding-bottom:6px;margin-top:20px}
+html body .sj-admin-root #sj-admin-research :is(.sj-research-line,.sj-research-attempt,.sj-research-benchmark,.sj-rejected-item,.sj-research-mode){background-color:var(--sj-research-surface)!important;background-color:color-mix(in srgb,var(--sj-status,var(--sj-blue)) 7%,var(--mono-bg))!important;border-inline-start:3px solid var(--sj-status,var(--sj-blue))!important;color:var(--sj-research-text)!important;border-radius:8px;padding:10px 12px;margin-block:7px}
+html[data-theme="dark"] body .sj-admin-root #sj-admin-research :is(.sj-research-line,.sj-research-attempt,.sj-research-benchmark,.sj-rejected-item,.sj-research-mode){background-color:color-mix(in srgb,var(--sj-status,var(--sj-blue)) 11%,var(--mono-bg))!important}
+html body .sj-admin-root #sj-admin-research :is(.sj-research-line,.sj-research-attempt,.sj-research-benchmark,.sj-rejected-item,.sj-research-mode) *{background-color:transparent!important}
+html body .sj-admin-root #sj-admin-research :is(.sj-research-line,.sj-research-attempt,.sj-research-benchmark,.sj-rejected-item,.sj-research-mode) :is(small,.muted,.sj-research-arrow){color:var(--sj-research-muted)!important}
+html body .sj-admin-root #sj-admin-research :is(.sj-research-line,.sj-research-attempt,.sj-research-benchmark,.sj-rejected-item,.sj-research-mode) :is(.sj-semantic-text,.sj-admin-badge){color:var(--sj-status,var(--sj-research-text))!important;font-weight:650}
+html body .sj-admin-root #sj-admin-research .sj-research-mode strong{color:var(--sj-status,var(--sj-research-text))!important}
+html body .sj-admin-root #sj-admin-research .sj-research-line strong{color:var(--sj-status,var(--sj-research-heading))!important}
+html body .sj-admin-root #sj-admin-research .sj-rejected-item{--sj-status:var(--sj-red)}
+html body .sj-admin-root #sj-admin-research .sj-rejected-item .sj-rejected-link{color:var(--sj-blue)!important}
+html body .sj-admin-root #sj-admin-research .sj-rejected-item summary:is(:hover,:focus-visible){color:var(--sj-research-text)!important;background-color:transparent!important}
+html body .sj-admin-root #sj-admin-research .sj-quota-card{background-color:color-mix(in srgb,var(--sj-status,var(--sj-blue)) 3%,var(--mono-bg))!important}
+html body .sj-admin-root #sj-admin-research .sj-quota-card :is(.sj-quota-title,.sj-quota-title *, .sj-quota-count,.sj-quota-count *,small){background-color:transparent!important}
+}
+
 #registration-consent:not([hidden]){display:flex}
 
 /* The account avatar menu includes sign out without a separate header button. */
@@ -251,7 +271,7 @@ html body .sj-admin-root .sj-research-mode small{display:block;margin-top:4px;fo
 <link rel="stylesheet" href="/assets/secretj-global-theme.css?v=linkedin-theme-layer-20261124">
 <script src="/assets/secretj-cv-parser.js" defer></script>
 <script src="/assets/secretj-avatar-crop.js" defer></script>
-<script src="/assets/secretj-admin-console.js?v=rejected-job-links-20261125" defer></script>
+<script src="/assets/secretj-admin-console.js?v=research-readable-colors-20261125" defer></script>
 <script src="/assets/secretj-eligibility-core.js?v=constraint-aware-f-1" defer></script>
 <script src="/assets/secretj-career-dictionary.js?v=dictionary-20261122" defer></script>
   <script src="/assets/secretj-career-level.js?v=level-classifier-1" defer></script>
