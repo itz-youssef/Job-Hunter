@@ -33,7 +33,7 @@ test('employer-scoped branded alias needs live evidence and explicit level',()=>
  assert.deepEqual(conflicting[0],rules[0]);assert.equal(conflicting[1].status,'conflict');
 });
 test('free-only IDs, shared budget and Cairo rotation',()=>{
- assert.ok(A.MODELS.every(m=>m.endsWith(':free')));
+ assert.ok(A.NEMOTRON.endsWith(':free'));assert.equal(A.HYDROGEN,'gemini-4-hydrogen');assert.ok(!A.MODELS.includes(A.LITE));
  assert.notEqual(A.modelFor('2026-11-25'),A.modelFor('2026-11-26'));
  assert.equal(A.localDate(new Date('2026-11-25T22:00:00Z')),'2026-11-26');
  assert.equal(A.localHour(new Date('2026-11-25T22:00:00Z')),0);
@@ -66,7 +66,7 @@ test('missing credentials fail closed without modifying any candidate dictionari
  try{
   const original={mode:'shadow',rules:[{key:'existing'}]};
   fs.writeFileSync(path.join(dir,'career-level-dictionary.json'),JSON.stringify(original));
-  const env={...process.env,RESEARCH_STATE_DIR:dir,RESEARCH_MODE:'daily',GITHUB_EVENT_NAME:'workflow_dispatch',OPENROUTER_API_KEY:'',TAVILY_API_KEY:''};
+  const env={...process.env,RESEARCH_STATE_DIR:dir,RESEARCH_MODE:'daily',GITHUB_EVENT_NAME:'workflow_dispatch',OPENROUTER_API_KEY:'',GEMINI_API_KEY:'',TAVILY_API_KEY:''};
   const r=cp.spawnSync(process.execPath,['research/research-agent.cjs'],{env,encoding:'utf8',timeout:10000});
   assert.equal(r.status,0,r.stderr);
   const report=JSON.parse(fs.readFileSync(path.join(dir,'report.json')));
@@ -76,8 +76,8 @@ test('missing credentials fail closed without modifying any candidate dictionari
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
 
-test('ERNIE replaces unavailable Kimi; Nemotron retained; daily rotating cohort fits free budget',()=>{
- assert.deepEqual(A.MODELS,['baidu/ernie-5.5-flash-preview:free','nvidia/nemotron-3-ultra-550b-a55b:free']);
+test('Hydrogen replaces ERNIE; Nemotron retained; Lite is preprocessing only',()=>{
+ assert.deepEqual(A.MODELS,['gemini-4-hydrogen','nvidia/nemotron-3-ultra-550b-a55b:free']);
  assert.equal(A.BATCH_COMPANIES,1);assert.ok(A.DAILY_COMPANIES*2<A.MODEL_BUDGET);
 });
 test('provider parsing accepts complete JSON, fenced JSON and text parts; never repairs incomplete JSON',()=>{
@@ -136,4 +136,32 @@ test('new conflicting aliases are quarantined without mutating an existing accep
  const b={...a,key:'b',level:'internship'};
  const r=E.mergeRules([a],[b]);assert.deepEqual(r[0],a);assert.equal(r[1].status,'conflict');
  const fresh=E.mergeRules([],[a,b]);assert.ok(fresh.every(x=>x.status==='conflict'));
+});
+
+test('Gemini response parser ignores thoughts and rejects partial outputs',()=>{
+ const valid={candidates:[{finishReason:'STOP',content:{parts:[{thought:true,text:'private reasoning'},{text:'{"proposals":[]}'}]}}]};
+ assert.deepEqual(A.decodeGemini(valid),{proposals:[]});
+ assert.throws(()=>A.decodeGemini({candidates:[{finishReason:'MAX_TOKENS',content:{parts:[{text:'{}'}]}}]}),/output-token-limit/);
+ assert.throws(()=>A.decodeGemini({promptFeedback:{blockReason:'SAFETY'}}),/provider-finish-error/);
+});
+test('separate quota ledgers count failures before calls and respect Pacific and Cairo days',()=>{
+ const s=A.newState(),now=new Date('2026-11-25T14:00:00Z');A.ledger(s,A.localDate(now));
+ for(let i=0;i<15;i++)A.recordCall(s,A.HYDROGEN,now);
+ assert.equal(A.canCall(s,A.HYDROGEN,now),false);
+ assert.equal(A.canCall(s,A.NEMOTRON,now),true);
+ assert.equal(A.canCall(s,A.LITE,now),true);
+ A.recordCall(s,A.LITE,now);assert.equal(s.usage.model,15);assert.equal(s.usage.preprocess,1);
+ const later=new Date('2026-11-25T22:00:00Z');A.ledger(s,A.localDate(later));
+ assert.equal(A.canCall(s,A.HYDROGEN,later),false);
+ assert.equal(A.canCall(s,A.HYDROGEN,new Date('2026-11-26T08:01:00Z')),true);
+ assert.ok(A.MODEL_INTERVALS[A.HYDROGEN]>=12000);
+ assert.equal(A.MODEL_LIMITS[A.LITE],100);
+});
+test('Lite preserves original documents, accepts only verbatim evidence, and has no validation vote',()=>{
+ const text='Our Future X programme is an internship for university students. Applications are open to students in their final two academic years.';
+ const task={docs:[{id:'x',text},{id:'y',text:'Original document'}],payload:{documents:[{id:'x',text},{id:'y',text:'Original document'}]}};
+ const valid=A.applyExcerpts(task,{excerpts:[{id:'x',text},{id:'y',text:'invented '.repeat(20)}]});
+ assert.equal(valid.excerpts_used,1);assert.equal(valid.payload.documents[0].evidence_hint,text);assert.equal(valid.payload.documents[1].evidence_hint,undefined);
+ assert.deepEqual(valid.docs,task.docs);assert.ok(!A.taskModels('family',A.HYDROGEN,'benchmark').includes(A.LITE));
+ assert.ok(fs.readFileSync('.github/workflows/adaptive-dictionary-research.yml','utf8').includes('secrets.GEMINI_API_KEY'));
 });
