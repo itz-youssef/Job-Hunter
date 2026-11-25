@@ -68,26 +68,49 @@ const anchors={
 const duty=/\b(?:responsibilit(?:y|ies)|duties|you will|develop|design|build|implement|maintain|manage|monitor|investigate|test|deploy|coordinate|prepare|analy[sz]e|create|support|lead|deliver|conduct|work on|work across)\b/i;
 const negative=/\b(?:not|no|without|unrelated|optional|nice to have|a plus|preferred|benefit)\b/i;
 function quoteOK(text,q){q=plain(q);return q.length>=20&&q.length<=420&&plain(text).includes(q)&&!negative.test(q);}
-function validate(p,docs,jobs,model,day){
- if(!p||!['career','family'].includes(p.kind))return null;
+// One validation path, unchanged acceptance gates. Return first failed gate.
+function validateDetailed(p,docs,jobs,model,day){
+ const reject=reason=>({rule:null,reason}),accept=rule=>({rule,reason:null});
+ if(!p||!['career','family'].includes(p.kind))return reject('invalid-proposal-kind');
  const d=docs.get(p.evidence_id),quote=plain(p.quote);
- if(!d||!d.url||!quoteOK(d.text,quote))return null;
+ if(!d)return reject('unknown-evidence-id');
+ if(!d.url)return reject('missing-source-url');
+ if(quote.length<20||quote.length>420)return reject('quote-length');
+ if(!plain(d.text).includes(quote))return reject('quote-not-in-source');
+ if(negative.test(quote))return reject('negative-or-optional-evidence');
  if(p.kind==='career'){
   const alias=plain(p.alias);
-  if(!d.live||!levels.has(p.level)||alias.length<4||alias.length>100||!contains(quote,alias)||!levelSignals[p.level]?.test(quote))return null;
-  if(/^(?:program(?:me)?|graduate|intern(?:ship)?|engineer|associate|specialist|trainee|technology|talent|academy|analyst|manager|senior|junior)$/i.test(alias))return null;
-  if(Object.entries(levelSignals).some(([k,re])=>k!==p.level&&re.test(quote)))return null;
-  return {key:hash(JSON.stringify(['career',norm(d.company),norm(alias),p.level])),kind:'career',company:d.company,alias,level:p.level,evidence:{url:d.url,quote,checked_at:day},models:[model],status:'candidate'};
+  if(!d.live)return reject('career-source-not-live');
+  if(!levels.has(p.level))return reject('unknown-career-level');
+  if(alias.length<4||alias.length>100)return reject('alias-length');
+  if(!contains(quote,alias))return reject('alias-not-in-quote');
+  if(!levelSignals[p.level]?.test(quote))return reject('missing-career-level-signal');
+  if(/^(?:program(?:me)?|graduate|intern(?:ship)?|engineer|associate|specialist|trainee|technology|talent|academy|analyst|manager|senior|junior)$/i.test(alias))return reject('generic-career-alias');
+  if(Object.entries(levelSignals).some(([k,re])=>k!==p.level&&re.test(quote)))return reject('conflicting-career-level-signals');
+  return accept({key:hash(JSON.stringify(['career',norm(d.company),norm(alias),p.level])),kind:'career',company:d.company,alias,level:p.level,evidence:{url:d.url,quote,checked_at:day},models:[model],status:'candidate'});
  }
  const j=jobs.get(p.job_id),q2=plain(p.corroboration);
- if(!j||d.job_id!==p.job_id||norm(d.company)!==norm(j.company)||!families.has(p.family)||!anchors[p.family]?.test(quote)||!baseline(j).families.includes('other'))return null;
+ if(!j)return reject('unknown-job-id');
+ if(d.job_id!==p.job_id)return reject('evidence-job-mismatch');
+ if(norm(d.company)!==norm(j.company))return reject('evidence-company-mismatch');
+ if(!families.has(p.family))return reject('unknown-job-family');
+ if(!anchors[p.family]?.test(quote))return reject('missing-job-family-anchor');
+ if(!baseline(j).families.includes('other'))return reject('job-already-classified');
  const department=dept(j);
  const departmentProof=department.length>=4&&contains(quote,department)&&anchors[p.family].test(department)&&!negative.test(department);
  const dutiesProof=duty.test(quote)&&quoteOK(d.duties||'',quote)&&quoteOK(d.duties||'',q2)&&q2!==quote&&!quote.includes(q2)&&!q2.includes(quote)&&anchors[p.family].test(q2)&&duty.test(q2);
- if(!departmentProof&&!dutiesProof)return null;
+ if(!departmentProof&&!dutiesProof){
+  if(!duty.test(quote))return reject('missing-duty-signal');
+  if(!quoteOK(d.duties||'',quote))return reject('quote-not-supported-by-duties');
+  if(!quoteOK(d.duties||'',q2))return reject('corroboration-not-supported-by-duties');
+  if(q2===quote||quote.includes(q2)||q2.includes(quote))return reject('corroboration-not-independent');
+  if(!anchors[p.family].test(q2))return reject('corroboration-missing-family-anchor');
+  return reject('corroboration-missing-duty-signal');
+ }
  const fp=fingerprint(j);
- return {key:hash(JSON.stringify(['family',fp,p.family])),kind:'family',company:j.company,title:j.title,job_fingerprint:fp,family:p.family,evidence:{url:d.url,quote,corroboration:departmentProof?'Official department: '+department:q2,checked_at:day},models:[model],status:'candidate'};
+ return accept({key:hash(JSON.stringify(['family',fp,p.family])),kind:'family',company:j.company,title:j.title,job_fingerprint:fp,family:p.family,evidence:{url:d.url,quote,corroboration:departmentProof?'Official department: '+department:q2,checked_at:day},models:[model],status:'candidate'});
 }
+function validate(p,docs,jobs,model,day){return validateDetailed(p,docs,jobs,model,day).rule;}
 // Existing rule payloads and order are immutable. Only add independent
 // confirmations and promote a candidate; never downgrade or overwrite it.
 const careerScope=r=>r.kind==='career'?norm(r.company)+'|'+norm(r.alias):null;
@@ -146,4 +169,4 @@ function evaluate(jobs,rules,reference){
  const compare=fn=>metrics(cases.map(c=>({expected:c.expected===true,actual:fn(c).families.some(k=>(c.preference||[]).includes(k))})));
  return {catalog_jobs:jobs.length,changed_level,changed_family,baseline_unknown,shadow_unknown,changes,benchmark:{basis:'Existing limited semantic-role reference; not production accuracy.',old:compare(baseline),shadow:compare(j=>shadow(j,rules))}};
 }
-module.exports={norm,plain,hash,contains,dept,fingerprint,baseline,validate,mergeRules,assertAdditive,shadow,metrics,evaluate,levels,families};
+module.exports={norm,plain,hash,contains,dept,fingerprint,baseline,validate,validateDetailed,mergeRules,assertAdditive,shadow,metrics,evaluate,levels,families};
