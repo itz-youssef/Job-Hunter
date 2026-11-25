@@ -1,1 +1,119 @@
-{"mode":"shadow","production_unchanged":true,"status":"awaiting-keys","missing":["OPENROUTER_API_KEY","TAVILY_API_KEY"],"note":"Research has not run."}
+{
+  "status": "partial",
+  "mode": "shadow",
+  "run_type": "benchmark",
+  "production_unchanged": true,
+  "updated_at": "2026-11-25T13:28:26.875Z",
+  "cairo_day": "2026-11-25",
+  "preferred_model": "moonshotai/kimi-k2.6:free",
+  "companies_total": 60,
+  "companies_reviewed": 6,
+  "companies_with_evidence": 6,
+  "live_sources": 14,
+  "job_documents": 24,
+  "proposals": 0,
+  "rejected": 0,
+  "validated": 0,
+  "failed_batches": 4,
+  "models_used": [],
+  "model_requests": 8,
+  "search_credits": 6,
+  "errors": [
+    "provider-http-404",
+    "invalid-or-unavailable-response"
+  ],
+  "search_success": 6,
+  "search_failures": 0,
+  "rules": {
+    "career": 0,
+    "family": 0,
+    "cross_checked": 0,
+    "conflicts": 0
+  },
+  "usage": {
+    "day": "2026-11-25",
+    "model_requests_today": 8,
+    "search_credits_today": 6,
+    "search_credits_month": 6
+  },
+  "comparison": {
+    "catalog_jobs": 2324,
+    "changed_level": 0,
+    "changed_family": 0,
+    "baseline_unknown": 1382,
+    "shadow_unknown": 1382,
+    "changes": [],
+    "benchmark": {
+      "basis": "Existing limited semantic-role reference; not production accuracy.",
+      "old": {
+        "n": 12,
+        "tp": 3,
+        "fp": 1,
+        "fn": 3,
+        "tn": 5,
+        "precision": 0.75,
+        "recall": 0.5,
+        "accuracy": 0.6666666666666666
+      },
+      "shadow": {
+        "n": 12,
+        "tp": 3,
+        "fp": 1,
+        "fn": 3,
+        "tn": 5,
+        "precision": 0.75,
+        "recall": 0.5,
+        "accuracy": 0.6666666666666666
+      }
+    }
+  },
+  "model_benchmark": [
+    {
+      "model": "moonshotai/kimi-k2.6:free",
+      "expected_cases": 12,
+      "answered": 0,
+      "failed_batches": 2,
+      "metrics": {
+        "n": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "precision": null,
+        "recall": null,
+        "accuracy": null
+      },
+      "level_reference": {
+        "basis": "Synthetic regression examples, not production accuracy",
+        "expected_cases": 16,
+        "answered": 0,
+        "correct": 0,
+        "accuracy": null
+      }
+    },
+    {
+      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "expected_cases": 12,
+      "answered": 12,
+      "failed_batches": 0,
+      "metrics": {
+        "n": 12,
+        "tp": 6,
+        "fp": 0,
+        "fn": 0,
+        "tn": 6,
+        "precision": 1,
+        "recall": 1,
+        "accuracy": 1
+      },
+      "level_reference": {
+        "basis": "Synthetic regression examples, not production accuracy",
+        "expected_cases": 16,
+        "answered": 16,
+        "correct": 16,
+        "accuracy": 1
+      }
+    }
+  ],
+  "note": "Only public employer data. Evidence checks and cross-model agreement are screening gates, not ground truth. Production never activated."
+}

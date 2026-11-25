@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "career_rules": [],
+  "family_rules": [],
+  "usage": {
+    "month": "2026-11",
+    "search": 6,
+    "day": "2026-11-25",
+    "model": 8,
+    "search_day": 6
+  },
+  "cursor": 0,
+  "last_attempt": "",
+  "last_completed": "",
+  "history": [
+    {
+      "day": "2026-11-25",
+      "run_type": "benchmark",
+      "status": "partial",
+      "model_requests": 8,
+      "validated": 0,
+      "changed_family": 0,
+      "changed_level": 0
+    }
+  ]
+}
