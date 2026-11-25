@@ -72,3 +72,48 @@ def test_verified_employer_detail_is_preserved_when_next_search_summary_is_spars
     assert saved['seniority']=='Entry'
     assert saved['department']=='Technology'
     assert saved['source_detail_status']=='retained-official-detail'
+
+
+def test_parallel_scan_timings_preserve_registry_order_and_isolate_errors(monkeypatch):
+    companies = [
+        {"name": "Slow", "url": "https://slow.example/jobs"},
+        {"name": "Broken", "url": "https://broken.example/jobs"},
+        {"name": "Fast", "url": "https://fast.example/jobs"},
+    ]
+    def scan(company):
+        if company["name"] == "Broken":
+            raise RuntimeError("private provider error")
+        return [{"title": company["name"]}], "monitoring", "ok"
+    monkeypatch.setattr(monitor, "scan_company", scan)
+    result = monitor._scan_all(companies, {"companies": [
+        {"url": companies[2]["url"], "duration_seconds": 200},
+    ]})
+    assert len(result) == 3
+    assert result[0][0][0]["title"] == "Slow"
+    assert result[1][:3] == ([], "error", "RuntimeError")
+    assert result[2][0][0]["title"] == "Fast"
+    assert all(r[3] >= 0 and r[4] <= r[5] for r in result)
+
+def test_all_companies_scanned_with_bounded_same_host_parallelism(monkeypatch):
+    import threading
+    import time
+    active = 0
+    peak = 0
+    visited = []
+    lock = threading.Lock()
+    def scan(company):
+        nonlocal active, peak
+        with lock:
+            active += 1
+            peak = max(peak, active)
+            visited.append(company["name"])
+        time.sleep(0.01)
+        with lock:
+            active -= 1
+        return [], "monitoring", "ok"
+    monkeypatch.setattr(monitor, "scan_company", scan)
+    companies = [{"name": str(i), "url": f"https://same.example/jobs/{i}"} for i in range(18)]
+    results = monitor._scan_all(companies, {})
+    assert len(results) == len(companies)
+    assert sorted(visited) == sorted(c["name"] for c in companies)
+    assert peak <= monitor.MAX_HOST_WORKERS

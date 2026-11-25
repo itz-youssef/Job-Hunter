@@ -39,7 +39,10 @@ def collect_public_board():
     rows={}
     total=None
     with sync_playwright() as p:
-        browser=p.chromium.launch(headless=True)
+        # Suppress decorative image downloads using Chromium's native
+        # setting. Keep its normal HTTP cache enabled; do not intercept
+        # requests or disable scripts, stylesheets, pagination or job text.
+        browser=p.chromium.launch(headless=True,args=["--blink-settings=imagesEnabled=false"])
         try:
             page=browser.new_page()
             page.goto(ROOT+"joblist.ftl",wait_until="domcontentloaded",timeout=60000)

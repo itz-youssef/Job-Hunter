@@ -1,0 +1,2 @@
+# Browser version is pinned so GitHub Actions can safely reuse its binaries.
+playwright==1.65.2

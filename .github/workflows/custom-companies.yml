@@ -40,11 +40,29 @@ jobs:
         with:
           python-version: '3.11'
           cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-scanner.txt
 
       - name: Install scanner dependencies
+        run: python -m pip install -r requirements.txt -r requirements-scanner.txt
+
+      - name: Restore Playwright browser binaries
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('requirements-scanner.txt') }}
+
+      - name: Prepare Chromium and verify cached browser
+        env:
+          PLAYWRIGHT_CACHE_HIT: ${{ steps.playwright-cache.outputs.cache-hit }}
         run: |
-          python -m pip install -r requirements.txt playwright
-          python -m playwright install --with-deps chromium
+          if [ "$PLAYWRIGHT_CACHE_HIT" = "true" ] && python -c "from playwright.sync_api import sync_playwright; p=sync_playwright().start(); b=p.chromium.launch(headless=True); b.close(); p.stop()"; then
+            echo "Verified cached Chromium; skipping browser download and system dependency installation"
+          else
+            python -m playwright install --with-deps chromium
+          fi
 
       - name: Verify scanner imports and source configuration
         run: |
