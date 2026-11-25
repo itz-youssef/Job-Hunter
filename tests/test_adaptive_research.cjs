@@ -58,3 +58,19 @@ test('workflow cannot push main or access production email and DB keys',()=>{
 test('semantic benchmark reports actual metric counts, not invented accuracy',()=>{
  const m=E.metrics([{expected:true,actual:true},{expected:true,actual:false},{expected:false,actual:true}]);assert.equal(m.tp,1);assert.equal(m.fp,1);assert.equal(m.fn,1);assert.equal(m.precision,0.5);
 });
+
+test('missing credentials fail closed without modifying any candidate dictionaries',()=>{
+ const path=require('node:path'),os=require('node:os'),cp=require('node:child_process');
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'sj-shadow-'));
+ try{
+  const original={mode:'shadow',rules:[{key:'existing'}]};
+  fs.writeFileSync(path.join(dir,'career-level-dictionary.json'),JSON.stringify(original));
+  const env={...process.env,RESEARCH_STATE_DIR:dir,RESEARCH_MODE:'daily',GITHUB_EVENT_NAME:'workflow_dispatch',OPENROUTER_API_KEY:'',TAVILY_API_KEY:''};
+  const r=cp.spawnSync(process.execPath,['research/research-agent.cjs'],{env,encoding:'utf8',timeout:10000});
+  assert.equal(r.status,0,r.stderr);
+  const report=JSON.parse(fs.readFileSync(path.join(dir,'report.json')));
+  assert.equal(report.status,'awaiting-keys');assert.equal(report.production_unchanged,true);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir,'career-level-dictionary.json'))),original);
+  assert.equal(fs.existsSync(path.join(dir,'state.json')),false);
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
