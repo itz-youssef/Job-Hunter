@@ -140,3 +140,31 @@ html:not([data-theme=dark]) .bf-intro-close .bf-secondary:hover{background:#fff;
  html:not([data-theme=dark]) .bf-intro-alt .bf-intro-features{grid-template-columns:minmax(0,1fr);gap:12px}
  html:not([data-theme=dark]) .bf-intro-close::before{opacity:.55}
 }
+
+/* Secret J editorial footer, matched to the shared landing page; workspace footer untouched. */
+.bf-dashboard[data-bf-view=home]>.bf-footer{display:none}
+.bf-intro .bf-intro-footer{
+ --bf-foot-bg:#fff;--bf-foot-text:#111;--bf-foot-sub:#555;--bf-foot-line:#dcdcdc;--bf-foot-icon:#f5f4f2;
+ display:block;width:100%;padding:0;border-top:1px solid var(--bf-foot-line);background:var(--bf-foot-bg);color:var(--bf-foot-text);font-size:13px;container-type:inline-size;container-name:bf-footer;
+}
+html[data-theme=dark] .bf-intro .bf-intro-footer{--bf-foot-bg:#0b0b0b;--bf-foot-text:#f5f5f5;--bf-foot-sub:#bdbdbd;--bf-foot-line:#303030;--bf-foot-icon:#181818}
+.bf-intro-footer .bf-intro-footer-inner,.bf-intro-footer .bf-intro-footer-bottom{width:min(1600px,100%);margin-inline:auto;padding-inline:clamp(20px,5.5cqw,100px)}
+.bf-intro-footer .bf-intro-footer-inner{display:grid;grid-template-columns:minmax(0,1.65fr) repeat(2,minmax(0,.9fr)) minmax(0,.7fr);gap:clamp(24px,3.4cqw,70px);padding-block:clamp(48px,5cqw,74px) clamp(42px,4.5cqw,65px);align-items:start}
+.bf-intro-footer .bf-intro-footer-brand{min-width:0}
+.bf-intro-footer .bf-intro-footer-brand h3{font-size:clamp(30px,3cqw,43px);font-weight:800;letter-spacing:-.05em;line-height:1.2;margin:0 0 18px;color:var(--bf-foot-text)}
+.bf-intro-footer .bf-intro-footer-brand p{max-width:390px;font-size:14px;line-height:1.85;color:var(--bf-foot-sub);margin:0}
+.bf-intro-footer .bf-intro-footer-tagline{display:block;margin-top:30px;font-size:10px;font-weight:900;letter-spacing:.18em;color:var(--bf-foot-sub)}
+.bf-intro-footer :is(.bf-intro-footer-links,.bf-intro-footer-social){display:flex;flex-direction:column;align-items:flex-start;gap:13px;min-width:0}
+.bf-intro-footer :is(.bf-intro-footer-links,.bf-intro-footer-social) strong{display:block;font-size:11px;font-weight:900;letter-spacing:.12em;line-height:1.4;margin:0 0 9px;color:var(--bf-foot-sub)}
+.bf-intro-footer .bf-intro-footer-links a{display:block;font-size:13px;font-weight:600;line-height:1.5;margin:0;color:var(--bf-foot-text);text-decoration:none;overflow-wrap:anywhere}
+.bf-intro-footer .bf-footer-linkedin{display:inline-flex;align-items:center;justify-content:center;width:49px;height:49px;border:1px solid var(--bf-foot-line);border-radius:12px;background:var(--bf-foot-icon);color:var(--bf-foot-text);margin:0;transition:background-color .15s,color .15s,transform .15s}
+.bf-intro-footer .bf-footer-linkedin:hover{background:var(--bf-foot-text);color:var(--bf-foot-bg);transform:translateY(-2px)}
+.bf-intro-footer .bf-intro-footer-bottom{min-height:78px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding-block:24px;border-top:1px solid var(--bf-foot-line);font-size:12px;color:var(--bf-foot-sub)}
+.bf-intro-footer .bf-intro-footer-legal{display:flex;flex-wrap:wrap;align-items:center;gap:12px 26px}
+.bf-intro-footer .bf-intro-footer-legal a{font-size:12px;font-weight:700;line-height:1.5;margin:0;color:var(--bf-foot-text);text-decoration:none}
+.bf-intro-footer :is(.bf-intro-footer-legal,.bf-intro-footer-links) a:hover{text-decoration:underline;text-underline-offset:4px}
+.bf-intro-footer a:focus-visible{outline:2px solid currentColor;outline-offset:4px}
+@container bf-footer (max-width:1039px){.bf-intro-footer .bf-intro-footer-inner{grid-template-columns:repeat(2,minmax(0,1fr));gap:36px 24px}}
+@container bf-footer (max-width:599px){.bf-intro-footer .bf-intro-footer-inner,.bf-intro-footer .bf-intro-footer-bottom{padding-inline:20px}.bf-intro-footer .bf-intro-footer-inner{gap:30px 20px}.bf-intro-footer .bf-intro-footer-brand{grid-column:1/-1}.bf-intro-footer .bf-intro-footer-social{grid-column:1/-1}.bf-intro-footer .bf-intro-footer-bottom{flex-direction:column;align-items:flex-start;gap:14px}}
+@container bf-footer (max-width:379px){.bf-intro-footer .bf-intro-footer-inner{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){.bf-intro-footer .bf-footer-linkedin{transition:none}}

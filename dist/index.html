@@ -1975,7 +1975,18 @@ a:hover{color:var(--ink)}
     syncFeedCount();
     const initialMember=hydrateMember();
     const initialCatalog=refresh(true);
-    Promise.allSettled([initialMember,initialCatalog]).then(()=>window.SecretJStartup?.finish());
+    Promise.allSettled([initialMember,initialCatalog]).then(()=>{
+      window.SecretJStartup?.finish();
+      // Cross-product footer links may target a public editorial section.
+      // Only these fixed IDs are accepted; normal routes behave as before.
+      if(location.search){
+        const section=new URLSearchParams(location.search).get('section');
+        const targetPage=section==='products'||section==='about'?'home':section==='how'?'hunter':null;
+        if(targetPage&&state.page===targetPage)requestAnimationFrame(()=>{
+          if(state.page===targetPage)document.getElementById(section)?.scrollIntoView({block:'start',behavior:'instant'});
+        });
+      }
+    });
     // Public catalog and private source-watch results refresh independently.
     setInterval(()=>{
       // Never refresh, rerender or download data for a hidden tab.

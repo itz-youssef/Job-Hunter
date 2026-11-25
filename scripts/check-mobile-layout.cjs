@@ -98,6 +98,13 @@ for(const w of [320,375,390,430,600,768,900,1024,1280,1440,1920,2560,3840]){
    }else if(g.art.includes('-grey.svg')||g.extra.includes('botfolio-features-wireframe.svg')||(selector==='.bf-intro-close'&&!g.art.includes('jobhunter-abstract-dark.svg')))failures.push({botfolio_dark_section:selector,w,...g});
    if([375,1440,2560].includes(w))await section.screenshot({path:'botfolio-section-'+(selector.endsWith('alt')?'features':'closing')+'-'+theme+'-'+w+'.png',animations:'disabled'});
   }
+  const foot=await page.locator('.bf-intro-footer').evaluate(el=>{
+   const r=el.getBoundingClientRect(),main=document.querySelector('.bf-workspace').getBoundingClientRect(),grid=el.querySelector('.bf-intro-footer-inner');
+   const blocks=[...grid.children].map(n=>n.getBoundingClientRect()),links=[...el.querySelectorAll('a')].map(a=>({label:a.textContent.trim(),href:a.getAttribute('href')}));
+   return {width:r.width,left:r.left,right:r.right,mainLeft:main.left,mainRight:main.right,columns:getComputedStyle(grid).gridTemplateColumns.split(' ').length,background:getComputedStyle(el).backgroundColor,contained:blocks.every(b=>b.left>=r.left-1&&b.right<=r.right+1),links,legacyHidden:getComputedStyle(document.querySelector('.bf-footer')).display==='none',social:el.querySelector('.bf-footer-linkedin')?.getAttribute('aria-label')};
+  });
+  if(!foot.contained||Math.abs(foot.left-foot.mainLeft)>1||Math.abs(foot.right-foot.mainRight)>1||foot.columns!==(foot.width>=1040?4:foot.width>=380?2:1)||foot.background!==(theme==='dark'?'rgb(11, 11, 11)':'rgb(255, 255, 255)')||!foot.legacyHidden||foot.links.length!==10||!foot.social||!foot.links.some(x=>x.href==='/terms.html')||!foot.links.some(x=>x.href==='/privacy.html'))failures.push({botfolio_footer:w,theme,...foot});
+  if([375,1440].includes(w))await page.locator('.bf-intro-footer').screenshot({path:'botfolio-footer-'+theme+'-'+w+'.png',animations:'disabled'});
   for(const view of ['home','botfolio','create','guides']){
    await page.locator('.bf-sidebar nav [data-bf-view="'+view+'"]').click();
    await page.waitForFunction(v=>document.querySelector('.bf-sidebar nav [aria-current="page"]')?.dataset.bfView===v,view);
@@ -127,6 +134,14 @@ for(const w of [375,1440]){
  await page.locator('#bf-account-link').click();
  await page.waitForURL(u=>u.pathname==='/account.html'&&u.searchParams.get('view')==='overview',{waitUntil:'domcontentloaded'});
  if(!new URL(page.url()).searchParams.get('view') || new URL(page.url()).searchParams.get('view')!=='overview')failures.push({botfolio_navigation:'account',w,url:page.url()});
+}
+// Real footer deep links: verify the destination page and rendered target section.
+for(const [label,section,hash] of [['All Products','products','#home'],['About Us','about','#home'],['How Job Hunter Works','how','#hunter']]){
+ await page.goto('http://127.0.0.1:8765/botfolio.html#home');
+ await page.locator('.bf-intro-footer').getByRole('link',{name:label,exact:true}).click();
+ await page.waitForURL(u=>u.searchParams.get('section')===section&&u.hash===hash);
+ await page.locator('#'+section).waitFor({state:'visible'});
+ await page.waitForFunction(id=>{const r=document.getElementById(id)?.getBoundingClientRect();return r&&r.top<innerHeight&&r.bottom>0;},section,{timeout:15000});
 }
 // Member-only admin link, photo fallback, guest controls, safe signout.
 await page.setViewportSize({width:375,height:812});
