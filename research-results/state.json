@@ -4,34 +4,87 @@
   "family_rules": [],
   "usage": {
     "month": "2026-11",
-    "search": 14,
+    "search": 16,
     "day": "2026-11-25",
-    "model": 26,
-    "search_day": 14,
+    "model": 41,
+    "search_day": 16,
     "model_usage": {
       "gemini-4-hydrogen": {
         "day": "2026-11-25",
         "provider_day": "2026-11-25",
-        "day_count": 6,
-        "provider_count": 6,
-        "last_at": 1795617055877
+        "day_count": 7,
+        "provider_count": 7,
+        "last_at": 1795620194797
       },
       "nvidia/nemotron-3-ultra-550b-a55b:free": {
         "day": "2026-11-25",
         "provider_day": "2026-11-25",
-        "day_count": 6,
-        "provider_count": 6,
-        "last_at": 1795617059128
+        "day_count": 12,
+        "provider_count": 12,
+        "last_at": 1795620611568
       },
       "gemini-3.5-flash-lite": {
         "day": "2026-11-25",
         "provider_day": "2026-11-25",
-        "day_count": 4,
-        "provider_count": 4,
-        "last_at": 1795617047450
+        "day_count": 7,
+        "provider_count": 7,
+        "last_at": 1795620493115
+      },
+      "gemini-3.8-flash": {
+        "day": "2026-11-25",
+        "provider_day": "2026-11-25",
+        "day_count": 1,
+        "provider_count": 1,
+        "last_at": 1795620195120
+      },
+      "gemini-3.6-flash": {
+        "day": "2026-11-25",
+        "provider_day": "2026-11-25",
+        "day_count": 1,
+        "provider_count": 1,
+        "last_at": 1795620195754
+      },
+      "openai/gpt-oss-120b": {
+        "day": "2026-11-25",
+        "provider_day": "2026-11-25",
+        "day_count": 6,
+        "provider_count": 6,
+        "last_at": 1795620610871
       }
     },
-    "preprocess": 4
+    "preprocess": 7,
+    "legacy_model_requests": {
+      "day": "2026-11-25",
+      "provider_day": "2026-11-25",
+      "count": 14
+    },
+    "groq_token_reservations": [
+      {
+        "at": 1795620285757,
+        "tokens": 1207
+      },
+      {
+        "at": 1795620350805,
+        "tokens": 975
+      },
+      {
+        "at": 1795620415811,
+        "tokens": 1088
+      },
+      {
+        "at": 1795620480830,
+        "tokens": 1265
+      },
+      {
+        "at": 1795620545838,
+        "tokens": 833
+      },
+      {
+        "at": 1795620610871,
+        "tokens": 714
+      }
+    ],
+    "groq_provider_reset_at": "2026-11-25T15:38:49.965Z"
   },
   "cursor": 0,
   "last_attempt": "",
@@ -60,6 +113,15 @@
       "run_type": "benchmark",
       "status": "partial",
       "model_requests": 12,
+      "validated": 0,
+      "changed_family": 0,
+      "changed_level": 0
+    },
+    {
+      "day": "2026-11-25",
+      "run_type": "benchmark",
+      "status": "completed",
+      "model_requests": 15,
       "validated": 0,
       "changed_family": 0,
       "changed_level": 0

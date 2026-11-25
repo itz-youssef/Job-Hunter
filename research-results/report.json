@@ -1,22 +1,111 @@
 {
-  "status": "partial",
+  "status": "completed",
   "mode": "shadow",
   "run_type": "benchmark",
   "production_unchanged": true,
-  "updated_at": "2026-11-25T14:31:04.537Z",
+  "updated_at": "2026-11-25T15:30:12.492Z",
   "cairo_day": "2026-11-25",
   "preferred_model": "gemini-4-hydrogen",
-  "architecture": "three-model-v4",
+  "architecture": "emergency-quota-v9",
+  "google_slot": {
+    "identity": "gemini-4-hydrogen",
+    "ordered_models": [
+      "gemini-4-hydrogen",
+      "gemini-3.8-flash",
+      "gemini-3.6-flash",
+      "openai/gpt-oss-120b"
+    ],
+    "emergency_order": [
+      "openai/gpt-oss-120b",
+      "gemini-4-hydrogen",
+      "gemini-3.8-flash",
+      "gemini-3.6-flash"
+    ],
+    "attempts": [
+      {
+        "slot": "gemini-4-hydrogen",
+        "model": "gemini-4-hydrogen",
+        "stage": "benchmark-family",
+        "outcome": "failed",
+        "code": "provider-http-503",
+        "tier": "normal"
+      },
+      {
+        "slot": "gemini-4-hydrogen",
+        "model": "gemini-3.8-flash",
+        "stage": "benchmark-family",
+        "outcome": "failed",
+        "code": "provider-http-503",
+        "tier": "normal"
+      },
+      {
+        "slot": "gemini-4-hydrogen",
+        "model": "gemini-3.6-flash",
+        "stage": "benchmark-family",
+        "outcome": "failed",
+        "code": "request-timeout",
+        "tier": "normal"
+      },
+      {
+        "slot": "gemini-4-hydrogen",
+        "model": "openai/gpt-oss-120b",
+        "stage": "benchmark-family",
+        "outcome": "success",
+        "tier": "normal"
+      },
+      {
+        "slot": "gemini-4-hydrogen",
+        "model": "openai/gpt-oss-120b",
+        "stage": "benchmark-level",
+        "outcome": "success",
+        "tier": "normal"
+      },
+      {
+        "slot": "gemini-4-hydrogen",
+        "model": "openai/gpt-oss-120b",
+        "stage": "career",
+        "outcome": "success",
+        "tier": "normal"
+      },
+      {
+        "slot": "gemini-4-hydrogen",
+        "model": "openai/gpt-oss-120b",
+        "stage": "family",
+        "outcome": "success",
+        "tier": "normal"
+      },
+      {
+        "slot": "gemini-4-hydrogen",
+        "model": "openai/gpt-oss-120b",
+        "stage": "career",
+        "outcome": "success",
+        "tier": "normal"
+      },
+      {
+        "slot": "gemini-4-hydrogen",
+        "model": "openai/gpt-oss-120b",
+        "stage": "family",
+        "outcome": "success",
+        "tier": "normal"
+      }
+    ],
+    "unavailable_models": [
+      "gemini-4-hydrogen",
+      "gemini-3.8-flash",
+      "gemini-3.6-flash"
+    ],
+    "groq_configured": true
+  },
   "companies_targeted": 2,
   "task_stats": {
     "career": {
       "planned": 4,
-      "completed": 2,
+      "completed": 4,
       "skipped": 0
     },
     "family": {
       "planned": 4,
-      "completed": 2,
+      "completed": 4,
       "skipped": 0
     }
   },
@@ -24,27 +113,26 @@
     "model": "gemini-3.5-flash-lite",
     "planned": 4,
     "completed": 2,
-    "excerpts_used": 0,
-    "fallback": 4,
-    "requests": 4
+    "excerpts_used": 1,
+    "fallback": 3,
+    "requests": 3
   },
   "companies_total": 60,
   "companies_reviewed": 2,
   "companies_with_evidence": 2,
   "live_sources": 6,
   "job_documents": 8,
-  "proposals": 3,
-  "rejected": 3,
+  "proposals": 4,
+  "rejected": 4,
   "validated": 0,
-  "failed_batches": 4,
+  "failed_batches": 0,
   "models_used": [
+    "openai/gpt-oss-120b",
     "nvidia/nemotron-3-ultra-550b-a55b:free"
   ],
-  "model_requests": 12,
+  "model_requests": 15,
   "search_credits": 2,
-  "errors": [
-    "provider-http-503"
-  ],
+  "errors": [],
   "search_success": 2,
   "search_failures": 0,
   "rules": {
@@ -55,30 +143,150 @@
   },
   "usage": {
     "day": "2026-11-25",
-    "model_requests_today": 26,
-    "preprocessing_requests_today": 4,
+    "model_requests_today": 41,
+    "model_request_limit": 124,
+    "emergency_request_limit": 157,
+    "groq_next_token_release_at": "2026-11-26T15:24:45.757Z",
+    "preprocessing_requests_today": 7,
     "per_model": {
       "gemini-4-hydrogen": {
-        "used_today": 6,
-        "provider_day_used": 6,
-        "limit": 15,
-        "provider_day": "2026-11-25"
+        "used_today": 7,
+        "provider_day_used": 7,
+        "system_used": 7,
+        "limit": 18,
+        "provider_day": "2026-11-25",
+        "nightly_reserve": 10,
+        "legacy_debit": 0,
+        "remaining": 11,
+        "benchmark_remaining": 1,
+        "budget_block": null,
+        "system_limit_reached": false,
+        "emergency_limit": 19,
+        "emergency_remaining": 1,
+        "emergency_used": 0,
+        "provider_request_limit": 20,
+        "estimated_provider_headroom": 13,
+        "cairo_reset_at": "2026-11-25T22:00:00.000Z",
+        "provider_counter_reset_at": "2026-11-26T08:00:00.000Z",
+        "provider_reset_at": "2026-11-26T08:00:00.000Z",
+        "full_counter_reset_at": "2026-11-26T08:00:00.000Z"
+      },
+      "gemini-3.8-flash": {
+        "used_today": 1,
+        "provider_day_used": 1,
+        "system_used": 1,
+        "limit": 18,
+        "provider_day": "2026-11-25",
+        "nightly_reserve": 10,
+        "legacy_debit": 0,
+        "remaining": 17,
+        "benchmark_remaining": 7,
+        "budget_block": null,
+        "system_limit_reached": false,
+        "emergency_limit": 19,
+        "emergency_remaining": 1,
+        "emergency_used": 0,
+        "provider_request_limit": 20,
+        "estimated_provider_headroom": 19,
+        "cairo_reset_at": "2026-11-25T22:00:00.000Z",
+        "provider_counter_reset_at": "2026-11-26T08:00:00.000Z",
+        "provider_reset_at": "2026-11-26T08:00:00.000Z",
+        "full_counter_reset_at": "2026-11-26T08:00:00.000Z"
+      },
+      "gemini-3.6-flash": {
+        "used_today": 1,
+        "provider_day_used": 1,
+        "system_used": 1,
+        "limit": 18,
+        "provider_day": "2026-11-25",
+        "nightly_reserve": 10,
+        "legacy_debit": 0,
+        "remaining": 17,
+        "benchmark_remaining": 7,
+        "budget_block": null,
+        "system_limit_reached": false,
+        "emergency_limit": 19,
+        "emergency_remaining": 1,
+        "emergency_used": 0,
+        "provider_request_limit": 20,
+        "estimated_provider_headroom": 19,
+        "cairo_reset_at": "2026-11-25T22:00:00.000Z",
+        "provider_counter_reset_at": "2026-11-26T08:00:00.000Z",
+        "provider_reset_at": "2026-11-26T08:00:00.000Z",
+        "full_counter_reset_at": "2026-11-26T08:00:00.000Z"
       },
       "nvidia/nemotron-3-ultra-550b-a55b:free": {
+        "used_today": 12,
+        "provider_day_used": 12,
+        "system_used": 26,
+        "limit": 40,
+        "provider_day": "2026-11-25",
+        "nightly_reserve": 10,
+        "legacy_debit": 14,
+        "remaining": 14,
+        "benchmark_remaining": 4,
+        "budget_block": null,
+        "system_limit_reached": false,
+        "emergency_limit": null,
+        "emergency_remaining": 0,
+        "emergency_used": 0,
+        "provider_request_limit": 50,
+        "estimated_provider_headroom": 24,
+        "cairo_reset_at": "2026-11-25T22:00:00.000Z",
+        "provider_counter_reset_at": "2026-11-26T00:00:00.000Z",
+        "provider_reset_at": null,
+        "full_counter_reset_at": "2026-11-26T00:00:00.000Z"
+      },
+      "openai/gpt-oss-120b": {
         "used_today": 6,
         "provider_day_used": 6,
-        "limit": 15,
-        "provider_day": "2026-11-25"
+        "system_used": 6,
+        "limit": 30,
+        "provider_day": "2026-11-25",
+        "nightly_reserve": 10,
+        "legacy_debit": 0,
+        "remaining": 24,
+        "benchmark_remaining": 14,
+        "budget_block": null,
+        "system_limit_reached": false,
+        "emergency_limit": 60,
+        "emergency_remaining": 30,
+        "emergency_used": 0,
+        "provider_request_limit": 1000,
+        "estimated_provider_headroom": 994,
+        "cairo_reset_at": "2026-11-25T22:00:00.000Z",
+        "provider_counter_reset_at": "2026-11-26T00:00:00.000Z",
+        "provider_reset_at": "2026-11-25T15:38:49.965Z",
+        "full_counter_reset_at": "2026-11-26T00:00:00.000Z"
       },
       "gemini-3.5-flash-lite": {
-        "used_today": 4,
-        "provider_day_used": 4,
-        "limit": 100,
-        "provider_day": "2026-11-25"
+        "used_today": 7,
+        "provider_day_used": 7,
+        "system_used": 7,
+        "limit": 200,
+        "provider_day": "2026-11-25",
+        "nightly_reserve": 20,
+        "legacy_debit": 0,
+        "remaining": 193,
+        "benchmark_remaining": 173,
+        "budget_block": null,
+        "system_limit_reached": false,
+        "emergency_limit": null,
+        "emergency_remaining": 0,
+        "emergency_used": 0,
+        "provider_request_limit": 500,
+        "estimated_provider_headroom": 493,
+        "cairo_reset_at": "2026-11-25T22:00:00.000Z",
+        "provider_counter_reset_at": "2026-11-26T08:00:00.000Z",
+        "provider_reset_at": "2026-11-26T08:00:00.000Z",
+        "full_counter_reset_at": "2026-11-26T08:00:00.000Z"
       }
     },
-    "search_credits_today": 14,
-    "search_credits_month": 14
+    "groq_tokens_rolling_24h": 6082,
+    "groq_token_limit": 160000,
+    "groq_token_nightly_reserve": 60000,
+    "search_credits_today": 16,
+    "search_credits_month": 16
   },
   "comparison": {
     "catalog_jobs": 2331,
@@ -113,87 +321,47 @@
   },
   "model_diagnostics": [
     {
-      "model": "gemini-4-hydrogen",
-      "stage": "career",
-      "code": "provider-http-503",
-      "companies": [
-        "VOIS"
-      ],
-      "attempt": 1
-    },
-    {
-      "model": "gemini-3.5-flash-lite",
-      "stage": "evidence-extraction",
-      "code": "provider-http-503",
-      "companies": [
-        "VOIS"
-      ]
-    },
-    {
-      "model": "gemini-4-hydrogen",
-      "stage": "family",
-      "code": "provider-http-503",
-      "companies": [
-        "VOIS"
-      ],
-      "attempt": 1
-    },
-    {
       "model": "gemini-3.5-flash-lite",
       "stage": "evidence-extraction",
       "code": "provider-http-503",
       "companies": [
         "Deloitte"
       ]
-    },
-    {
-      "model": "gemini-4-hydrogen",
-      "stage": "career",
-      "code": "provider-http-503",
-      "companies": [
-        "Deloitte"
-      ],
-      "attempt": 1
-    },
-    {
-      "model": "gemini-4-hydrogen",
-      "stage": "family",
-      "code": "provider-http-503",
-      "companies": [
-        "Deloitte"
-      ],
-      "attempt": 1
     }
   ],
   "model_benchmark": [
     {
       "model": "gemini-4-hydrogen",
-      "errors": [
-        "provider-http-503"
+      "actual_models": [
+        "openai/gpt-oss-120b"
       ],
+      "errors": [],
       "expected_cases": 12,
-      "answered": 0,
-      "failed_batches": 2,
+      "answered": 12,
+      "failed_batches": 0,
       "metrics": {
-        "n": 0,
-        "tp": 0,
-        "fp": 0,
+        "n": 12,
+        "tp": 6,
+        "fp": 1,
         "fn": 0,
-        "tn": 0,
-        "precision": null,
-        "recall": null,
-        "accuracy": null
+        "tn": 5,
+        "precision": 0.8571428571428571,
+        "recall": 1,
+        "accuracy": 0.9166666666666666
       },
       "level_reference": {
         "basis": "Synthetic regression examples, not production accuracy",
         "expected_cases": 16,
-        "answered": 0,
-        "correct": 0,
-        "accuracy": null
+        "answered": 16,
+        "correct": 12,
+        "accuracy": 0.75
       }
     },
     {
       "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "actual_models": [
+        "nvidia/nemotron-3-ultra-550b-a55b:free"
+      ],
       "errors": [],
       "expected_cases": 12,
       "answered": 12,
