@@ -110,7 +110,9 @@ function durationMs(value){
 }
 function captureGroqReset(state,headers,now=new Date()){
  const ms=durationMs(headers.get('x-ratelimit-reset-requests'));
- if(ms!==null)state.usage.groq_provider_reset_at=new Date(now.getTime()+ms).toISOString();
+ if(ms!==null){state.usage.groq_provider_reset_at=new Date(now.getTime()+ms).toISOString();state.usage.groq_provider_reset_observed_at=now.toISOString();}
+ const tpm=durationMs(headers.get('x-ratelimit-reset-tokens'));
+ if(tpm!==null){state.usage.groq_provider_tpm_reset_at=new Date(now.getTime()+tpm).toISOString();state.usage.groq_provider_tpm_observed_at=now.toISOString();}
 }
 function modelLedger(state,model,now=new Date()){
  if(!Object.hasOwn(MODEL_LIMITS,model))throw problem('model-budget');
@@ -179,9 +181,9 @@ function usageView(state,now=new Date()){
  return Object.fromEntries(Object.keys(MODEL_LIMITS).map(model=>{
   const e=modelLedger(state,model,now),legacy=legacyDebit(state,model,now),limit=MODEL_LIMITS[model],used=Math.max(e.day_count+legacy.cairo,e.provider_count+legacy.provider);
   const providerCounterReset=model===NEMOTRON||model===GROQ||model===GLM?utcReset:pacificReset;
-  const requestReset=model===GROQ?(Date.parse(state.usage.groq_provider_reset_at)>now.getTime()?state.usage.groq_provider_reset_at:null):model===NEMOTRON?null:model===GLM?utcReset:pacificReset;
+  const requestReset=model===GROQ?(state.usage.groq_provider_reset_at||null):model===NEMOTRON||model===GLM?utcReset:pacificReset;
   const emergencyLimit=EMERGENCY_LIMITS[model]||null;
-  return [model,{used_today:e.day_count,provider_day_used:e.provider_count,system_used:used,limit,provider_day:e.provider_day,nightly_reserve:NIGHTLY_RESERVE[model],legacy_debit:Math.max(legacy.cairo,legacy.provider),remaining:Math.max(0,limit-used),benchmark_remaining:Math.max(0,limit-NIGHTLY_RESERVE[model]-used),budget_block:budgetBlockReason(state,model,now),system_limit_reached:used>=limit,emergency_limit:emergencyLimit,emergency_remaining:emergencyLimit?Math.max(0,emergencyLimit-Math.max(used,limit)):0,emergency_used:emergencyLimit?Math.max(0,used-limit):0,provider_request_limit:PROVIDER_REQUEST_LIMITS[model]??null,estimated_provider_headroom:PROVIDER_REQUEST_LIMITS[model]==null?null:Math.max(0,PROVIDER_REQUEST_LIMITS[model]-used),...(model===GLM?{estimated_neurons_reserved:e.provider_count*GLM_NEURONS_PER_CALL,neuron_system_limit:GLM_NEURON_BUDGET}: {}),cairo_reset_at:cairoReset,provider_counter_reset_at:providerCounterReset,provider_reset_at:requestReset,full_counter_reset_at:new Date(Math.max(Date.parse(cairoReset),Date.parse(providerCounterReset))).toISOString()}];
+  return [model,{used_today:e.day_count,provider_day_used:e.provider_count,system_used:used,limit,provider_day:e.provider_day,nightly_reserve:NIGHTLY_RESERVE[model],legacy_debit:Math.max(legacy.cairo,legacy.provider),remaining:Math.max(0,limit-used),benchmark_remaining:Math.max(0,limit-NIGHTLY_RESERVE[model]-used),budget_block:budgetBlockReason(state,model,now),system_limit_reached:used>=limit,emergency_limit:emergencyLimit,emergency_remaining:emergencyLimit?Math.max(0,emergencyLimit-Math.max(used,limit)):0,emergency_used:emergencyLimit?Math.max(0,used-limit):0,provider_request_limit:PROVIDER_REQUEST_LIMITS[model]??null,estimated_provider_headroom:PROVIDER_REQUEST_LIMITS[model]==null?null:Math.max(0,PROVIDER_REQUEST_LIMITS[model]-used),...(model===GLM?{estimated_neurons_reserved:e.provider_count*GLM_NEURONS_PER_CALL,neuron_system_limit:GLM_NEURON_BUDGET}: {}),cairo_reset_at:cairoReset,provider_counter_reset_at:providerCounterReset,provider_reset_at:requestReset,...(model===GROQ?{provider_reset_observed_at:state.usage.groq_provider_reset_observed_at||null,provider_tpm_reset_at:state.usage.groq_provider_tpm_reset_at||null,provider_tpm_observed_at:state.usage.groq_provider_tpm_observed_at||null}:{}),full_counter_reset_at:new Date(Math.max(Date.parse(cairoReset),Date.parse(providerCounterReset))).toISOString()}];
  }));
 }
 function diagnostic(e){
@@ -485,7 +487,7 @@ async function benchmark(state,keys,reference,health={}){
 }
 async function run(){
  const day=localDate(),mode=process.env.RESEARCH_MODE||'daily',scheduled=process.env.GITHUB_EVENT_NAME==='schedule';
- if(scheduled&&![0,1].includes(localHour())){console.log('Outside Cairo midnight window');return;}
+ if(scheduled&&![10,11].includes(localHour())){console.log('Outside Cairo morning research window');return;}
  const state=read(path.join(STATE,'state.json'),newState());migrateLegacyUsage(state);ledger(state,day);
  Object.defineProperty(state,'runMode',{value:mode,enumerable:false});
  if(mode==='daily'&&state.last_attempt===day){console.log('Daily attempt already recorded');return;}

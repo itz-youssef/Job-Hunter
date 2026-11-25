@@ -33,19 +33,41 @@ const providerResetTime=(value,format)=>{
  if(!value||!Number.isFinite(Date.parse(value)))return 'Not reported';
  return '<span class="sj-provider-reset-time">'+html(format(value))+'</span>'+(Date.parse(value)<=Date.now()?' · Last reported reset has passed':'');
 };
+// Provider calendar rules are independent of the last usage report.
+const nextProviderMidnight=(zone,now=Date.now())=>{
+ const fmt=new Intl.DateTimeFormat('en-CA',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit'});
+ const today=fmt.format(new Date(now));let lo=Math.floor(now/60000),hi=lo+27*60;
+ while(lo+1<hi){const mid=Math.floor((lo+hi)/2);if(fmt.format(new Date(mid*60000))===today)lo=mid;else hi=mid;}
+ return new Date(hi*60000).toISOString();
+};
+const providerSchedule=name=>name.startsWith('gemini-')?'America/Los_Angeles':name.startsWith('@cf/')||name.startsWith('nvidia/')?'UTC':null;
+const providerResetMarkup=(name,format)=>{
+ const zone=providerSchedule(name);
+ if(zone)return '<small>Provider daily reset ('+(zone==='UTC'?'UTC midnight':'Pacific midnight')+'): '+providerResetTime(nextProviderMidnight(zone),format)+'</small>';
+ if(name==='openai/gpt-oss-120b')return '<small data-groq-reset="rpd">Provider quota reset (RPD): Not reported</small><small data-groq-reset="tpm">Provider minute token reset (TPM): Not reported</small><small>Provider daily token reset (TPD): Not reported</small>';
+ return '<small>Provider quota reset: Not reported</small>';
+};
+const latestGroqReset=(research,botfolio,kind)=>{
+ const field=kind==='rpd'?'provider_reset_at':'provider_tpm_reset_at';
+ const observed=kind==='rpd'?'provider_reset_observed_at':'provider_tpm_observed_at';
+ const model=research?.usage?.per_model?.['openai/gpt-oss-120b'];
+ const fromResearch={reset_at:model?.[field],observed_at:model?.[observed]||research?.updated_at};
+ const fromBotfolio=botfolio?.generation?.provider_reset?.[kind];
+ return [fromResearch,fromBotfolio].filter(x=>x&&Number.isFinite(Date.parse(x.reset_at))&&Number.isFinite(Date.parse(x.observed_at))).sort((a,b)=>Date.parse(b.observed_at)-Date.parse(a.observed_at))[0]||null;
+};
 const modelBudgetCards=(u,r)=>{
- if(!u.per_model)return '<h4>Model usage</h4><p>Per-model usage will appear after a research run publishes its report.</p>';
+ // Render configured models even before the next research report.
  const names={'nvidia/nemotron-3-ultra-550b-a55b:free':'NVIDIA Nemotron 3 Ultra','@cf/zai-org/glm-4.7-flash':'GLM 4.7 Flash (Cloudflare)','gemini-4-hydrogen':'Gemini 4 Hydrogen','gemini-3.8-flash':'Gemini 3.8 Flash','gemini-3.6-flash':'Gemini 3.6 Flash','openai/gpt-oss-120b':'GPT-OSS-120B (Groq)','gemini-3.5-flash-lite':'Gemini 3.5 Flash Lite'};
  const order=Object.keys(names);
  const cairoTime=s=>s&&Number.isFinite(Date.parse(s))?new Intl.DateTimeFormat('en-GB',{timeZone:'Africa/Cairo',dateStyle:'medium',timeStyle:'short'}).format(new Date(s))+' Cairo':'—';
  const rows=order.map(name=>{
-  const m=u.per_model[name];
-  if(!m||!Number.isFinite(Number(m.limit))||Number(m.limit)<=0)return '<div class="sj-quota-card"><strong>'+html(names[name])+'</strong><p class="muted">Not in this report</p></div>';
+  const m=u.per_model?.[name];
+  if(!m||!Number.isFinite(Number(m.limit))||Number(m.limit)<=0)return '<div class="sj-quota-card"><strong>'+html(names[name])+'</strong><p class="muted">Not in this report</p>'+providerResetMarkup(name,cairoTime)+'</div>';
   const limit=Number(m.limit),used=Math.max(0,Number(m.system_used??(m.remaining!=null?limit-Number(m.remaining):Math.max(Number(m.used_today||0),Number(m.provider_day_used||0))+Number(m.legacy_debit||0)))||0);
   const ratio=Math.round(100*used/limit),fill=Math.min(100,ratio),full=used>=limit,hardReached=Number(m.emergency_limit)>0&&used>=Number(m.emergency_limit);
   const quotaTone=toneForRatio(100*used/limit),emergencyTone=hardReached?'danger':Number(m.emergency_used)>0?'emergency':'info';
   const status=hardReached?'Emergency hard limit reached':full?(m.emergency_used>0?'Emergency capacity in use':m.emergency_remaining>0?'Normal limit reached · emergency reserve':'System limit reached'):m.budget_block==='nightly-reserve'?'Nightly reserve protected':m.budget_block==='token-system-limit'||m.budget_block==='nightly-token-reserve'?'Token budget restricted':m.budget_block==='shared-system-limit'?'Shared limit reached':'Within system limit';
-  return '<div class="sj-quota-card '+toneClass(quotaTone)+'"><div class="sj-quota-title"><strong>'+html(names[name])+'</strong><span class="sj-semantic-text">'+html(ratio)+'%</span></div><div class="sj-quota-count"><span class="sj-semantic-text">'+html(used)+'</span> <small>/ '+html(limit)+' requests</small></div><div class="sj-quota-track" role="progressbar" aria-label="'+html(names[name]+' system usage')+'" aria-valuemin="0" aria-valuemax="'+html(limit)+'" aria-valuenow="'+html(Math.min(used,limit))+'" aria-valuetext="'+html(used+' of '+limit)+'"><i class="'+(full?'full':ratio>=80?'near':'')+'" style="width:'+fill+'%"></i></div><small class="sj-quota-status '+toneClass(hardReached?'danger':Number(m.emergency_used)>0?'emergency':m.budget_block==='nightly-reserve'?'info':m.budget_block?'warning':quotaTone)+'">'+html(status)+' · '+html(Math.max(0,limit-used))+' remaining</small><small>Cairo: '+html(m.used_today??'—')+' · Provider day: '+html(m.provider_day_used??'—')+(m.legacy_debit?' · Legacy debit: '+html(m.legacy_debit):'')+'</small>'+(m.benchmark_remaining!=null?'<small>Benchmark available: '+html(m.benchmark_remaining)+' · Nightly reserve: '+html(m.nightly_reserve)+'</small>':'')+(m.emergency_limit?'<small class="sj-semantic-text '+toneClass(emergencyTone)+'">Emergency: '+html(m.emergency_used)+' used · '+html(m.emergency_remaining)+' extra remaining · hard cap '+html(m.emergency_limit)+'</small><small>Estimated provider headroom: '+html(m.estimated_provider_headroom)+'</small>':'')+(m.neuron_system_limit?'<small>Estimated reserved neurons: '+html(m.estimated_neurons_reserved)+' / '+html(m.neuron_system_limit)+' · Not live Cloudflare usage</small>':'')+(m.cairo_reset_at?'<small>Cairo counter resets: '+html(cairoTime(m.cairo_reset_at))+'</small><small>Provider-day counter resets: '+html(cairoTime(m.provider_counter_reset_at))+'</small>'+(m.full_counter_reset_at?'<small>Both local counters reset: '+html(cairoTime(m.full_counter_reset_at))+'</small>':'')+'<small>Provider quota reset'+(name==='openai/gpt-oss-120b'?' (RPD)':'')+': '+providerResetTime(m.provider_reset_at,cairoTime)+'</small>':'')+'</div>';
+  return '<div class="sj-quota-card '+toneClass(quotaTone)+'"><div class="sj-quota-title"><strong>'+html(names[name])+'</strong><span class="sj-semantic-text">'+html(ratio)+'%</span></div><div class="sj-quota-count"><span class="sj-semantic-text">'+html(used)+'</span> <small>/ '+html(limit)+' requests</small></div><div class="sj-quota-track" role="progressbar" aria-label="'+html(names[name]+' system usage')+'" aria-valuemin="0" aria-valuemax="'+html(limit)+'" aria-valuenow="'+html(Math.min(used,limit))+'" aria-valuetext="'+html(used+' of '+limit)+'"><i class="'+(full?'full':ratio>=80?'near':'')+'" style="width:'+fill+'%"></i></div><small class="sj-quota-status '+toneClass(hardReached?'danger':Number(m.emergency_used)>0?'emergency':m.budget_block==='nightly-reserve'?'info':m.budget_block?'warning':quotaTone)+'">'+html(status)+' · '+html(Math.max(0,limit-used))+' remaining</small><small>Cairo: '+html(m.used_today??'—')+' · Provider day: '+html(m.provider_day_used??'—')+(m.legacy_debit?' · Legacy debit: '+html(m.legacy_debit):'')+'</small>'+(m.benchmark_remaining!=null?'<small>Benchmark available: '+html(m.benchmark_remaining)+' · Nightly reserve: '+html(m.nightly_reserve)+'</small>':'')+(m.emergency_limit?'<small class="sj-semantic-text '+toneClass(emergencyTone)+'">Emergency: '+html(m.emergency_used)+' used · '+html(m.emergency_remaining)+' extra remaining · hard cap '+html(m.emergency_limit)+'</small><small>Estimated provider headroom: '+html(m.estimated_provider_headroom)+'</small>':'')+(m.neuron_system_limit?'<small>Estimated reserved neurons: '+html(m.estimated_neurons_reserved)+' / '+html(m.neuron_system_limit)+' · Not live Cloudflare usage</small>':'')+(m.cairo_reset_at?'<small>Cairo counter resets: '+html(cairoTime(m.cairo_reset_at))+'</small><small>Provider-day counter resets: '+html(cairoTime(m.provider_counter_reset_at))+'</small>'+(m.full_counter_reset_at?'<small>Both local counters reset: '+html(cairoTime(m.full_counter_reset_at))+'</small>':''):'')+providerResetMarkup(name,cairoTime)+'</div>';
  }).join('');
  return '<h4>Daily model budgets — system limits</h4><p class="muted">Last published snapshot: '+html(day(r.updated_at))+' · Cairo day '+html(u.day||r.cairo_day||'—')+'. Includes failed API attempts; local quota skips do not consume requests. Not live provider telemetry.</p><div class="sj-quota-grid">'+rows+'</div>';
 };
@@ -83,16 +105,16 @@ const botfolioUsage=u=>{
  return '<p>'+configured(g.configured)+' '+badge('No fallback configured',false)+' · Last refreshed '+html(botfolioCairoTime(u.checked_at))+'</p>'+
   '<div class="sj-quota-grid">'+
   metric('GPT-OSS 120B · Groq',g.requests_24h,g.global_request_limit,g.remaining_requests,'requests')+
-  '<small data-bf-provider-reset>Provider quota reset (RPD): Not reported</small><small>Rolling 24 hours · Botfolio system allocation</small><small>Model: '+html(g.model)+'</small><small>Total accounted tokens: '+number(g.tokens_24h)+'</small><small>Provider-reported tokens: '+number(g.reported_tokens_24h)+' from '+number(g.reported_requests)+' requests</small><small>Unverified / reserved tokens: '+number(g.unverified_tokens_24h)+'</small>'+botfolioResetLine('Next request released',g.next_release_at,u.checked_at,'No pending reservations')+botfolioResetLine('All current requests released (if no new calls)',g.full_release_at,u.checked_at,'Already clear')+'<small>Last recorded result: '+colored(outcomes[g.last_outcome]||'No recorded result',g.last_outcome==='success'?'success':g.last_outcome==='rate_limited'?'warning':g.last_outcome==='provider_error'||g.last_outcome==='invalid_response'?'danger':'neutral')+' · '+html(botfolioCairoTime(g.last_request_at))+'</small></div>'+
+  '<small data-bf-provider-reset data-groq-reset="rpd">Provider quota reset (RPD): Not reported</small><small>Rolling 24 hours · Botfolio system allocation</small><small>Model: '+html(g.model)+'</small><small>Total accounted tokens: '+number(g.tokens_24h)+'</small><small>Provider-reported tokens: '+number(g.reported_tokens_24h)+' from '+number(g.reported_requests)+' requests</small><small>Unverified / reserved tokens: '+number(g.unverified_tokens_24h)+'</small>'+botfolioResetLine('Next request released',g.next_release_at,u.checked_at,'No pending reservations')+botfolioResetLine('All current requests released (if no new calls)',g.full_release_at,u.checked_at,'Already clear')+'<small>Last recorded result: '+colored(outcomes[g.last_outcome]||'No recorded result',g.last_outcome==='success'?'success':g.last_outcome==='rate_limited'?'warning':g.last_outcome==='provider_error'||g.last_outcome==='invalid_response'?'danger':'neutral')+' · '+html(botfolioCairoTime(g.last_request_at))+'</small></div>'+
   metric('GPT-OSS 120B · Token budget',g.tokens_24h,g.system_token_limit,g.remaining_tokens,'tokens')+
-  '<small>Provider daily token reset (TPD): Not reported</small><small>Rolling 24 hours · Includes conservative in-flight reservations.</small>'+botfolioResetLine('Next token release',g.next_release_at,u.checked_at,'No pending reservations')+botfolioResetLine('All current tokens released (if no new calls)',g.full_release_at,u.checked_at,'Already clear')+'</div>'+
+  '<small data-groq-reset="tpm">Provider minute token reset (TPM): Not reported</small><small>Provider daily token reset (TPD): Not reported</small><small>Rolling 24 hours · Includes conservative in-flight reservations.</small>'+botfolioResetLine('Next token release',g.next_release_at,u.checked_at,'No pending reservations')+botfolioResetLine('All current tokens released (if no new calls)',g.full_release_at,u.checked_at,'Already clear')+'</div>'+
   metric('BGE-M3 · Cloudflare',e.estimated_neurons_today,e.system_neuron_limit,e.remaining_neurons,'estimated neurons')+
-  '<small>'+configured(e.configured)+'</small><small>Model: '+html(e.model)+'</small><small>Provider daily reset (UTC schedule): '+providerResetTime(e.reset_at,botfolioCairoTime)+'</small><small>Daily UTC accounting · Midnight UTC</small>'+botfolioResetLine('Next daily reset',e.reset_at,u.checked_at)+'</div></div>'+
+  '<small>'+configured(e.configured)+'</small><small>Model: '+html(e.model)+'</small><small>Provider daily reset (UTC schedule): '+providerResetTime(nextProviderMidnight('UTC'),botfolioCairoTime)+'</small><small>Daily UTC accounting · Midnight UTC</small>'+botfolioResetLine('Next daily reset',e.reset_at,u.checked_at)+'</div></div>'+
   '<h4>Generation requests · rolling 24 hours</h4><div class="sj-admin-kpis">'+
   kpi('Groq attempts',g.requests_24h)+kpi('Successful answers',g.successful)+kpi('Failed attempts',g.failed)+kpi('Pending / unclassified',Number(g.pending)+Number(g.unknown))+'</div>'+
   '<h4>Daily Botfolio limits · UTC</h4>'+botfolioResetLine('Next daily reset',e.reset_at,u.checked_at)+'<div class="sj-admin-kpis">'+
   kpi('Accepted chat attempts',d.chat_attempts)+kpi('Indexing attempts',d.indexing_attempts)+kpi('Chats / bot / day',d.per_bot)+kpi('Chats / IP / day',d.per_ip)+kpi('Indexing / owner / day',d.per_owner_indexing)+'</div>'+
-  '<p class="muted">Botfolio system limits: 900 Groq attempts and 35,000 accounted tokens per rolling 24 hours. Both limits apply; whichever is reached first stops new Groq calls. Each reservation expires after 24 hours, not at midnight. Groq request reset is the last reported provider time shared with Job Hunter, not a live probe; provider limits may stop generation sooner. Groq quota is shared with Job Hunter and other account traffic. Counts are Botfolio ledger reservations, including failed attempts, not account-wide provider telemetry. Cache hits do not call Groq. Configuration and last observed outcome are not an active health probe.</p>';
+  '<p class="muted">Botfolio system limits: 900 Groq attempts and 35,000 accounted tokens per rolling 24 hours. Both limits apply; whichever is reached first stops new Groq calls. Each reservation expires after 24 hours, not at midnight. Groq reset times use the newest recorded provider response from either product, not a live probe; TPM is not TPD; provider limits may stop generation sooner. Groq quota is shared with Job Hunter and other account traffic. Counts are Botfolio ledger reservations, including failed attempts, not account-wide provider telemetry. Cache hits do not call Groq. Configuration and last observed outcome are not an active health probe.</p>';
 };
 async function render(root,api,state){
  if(state.user?.role!=='admin'){root.textContent='Administrator access required';return;}
@@ -120,10 +142,18 @@ async function render(root,api,state){
  (!overview.activity?.length?'<p class="muted">No administrative actions yet.</p>':'')+'</section>'+
  '<div class="notice">Security: actions are checked on the server against your active administrator session. This console does not expose passwords, session tokens, or private CV file contents.</div>';
  const researchReport=api(url+'research-shadow');
+ let researchSnapshot=null,botfolioSnapshot=null;
+ function syncGroqReset(){
+  for(const node of root.querySelectorAll('[data-groq-reset]')){
+   const kind=node.dataset.groqReset,latest=latestGroqReset(researchSnapshot,botfolioSnapshot,kind);
+   const label=kind==='rpd'?'Provider quota reset (RPD)':'Provider minute token reset (TPM)';
+   node.innerHTML=label+': '+providerResetTime(latest?.reset_at,botfolioCairoTime);
+  }
+ }
  const usageEl=root.querySelector('#sj-admin-botfolio-usage'),usageButton=root.querySelector('[data-bf-usage-refresh]');
  async function loadBotfolioUsage(){
   usageButton.disabled=true;
-  try{const result=await api(url+'botfolio-usage');if(usageEl.isConnected){usageEl.innerHTML=botfolioUsage(result.usage||{});const resetEl=usageEl.querySelector('[data-bf-provider-reset]');researchReport.then(({report})=>{if(resetEl?.isConnected)resetEl.innerHTML='Provider quota reset (RPD): '+providerResetTime(report?.usage?.per_model?.['openai/gpt-oss-120b']?.provider_reset_at,botfolioCairoTime);}).catch(()=>{});}}
+  try{const result=await api(url+'botfolio-usage');if(usageEl.isConnected){botfolioSnapshot=result.usage||{};usageEl.innerHTML=botfolioUsage(botfolioSnapshot);syncGroqReset();}}
   catch{if(usageEl.isConnected)usageEl.textContent='Botfolio usage unavailable. Refresh to try again.';}
   finally{usageButton.disabled=false;}
  }
@@ -132,7 +162,8 @@ async function render(root,api,state){
  researchReport.then(result=>{
   const el=root.querySelector('#sj-admin-research');if(!el)return;
   const r=result.report;
-  if(!r){el.textContent='Shadow mode · No research report yet. Configure the research Actions secrets and run the benchmark.';return;}
+  researchSnapshot=r||null;
+  if(!r){el.innerHTML='<p>Shadow mode · No research report yet.</p>'+modelBudgetCards({},{});syncGroqReset();return;}
   const c=r.comparison||{},m=c.benchmark||{},u=r.usage||{},rules=r.rules||{};
   const percent=n=>typeof n==='number'?(n*100).toFixed(1)+'%':'—';
   el.innerHTML='<p>'+badge('Shadow only',false)+' '+badge('Production unchanged',true)+' · '+badge(r.status||'Unknown',false,r.status==='completed'?'success':r.status==='partial'?'warning':r.status==='failed'?'danger':'neutral')+' · '+html(day(r.updated_at))+'</p>'+modeSummary(u,r)+
@@ -151,7 +182,8 @@ async function render(root,api,state){
    (Array.isArray(r.model_benchmark)?'<h4>Model benchmark — existing reference</h4>'+r.model_benchmark.map(x=>'<div class="sj-admin-activity sj-research-benchmark sj-tone-info"><strong class="sj-semantic-text '+toneClass(modelTone(x.actual_models?.[0]||x.model))+'">'+html(x.model==='gemini-4-hydrogen'?'Independent research slot':x.model)+'</strong><small>'+ (Array.isArray(x.actual_models)?'Actual: '+html(x.actual_models.join(', ')||'None')+' · ':'')+'Answered '+html(x.answered)+' / '+html(x.expected_cases)+' · Precision '+colored(percent(x.metrics?.precision),scoreTone(x.metrics?.precision))+' · Recall '+colored(percent(x.metrics?.recall),scoreTone(x.metrics?.recall))+' · Level accuracy '+colored(percent(x.level_reference?.accuracy),scoreTone(x.level_reference?.accuracy))+' ('+html(x.level_reference?.answered??0)+' / '+html(x.level_reference?.expected_cases??0)+')</small></div>').join(''):'')+
    '<p>'+html(r.note||'No research model has access to email dispatch.')+'</p>'+
    (Array.isArray(c.changes)&&c.changes.length?'<h4>Sample differences — review required</h4>'+c.changes.slice(0,20).map(j=>'<div class="sj-admin-activity"><strong>'+html(j.company)+' · '+html(j.title)+'</strong><small>'+html((j.before?.families||[]).join(', '))+' / '+html(j.before?.level||'unknown')+' → '+html((j.after?.families||[]).join(', '))+' / '+html(j.after?.level||'unknown')+'</small></div>').join(''):'');
- }).catch(()=>{const el=root.querySelector('#sj-admin-research');if(el)el.textContent='Research report unavailable. Production unaffected.';});
+  syncGroqReset();
+ }).catch(()=>{const el=root.querySelector('#sj-admin-research');if(el){el.innerHTML='<p>Research report unavailable. Production unaffected.</p>'+modelBudgetCards({},{});syncGroqReset();}});
  const reviewEl=root.querySelector('#sj-admin-dictionary-review');
  const evidence=r=>{
   const quote=r.evidence?.quote,link=r.evidence?.url;

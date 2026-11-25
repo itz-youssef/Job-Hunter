@@ -327,7 +327,9 @@ test('reset timestamps are timezone aware and Groq provider reset is based on re
  const u=A.usageView(s,now);
  assert.equal(u[A.HYDROGEN].provider_reset_at,'2026-11-26T08:00:00.000Z');
  assert.equal(u[A.GROQ].provider_reset_at,'2026-11-25T15:02:59.560Z');
- assert.equal(u[A.NEMOTRON].provider_reset_at,null);
+ assert.equal(u[A.NEMOTRON].provider_reset_at,'2026-11-26T00:00:00.000Z');
+ assert.equal(u[A.GROQ].provider_tpm_reset_at,'2026-11-25T15:02:59.560Z');
+ assert.equal(u[A.GROQ].provider_reset_observed_at,now.toISOString());
 });
 
 test('detailed rejection reason uses same validation gate and does not change acceptance',()=>{
@@ -397,4 +399,10 @@ test('GLM can take over after Nemotron normal limit, and preserves its own night
  assert.equal(A.slotAvailable(s,A.NEMOTRON,h,now),false);
  assert.equal(A.usageView(s,now)[A.GLM].estimated_neurons_reserved,4000);
  assert.equal(A.providerDay(A.GLM,new Date('2026-11-25T23:59:00Z')),'2026-11-25');
+});
+
+test('daily research uses one Cairo-time morning schedule and preserves manual mode',()=>{
+ const fs=require('node:fs'),workflow=fs.readFileSync('.github/workflows/adaptive-dictionary-research.yml','utf8'),source=fs.readFileSync('research/research-agent.cjs','utf8');
+ assert.match(workflow,/cron: '15 10 \* \* \*'/);assert.match(workflow,/timezone: 'Africa\/Cairo'/);assert.doesNotMatch(workflow,/0 21,22/);assert.match(source,/scheduled&&!\[10,11\]/);assert.match(source,/state\.last_attempt===day/);
+ assert.equal(A.localHour(new Date('2026-11-26T08:15:00Z')),10);assert.equal(A.localHour(new Date('2026-07-26T07:15:00Z')),10);
 });
