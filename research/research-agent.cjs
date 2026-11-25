@@ -177,8 +177,11 @@ async function inferActual(model,system,payload,state,keys,options={}){
  const entry=modelLedger(state,model),wait=Math.max(0,MODEL_INTERVALS[model]-(Date.now()-entry.last_at));
  if(wait)await sleep(wait);
  if(!canCall(state,model))throw problem('model-budget');
- const tokenReservation=model===GROQ?reserveGroqTokens(state,groqTokenEstimate(system,payload,options.maxTokens||4096)):null;
- recordCall(state,model);write('state.json',state);
+ const estimate=model===GROQ?groqTokenEstimate(system,payload,options.maxTokens||4096):0;
+ if(model===GROQ&&groqTokensUsed(state)+estimate>groqTokenLimit(state))throw problem('model-budget');
+ recordCall(state,model);
+ const tokenReservation=model===GROQ?reserveGroqTokens(state,estimate):null;
+ write('state.json',state);
  if(google){
   const data=await request('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent',key,{
    systemInstruction:{parts:[{text:system}]},contents:[{role:'user',parts:[{text:JSON.stringify(payload)}]}],
