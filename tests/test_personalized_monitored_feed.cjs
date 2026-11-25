@@ -90,7 +90,7 @@ test('personal monitoring subscribers do not require alert opt-in; only email di
  const source=fs.readFileSync('lib/secretj/native-preference-monitor.js','utf8');
  assert.match(source,/LEFT JOIN public\.sj_email_verifications/);
  assert.match(source,/email_eligible/);
- assert.match(source,/if\(mailReady&&user\.email_eligible===true&&prefs\.hasFilters\(user\)\)/);
+ assert.match(source,/users\.filter\(u=>u\.email_eligible===true&&prefs\.hasFilters\(u\)\)/);
  assert.doesNotMatch(source,/WHERE u\.is_active=true AND p\.email_alerts=true/);
 });
 test('clear preferences still populate a complete monitoring feed, without mass emailing',()=>{
@@ -105,7 +105,11 @@ test('clear preferences still populate a complete monitoring feed, without mass 
 test('matching feed generation is not blocked by missing Resend credentials',()=>{
  const source=fs.readFileSync('lib/secretj/native-preference-monitor.js','utf8');
  assert.match(source,/const mailReady=/);
- assert.match(source,/if\(mailReady&&user\.email_eligible===true/);
+ const queue=source.slice(source.indexOf('async function deliverQueued('),source.indexOf('async function deliver(env'));
+ assert.match(queue,/if\(!mailReady\)return/);
+ const discovery=source.slice(source.indexOf('async function deliver(env'));
+ assert.match(discovery,/await gather\(env,fetchImpl\)/);
+ assert.doesNotMatch(discovery,/if\(!mailReady\)return/);
  assert.doesNotMatch(source,/if\(!mailEnv\.RESEND_API_KEY\|\|!mailEnv\.SECRETJ_EMAIL_FROM\)return/);
 });
 

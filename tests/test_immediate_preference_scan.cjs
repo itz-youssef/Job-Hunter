@@ -93,7 +93,7 @@ test('account save workflow triggers immediate source scan only after a successf
  assert.match(monitor,/async function scanOneUser\(/);
  assert.match(monitor,/await qualifyJobs\(selected,latest\[0\],env,fetchImpl\)/);
  assert.match(monitor,/await reserveNew\(latest\[0\],signature\(latest\[0\]\),verified\.accepted\)/);
- assert.doesNotMatch(monitor.slice(monitor.indexOf('async function scanOneUser('),monitor.indexOf('async function deliver(')),/flush\(/);
+ assert.doesNotMatch(monitor.slice(monitor.indexOf('async function scanOneUser('),monitor.indexOf('function mailConfiguration(')),/flush\(|deliverQueued\(/);
 });
 
 test('immediate source scan uses concurrent employer queries to minimize Worker waitUntil time',()=>{

@@ -280,7 +280,7 @@ test('company catalog loads independently of slower status requests and shows sk
  assert.doesNotMatch(ready,/sj-land-company-skeleton/);
  assert.match(main,/publicCatalogLoading:true/);
  assert.match(main,/const catalogRequest=requests\[0\]\.then/);
- assert.match(main,/if\(state\.page==='home'\)render\(\)/);
+ assert.match(main,/if\(state\.page==='home'\|\|state\.page==='hunter'\)render\(\)/);
  assert.match(main,/Promise\.allSettled\(\[catalogRequest,\.\.\.requests\.slice\(1\)\]\)/);
  assert.match(style,/sj-land-company-skeleton/);
  assert.match(style,/prefers-reduced-motion:reduce/);
