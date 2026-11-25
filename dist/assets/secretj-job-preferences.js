@@ -193,5 +193,9 @@
  function isMatch(job,p){return assess(job,p).match;}
  function explain(job,p){return assess(job,p);}
 
- return {categories:categories.map(([key,label])=>({key,label})),careerLevels:careerLevel?.levels||[],classify,hasFilters,isMatch,yearsRequired,explain,assess};
+ function exportDictionary(){
+  const pattern=re=>re?{pattern:re.source,flags:re.flags}:null;
+  return {categories:categories.map(([key,label,re])=>({key,label,title_pattern:pattern(re)})),title_aliases:titleAliases.map(([family,re])=>({family,...pattern(re)})),software_parent_families:['backend','frontend','fullstack','mobile','web'],software_title_pattern:pattern(/\bsoftware\s+(?:engineering|development|intern|internship|trainee|graduate|associate)\b/i),fallback:'other',matching_basis:'title only'};
+ }
+ return {exportDictionary,categories:categories.map(([key,label])=>({key,label})),careerLevels:careerLevel?.levels||[],classify,hasFilters,isMatch,yearsRequired,explain,assess};
 });
