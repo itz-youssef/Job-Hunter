@@ -68,6 +68,8 @@ for(const w of [320,375,390,430,600,768,900,1024,1280,1440,1920,2560,3840]){
   const asset=await page.request.get('http://127.0.0.1:8765/assets/'+expectedArtwork);
   if(!asset.ok())failures.push({botfolio_hero_asset:w,theme,status:asset.status()});
   if(theme==='light'){
+   const colors=await page.locator('.bf-intro-hero').evaluate(el=>({resume:getComputedStyle(el.querySelector('h1 em')).color,send:getComputedStyle(el.querySelector('.bf-preview-prompt span')).backgroundColor}));
+   if(colors.resume!=='rgb(89, 64, 71)'||colors.send!==colors.resume)failures.push({botfolio_accent:w,...colors});
    const geometry=await page.locator('.bf-intro-hero').evaluate(el=>{
     const box=e=>{const r=e.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height};};
     const hero=box(el),main=box(document.querySelector('.bf-workspace')),copy=box(el.querySelector('.bf-intro-copy')),preview=box(el.querySelector('.bf-intro-preview'));

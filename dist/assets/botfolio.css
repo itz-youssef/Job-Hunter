@@ -38,7 +38,7 @@ html:not([data-theme=dark]) .bf-intro-hero .bf-intro-inner{position:relative;z-i
 html:not([data-theme=dark]) .bf-intro-hero .eyebrow{display:flex;align-items:center;gap:14px;color:#5c5557;letter-spacing:.16em}
 html:not([data-theme=dark]) .bf-intro-hero .eyebrow::after{content:"";width:48px;height:1px;background:#92526a;flex:none}
 html:not([data-theme=dark]) .bf-intro-hero h1{font-size:clamp(42px,7.6cqw,76px);letter-spacing:-.065em;line-height:1.02;margin:24px 0}
-html:not([data-theme=dark]) .bf-intro-hero h1 em{color:#79364d}
+html:not([data-theme=dark]) .bf-intro-hero h1 em{color:#594047}
 html:not([data-theme=dark]) .bf-intro-hero .bf-intro-lead{color:#666165;font-size:clamp(16px,1.18cqw,21px);line-height:1.5;margin-bottom:26px;max-width:650px}
 html:not([data-theme=dark]) .bf-intro-hero .actions{gap:12px}
 html:not([data-theme=dark]) .bf-intro-hero .primary{background:#151515;border-color:#151515;color:#fff}
@@ -55,7 +55,7 @@ html:not([data-theme=dark]) .bf-intro-hero .bf-preview-question{background:#eee9
 html:not([data-theme=dark]) .bf-intro-hero .bf-preview-reply{background:#f5f2f1;max-width:85%}
 html:not([data-theme=dark]) .bf-intro-hero .bf-preview-role{color:#79364d;font-size:clamp(10px,.74cqw,13px);letter-spacing:.035em}
 html:not([data-theme=dark]) .bf-intro-hero .bf-preview-prompt{padding:0 0 0 13px;min-height:44px;border-color:#e4dcdd}
-html:not([data-theme=dark]) .bf-intro-hero .bf-preview-prompt span{font-size:0;flex:none;width:44px;height:44px;border-radius:10px;background:#803a51 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m22 2-7 20-4-9-9-4 20-7ZM22 2 11 13'/%3E%3C/svg%3E") center/19px no-repeat}
+html:not([data-theme=dark]) .bf-intro-hero .bf-preview-prompt span{font-size:0;flex:none;width:44px;height:44px;border-radius:10px;background:#594047 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m22 2-7 20-4-9-9-4 20-7ZM22 2 11 13'/%3E%3C/svg%3E") center/19px no-repeat}
 @container bf-intro (min-width:960px){
  html:not([data-theme=dark]) .bf-intro-hero{padding-block:clamp(100px,7cqw,130px) clamp(92px,6cqw,112px)}
  html:not([data-theme=dark]) .bf-intro-hero::before{background-image:url("/assets/botfolio-hero-icons.svg"),url("/assets/botfolio-hero-burgundy.svg");background-size:clamp(450px,56cqw,1050px) auto,100% 100%;background-position:right clamp(12px,3cqw,56px) top 6px,center}
