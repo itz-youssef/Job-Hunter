@@ -38,7 +38,7 @@ test('CV parser extracts explicit contact details and preserves section boundari
  assert.match(parsed.education,/Computer Science/);
 });
 const profileHandler=require('../api/profile.js');
-const emailHandler=require('../api/test-email.js');
+const emailHandler=require('../lib/legacy-email/test-email.js');
 function response(){
  return {headers:{},setHeader(k,v){this.headers[k]=v},end(text){this.value=JSON.parse(text)}};
 }
