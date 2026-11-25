@@ -10,6 +10,20 @@ const bars=(rows,key,label)=>rows.length?rows.map(item=>{
  const value=Number(item[key]||0);
  return '<div class="sj-admin-bar"><span>'+html(item[label])+'</span><div><i style="width:'+Math.max(2,value/max*100)+'%"></i></div><b>'+number(value)+'</b></div>';
 }).join(''):'<p class="muted">No activity yet.</p>';
+const modelBudgetCards=(u,r)=>{
+ if(!u.per_model)return '<h4>Model usage</h4><p>Per-model usage will appear after a research run publishes its report.</p>';
+ const names={'nvidia/nemotron-3-ultra-550b-a55b:free':'NVIDIA Nemotron 3 Ultra','gemini-4-hydrogen':'Gemini 4 Hydrogen','gemini-3.8-flash':'Gemini 3.8 Flash','gemini-3.6-flash':'Gemini 3.6 Flash','openai/gpt-oss-120b':'GPT-OSS-120B (Groq)','gemini-3.5-flash-lite':'Gemini 3.5 Flash Lite'};
+ const order=Object.keys(names);
+ const rows=order.map(name=>{
+  const m=u.per_model[name];
+  if(!m||!Number.isFinite(Number(m.limit))||Number(m.limit)<=0)return '<div class="sj-quota-card"><strong>'+html(names[name])+'</strong><p class="muted">Not in this report</p></div>';
+  const limit=Number(m.limit),used=Math.max(0,Number(m.system_used??(m.remaining!=null?limit-Number(m.remaining):Math.max(Number(m.used_today||0),Number(m.provider_day_used||0))+Number(m.legacy_debit||0)))||0);
+  const ratio=Math.round(100*used/limit),fill=Math.min(100,ratio),full=used>=limit;
+  const status=full?'System limit reached':m.budget_block==='nightly-reserve'?'Nightly reserve protected':m.budget_block==='token-system-limit'||m.budget_block==='nightly-token-reserve'?'Token budget restricted':m.budget_block==='shared-system-limit'?'Shared limit reached':'Within system limit';
+  return '<div class="sj-quota-card"><div class="sj-quota-title"><strong>'+html(names[name])+'</strong><span>'+html(ratio)+'%</span></div><div class="sj-quota-count">'+html(used)+' <small>/ '+html(limit)+' requests</small></div><div class="sj-quota-track" role="progressbar" aria-label="'+html(names[name]+' system usage')+'" aria-valuemin="0" aria-valuemax="'+html(limit)+'" aria-valuenow="'+html(Math.min(used,limit))+'" aria-valuetext="'+html(used+' of '+limit)+'"><i class="'+(full?'full':ratio>=80?'near':'')+'" style="width:'+fill+'%"></i></div><small class="sj-quota-status">'+html(status)+' · '+html(Math.max(0,limit-used))+' remaining</small><small>Cairo: '+html(m.used_today??'—')+' · Provider day: '+html(m.provider_day_used??'—')+(m.legacy_debit?' · Legacy debit: '+html(m.legacy_debit):'')+'</small>'+(m.benchmark_remaining!=null?'<small>Benchmark available: '+html(m.benchmark_remaining)+' · Nightly reserve: '+html(m.nightly_reserve)+'</small>':'')+'</div>';
+ }).join('');
+ return '<h4>Daily model budgets — system limits</h4><p class="muted">Last published snapshot: '+html(day(r.updated_at))+' · Cairo day '+html(u.day||r.cairo_day||'—')+'. Includes failed API attempts; local quota skips do not consume requests. Not live provider telemetry.</p><div class="sj-quota-grid">'+rows+'</div>';
+};
 async function render(root,api,state){
  if(state.user?.role!=='admin'){root.textContent='Administrator access required';return;}
  const url='/api/secretj-admin?action=';
@@ -37,7 +51,7 @@ async function render(root,api,state){
  api(url+'research-shadow').then(result=>{
   const el=root.querySelector('#sj-admin-research');if(!el)return;
   const r=result.report;
-  if(!r){el.textContent='Shadow mode · No research report yet. Add the two GitHub Actions secrets and run the benchmark.';return;}
+  if(!r){el.textContent='Shadow mode · No research report yet. Configure the research Actions secrets and run the benchmark.';return;}
   const c=r.comparison||{},m=c.benchmark||{},u=r.usage||{},rules=r.rules||{};
   const percent=n=>typeof n==='number'?(n*100).toFixed(1)+'%':'—';
   el.innerHTML='<p>'+badge('Shadow only',false)+' '+badge('Production unchanged',true)+' · '+html(r.status)+' · '+html(day(r.updated_at))+'</p>'+
@@ -46,11 +60,11 @@ async function render(root,api,state){
     ['Companies reviewed',r.companies_reviewed],['Companies with evidence',r.companies_with_evidence],['Live source pages',r.live_sources],['Job documents',r.job_documents],['Validated proposals',r.validated],['Career candidates',rules.career],['Family candidates',rules.family],['Cross-checked rules',rules.cross_checked],['Rejected proposals',r.rejected],['Changed career levels',c.changed_level],['Changed job families',c.changed_family],['Model calls today',u.model_request_limit?`${u.model_requests_today} / ${u.model_request_limit}`:u.model_requests_today],['Search credits this month',u.search_credits_month]
    ].map(([k,v])=>'<div class="sj-admin-kpi"><strong>'+html(v??'—')+'</strong><small>'+html(k)+'</small></div>').join('')+'</div>'+
    '<p>Models: '+html((r.models_used||[]).join(', ')||'Not run')+' · Failed batches: '+html(r.failed_batches??'—')+' · Search failures: '+html(r.search_failures??'—')+'</p>'+ (Array.isArray(r.errors)&&r.errors.length?'<p>Research diagnostics: '+html(r.errors.join(', '))+'</p>':'')+
-   (u.per_model?'<h4>Daily model budgets</h4>'+Object.entries(u.per_model).map(([name,m])=>'<div class="sj-admin-activity"><strong>'+html(name)+'</strong><small>'+html(m.used_today)+' / '+html(m.limit)+' requests · provider day '+html(m.provider_day_used)+' / '+html(m.limit)+(m.legacy_debit?' · Legacy reserve '+html(m.legacy_debit):'')+(m.remaining!=null?' · Remaining '+html(m.remaining)+' · Benchmark available '+html(m.benchmark_remaining)+' · Nightly reserve '+html(m.nightly_reserve):'')+'</small></div>').join(''):'')+
+   modelBudgetCards(u,r)+
    (u.groq_token_limit?'<p>Groq rolling 24h token budget: '+html(u.groq_tokens_rolling_24h)+' / '+html(u.groq_token_limit)+' · Nightly token reserve '+html(u.groq_token_nightly_reserve)+'</p>':'')+
    (r.evidence_preparation?'<p>Evidence preparation: '+html(r.evidence_preparation.completed)+' / '+html(r.evidence_preparation.planned)+' · verified excerpts '+html(r.evidence_preparation.excerpts_used)+' · deterministic fallback '+html(r.evidence_preparation.fallback)+'</p>':'')+
    '<p><strong>Existing semantic-role regression set:</strong> '+html(m.old?.n??'—')+' cases. Current precision '+html(percent(m.old?.precision))+' / recall '+html(percent(m.old?.recall))+'; shadow precision '+html(percent(m.shadow?.precision))+' / recall '+html(percent(m.shadow?.recall))+'. Not a production accuracy estimate.</p>'+
-   (r.google_slot?'<h4>Second researcher fallback routing</h4><p>'+html((r.google_slot.ordered_models||[]).join(' → '))+'</p>'+ (r.google_slot.attempts||[]).map(x=>'<div class="sj-admin-activity"><strong>'+html(x.model)+'</strong><small>'+html(x.stage)+' · '+html(x.code||x.outcome)+'</small></div>').join(''):'')+
+   (r.google_slot?'<h4>Second researcher fallback routing</h4><p>'+html((r.google_slot.ordered_models||[]).join(' → '))+'</p>'+ (r.google_slot.attempts||[]).map(x=>'<div class="sj-admin-activity"><strong>'+html(x.model)+'</strong><small>'+html(x.stage)+' · '+html(x.outcome==='skipped'?'Skipped — '+(x.code||'unavailable')+' (no request charged)':x.code||x.outcome)+'</small></div>').join(''):'')+
    (Array.isArray(r.model_benchmark)?'<h4>Model benchmark — existing reference</h4>'+r.model_benchmark.map(x=>'<div class="sj-admin-activity"><strong>'+html(x.model==='gemini-4-hydrogen'?'Independent research slot':x.model)+'</strong><small>'+ (Array.isArray(x.actual_models)?'Actual: '+html(x.actual_models.join(', ')||'None')+' · ':'')+'Answered '+html(x.answered)+' / '+html(x.expected_cases)+' · Precision '+html(percent(x.metrics?.precision))+' · Recall '+html(percent(x.metrics?.recall))+' · Level accuracy '+html(percent(x.level_reference?.accuracy))+' ('+html(x.level_reference?.answered??0)+' / '+html(x.level_reference?.expected_cases??0)+')</small></div>').join(''):'')+
    '<p>'+html(r.note||'No research model has access to email dispatch.')+'</p>'+
    (Array.isArray(c.changes)&&c.changes.length?'<h4>Sample differences — review required</h4>'+c.changes.slice(0,20).map(j=>'<div class="sj-admin-activity"><strong>'+html(j.company)+' · '+html(j.title)+'</strong><small>'+html((j.before?.families||[]).join(', '))+' / '+html(j.before?.level||'unknown')+' → '+html((j.after?.families||[]).join(', '))+' / '+html(j.after?.level||'unknown')+'</small></div>').join(''):'');

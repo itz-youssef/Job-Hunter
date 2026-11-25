@@ -127,17 +127,28 @@ function reserveGroqTokens(state,estimate,now=new Date()){
  const reservation={at:now.getTime(),tokens:estimate};
  state.usage.groq_token_reservations.push(reservation);return reservation;
 }
-function canCall(state,model,now=new Date()){
- const e=modelLedger(state,model,now),legacy=legacyDebit(state,model,now),limit=effectiveLimit(state,model);
- return e.day_count+legacy.cairo<limit&&e.provider_count+legacy.provider<limit&&(model===LITE||state.usage.model<MODEL_BUDGET)&&(model!==GROQ||groqTokensUsed(state,now)<groqTokenLimit(state));
+function budgetBlockReason(state,model,now=new Date()){
+ const e=modelLedger(state,model,now),legacy=legacyDebit(state,model,now);
+ const used=Math.max(e.day_count+legacy.cairo,e.provider_count+legacy.provider);
+ if(used>=MODEL_LIMITS[model])return 'system-limit';
+ if(used>=effectiveLimit(state,model))return 'nightly-reserve';
+ if(model!==LITE&&state.usage.model>=MODEL_BUDGET)return 'shared-system-limit';
+ if(model===GROQ){
+  const tokens=groqTokensUsed(state,now);
+  if(tokens>=GROQ_TOKEN_BUDGET)return 'token-system-limit';
+  if(tokens>=groqTokenLimit(state))return 'nightly-token-reserve';
+ }
+ return null;
 }
+function canCall(state,model,now=new Date()){return !budgetBlockReason(state,model,now);}
+function budgetException(reason){const e=problem('model-budget');e.budgetReason=reason||'system-limit';return e;}
 function recordCall(state,model,now=new Date()){
  if(!canCall(state,model,now))throw problem('model-budget');
  const e=modelLedger(state,model,now);e.day_count++;e.provider_count++;e.last_at=now.getTime();
  if(model!==LITE)state.usage.model++;else state.usage.preprocess=(state.usage.preprocess||0)+1;return e;
 }
 function usageView(state,now=new Date()){
- return Object.fromEntries(Object.keys(MODEL_LIMITS).map(model=>{const e=modelLedger(state,model,now),legacy=legacyDebit(state,model,now),limit=MODEL_LIMITS[model],used=Math.max(e.day_count+legacy.cairo,e.provider_count+legacy.provider);return [model,{used_today:e.day_count,provider_day_used:e.provider_count,limit,provider_day:e.provider_day,nightly_reserve:NIGHTLY_RESERVE[model],legacy_debit:Math.max(legacy.cairo,legacy.provider),remaining:Math.max(0,limit-used),benchmark_remaining:Math.max(0,limit-NIGHTLY_RESERVE[model]-used)}];}));
+ return Object.fromEntries(Object.keys(MODEL_LIMITS).map(model=>{const e=modelLedger(state,model,now),legacy=legacyDebit(state,model,now),limit=MODEL_LIMITS[model],used=Math.max(e.day_count+legacy.cairo,e.provider_count+legacy.provider);return [model,{used_today:e.day_count,provider_day_used:e.provider_count,system_used:used,limit,provider_day:e.provider_day,nightly_reserve:NIGHTLY_RESERVE[model],legacy_debit:Math.max(legacy.cairo,legacy.provider),remaining:Math.max(0,limit-used),benchmark_remaining:Math.max(0,limit-NIGHTLY_RESERVE[model]-used),budget_block:budgetBlockReason(state,model,now),system_limit_reached:used>=limit}];}));
 }
 function diagnostic(e){
  if(e?.status)return 'provider-http-'+e.status;
@@ -171,14 +182,16 @@ async function search(company,state,key,telemetry,extra=''){
  }catch(e){telemetry.failed++;if([401,402,403,429,432,433].includes(e.status))telemetry.blocked=true;telemetry.errors.add(e.status?'search-http-'+e.status:'search-unavailable');return [];}
 }
 async function inferActual(model,system,payload,state,keys,options={}){
- if(!canCall(state,model))throw problem('model-budget');
+ const initialBlock=budgetBlockReason(state,model);
+ if(initialBlock)throw budgetException(initialBlock);
  const google=GOOGLE_MODELS.includes(model)||model===LITE,key=model===GROQ?keys.groq:google?keys.google:keys.openrouter;
  if(!key)throw problem('missing-provider-key');
  const entry=modelLedger(state,model),wait=Math.max(0,MODEL_INTERVALS[model]-(Date.now()-entry.last_at));
  if(wait)await sleep(wait);
- if(!canCall(state,model))throw problem('model-budget');
+ const block=budgetBlockReason(state,model);
+ if(block)throw budgetException(block);
  const estimate=model===GROQ?groqTokenEstimate(system,payload,options.maxTokens||4096):0;
- if(model===GROQ&&groqTokensUsed(state)+estimate>groqTokenLimit(state))throw problem('model-budget');
+ if(model===GROQ&&groqTokensUsed(state)+estimate>groqTokenLimit(state))throw budgetException('token-headroom');
  recordCall(state,model);
  const tokenReservation=model===GROQ?reserveGroqTokens(state,estimate):null;
  write('state.json',state);
@@ -205,9 +218,22 @@ function slotAvailable(state,slot,health={},now=new Date()){
  if(slot!==HYDROGEN)return !health.disabledModels?.has(slot)&&!(health.cooldowns?.get(slot)>now.getTime())&&canCall(state,slot,now);
  return RESEARCH_POOL.some(m=>endpointAvailable(state,m,health,now));
 }
+function endpointHealthy(model,health={}){
+ if(model===GROQ)return health.groqEnabled!==false&&!health.disabledModels?.has(GROQ)&&!health.failedGoogle?.has(GROQ);
+ return !health.googleDisabled&&!health.disabledModels?.has(HYDROGEN)&&!health.failedGoogle?.has(model);
+}
 function endpointAvailable(state,model,health={},now=new Date()){
- if(model===GROQ)return health.groqEnabled!==false&&!health.disabledModels?.has(GROQ)&&!health.failedGoogle?.has(GROQ)&&canCall(state,model,now);
- return !health.googleDisabled&&!health.disabledModels?.has(HYDROGEN)&&!health.failedGoogle?.has(model)&&canCall(state,model,now);
+ return endpointHealthy(model,health)&&canCall(state,model,now);
+}
+function noteBudgetSkip(health,slot,model,stage,reason){
+ health.attempts?.push({slot,model,stage:stage||'unknown',outcome:'skipped',code:reason,charged:false});
+}
+function noteExhaustedSlot(state,slot,health,stage){
+ for(const model of slot===HYDROGEN?RESEARCH_POOL:[slot]){
+  if(slot===HYDROGEN&&!endpointHealthy(model,health))continue;
+  const reason=budgetBlockReason(state,model);
+  if(reason)noteBudgetSkip(health,slot,model,stage,reason);
+ }
 }
 function disableGoogle(health){
  health.googleDisabled=true;health.disabledModels?.add(LITE);
@@ -225,15 +251,22 @@ async function inferSlot(slot,system,payload,state,keys,options={},health={},tra
  if(!health.failedGoogle)health.failedGoogle=new Set();
  let last;
  for(const model of RESEARCH_POOL){
-  if(!endpointAvailable(state,model,health))continue;
+  if(!endpointHealthy(model,health))continue;
   if(model===GROQ&&!keys.groq&&transport===inferActual)continue;
+  const reason=budgetBlockReason(state,model);
+  if(reason){noteBudgetSkip(health,slot,model,options.stage,reason);last=budgetException(reason);continue;}
   try{
    const result=await transport(model,system,payload,state,keys,options);
    if(options.accept&&!options.accept(result))throw problem('invalid-model-schema');
    health.attempts?.push({slot,model,stage:options.stage||'unknown',outcome:'success'});
    return result;
   }catch(e){
-   last=e;health.attempts?.push({slot,model,stage:options.stage||'unknown',outcome:'failed',code:diagnostic(e)});
+   last=e;
+   // A local budget exception is not a provider error and sends no request.
+   // Continue the same voting slot with the next endpoint, without quarantining
+   // a model that may fit a smaller request or become available after reset.
+   if(e?.code==='model-budget'){noteBudgetSkip(health,slot,model,options.stage,e.budgetReason||'system-limit');continue;}
+   health.attempts?.push({slot,model,stage:options.stage||'unknown',outcome:'failed',code:diagnostic(e)});
    if([401,402,403].includes(e.status)){if(model===GROQ)health.disabledModels?.add(GROQ);else disableGoogle(health);health.failedGoogle.add(model);continue;}
    if(!googleFallbackError(e))throw e;
    // One failed endpoint is quarantined for the rest of this run.
@@ -316,7 +349,7 @@ async function benchmark(state,keys,reference,health={}){
  const results=[];
  for(const model of MODELS){
   let decisions=[],failed=0;const diagnostics=[],attemptStart=health.attempts?.length||0;
-  if(!slotAvailable(state,model,health)){results.push({model,errors:['model-cooldown-or-unavailable'],expected_cases:cases.length,answered:0,failed_batches:1,metrics:E.metrics([]),level_reference:{basis:'Synthetic regression examples, not production accuracy',expected_cases:(read(path.join(ROOT,'research/level-reference.json'),{}).cases||[]).length,answered:0,correct:0,accuracy:null}});continue;}
+  if(!slotAvailable(state,model,health)){noteExhaustedSlot(state,model,health,'benchmark');results.push({model,errors:['model-cooldown-or-unavailable'],expected_cases:cases.length,answered:0,failed_batches:1,metrics:E.metrics([]),level_reference:{basis:'Synthetic regression examples, not production accuracy',expected_cases:(read(path.join(ROOT,'research/level-reference.json'),{}).cases||[]).length,answered:0,correct:0,accuracy:null}});continue;}
   for(let i=0;i<cases.length;i+=12){
    if(!slotAvailable(state,model,health))break;
    const batch=cases.slice(i,i+12).map((c,k)=>({id:i+k,title:c.title,company:c.company,description:c.description,preference:c.preference}));
@@ -414,7 +447,7 @@ async function run(){
    for(const model of taskModels(kind,preferred,mode)){
     taskStats[kind].planned++;
     if(globalBlocked||state.usage.model>=MODEL_BUDGET||Date.now()-started>35*60*1000){errors.push('time-or-model-budget');taskStats[kind].skipped++;continue;}
-    if(!slotAvailable(state,model,health)){taskStats[kind].skipped++;continue;}
+    if(!slotAvailable(state,model,health)){noteExhaustedSlot(state,model,health,kind);taskStats[kind].skipped++;continue;}
     let success=false;
     for(let attempt=0;attempt<2;attempt++){
      if(state.usage.model>=MODEL_BUDGET||!slotAvailable(state,model,health))break;
@@ -453,7 +486,7 @@ async function run(){
   if(!stats.failed_batches&&!errors.length&&!searchTelemetry.failed&&used.size&&stats.companies_with_evidence===all.length&&Object.values(taskStats).every(t=>t.completed===t.planned))state.last_completed=day;
  }
  stats.models_used=[...new Set(health.attempts.filter(x=>x.outcome==='success'&&['career','family'].includes(x.stage)).map(x=>x.model))];stats.model_requests=state.usage.model-startModel;stats.search_credits=state.usage.search-startSearch;
- const report={status:stats.failed_batches||errors.length||searchTelemetry.failed||!used.size||stats.companies_with_evidence!==all.length||Object.values(taskStats).some(t=>t.completed!==t.planned)||modelBenchmark?.some(x=>x.answered<x.expected_cases||x.level_reference.answered<x.level_reference.expected_cases)?'partial':'completed',mode:'shadow',run_type:mode,production_unchanged:true,updated_at:new Date().toISOString(),cairo_day:day,preferred_model:preferred,architecture:'multi-provider-budget-v7',google_slot:{identity:HYDROGEN,ordered_models:RESEARCH_POOL,attempts:health.attempts.filter(x=>x.slot===HYDROGEN),unavailable_models:[...new Set([...health.failedGoogle,...(health.googleDisabled?GOOGLE_MODELS:[]),...(!health.groqEnabled?[GROQ]:[])])],groq_configured:health.groqEnabled},companies_targeted:all.length,task_stats:taskStats,evidence_preparation:{model:LITE,...preparation,requests:(state.usage.preprocess||0)-startLite},...stats,errors:[...new Set([...errors,...searchTelemetry.errors])],search_success:searchTelemetry.success,search_failures:searchTelemetry.failed,rules:{career:merged.filter(x=>x.kind==='career').length,family:merged.filter(x=>x.kind==='family').length,cross_checked:merged.filter(x=>x.status==='cross-checked').length,conflicts:merged.filter(x=>x.status==='conflict').length},usage:{day:state.usage.day,model_requests_today:state.usage.model,model_request_limit:MODEL_BUDGET,preprocessing_requests_today:state.usage.preprocess||0,per_model:usageView(state),groq_tokens_rolling_24h:groqTokensUsed(state),groq_token_limit:GROQ_TOKEN_BUDGET,groq_token_nightly_reserve:GROQ_TOKEN_RESERVE,search_credits_today:state.usage.search_day,search_credits_month:state.usage.search},comparison:E.evaluate(jobRows,merged,reference),model_diagnostics:modelDiagnostics,model_benchmark:modelBenchmark,note:'Only public employer data. Evidence checks and cross-model agreement are screening gates, not ground truth. Production never activated.'};
+ const report={status:stats.failed_batches||errors.length||searchTelemetry.failed||!used.size||stats.companies_with_evidence!==all.length||Object.values(taskStats).some(t=>t.completed!==t.planned)||modelBenchmark?.some(x=>x.answered<x.expected_cases||x.level_reference.answered<x.level_reference.expected_cases)?'partial':'completed',mode:'shadow',run_type:mode,production_unchanged:true,updated_at:new Date().toISOString(),cairo_day:day,preferred_model:preferred,architecture:'quota-aware-failover-v8',google_slot:{identity:HYDROGEN,ordered_models:RESEARCH_POOL,attempts:health.attempts.filter(x=>x.slot===HYDROGEN),unavailable_models:[...new Set([...health.failedGoogle,...(health.googleDisabled?GOOGLE_MODELS:[]),...(!health.groqEnabled?[GROQ]:[])])],groq_configured:health.groqEnabled},companies_targeted:all.length,task_stats:taskStats,evidence_preparation:{model:LITE,...preparation,requests:(state.usage.preprocess||0)-startLite},...stats,errors:[...new Set([...errors,...searchTelemetry.errors])],search_success:searchTelemetry.success,search_failures:searchTelemetry.failed,rules:{career:merged.filter(x=>x.kind==='career').length,family:merged.filter(x=>x.kind==='family').length,cross_checked:merged.filter(x=>x.status==='cross-checked').length,conflicts:merged.filter(x=>x.status==='conflict').length},usage:{day:state.usage.day,model_requests_today:state.usage.model,model_request_limit:MODEL_BUDGET,preprocessing_requests_today:state.usage.preprocess||0,per_model:usageView(state),groq_tokens_rolling_24h:groqTokensUsed(state),groq_token_limit:GROQ_TOKEN_BUDGET,groq_token_nightly_reserve:GROQ_TOKEN_RESERVE,search_credits_today:state.usage.search_day,search_credits_month:state.usage.search},comparison:E.evaluate(jobRows,merged,reference),model_diagnostics:modelDiagnostics,model_benchmark:modelBenchmark,note:'Only public employer data. Evidence checks and cross-model agreement are screening gates, not ground truth. Production never activated.'};
  state.history=[...(state.history||[]).slice(-29),{day,run_type:mode,status:report.status,model_requests:stats.model_requests,validated:stats.validated,changed_family:report.comparison.changed_family,changed_level:report.comparison.changed_level}];
  write('state.json',state);
  if(mode==='daily'){
@@ -464,4 +497,4 @@ async function run(){
  console.log(JSON.stringify({status:report.status,model_requests:stats.model_requests,companies_reviewed:stats.companies_reviewed,validated:stats.validated,cross_checked:report.rules.cross_checked}));
 }
 if(require.main===module)run().catch(e=>{console.error('Research stopped safely:',e.code||e.name||'Error');process.exitCode=1;});
-module.exports={MODELS,NIGHTLY_RESERVE,GROQ_TOKEN_BUDGET,GROQ_TOKEN_RESERVE,migrateLegacyUsage,legacyDebit,effectiveLimit,groqTokensUsed,groqTokenEstimate,reserveGroqTokens,GOOGLE_MODELS,GROQ,RESEARCH_POOL,endpointAvailable,slotAvailable,inferSlot,googleFallbackError,HYDROGEN,NEMOTRON,LITE,MODEL_LIMITS,MODEL_INTERVALS,modelLedger,canCall,recordCall,providerDay,usageView,decodeGemini,applyExcerpts,localDate,localHour,modelFor,allowed,publicIp,htmlText,parseJSON,decodeResponse,diagnostic,compactDoc,ledger,roster,selectJobs,newState,MODEL_BUDGET,SEARCH_BUDGET,MONTH_BUDGET,BATCH_COMPANIES,DOC_CHARS,DAILY_COMPANIES,BENCHMARK_COMPANIES,TASK_TEXT_CHARS,TASK_DOCS,cohort,taskModels,makeTask,evidenceWindow,cooldownMs};
+module.exports={MODELS,budgetBlockReason,budgetException,NIGHTLY_RESERVE,GROQ_TOKEN_BUDGET,GROQ_TOKEN_RESERVE,migrateLegacyUsage,legacyDebit,effectiveLimit,groqTokensUsed,groqTokenEstimate,reserveGroqTokens,GOOGLE_MODELS,GROQ,RESEARCH_POOL,endpointAvailable,slotAvailable,inferSlot,googleFallbackError,HYDROGEN,NEMOTRON,LITE,MODEL_LIMITS,MODEL_INTERVALS,modelLedger,canCall,recordCall,providerDay,usageView,decodeGemini,applyExcerpts,localDate,localHour,modelFor,allowed,publicIp,htmlText,parseJSON,decodeResponse,diagnostic,compactDoc,ledger,roster,selectJobs,newState,MODEL_BUDGET,SEARCH_BUDGET,MONTH_BUDGET,BATCH_COMPANIES,DOC_CHARS,DAILY_COMPANIES,BENCHMARK_COMPANIES,TASK_TEXT_CHARS,TASK_DOCS,cohort,taskModels,makeTask,evidenceWindow,cooldownMs};

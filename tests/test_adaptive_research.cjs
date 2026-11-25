@@ -261,3 +261,30 @@ test('Groq rolling token budget charges failed attempts and preserves an overnig
  assert.throws(()=>A.reserveGroqTokens(s,1,now),/model-budget/);
  assert.equal(A.groqTokensUsed(s,new Date(now.getTime()+86400001)),0);
 });
+
+test('system limit skips each saturated endpoint without sending a request and routes to Groq',async()=>{
+ const s=A.newState(),now=new Date(),h={disabledModels:new Set(),cooldowns:new Map(),failedGoogle:new Set(),attempts:[],groqEnabled:true},seen=[];
+ A.ledger(s,A.localDate(now));
+ for(const model of A.GOOGLE_MODELS)for(let i=0;i<A.MODEL_LIMITS[model];i++)A.recordCall(s,model,now);
+ const before=s.usage.model;
+ const send=async model=>{seen.push(model);return {proposals:[]};};
+ assert.deepEqual(await A.inferSlot(A.HYDROGEN,'s',{},s,{groq:'mock'},{stage:'career'},h,send),{proposals:[]});
+ assert.deepEqual(seen,[A.GROQ]);assert.equal(s.usage.model,before);
+ assert.deepEqual(h.attempts.slice(0,3).map(x=>[x.model,x.outcome,x.code,x.charged]),A.GOOGLE_MODELS.map(m=>[m,'skipped','system-limit',false]));
+ const u=A.usageView(s,now);assert.equal(u[A.HYDROGEN].system_used,18);assert.equal(u[A.HYDROGEN].system_limit_reached,true);
+ for(let i=0;i<A.MODEL_LIMITS[A.GROQ];i++)A.recordCall(s,A.GROQ,now);
+ assert.equal(A.slotAvailable(s,A.HYDROGEN,h),false);
+ await assert.rejects(A.inferSlot(A.HYDROGEN,'s',{},s,{groq:'mock'},{stage:'family'},h,send),e=>e.code==='model-budget');
+ assert.deepEqual(seen,[A.GROQ]);assert.equal(A.slotAvailable(s,A.NEMOTRON,h),true);
+});
+test('nightly reserve and local quota exceptions fail over without quarantine or extra charge',async()=>{
+ const s=A.newState(),now=new Date(),h={disabledModels:new Set(),cooldowns:new Map(),failedGoogle:new Set(),attempts:[],groqEnabled:true},seen=[];
+ A.ledger(s,A.localDate(now));s.runMode='benchmark';
+ for(let i=0;i<A.effectiveLimit(s,A.HYDROGEN);i++)A.recordCall(s,A.HYDROGEN,now);
+ const next=A.GOOGLE_MODELS[1],third=A.GOOGLE_MODELS[2];
+ const send=async model=>{seen.push(model);if(model===next)throw A.budgetException('system-limit');return {proposals:[]};};
+ await A.inferSlot(A.HYDROGEN,'s',{},s,{groq:'mock'},{stage:'benchmark-family'},h,send);
+ assert.deepEqual(seen,[next,third]);assert.equal(h.attempts[0].code,'nightly-reserve');
+ assert.equal(h.attempts[1].outcome,'skipped');assert.equal(h.attempts[1].charged,false);assert.equal(h.failedGoogle.has(next),false);
+ assert.equal(A.usageView(s,now)[A.HYDROGEN].system_limit_reached,false);
+});
