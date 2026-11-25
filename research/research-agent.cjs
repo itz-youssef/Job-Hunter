@@ -8,16 +8,17 @@ const HYDROGEN='gemini-4-hydrogen',NEMOTRON='nvidia/nemotron-3-ultra-550b-a55b:f
 // HYDROGEN is the legacy stable second-researcher voting identity, never an endpoint attribution.
 const GOOGLE_MODELS=Object.freeze([HYDROGEN,'gemini-3.8-flash','gemini-3.6-flash']);
 const GROQ='openai/gpt-oss-120b';
+const GLM='@cf/zai-org/glm-4.7-flash',GLM_NEURONS_PER_CALL=400,GLM_NEURON_BUDGET=8000;
 const RESEARCH_POOL=Object.freeze([...GOOGLE_MODELS,GROQ]);
 const MODELS=[HYDROGEN,NEMOTRON];
-const MODEL_LIMITS=Object.freeze({...Object.fromEntries(GOOGLE_MODELS.map(m=>[m,18])),[NEMOTRON]:40,[GROQ]:30,[LITE]:200});
+const MODEL_LIMITS=Object.freeze({...Object.fromEntries(GOOGLE_MODELS.map(m=>[m,18])),[NEMOTRON]:40,[GLM]:20,[GROQ]:30,[LITE]:200});
 // Emergency use is restricted to the second researcher, never the NVIDIA vote.
 const PROVIDER_REQUEST_LIMITS=Object.freeze({...Object.fromEntries(GOOGLE_MODELS.map(m=>[m,20])),[GROQ]:1000,[NEMOTRON]:50,[LITE]:500});
 const EMERGENCY_LIMITS=Object.freeze({...Object.fromEntries(GOOGLE_MODELS.map(m=>[m,19])),[GROQ]:60});
-const NIGHTLY_RESERVE=Object.freeze({...Object.fromEntries(GOOGLE_MODELS.map(m=>[m,10])),[NEMOTRON]:10,[GROQ]:10,[LITE]:20});
+const NIGHTLY_RESERVE=Object.freeze({...Object.fromEntries(GOOGLE_MODELS.map(m=>[m,10])),[NEMOTRON]:10,[GLM]:10,[GROQ]:10,[LITE]:20});
 const GROQ_TOKEN_BUDGET=160000,GROQ_TOKEN_RESERVE=60000;
 const isBenchmark=state=>state.runMode==='benchmark';
-const MODEL_INTERVALS=Object.freeze({...Object.fromEntries(GOOGLE_MODELS.map(m=>[m,13000])),[NEMOTRON]:3500,[GROQ]:65000,[LITE]:5000});
+const MODEL_INTERVALS=Object.freeze({...Object.fromEntries(GOOGLE_MODELS.map(m=>[m,13000])),[NEMOTRON]:3500,[GLM]:5000,[GROQ]:65000,[LITE]:5000});
 const ROOT=path.resolve(__dirname,'..'),STATE=process.env.RESEARCH_STATE_DIR||path.join(ROOT,'.research-state');
 const MODEL_BUDGET=[...RESEARCH_POOL,NEMOTRON].reduce((n,m)=>n+MODEL_LIMITS[m],0),SEARCH_BUDGET=24,MONTH_BUDGET=744,INITIAL_SEARCH_BUDGET=16,BATCH_COMPANIES=1,DOC_CHARS=2600,DAILY_COMPANIES=10,BENCHMARK_COMPANIES=2,TASK_TEXT_CHARS=900,TASK_DOCS=2;
 const EMERGENCY_MODEL_BUDGET=MODEL_LIMITS[NEMOTRON]+RESEARCH_POOL.reduce((n,m)=>n+EMERGENCY_LIMITS[m],0);
@@ -90,7 +91,7 @@ function decodeGemini(data){
  return parseJSON((c.content?.parts||[]).filter(p=>!p.thought&&typeof p.text==='string').map(p=>p.text).join(''));
 }
 function providerDay(model,date=new Date()){
- return new Intl.DateTimeFormat('en-CA',{timeZone:model===NEMOTRON||model===GROQ?'UTC':'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
+ return new Intl.DateTimeFormat('en-CA',{timeZone:model===NEMOTRON||model===GROQ||model===GLM?'UTC':'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
 }
 // Find the first minute of the next calendar day in the named zone, DST-safe.
 function nextDayReset(zone,now=new Date()){
@@ -177,10 +178,10 @@ function usageView(state,now=new Date()){
  const cairoReset=nextDayReset('Africa/Cairo',now),utcReset=nextDayReset('UTC',now),pacificReset=nextDayReset('America/Los_Angeles',now);
  return Object.fromEntries(Object.keys(MODEL_LIMITS).map(model=>{
   const e=modelLedger(state,model,now),legacy=legacyDebit(state,model,now),limit=MODEL_LIMITS[model],used=Math.max(e.day_count+legacy.cairo,e.provider_count+legacy.provider);
-  const providerCounterReset=model===NEMOTRON||model===GROQ?utcReset:pacificReset;
-  const requestReset=model===GROQ?(Date.parse(state.usage.groq_provider_reset_at)>now.getTime()?state.usage.groq_provider_reset_at:null):model===NEMOTRON?null:pacificReset;
+  const providerCounterReset=model===NEMOTRON||model===GROQ||model===GLM?utcReset:pacificReset;
+  const requestReset=model===GROQ?(Date.parse(state.usage.groq_provider_reset_at)>now.getTime()?state.usage.groq_provider_reset_at:null):model===NEMOTRON?null:model===GLM?utcReset:pacificReset;
   const emergencyLimit=EMERGENCY_LIMITS[model]||null;
-  return [model,{used_today:e.day_count,provider_day_used:e.provider_count,system_used:used,limit,provider_day:e.provider_day,nightly_reserve:NIGHTLY_RESERVE[model],legacy_debit:Math.max(legacy.cairo,legacy.provider),remaining:Math.max(0,limit-used),benchmark_remaining:Math.max(0,limit-NIGHTLY_RESERVE[model]-used),budget_block:budgetBlockReason(state,model,now),system_limit_reached:used>=limit,emergency_limit:emergencyLimit,emergency_remaining:emergencyLimit?Math.max(0,emergencyLimit-Math.max(used,limit)):0,emergency_used:emergencyLimit?Math.max(0,used-limit):0,provider_request_limit:PROVIDER_REQUEST_LIMITS[model],estimated_provider_headroom:Math.max(0,PROVIDER_REQUEST_LIMITS[model]-used),cairo_reset_at:cairoReset,provider_counter_reset_at:providerCounterReset,provider_reset_at:requestReset,full_counter_reset_at:new Date(Math.max(Date.parse(cairoReset),Date.parse(providerCounterReset))).toISOString()}];
+  return [model,{used_today:e.day_count,provider_day_used:e.provider_count,system_used:used,limit,provider_day:e.provider_day,nightly_reserve:NIGHTLY_RESERVE[model],legacy_debit:Math.max(legacy.cairo,legacy.provider),remaining:Math.max(0,limit-used),benchmark_remaining:Math.max(0,limit-NIGHTLY_RESERVE[model]-used),budget_block:budgetBlockReason(state,model,now),system_limit_reached:used>=limit,emergency_limit:emergencyLimit,emergency_remaining:emergencyLimit?Math.max(0,emergencyLimit-Math.max(used,limit)):0,emergency_used:emergencyLimit?Math.max(0,used-limit):0,provider_request_limit:PROVIDER_REQUEST_LIMITS[model]??null,estimated_provider_headroom:PROVIDER_REQUEST_LIMITS[model]==null?null:Math.max(0,PROVIDER_REQUEST_LIMITS[model]-used),...(model===GLM?{estimated_neurons_reserved:e.provider_count*GLM_NEURONS_PER_CALL,neuron_system_limit:GLM_NEURON_BUDGET}: {}),cairo_reset_at:cairoReset,provider_counter_reset_at:providerCounterReset,provider_reset_at:requestReset,full_counter_reset_at:new Date(Math.max(Date.parse(cairoReset),Date.parse(providerCounterReset))).toISOString()}];
  }));
 }
 function diagnostic(e){
@@ -214,12 +215,18 @@ async function search(company,state,key,telemetry,extra=''){
  return (Array.isArray(res.results)?res.results:[]).map(x=>x.url).filter(u=>allowed(u,company)).slice(0,2);
  }catch(e){telemetry.failed++;if([401,402,403,429,432,433].includes(e.status))telemetry.blocked=true;telemetry.errors.add(e.status?'search-http-'+e.status:'search-unavailable');return [];}
 }
+function glmNeuronEstimate(system,payload,maxTokens=4096){
+ // UTF-8 bytes + framing conservatively approximate input tokens, with maximum output.
+ return Math.ceil((Buffer.byteLength(JSON.stringify([{role:'system',content:system},{role:'user',content:JSON.stringify(payload)}]),'utf8')+1024)*5500/1000000+Math.min(maxTokens,4096)*36400/1000000);
+}
+function glmConfigured(keys){return !!keys?.cfToken&&/^[a-f0-9]{32}$/i.test(keys?.cfAccount||'');}
 async function inferActual(model,system,payload,state,keys,options={}){
  const emergency=options.emergency===true;
  const initialBlock=budgetBlockReason(state,model,new Date(),emergency);
  if(initialBlock)throw budgetException(initialBlock);
- const google=GOOGLE_MODELS.includes(model)||model===LITE,key=model===GROQ?keys.groq:google?keys.google:keys.openrouter;
- if(!key)throw problem('missing-provider-key');
+ const google=GOOGLE_MODELS.includes(model)||model===LITE,key=model===GLM?keys.cfToken:model===GROQ?keys.groq:google?keys.google:keys.openrouter;
+ if(!key||(model===GLM&&!glmConfigured(keys)))throw problem('missing-provider-key');
+ if(model===GLM&&glmNeuronEstimate(system,payload,options.maxTokens||4096)>GLM_NEURONS_PER_CALL)throw budgetException('neuron-headroom');
  const entry=modelLedger(state,model),wait=Math.max(0,MODEL_INTERVALS[model]-(Date.now()-entry.last_at));
  if(wait)await sleep(wait);
  const block=budgetBlockReason(state,model,new Date(),emergency);
@@ -236,6 +243,13 @@ async function inferActual(model,system,payload,state,keys,options={}){
   },options.timeout||90000,'google');
   return decodeGemini(data);
  }
+ if(model===GLM){
+  const data=await request('https://api.cloudflare.com/client/v4/accounts/'+keys.cfAccount+'/ai/v1/chat/completions',key,{
+   model:GLM,messages:[{role:'system',content:system},{role:'user',content:JSON.stringify(payload)}],
+   temperature:0,max_completion_tokens:Math.min(options.maxTokens||4096,4096),response_format:{type:'json_object'},stream:false
+  },options.timeout||90000);
+  return decodeResponse(data);
+ }
  if(model===GROQ){
   const data=await request('https://api.groq.com/openai/v1/chat/completions',key,{
    model:GROQ,messages:[{role:'system',content:system},{role:'user',content:JSON.stringify(payload)}],
@@ -249,9 +263,14 @@ async function inferActual(model,system,payload,state,keys,options={}){
  return decodeResponse(data);
 }
 function slotAvailable(state,slot,health={},now=new Date()){
+ if(slot===NEMOTRON)return firstEndpointAvailable(state,NEMOTRON,health,now)||firstEndpointAvailable(state,GLM,health,now);
  if(slot!==HYDROGEN)return !health.disabledModels?.has(slot)&&!(health.cooldowns?.get(slot)>now.getTime())&&canCall(state,slot,now);
  return RESEARCH_POOL.some(m=>endpointAvailable(state,m,health,now))||emergencyCandidates(state,health,now).length>0;
 }
+function firstEndpointHealthy(model,health={},now=new Date()){
+ return (model===GLM?health.glmEnabled===true:health.nemotronEnabled!==false)&&!health.disabledModels?.has(model)&&!health.failedFirst?.has(model)&&!(health.cooldowns?.get(model)>now.getTime());
+}
+function firstEndpointAvailable(state,model,health={},now=new Date()){return firstEndpointHealthy(model,health,now)&&canCall(state,model,now);}
 function endpointHealthy(model,health={}){
  if(model===GROQ)return health.groqEnabled!==false&&!health.disabledModels?.has(GROQ)&&!health.failedGoogle?.has(GROQ);
  return !health.googleDisabled&&!health.disabledModels?.has(HYDROGEN)&&!health.failedGoogle?.has(model);
@@ -277,7 +296,8 @@ function noteBudgetSkip(health,slot,model,stage,reason){
  health.attempts?.push({slot,model,stage:stage||'unknown',outcome:'skipped',code:reason,charged:false});
 }
 function noteExhaustedSlot(state,slot,health,stage){
- for(const model of slot===HYDROGEN?RESEARCH_POOL:[slot]){
+ for(const model of slot===HYDROGEN?RESEARCH_POOL:slot===NEMOTRON?[NEMOTRON,GLM]:[slot]){
+  if(slot===NEMOTRON&&!firstEndpointHealthy(model,health))continue;
   if(slot===HYDROGEN&&!endpointHealthy(model,health))continue;
   const reason=budgetBlockReason(state,model);
   if(reason)noteBudgetSkip(health,slot,model,stage,reason);
@@ -290,6 +310,28 @@ function googleFallbackError(e){
  return [400,404,408,429,500,502,503,504].includes(e?.status)||['request-timeout','network-or-response-error','empty-content','invalid-json','invalid-json-object','truncated-json','multiple-json-objects','no-choice','output-token-limit','invalid-model-schema','provider-response-error'].includes(diagnostic(e));
 }
 async function inferSlot(slot,system,payload,state,keys,options={},health={},transport=inferActual){
+ if(slot===NEMOTRON&&health.glmEnabled===true){
+  health.failedFirst=health.failedFirst||new Set();
+  let last;
+  for(const model of [NEMOTRON,GLM]){
+   if(!firstEndpointHealthy(model,health))continue;
+   const reason=budgetBlockReason(state,model);
+   if(reason){noteBudgetSkip(health,slot,model,options.stage,reason);last=budgetException(reason);continue;}
+   try{
+    const result=await transport(model,system,payload,state,keys,options);
+    if(options.accept&&!options.accept(result))throw problem('invalid-model-schema');
+    health.attempts?.push({slot,model,stage:options.stage||'unknown',outcome:'success',tier:'normal'});
+    return result;
+   }catch(e){
+    last=e;
+    if(e?.code==='model-budget'){noteBudgetSkip(health,slot,model,options.stage,e.budgetReason||'system-limit');continue;}
+    health.attempts?.push({slot,model,stage:options.stage||'unknown',outcome:'failed',code:diagnostic(e),tier:'normal'});
+    if(!googleFallbackError(e)&&![401,402,403].includes(e.status)&&e.code!=='provider-finish-error')throw e;
+    health.failedFirst.add(model);
+   }
+  }
+  throw last||problem('model-budget');
+ }
  if(slot!==HYDROGEN){
   const result=await transport(slot,system,payload,state,keys,options);
   if(options.accept&&!options.accept(result))throw problem('invalid-model-schema');
@@ -447,7 +489,7 @@ async function run(){
  const state=read(path.join(STATE,'state.json'),newState());migrateLegacyUsage(state);ledger(state,day);
  Object.defineProperty(state,'runMode',{value:mode,enumerable:false});
  if(mode==='daily'&&state.last_attempt===day){console.log('Daily attempt already recorded');return;}
- const keys={openrouter:process.env.OPENROUTER_API_KEY,google:process.env.GEMINI_API_KEY,groq:process.env.GROQ_API_KEY},searchKey=process.env.TAVILY_API_KEY,missing=[...(!keys.openrouter?['OPENROUTER_API_KEY']:[]),...(!keys.google&&!keys.groq?['GEMINI_API_KEY or GROQ_API_KEY']:[]),...(!searchKey?['TAVILY_API_KEY']:[])];
+ const keys={openrouter:process.env.OPENROUTER_API_KEY,google:process.env.GEMINI_API_KEY,groq:process.env.GROQ_API_KEY,cfToken:process.env.RESEARCH_CF_API_TOKEN,cfAccount:process.env.RESEARCH_CF_ACCOUNT_ID},searchKey=process.env.TAVILY_API_KEY,missing=[...(!keys.openrouter?['OPENROUTER_API_KEY']:[]),...(!keys.google&&!keys.groq?['GEMINI_API_KEY or GROQ_API_KEY']:[]),...(!searchKey?['TAVILY_API_KEY']:[])];
  if(missing.length){console.log('Missing required Actions secrets; no external requests');write('report.json',{status:'awaiting-keys',mode:'shadow',production_unchanged:true,updated_at:new Date().toISOString(),missing});return;}
  const snapshot=read(path.join(ROOT,'dist/data.json'),{jobs:[]}),registry=read(path.join(ROOT,'companies.json'),[]),reference=read(path.join(ROOT,'benchmarks/semantic-role-reference.json'),{});
  if(!Array.isArray(snapshot.jobs)||!snapshot.jobs.length||!Array.isArray(registry))throw Error('catalog unavailable');
@@ -484,7 +526,7 @@ async function run(){
  });
  const proposals=[],rejectedProposals=[],used=new Set(),errors=[],disabledModels=new Set(),modelDiagnostics=[],cooldowns=new Map();
  const started=Date.now(),taskStats={career:{planned:0,completed:0,skipped:0},family:{planned:0,completed:0,skipped:0}},preparation={planned:0,completed:0,excerpts_used:0,fallback:0};
- const health={disabledModels,cooldowns,failedGoogle:new Set(),attempts:[],groqEnabled:!!keys.groq,googleDisabled:!keys.google};
+ const health={disabledModels,cooldowns,failedGoogle:new Set(),attempts:[],groqEnabled:!!keys.groq,googleDisabled:!keys.google,glmEnabled:glmConfigured(keys),nemotronEnabled:!!keys.openrouter,failedFirst:new Set()};
  if(!keys.google)disableGoogle(health);
  const disableProvider=model=>{if(model===NEMOTRON)disabledModels.add(NEMOTRON);else if(model===LITE)disableGoogle(health);};
  const modelBenchmark=mode==='benchmark'?await benchmark(state,keys,reference,health):null;
@@ -556,7 +598,7 @@ async function run(){
   if(!stats.failed_batches&&!errors.length&&!searchTelemetry.failed&&used.size&&stats.companies_with_evidence===all.length&&Object.values(taskStats).every(t=>t.completed===t.planned))state.last_completed=day;
  }
  stats.models_used=[...new Set(health.attempts.filter(x=>x.outcome==='success'&&['career','family'].includes(x.stage)).map(x=>x.model))];stats.model_requests=state.usage.model-startModel;stats.search_credits=state.usage.search-startSearch;
- const report={status:stats.failed_batches||errors.length||searchTelemetry.failed||!used.size||stats.companies_with_evidence!==all.length||Object.values(taskStats).some(t=>t.completed!==t.planned)||modelBenchmark?.some(x=>x.answered<x.expected_cases||x.level_reference.answered<x.level_reference.expected_cases)?'partial':'completed',mode:'shadow',run_type:mode,production_unchanged:true,updated_at:new Date().toISOString(),cairo_day:day,preferred_model:preferred,architecture:'emergency-quota-v9',google_slot:{identity:HYDROGEN,ordered_models:RESEARCH_POOL,emergency_order:[GROQ,...GOOGLE_MODELS],attempts:health.attempts.filter(x=>x.slot===HYDROGEN),unavailable_models:[...new Set([...health.failedGoogle,...(health.googleDisabled?GOOGLE_MODELS:[]),...(!health.groqEnabled?[GROQ]:[])])],groq_configured:health.groqEnabled},companies_targeted:all.length,task_stats:taskStats,evidence_preparation:{model:LITE,...preparation,requests:(state.usage.preprocess||0)-startLite},...stats,rejected_proposals_log:rejectedProposals,errors:[...new Set([...errors,...searchTelemetry.errors])],search_success:searchTelemetry.success,search_failures:searchTelemetry.failed,rules:{career:merged.filter(x=>x.kind==='career').length,family:merged.filter(x=>x.kind==='family').length,cross_checked:merged.filter(x=>x.status==='cross-checked').length,conflicts:merged.filter(x=>x.status==='conflict').length},usage:{day:state.usage.day,model_requests_today:state.usage.model,model_request_limit:MODEL_BUDGET,emergency_request_limit:EMERGENCY_MODEL_BUDGET,groq_next_token_release_at:(state.usage.groq_token_reservations||[]).length?new Date(Math.min(...state.usage.groq_token_reservations.map(x=>x.at))+86400000).toISOString():null,preprocessing_requests_today:state.usage.preprocess||0,per_model:usageView(state),groq_tokens_rolling_24h:groqTokensUsed(state),groq_token_limit:GROQ_TOKEN_BUDGET,groq_token_nightly_reserve:GROQ_TOKEN_RESERVE,search_credits_today:state.usage.search_day,search_credits_month:state.usage.search},comparison:E.evaluate(jobRows,merged,reference),model_diagnostics:modelDiagnostics,model_benchmark:modelBenchmark,note:'Only public employer data. Evidence checks and cross-model agreement are screening gates, not ground truth. Production never activated.'};
+ const report={status:stats.failed_batches||errors.length||searchTelemetry.failed||!used.size||stats.companies_with_evidence!==all.length||Object.values(taskStats).some(t=>t.completed!==t.planned)||modelBenchmark?.some(x=>x.answered<x.expected_cases||x.level_reference.answered<x.level_reference.expected_cases)?'partial':'completed',mode:'shadow',run_type:mode,production_unchanged:true,updated_at:new Date().toISOString(),cairo_day:day,preferred_model:preferred,architecture:'nemotron-glm-fallback-v10',first_slot:{identity:NEMOTRON,ordered_models:[NEMOTRON,GLM],glm_configured:health.glmEnabled,attempts:health.attempts.filter(x=>x.slot===NEMOTRON),unavailable_models:[...new Set([...health.failedFirst,...(!health.glmEnabled?[GLM]:[])])]},google_slot:{identity:HYDROGEN,ordered_models:RESEARCH_POOL,emergency_order:[GROQ,...GOOGLE_MODELS],attempts:health.attempts.filter(x=>x.slot===HYDROGEN),unavailable_models:[...new Set([...health.failedGoogle,...(health.googleDisabled?GOOGLE_MODELS:[]),...(!health.groqEnabled?[GROQ]:[])])],groq_configured:health.groqEnabled},companies_targeted:all.length,task_stats:taskStats,evidence_preparation:{model:LITE,...preparation,requests:(state.usage.preprocess||0)-startLite},...stats,rejected_proposals_log:rejectedProposals,errors:[...new Set([...errors,...searchTelemetry.errors])],search_success:searchTelemetry.success,search_failures:searchTelemetry.failed,rules:{career:merged.filter(x=>x.kind==='career').length,family:merged.filter(x=>x.kind==='family').length,cross_checked:merged.filter(x=>x.status==='cross-checked').length,conflicts:merged.filter(x=>x.status==='conflict').length},usage:{day:state.usage.day,model_requests_today:state.usage.model,model_request_limit:MODEL_BUDGET,emergency_request_limit:EMERGENCY_MODEL_BUDGET,groq_next_token_release_at:(state.usage.groq_token_reservations||[]).length?new Date(Math.min(...state.usage.groq_token_reservations.map(x=>x.at))+86400000).toISOString():null,preprocessing_requests_today:state.usage.preprocess||0,per_model:usageView(state),groq_tokens_rolling_24h:groqTokensUsed(state),groq_token_limit:GROQ_TOKEN_BUDGET,groq_token_nightly_reserve:GROQ_TOKEN_RESERVE,search_credits_today:state.usage.search_day,search_credits_month:state.usage.search},comparison:E.evaluate(jobRows,merged,reference),model_diagnostics:modelDiagnostics,model_benchmark:modelBenchmark,note:'Only public employer data. Evidence checks and cross-model agreement are screening gates, not ground truth. Production never activated.'};
  state.history=[...(state.history||[]).slice(-29),{day,run_type:mode,status:report.status,model_requests:stats.model_requests,validated:stats.validated,changed_family:report.comparison.changed_family,changed_level:report.comparison.changed_level}];
  write('state.json',state);
  if(mode==='daily'){
@@ -567,4 +609,4 @@ async function run(){
  console.log(JSON.stringify({status:report.status,model_requests:stats.model_requests,companies_reviewed:stats.companies_reviewed,validated:stats.validated,cross_checked:report.rules.cross_checked}));
 }
 if(require.main===module)run().catch(e=>{console.error('Research stopped safely:',e.code||e.name||'Error');process.exitCode=1;});
-module.exports={MODELS,rejectedProposalRecord,PROVIDER_REQUEST_LIMITS,EMERGENCY_LIMITS,EMERGENCY_MODEL_BUDGET,emergencyCandidates,nextDayReset,durationMs,captureGroqReset,budgetBlockReason,budgetException,NIGHTLY_RESERVE,GROQ_TOKEN_BUDGET,GROQ_TOKEN_RESERVE,migrateLegacyUsage,legacyDebit,effectiveLimit,groqTokensUsed,groqTokenEstimate,reserveGroqTokens,GOOGLE_MODELS,GROQ,RESEARCH_POOL,endpointAvailable,slotAvailable,inferSlot,googleFallbackError,HYDROGEN,NEMOTRON,LITE,MODEL_LIMITS,MODEL_INTERVALS,modelLedger,canCall,recordCall,providerDay,usageView,decodeGemini,applyExcerpts,localDate,localHour,modelFor,allowed,publicIp,htmlText,parseJSON,decodeResponse,diagnostic,compactDoc,ledger,roster,selectJobs,newState,MODEL_BUDGET,SEARCH_BUDGET,MONTH_BUDGET,BATCH_COMPANIES,DOC_CHARS,DAILY_COMPANIES,BENCHMARK_COMPANIES,TASK_TEXT_CHARS,TASK_DOCS,cohort,taskModels,makeTask,evidenceWindow,cooldownMs};
+module.exports={MODELS,GLM,GLM_NEURON_BUDGET,GLM_NEURONS_PER_CALL,glmNeuronEstimate,glmConfigured,rejectedProposalRecord,PROVIDER_REQUEST_LIMITS,EMERGENCY_LIMITS,EMERGENCY_MODEL_BUDGET,emergencyCandidates,nextDayReset,durationMs,captureGroqReset,budgetBlockReason,budgetException,NIGHTLY_RESERVE,GROQ_TOKEN_BUDGET,GROQ_TOKEN_RESERVE,migrateLegacyUsage,legacyDebit,effectiveLimit,groqTokensUsed,groqTokenEstimate,reserveGroqTokens,GOOGLE_MODELS,GROQ,RESEARCH_POOL,endpointAvailable,slotAvailable,inferSlot,googleFallbackError,HYDROGEN,NEMOTRON,LITE,MODEL_LIMITS,MODEL_INTERVALS,modelLedger,canCall,recordCall,providerDay,usageView,decodeGemini,applyExcerpts,localDate,localHour,modelFor,allowed,publicIp,htmlText,parseJSON,decodeResponse,diagnostic,compactDoc,ledger,roster,selectJobs,newState,MODEL_BUDGET,SEARCH_BUDGET,MONTH_BUDGET,BATCH_COMPANIES,DOC_CHARS,DAILY_COMPANIES,BENCHMARK_COMPANIES,TASK_TEXT_CHARS,TASK_DOCS,cohort,taskModels,makeTask,evidenceWindow,cooldownMs};

@@ -372,3 +372,29 @@ test('rejected proposal links are resolved from trusted catalog jobs, never mode
  const unsafe=A.rejectedProposalRecord(proposal,docs,new Map([[id,{...job,url:'javascript:alert(1)',apply_url:'https://example.com/apply/1'}]]),meta);
  assert.equal(unsafe.proposal.job_url,'https://example.com/apply/1');
 });
+
+test('GLM only backs up Nemotron, same stable vote and unchanged aggregate limits',async()=>{
+ const s=A.newState();A.ledger(s,A.localDate());const h={glmEnabled:true,attempts:[],disabledModels:new Set(),cooldowns:new Map()};
+ const seen=[];const send=async m=>{seen.push(m);if(m===A.NEMOTRON){const e=new Error('busy');e.status=503;throw e;}return {proposals:[]};};
+ await A.inferSlot(A.NEMOTRON,'s',{},s,{}, {stage:'career'},h,send);
+ assert.deepEqual(seen,[A.NEMOTRON,A.GLM]);assert.equal(h.attempts.at(-1).slot,A.NEMOTRON);assert.equal(h.attempts.at(-1).model,A.GLM);
+ await A.inferSlot(A.NEMOTRON,'s',{},s,{}, {stage:'family'},h,send);
+ assert.deepEqual(seen,[A.NEMOTRON,A.GLM,A.GLM]);
+ assert.ok(!A.MODELS.includes(A.GLM)&&!A.RESEARCH_POOL.includes(A.GLM));assert.equal(A.MODEL_BUDGET,124);assert.equal(A.EMERGENCY_MODEL_BUDGET,157);
+ assert.equal(A.MODEL_LIMITS[A.GLM]*A.GLM_NEURONS_PER_CALL,A.GLM_NEURON_BUDGET);
+ assert.ok(A.glmNeuronEstimate('s',{text:'a'.repeat(4000)},4096)<A.GLM_NEURONS_PER_CALL);
+ assert.equal(A.glmConfigured({cfToken:'mock',cfAccount:'a'.repeat(32)}),true);
+ assert.equal(A.glmConfigured({cfToken:'mock',cfAccount:'invalid'}),false);
+});
+test('GLM can take over after Nemotron normal limit, and preserves its own nightly reserve',async()=>{
+ const s=A.newState(),now=new Date();A.ledger(s,A.localDate(now));
+ for(let i=0;i<A.MODEL_LIMITS[A.NEMOTRON];i++)A.recordCall(s,A.NEMOTRON,now);
+ const h={glmEnabled:true,attempts:[]},seen=[];
+ await A.inferSlot(A.NEMOTRON,'s',{},s,{}, {},h,async m=>{seen.push(m);return {proposals:[]};});
+ assert.deepEqual(seen,[A.GLM]);assert.equal(h.attempts[0].code,'system-limit');
+ for(let i=0;i<10;i++)A.recordCall(s,A.GLM,now);
+ Object.defineProperty(s,'runMode',{value:'benchmark'});
+ assert.equal(A.slotAvailable(s,A.NEMOTRON,h,now),false);
+ assert.equal(A.usageView(s,now)[A.GLM].estimated_neurons_reserved,4000);
+ assert.equal(A.providerDay(A.GLM,new Date('2026-11-25T23:59:00Z')),'2026-11-25');
+});
