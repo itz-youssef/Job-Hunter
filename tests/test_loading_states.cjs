@@ -110,3 +110,22 @@ test('global loader releases after initial UI hydration and does not intercept l
   const manage=fs.readFileSync('dist/manage-companies.html','utf8');
   assert.match(manage,/load\(\)\.finally\(\(\)=>window\.SecretJStartup\?\.finish\(\)\)/);
 });
+
+test('public route navigation reuses rendered landing nodes and avoids duplicate hash renders',()=>{
+  assert.match(home,/const landingViews=new Map\(\)/);
+  assert.match(home,/cached\?\.html===html&&renderedPage===state\.page/);
+  assert.match(home,/root\.replaceChildren\(\.\.\.cached\.nodes\)/);
+  assert.match(home,/if\(requested!==state\.page\)go\(requested\)/);
+  assert.match(home,/const wasReady=memberHydrated/);
+  assert.match(home,/if\(changed\)\{landingViews\.clear\(\);state\.memberLoading=true;/);
+});
+test('account tabs cache only successful current-user views and invalidate after mutations',()=>{
+  assert.match(accountJS,/const ACCOUNT_VIEW_TTL_MS=120000/);
+  assert.match(accountJS,/cached\.userId===userId&&Date\.now\(\)-cached\.at<ACCOUNT_VIEW_TTL_MS/);
+  assert.match(accountJS,/reuse&&view!=='admin'\?accountViews\.get\(view\):null/);
+  assert.match(accountJS,/showView\(button\.dataset\.view,\{reuse:true\}\)/);
+  assert.match(accountJS,/if\(method!=='GET' && endpoint\.startsWith\('\/api\/secretj-'\)\) \{\s*invalidateAccountViews\(\)/);
+  assert.match(accountJS,/function showAuth\(\) \{\s*invalidateAccountViews\(\)/);
+  assert.match(accountJS,/generation===accountViewGeneration/);
+  assert.match(accountJS,/if\(!current\(\)\)\{[\s\S]*?return showView\(view\);[\s\S]*?root\.innerHTML=target\.innerHTML/);
+});

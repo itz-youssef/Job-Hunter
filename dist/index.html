@@ -361,6 +361,11 @@ a:hover{color:var(--ink)}
   const TAB_SYNC_MIN_MS=120000;
   let lastMemberSyncAt=0;
   let memberSyncRunning=false;
+  let memberHydrated=false;
+  // Keep the two public landing views mounted in memory between hash routes.
+  // Never persist HTML or personalized data to browser storage.
+  const landingViews=new Map();
+  let renderedPage=null;
   const lastResults={list:null,key:'',value:null};
   let dedupSnapshot=null,dedupPublic=null;
   const names = {home:'Home',hunter:'Job Hunter',radar:'Job Hunter Dashboard',resume:'Resume Updater',cv:'CV Holder',profile:'My Profile', jobs:'Job Feed', saved:'Saved Jobs', companies:'My Companies', alerts:'Email Alerts'};
@@ -439,7 +444,7 @@ a:hover{color:var(--ink)}
     const sequence=++memberSequence;
     lastMemberSyncAt=Date.now();
     memberSyncRunning=true;
-    const wasReady=Boolean(state.member&&state.memberPrefsConfigured);
+    const wasReady=memberHydrated;
     state.memberLoading=!wasReady;
     if(!wasReady&&['jobs','profile','cv','saved'].includes(state.page))render();
     try{
@@ -448,6 +453,7 @@ a:hover{color:var(--ink)}
       const changed=state.member?.id!==result.user?.id;
       state.member=result.user||null;
       if(changed || !state.member){
+        if(changed){landingViews.clear();state.memberLoading=true;}
         profile={...blankProfile(),photo:''};cvEntry=null;
         state.memberEmail=null;state.memberPrefs=null;state.memberPrefsConfigured=false;state.watchFeed=[];state.watchFeedLoaded=false;state.watchFeedError='';state.saved=new Set();state.savedRecords=[];
         render();
@@ -497,12 +503,14 @@ a:hover{color:var(--ink)}
       state.memberError='';
     }catch(e){
       if(sequence!==memberSequence)return;
+      landingViews.clear();
       state.member=null;profile={...blankProfile(),photo:''};cvEntry=null;
       state.memberEmail=null;state.memberPrefs=null;state.memberPrefsConfigured=false;state.watchFeed=[];state.watchFeedLoaded=false;state.watchFeedError='';state.saved=new Set();state.savedRecords=[];
       state.memberError=e.message;
     }finally{
       if(sequence===memberSequence){
         memberSyncRunning=false;
+        memberHydrated=true;
         state.memberLoading=false;
         if(!document.hidden){syncFeedCount();render();}
       }
@@ -705,11 +713,11 @@ a:hover{color:var(--ink)}
     const catalogRequest=requests[0].then(snapshot=>{
       state.snapshot=snapshot;
       state.publicCatalogLoading=false;
-      if(state.page==='home')render();
+      if(state.page==='home'||state.page==='hunter')render();
       return snapshot;
     },error=>{
       state.publicCatalogLoading=false;
-      if(state.page==='home')render();
+      if(state.page==='home'||state.page==='hunter')render();
       throw error;
     });
     const res=await Promise.allSettled([catalogRequest,...requests.slice(1)]);
@@ -1572,7 +1580,23 @@ a:hover{color:var(--ink)}
   function render(){
     const root=el('#main-content');if(!root)return;
     document.body?.classList?.toggle('sj-editorial-home',state.page==='home'||state.page==='hunter');
-    root.innerHTML=state.page==='home'?home():state.page==='hunter'?jobHunterIntro():state.page==='radar'?radarHome():state.page==='resume'?resumePage():state.page==='cv'?cvPage():state.page==='profile'?profilePage():state.page==='jobs'?jobsPage():state.page==='saved'?jobsPage(true):state.page==='companies'?companiesPage():alertsPage();
+    const landing=state.page==='home'||state.page==='hunter';
+    const html=state.page==='home'?home():state.page==='hunter'?jobHunterIntro():state.page==='radar'?radarHome():state.page==='resume'?resumePage():state.page==='cv'?cvPage():state.page==='profile'?profilePage():state.page==='jobs'?jobsPage():state.page==='saved'?jobsPage(true):state.page==='companies'?companiesPage():alertsPage();
+    // Capture detached public nodes before leaving. Identical background
+    // snapshots must not restart images, animations or reset open FAQ items.
+    if(renderedPage!==state.page&&landingViews.has(renderedPage)&&root.childNodes)
+      landingViews.get(renderedPage).nodes=Array.from(root.childNodes);
+    const cached=landing?landingViews.get(state.page):null;
+    if(cached?.html===html&&renderedPage===state.page){
+      // Already displaying the current version.
+    }else if(cached?.html===html&&cached.nodes&&root.replaceChildren){
+      root.replaceChildren(...cached.nodes);
+      cached.nodes=null;
+    }else{
+      root.innerHTML=html;
+      if(landing)landingViews.set(state.page,{html,nodes:null});
+    }
+    renderedPage=state.page;
     if(state.page==='home'||state.page==='hunter')window.SecretJLanding?.syncAvatar?.();
     if(state.page==='home'||state.page==='hunter')syncLandingTheme();
   }
@@ -1690,7 +1714,10 @@ a:hover{color:var(--ink)}
       if(document.visibilityState==='visible')scheduleMemberSync();
     });
     document.querySelectorAll('nav button[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
-    window.addEventListener('hashchange',()=>go(location.hash.replace('#','')));
+    window.addEventListener('hashchange',()=>{
+      const requested=location.hash.replace('#','')||'home';
+      if(requested!==state.page)go(requested);
+    });
     el('#refresh-button').addEventListener('click',async ()=>{
       const button=el('#refresh-button');
       if(button.disabled)return;

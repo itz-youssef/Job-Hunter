@@ -6,6 +6,18 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g,
   c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const state = {user:null, view:'overview', profile:null};
 let accountProgressDepth=0;
+// Private view snapshots live only in this document, never in storage.
+// Invalidate on every successful mutation, account change or sign-out.
+const accountViews=new Map();
+const ACCOUNT_VIEW_TTL_MS=120000;
+let accountViewGeneration=0,accountViewRequest=0;
+function invalidateAccountViews(){
+  accountViews.clear();
+  accountViewGeneration++;
+}
+window.addEventListener('storage',event=>{
+  if(event.key==='sj-account-change')invalidateAccountViews();
+});
 function loadingCards(message='Loading your account information…',count=3){
   return '<section class="sj-loading-shell" role="status" aria-live="polite" aria-busy="true">'+
    '<div class="sj-loading-heading"><span class="sj-loading-ring" aria-hidden="true"></span>'+
@@ -60,6 +72,7 @@ async function api(endpoint,method='GET',body) {
   const data=await response.json().catch(()=>({}));
   if(!response.ok)throw Error(data.error || 'Request failed ('+response.status+')');
   if(method!=='GET' && endpoint.startsWith('/api/secretj-')) {
+    invalidateAccountViews();
     window.dispatchEvent(new Event('secretj-account-changed'));
     try{localStorage.setItem('sj-account-change',Date.now()+':'+Math.random());}catch{}
   }
@@ -68,6 +81,10 @@ async function api(endpoint,method='GET',body) {
 const authUrl=action=>'/api/secretj-auth?action='+encodeURIComponent(action);
 const dataUrl=scope=>'/api/secretj-data?scope='+encodeURIComponent(scope);
 function showAuth() {
+  invalidateAccountViews();
+  accountViewRequest++;
+  $('#account-content').replaceChildren();
+  $('#welcome-name').textContent='';
   $('#account-profile-photo')?.removeAttribute('src');
   if($('#account-profile-photo'))$('#account-profile-photo').hidden=true;
   if($('#account-profile-initial'))$('#account-profile-initial').hidden=false;
@@ -100,6 +117,7 @@ async function syncHeaderPhoto() {
   initials.hidden=false;
 }
 async function signedIn(user,{newAccount=false}={}) {
+  if(state.user?.id!==user.id)invalidateAccountViews();
   state.user=user;
   $('#auth-panel').hidden=true;
   $('#member-panel').hidden=false;
@@ -163,12 +181,23 @@ function formField(field,label,record={},textarea=false) {
     ${textarea?`<textarea name="${name}" maxlength="12000">${v}</textarea>`:
     `<input name="${name}" value="${v}" maxlength="500" autocomplete="off">`}</label>`;
 }
-async function showView(view) {
+async function showView(view,{reuse=false}={}) {
   if(view==='admin' && state.user?.role!=='admin')view='overview';
+  const root=$('#account-content');
+  const previous=state.view;
+  const request=++accountViewRequest;
+  const generation=accountViewGeneration;
+  const userId=state.user?.id;
   state.view=view;
   for(const button of document.querySelectorAll('[data-view]'))
     button.classList.toggle('active',button.dataset.view===view);
-  const root=$('#account-content');
+  // Administration and explicit refreshes always use fresh server data.
+  const cached=reuse&&view!=='admin'?accountViews.get(view):null;
+  if(cached&&cached.userId===userId&&Date.now()-cached.at<ACCOUNT_VIEW_TTL_MS){
+    if(previous!==view||root.getAttribute('aria-busy')==='true')root.innerHTML=cached.html;
+    root.removeAttribute('aria-busy');
+    return;
+  }
   root.innerHTML=loadingCards(view==='preferences'?'Loading preferences and alerts…':
     view==='documents'?'Loading your CV and photo…':
     view==='profile'?'Loading your profile…':
@@ -176,25 +205,39 @@ async function showView(view) {
     view==='applications'?'Loading your applications…':
     'Preparing your dashboard…',view==='profile'?4:3);
   root.setAttribute('aria-busy','true');
+  // Render member views off-DOM so a slower response cannot overwrite the
+  // next page when the user switches tabs quickly.
+  const target=view==='admin'?root:document.createElement('div');
+  const current=()=>request===accountViewRequest&&state.user?.id===userId&&generation===accountViewGeneration;
   try {
-    if(view==='overview')return await overview(root);
-    if(view==='profile')return await profile(root);
-    if(view==='saved')return await saved(root);
-    if(view==='applications')return await applications(root);
-    if(view==='preferences')return await preferences(root);
-    if(view==='documents')return await documents(root);
-    if(view==='admin')return await admin(root);
-  }catch(e){root.textContent='Could not load this section. '+e.message;}
-  finally{root.removeAttribute('aria-busy');}
+    if(view==='overview')await overview(target);
+    else if(view==='profile')await profile(target);
+    else if(view==='saved')await saved(target);
+    else if(view==='applications')await applications(target);
+    else if(view==='preferences')await preferences(target);
+    else if(view==='documents')await documents(target);
+    else if(view==='admin')return await admin(root);
+    if(!current()){
+      // A write or another tab may invalidate data while this view loads.
+      // Restart only if this is still the visible view for the same account.
+      if(request===accountViewRequest&&state.user?.id===userId&&generation!==accountViewGeneration)return showView(view);
+      return;
+    }
+    root.innerHTML=target.innerHTML;
+    if(target.sjProfile!==undefined)state.profile=target.sjProfile;
+    if(target.sjWelcomeName!==undefined)$('#welcome-name').textContent=target.sjWelcomeName;
+    if(userId)accountViews.set(view,{html:target.innerHTML,at:Date.now(),userId});
+  }catch(e){if(current())root.textContent='Could not load this section. '+e.message;}
+  finally{if(request===accountViewRequest)root.removeAttribute('aria-busy');}
 }
 async function overview(root) {
   const [savedData,apps,cv,profileData]=await Promise.all([
     api(dataUrl('saved')),api(dataUrl('applications')),
     api(dataUrl('cv')),api(dataUrl('profile'))
   ]);
-  state.profile=profileData.profile;
+  root.sjProfile=profileData.profile;
   const name=profileData.profile?.display_name||'';
-  $('#welcome-name').textContent=name?', '+name.split(' ')[0]:'';
+  root.sjWelcomeName=name?', '+name.split(' ')[0]:'';
   root.innerHTML=`<h2>Your career command center</h2>
     <p class="muted">Everything here is private to your Secret J account. The job-scanning system remains shared across all users.</p>
     <div class="summary">
@@ -212,7 +255,8 @@ async function profile(root) {
     api(dataUrl('profile')),
     api('/api/secretj-linkedin?action=status').catch(error=>({configured:false,connected:false,status_error:String(error.message||'Request failed').slice(0,160)}))
   ]);
-  state.profile=data.profile||{};
+  const profileRecord=data.profile||{};
+  root.sjProfile=profileRecord;
   const detailedReady=data.details_ready!==false;
   const connection=linked.connection||null;
   const issues=Array.isArray(linked.setup_issues)?linked.setup_issues:[];
@@ -245,25 +289,25 @@ async function profile(root) {
     </div>
     <p class="small muted">Your login email and alert destination never change automatically when you connect LinkedIn.</p>
     <form id="profile-form" class="grid">
-      ${formField('display_name','Full name',state.profile)}
-      ${formField('headline','Professional headline',state.profile)}
-      ${formField('location','Location',state.profile)}
-      ${formField('skills','Skills',state.profile,true)}
-      ${formField('summary','About me',state.profile,true)}
-      ${formField('experience','Work experience',state.profile,true)}
-      ${formField('education','Education',state.profile,true)}
+      ${formField('display_name','Full name',profileRecord)}
+      ${formField('headline','Professional headline',profileRecord)}
+      ${formField('location','Location',profileRecord)}
+      ${formField('skills','Skills',profileRecord,true)}
+      ${formField('summary','About me',profileRecord,true)}
+      ${formField('experience','Work experience',profileRecord,true)}
+      ${formField('education','Education',profileRecord,true)}
 ${detailedReady?`
-      ${formField('projects','Projects — role, technologies and achievements',state.profile,true)}
-      ${formField('certifications','Certifications and licences',state.profile,true)}
-      ${formField('languages','Languages and proficiency',state.profile,true)}
-      ${formField('awards','Awards and achievements',state.profile,true)}
-      ${formField('volunteering','Volunteering and leadership',state.profile,true)}
-      ${formField('training','Courses and training',state.profile,true)}
-      ${formField('publications','Publications and research',state.profile,true)}
+      ${formField('projects','Projects — role, technologies and achievements',profileRecord,true)}
+      ${formField('certifications','Certifications and licences',profileRecord,true)}
+      ${formField('languages','Languages and proficiency',profileRecord,true)}
+      ${formField('awards','Awards and achievements',profileRecord,true)}
+      ${formField('volunteering','Volunteering and leadership',profileRecord,true)}
+      ${formField('training','Courses and training',profileRecord,true)}
+      ${formField('publications','Publications and research',profileRecord,true)}
       `:'<p class="wide small muted">Some profile fields are temporarily unavailable. Your existing information is preserved.</p>'}
-      ${formField('linkedin','LinkedIn profile URL',state.profile)}
-      ${formField('github','GitHub URL',state.profile)}
-      ${formField('portfolio','Portfolio URL',state.profile)}
+      ${formField('linkedin','LinkedIn profile URL',profileRecord)}
+      ${formField('github','GitHub URL',profileRecord)}
+      ${formField('portfolio','Portfolio URL',profileRecord)}
       <button class="btn wide" type="submit">Save my profile</button>
     </form>
     ${state.user?.role==='member'?'<section class="sj-danger-zone"><h3>Delete your account</h3><p>Permanently remove your Secret J account, profile, CV, saved jobs, applications and sessions. This cannot be undone.</p><button class="btn sj-delete-account" type="button" data-delete-account>Delete account permanently</button></section>':''}`;
@@ -537,7 +581,7 @@ $('#logout').addEventListener('click',async()=>{
 });
 $('#account-nav').addEventListener('click',event=>{
   const button=event.target.closest('[data-view]');
-  if(button)showView(button.dataset.view);
+  if(button)showView(button.dataset.view,{reuse:true});
 });
 $('#account-content').addEventListener('submit',async event=>{
   event.preventDefault();const form=event.target;const values=Object.fromEntries(new FormData(form));
@@ -630,7 +674,7 @@ $('#account-content').addEventListener('click',async event=>{
       banner('Your account was permanently deleted.');
       return;
     }
-    if(b.dataset.go)return showView(b.dataset.go);
+    if(b.dataset.go)return showView(b.dataset.go,{reuse:true});
     if(b.hasAttribute('data-email-test')){
       b.disabled=true;
       try{
