@@ -5,6 +5,7 @@
  * in public static files.
  */
 import authHandler from '../../api/secretj-auth.js';
+import botfolioHandler from '../../api/secretj-botfolio.js';
 import dataHandler from '../../api/secretj-data.js';
 import adminHandler from '../../api/secretj-admin.js';
 import healthHandler from '../../api/secretj-health.js';
@@ -17,6 +18,7 @@ import nativeScan from '../../api/secretj-native-scan.js';
 
 const handlers = new Map([
   ['/api/secretj-auth',authHandler],
+  ['/api/secretj-botfolio',botfolioHandler],
   ['/api/secretj-data',dataHandler],
   ['/api/secretj-admin',adminHandler],
   ['/api/secretj-health',healthHandler],

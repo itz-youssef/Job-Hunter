@@ -23,7 +23,7 @@ test('approved V2 brand hierarchy, editorial layout and real LinkedIn footer',()
  assert.match(html,/YOUR CAREER\./);
  assert.match(html,/Meet our products/);
  assert.match(html,/Job Hunter · Live/);
- assert.match(html,/Botfolio · Coming Soon/);
+ assert.match(html,/Botfolio · Beta/);
  assert.match(html,/WHO WE ARE/);
  assert.match(html,/How It Works/);
  assert.match(html,/https:\/\/www\.linkedin\.com\/company\/secretj\/home\//);

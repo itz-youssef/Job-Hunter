@@ -64,7 +64,7 @@
        <a class="sj-land-logo" href="#home" data-navigate="home" aria-label="Secret J home">
         <img src="/assets/secretj-mark.svg" alt="">Secret J.</a>
        <nav id="sj-land-links" class="sj-land-links" aria-label="Main website navigation">
-         <div class="sj-land-products-menu"><button type="button" class="sj-land-products-trigger" aria-haspopup="true" aria-expanded="false">Our Products</button><div class="sj-land-dropdown sj-land-products-dropdown"><button type="button" data-navigate="hunter">Job Hunter <span class="sj-land-dropdown-note">Live ↗</span></button><span class="sj-land-upcoming" aria-disabled="true">Botfolio <span class="sj-land-dropdown-note">Coming soon</span></span></div></div>
+         <div class="sj-land-products-menu"><button type="button" class="sj-land-products-trigger" aria-haspopup="true" aria-expanded="false">Our Products</button><div class="sj-land-dropdown sj-land-products-dropdown"><button type="button" data-navigate="hunter">Job Hunter <span class="sj-land-dropdown-note">Live ↗</span></button><a href="/botfolio.html">Botfolio <span class="sj-land-dropdown-note">Beta ↗</span></a></div></div>
          <button type="button" data-navigate="jobs">Find Jobs</button>
          <button type="button" data-home-scroll="companies">Explore Companies</button>
          <button type="button" data-home-scroll="how">How It Works</button>
@@ -96,10 +96,10 @@
          <div class="sj-land-product-actions"><button type="button" data-navigate="hunter" class="sj-land-btn dark">Explore Job Hunter ↗</button><button type="button" data-navigate="jobs" class="sj-land-btn sj-land-product-open">Open Job Hunter ↗</button></div>
         </article>
         <article class="sj-land-product pending">
-         <div class="sj-land-product-meta"><span>02 / IN DEVELOPMENT</span><span class="sj-land-product-state">COMING SOON</span></div>
+         <div class="sj-land-product-meta"><span>02 / AI PORTFOLIO</span><span class="sj-land-product-state">BETA</span></div>
          <div><span class="sj-land-eyebrow">YOUR WORK, PRESENTED</span><h3>Botfolio ✦</h3>
-          <p>Our upcoming product will help people present their professional work and portfolio. More details will be shared when it's ready.</p></div>
-         <div class="sj-land-product-actions"><span class="sj-land-muted-action">We're building what's next.</span><button type="button" class="sj-land-btn sj-land-product-open" disabled aria-disabled="true" title="Botfolio — coming soon">Open Botfolio</button></div>
+          <p>Turn your CV into a conversational AI portfolio. Create a shareable chatbot and embed it in your professional website.</p></div>
+         <div class="sj-land-product-actions"><span class="sj-land-muted-action">Your experience, in conversation.</span><a href="/botfolio.html" class="sj-land-btn sj-land-product-open">Open Botfolio ↗</a></div>
         </article>
        </div>
      </div></section>
@@ -150,7 +150,7 @@
        </div>
        <div><span class="sj-land-eyebrow">WHO WE ARE · SECRET J</span><h2>Building tools for every career journey.</h2>
         <p>Secret J is an independent career-focused technology company building tools that help people navigate their professional journeys. Our first product, Job Hunter, helps people discover and organize opportunities from monitored company career pages.</p>
-        <p>We're building for people across technical and non-technical careers. Botfolio, our next product, is in development — part of a growing collection of tools for discovering and presenting work.</p>
+        <p>We're building for people across technical and non-technical careers. Botfolio lets you present your professional experience through an AI portfolio — part of our growing collection of career tools.</p>
         <div class="sj-land-about-actions"><button class="sj-land-btn dark" type="button" data-navigate="jobs">Find Jobs ↗</button>
           <a href="${LINKEDIN}" class="sj-land-btn sj-land-linkedin-cta" target="_blank" rel="noopener noreferrer">Secret J on LinkedIn ↗</a></div>
        </div>
@@ -170,7 +170,7 @@
          <div class="sj-land-footer-links"><strong>OUR PRODUCTS</strong>
            <button type="button" data-home-scroll="products">All Products</button>
            <button type="button" data-navigate="hunter">Job Hunter · Live</button>
-           <button type="button" data-home-scroll="products">Botfolio · Coming Soon</button>
+           <a href="/botfolio.html">Botfolio · Beta</a>
            <button type="button" data-home-scroll="how">How Job Hunter Works</button>
          </div>
          <div class="sj-land-footer-links"><strong>EXPLORE SECRET J</strong>

@@ -37,7 +37,7 @@ test('Secret J editorial landing uses full-width design while retaining the orig
 test('company homepage copy identifies live and future products without invented founders',()=>{
   const landing=fs.readFileSync('dist/assets/secretj-landing.js','utf8');
   assert.doesNotMatch(landing,/Youssef|Yasser|Built for Youssef/i);
-  for(const term of ['WHAT WE BUILD','WHO WE ARE','Job Hunter','Botfolio','COMING SOON'])
+  for(const term of ['WHAT WE BUILD','WHO WE ARE','Job Hunter','Botfolio','BETA'])
     assert.ok(landing.includes(term),term);
   assert.match(landing,/Career-focused technology/);
 });

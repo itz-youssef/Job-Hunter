@@ -45,6 +45,9 @@ jobs:
       - name: Run Cloudflare site security and asset tests
         run: |
           node --check cloudflare/site/worker.mjs
+          node --check dist/assets/botfolio.js
+          node --check dist/assets/botfolio-chat.js
+          node --test tests/test_botfolio.cjs
           node --test tests/test_cloudflare_site.cjs tests/test_secretj_theme_session.cjs
           node --test tests/test_secretj_accounts.cjs tests/test_secretj_health.cjs tests/test_neon_schema_contract.cjs tests/test_secretj_member_features.cjs
       - name: Bundle complete Cloudflare website and verify routes
