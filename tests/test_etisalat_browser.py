@@ -16,3 +16,12 @@ def test_no_invented_location():
 def test_invalid_page_rejected():
     with pytest.raises(ValueError):
         parse_detail("Job Search")
+
+
+def test_browser_performance_keeps_complete_pager_and_disables_only_images():
+    from pathlib import Path
+    code = Path("app/etisalat_browser.py").read_text()
+    assert "--blink-settings=imagesEnabled=false" in code
+    assert "range(1,601)" in code
+    assert 'if expected==total:return list(rows.values()),total' in code
+    assert 'row["index"]!=expected' in code

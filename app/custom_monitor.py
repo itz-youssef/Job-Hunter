@@ -20,6 +20,9 @@ import argparse
 import json
 import os
 import smtplib
+import time
+from threading import BoundedSemaphore
+from urllib.parse import urlsplit
 
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
@@ -231,6 +234,58 @@ def _send_email(job):
         return False
 
 
+# Fetch distinct employers concurrently, without increasing parallelism
+# against the same public careers host. Keep all registry entries each cycle.
+MAX_SCAN_WORKERS = 12
+MAX_HOST_WORKERS = 3
+
+def _scan_all(companies, previous_status):
+    durations = {}
+    for row in previous_status.get("companies", []):
+        if not isinstance(row, dict):
+            continue
+        duration = row.get("duration_seconds")
+        if isinstance(duration, (int, float)) and 0 <= duration <= 1200:
+            durations[str(row.get("url") or "").strip()] = duration
+
+    # These providers have large paginated boards or a real browser. Give
+    # them a head start until actual per-source measurements are available.
+    hints = {"e& / Etisalat": 180, "PwC Egypt": 90, "CIB Egypt": 75,
+             "VOIS": 60, "EY Egypt": 45}
+    def priority(index):
+        company = companies[index]
+        return durations.get(str(company["url"]).strip(), hints.get(company["name"], 0))
+
+    order = sorted(range(len(companies)), key=priority, reverse=True)
+    gates = {}
+    hosts = []
+    for company in companies:
+        host = urlsplit(str(company["url"])).hostname or ""
+        hosts.append(gates.setdefault(host, BoundedSemaphore(MAX_HOST_WORKERS)))
+
+    def timed_scan(index):
+        company = companies[index]
+        with hosts[index]:
+            started_at = _now()
+            started = time.monotonic()
+            try:
+                jobs, status, message = scan_company(company)
+            except Exception as exc:
+                # An unexpected provider-specific failure must not abort the
+                # other companies or erase their published job history.
+                jobs, status, message = [], "error", type(exc).__name__
+            elapsed = round(time.monotonic() - started, 3)
+            checked_at = _now()
+            print(f"Source timing: {company['name']} | {elapsed:.3f}s | {status} | {len(jobs)} jobs", flush=True)
+            return index, (jobs, status, message, elapsed, started_at, checked_at)
+
+    results = [None] * len(companies)
+    with ThreadPoolExecutor(max_workers=MAX_SCAN_WORKERS) as pool:
+        for index, result in pool.map(timed_scan, order):
+            results[index] = result
+    return results
+
+
 def run(
     registry_path: Path,
     snapshot_path: Path,
@@ -328,24 +383,26 @@ def run(
     custom_jobs = {}
     statuses = []
 
-    # Parallelize independent public career sources to reduce alert latency.
-    # Results remain in registry order; stored IDs and deduplication are unchanged.
+    # Longest observed scans start first; preserve registry order in the
+    # published results and use the real completion time for each company.
     scan_started_at = _now()
-    with ThreadPoolExecutor(
-        max_workers=8
-    ) as pool:
-
-        scan_results = list(
-            pool.map(
-                scan_company,
-                companies
-            )
-        )
+    scan_clock = time.monotonic()
+    try:
+        previous_status = _read(status_path, {})
+    except (OSError, ValueError):
+        previous_status = {}
+    if not isinstance(previous_status, dict):
+        previous_status = {}
+    scan_results = _scan_all(companies, previous_status)
+    scan_elapsed = round(time.monotonic() - scan_clock, 3)
 
     for company, (
         jobs,
         status,
-        message
+        message,
+        duration,
+        started_at,
+        checked_at
     ) in zip(companies, scan_results):
 
         name = str(
@@ -383,7 +440,9 @@ def run(
             "public_jobs": len(matches),
             "excluded_jobs": len(jobs) - eligible_count,
             "exclusion_reasons": exclusions,
-            "checked_at": _now(),
+            "checked_at": checked_at,
+            "started_at": started_at,
+            "duration_seconds": duration,
         })
 
         record = state[
@@ -582,6 +641,8 @@ def run(
         {
             "checked_at": _now(),
             "scan_started_at": scan_started_at,
+            "source_scan_duration_seconds": scan_elapsed,
+            "total_duration_seconds": round(time.monotonic() - scan_clock, 3),
             "emails_accepted_by_smtp": sent,
             "pending_alerts": len(state["pending"]),
             "companies": statuses,
@@ -591,7 +652,7 @@ def run(
     print(
         f"Checked {len(statuses)} custom companies; "
         f"{len(custom_jobs)} matched jobs; "
-        f"{sent} emails sent"
+        f"{sent} emails sent; source scans {scan_elapsed:.3f}s"
     )
 
     return snapshot
