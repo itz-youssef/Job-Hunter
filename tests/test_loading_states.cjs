@@ -127,5 +127,5 @@ test('account tabs cache only successful current-user views and invalidate after
   assert.match(accountJS,/if\(method!=='GET' && endpoint\.startsWith\('\/api\/secretj-'\)\) \{\s*invalidateAccountViews\(\)/);
   assert.match(accountJS,/function showAuth\(\) \{\s*invalidateAccountViews\(\)/);
   assert.match(accountJS,/generation===accountViewGeneration/);
-  assert.match(accountJS,/if\(!current\(\)\)return;\s*root\.innerHTML=target\.innerHTML/);
+  assert.match(accountJS,/if\(!current\(\)\)\{[\s\S]*?return showView\(view\);[\s\S]*?root\.innerHTML=target\.innerHTML/);
 });
