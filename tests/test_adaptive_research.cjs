@@ -37,7 +37,7 @@ test('free-only IDs, shared budget and Cairo rotation',()=>{
  assert.notEqual(A.modelFor('2026-11-25'),A.modelFor('2026-11-26'));
  assert.equal(A.localDate(new Date('2026-11-25T22:00:00Z')),'2026-11-26');
  assert.equal(A.localHour(new Date('2026-11-25T22:00:00Z')),0);
- assert.ok(A.MODEL_BUDGET<50&&A.SEARCH_BUDGET*31<=1000&&A.MONTH_BUDGET<=1000);
+ assert.ok(A.MODEL_BUDGET===124&&A.MODEL_LIMITS[A.NEMOTRON]<=40&&A.SEARCH_BUDGET*31<=1000&&A.MONTH_BUDGET<=1000);
  const s=A.newState();A.ledger(s,'2026-11-25');s.usage.search=24;A.ledger(s,'2026-11-26');assert.equal(s.usage.search,24);assert.equal(s.usage.search_day,0);
 });
 test('approved employer hosts and ATS tenants, no local networks',()=>{
@@ -146,16 +146,16 @@ test('Gemini response parser ignores thoughts and rejects partial outputs',()=>{
 });
 test('separate quota ledgers count failures before calls and respect Pacific and Cairo days',()=>{
  const s=A.newState(),now=new Date('2026-11-25T14:00:00Z');A.ledger(s,A.localDate(now));
- for(let i=0;i<15;i++)A.recordCall(s,A.HYDROGEN,now);
+ for(let i=0;i<A.MODEL_LIMITS[A.HYDROGEN];i++)A.recordCall(s,A.HYDROGEN,now);
  assert.equal(A.canCall(s,A.HYDROGEN,now),false);
  assert.equal(A.canCall(s,A.NEMOTRON,now),true);
  assert.equal(A.canCall(s,A.LITE,now),true);
- A.recordCall(s,A.LITE,now);assert.equal(s.usage.model,15);assert.equal(s.usage.preprocess,1);
+ A.recordCall(s,A.LITE,now);assert.equal(s.usage.model,A.MODEL_LIMITS[A.HYDROGEN]);assert.equal(s.usage.preprocess,1);
  const later=new Date('2026-11-25T22:00:00Z');A.ledger(s,A.localDate(later));
  assert.equal(A.canCall(s,A.HYDROGEN,later),false);
  assert.equal(A.canCall(s,A.HYDROGEN,new Date('2026-11-26T08:01:00Z')),true);
  assert.ok(A.MODEL_INTERVALS[A.HYDROGEN]>=12000);
- assert.equal(A.MODEL_LIMITS[A.LITE],100);
+ assert.equal(A.MODEL_LIMITS[A.LITE],200);
 });
 test('Lite preserves original documents, accepts only verbatim evidence, and has no validation vote',()=>{
  const text='Our Future X programme is an internship for university students. Applications are open to students in their final two academic years.';
@@ -175,7 +175,7 @@ test('Google fallback changes endpoint, not the voting slot; failed model is not
  assert.deepEqual(seen,[A.HYDROGEN,A.GOOGLE_MODELS[1],A.GOOGLE_MODELS[1]]);
  assert.ok(h.attempts.every(x=>x.slot===A.HYDROGEN));
  assert.deepEqual(A.MODELS,[A.HYDROGEN,A.NEMOTRON]);
- assert.ok(A.GOOGLE_MODELS.every(m=>A.MODEL_LIMITS[m]===15&&A.MODEL_INTERVALS[m]>=12000));
+ assert.ok(A.GOOGLE_MODELS.every(m=>A.MODEL_LIMITS[m]===18&&A.MODEL_INTERVALS[m]>=12000));
  const one=check(proposal,doc,A.HYDROGEN),two=check(proposal,doc,A.HYDROGEN);
  assert.equal(E.mergeRules([one],[two])[0].status,'candidate');
  assert.equal(E.mergeRules([one],[check(proposal,doc,A.NEMOTRON)])[0].status,'cross-checked');
@@ -202,7 +202,7 @@ test('all three Google endpoints failing invokes Groq and keeps the same voting 
  assert.deepEqual(seen,[...A.GOOGLE_MODELS,A.GROQ,A.GROQ]);
  assert.ok(h.attempts.every(x=>x.slot===A.HYDROGEN));
  assert.equal(h.attempts.at(-1).model,A.GROQ);
- assert.equal(A.MODEL_LIMITS[A.GROQ],15);assert.ok(A.MODEL_INTERVALS[A.GROQ]>=60000);
+ assert.equal(A.MODEL_LIMITS[A.GROQ],30);assert.ok(A.MODEL_INTERVALS[A.GROQ]>=60000);
  assert.equal(E.mergeRules([check(proposal,doc,A.HYDROGEN)],[check(proposal,doc,A.HYDROGEN)])[0].status,'candidate');
  assert.equal(E.mergeRules([check(proposal,doc,A.HYDROGEN)],[check(proposal,doc,A.NEMOTRON)])[0].status,'cross-checked');
 });
@@ -214,9 +214,50 @@ test('shared Google auth failure bypasses all remaining Google models but never 
 });
 test('Groq exhaustion does not block NVIDIA or exceed the shared research cap',()=>{
  const s=A.newState(),now=new Date(),h={googleDisabled:true,groqEnabled:true,disabledModels:new Set()};
- for(let i=0;i<15;i++)A.recordCall(s,A.GROQ,now);
+ for(let i=0;i<A.MODEL_LIMITS[A.GROQ];i++)A.recordCall(s,A.GROQ,now);
  assert.equal(A.slotAvailable(s,A.HYDROGEN,h,now),false);
  assert.equal(A.slotAvailable(s,A.NEMOTRON,h,now),true);
  s.usage.model=A.MODEL_BUDGET;assert.equal(A.canCall(s,A.GROQ,now),false);
  assert.ok(fs.readFileSync('.github/workflows/adaptive-dictionary-research.yml','utf8').includes('secrets.GROQ_API_KEY'));
+});
+
+test('expanded budgets are independent and manual benchmarks preserve nightly capacity',()=>{
+ const s=A.newState(),now=new Date('2026-11-25T14:00:00Z');A.ledger(s,A.localDate(now));s.runMode='benchmark';
+ assert.equal(A.MODEL_BUDGET,124);
+ assert.equal(A.effectiveLimit(s,A.NEMOTRON),30);
+ assert.equal(A.effectiveLimit(s,A.HYDROGEN),8);
+ assert.equal(A.effectiveLimit(s,A.GROQ),20);
+ assert.equal(A.effectiveLimit(s,A.LITE),180);
+ for(let i=0;i<8;i++)A.recordCall(s,A.HYDROGEN,now);
+ assert.equal(A.canCall(s,A.HYDROGEN,now),false);
+ assert.equal(A.canCall(s,A.GOOGLE_MODELS[1],now),true);
+ const report=A.usageView(s,now);
+ assert.equal(report[A.HYDROGEN].remaining,10);
+ assert.equal(report[A.HYDROGEN].benchmark_remaining,0);
+ s.runMode='daily';
+ for(let i=0;i<10;i++)A.recordCall(s,A.HYDROGEN,now);
+ assert.equal(A.canCall(s,A.HYDROGEN,now),false);
+ assert.equal(A.canCall(s,A.NEMOTRON,now),true);
+});
+test('legacy unattributed requests are preserved and conservatively debited to OpenRouter across Cairo midnight',()=>{
+ const s=A.newState(),now=new Date('2026-11-25T14:00:00Z');A.ledger(s,A.localDate(now));
+ for(let i=0;i<6;i++){A.recordCall(s,A.NEMOTRON,now);A.recordCall(s,A.HYDROGEN,now);}
+ s.usage.model+=14;A.migrateLegacyUsage(s,now);A.migrateLegacyUsage(s,now);
+ assert.equal(s.usage.model,26);assert.equal(s.usage.legacy_model_requests.count,14);
+ assert.equal(A.usageView(s,now)[A.NEMOTRON].remaining,20);
+ assert.equal(A.usageView(s,now)[A.NEMOTRON].benchmark_remaining,10);
+ assert.equal(A.usageView(s,now)[A.HYDROGEN].remaining,12);
+ const later=new Date('2026-11-25T22:00:00Z');A.ledger(s,A.localDate(later));
+ assert.equal(A.usageView(s,later)[A.NEMOTRON].remaining,20);
+ assert.equal(A.usageView(s,new Date('2026-11-26T01:00:00Z'))[A.NEMOTRON].remaining,40);
+});
+test('Groq rolling token budget charges failed attempts and preserves an overnight token reserve',()=>{
+ const s=A.newState(),now=new Date('2026-11-25T14:00:00Z');s.runMode='benchmark';
+ assert.ok(A.groqTokenEstimate('system',{documents:[]})>4096);
+ A.reserveGroqTokens(s,99000,now);
+ assert.throws(()=>A.reserveGroqTokens(s,1001,now),/model-budget/);
+ s.runMode='daily';A.reserveGroqTokens(s,61000,now);
+ assert.equal(A.groqTokensUsed(s,now),160000);
+ assert.throws(()=>A.reserveGroqTokens(s,1,now),/model-budget/);
+ assert.equal(A.groqTokensUsed(s,new Date(now.getTime()+86400001)),0);
 });
