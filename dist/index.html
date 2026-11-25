@@ -1975,8 +1975,7 @@ a:hover{color:var(--ink)}
     syncFeedCount();
     const initialMember=hydrateMember();
     const initialCatalog=refresh(true);
-    Promise.allSettled([initialMember,initialCatalog]).then(()=>{
-      window.SecretJStartup?.finish();
+    Promise.allSettled([initialMember,initialCatalog]).then(()=>window.SecretJStartup?.finish()).then(()=>{
       // Cross-product footer links may target a public editorial section.
       // Only these fixed IDs are accepted; normal routes behave as before.
       if(location.search){
