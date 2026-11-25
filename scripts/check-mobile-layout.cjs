@@ -61,11 +61,11 @@ for(const w of [320,375,390,430,600,768,900,1024,1280,1440,1920,2560,3840]){
   await page.evaluate(t=>localStorage.setItem('jh-theme',t),theme);
   await page.reload();
   await page.waitForFunction(()=>!document.getElementById('workspace').hidden && document.getElementById('stat-total').textContent==='2');
-  for(const view of ['home','portfolios','create','guides']){
+  for(const view of ['home','botfolio','create','guides']){
    await page.locator('.bf-sidebar nav [data-bf-view="'+view+'"]').click();
    await page.waitForFunction(v=>document.querySelector('.bf-sidebar nav [aria-current="page"]')?.dataset.bfView===v,view);
-   const layout=await page.evaluate(v=>{const rect=s=>document.querySelector(s).getBoundingClientRect();const side=rect('.bf-sidebar'),main=rect('.bf-workspace');return {scroll:document.documentElement.scrollWidth,width:innerWidth,sideLeft:side.left,mainRight:main.right,visible:!document.getElementById(({home:'home-intro',portfolios:'portfolio-view',create:'create',guides:'guides'})[v]).hidden,theme:document.documentElement.dataset.theme}},view);
-   if(layout.scroll>w+1||!layout.visible||layout.theme!==theme||(w>900&&(Math.abs(layout.sideLeft)>1||Math.abs(layout.mainRight-w)>20)))failures.push({botfolio:view,w,theme,...layout});
+   const layout=await page.evaluate(v=>{const rect=s=>document.querySelector(s).getBoundingClientRect();const side=rect('.bf-sidebar'),main=rect('.bf-workspace');return {scroll:document.documentElement.scrollWidth,width:innerWidth,sideLeft:side.left,mainRight:main.right,visible:!document.getElementById(({home:'product-home',botfolio:'portfolio-view',create:'create',guides:'guides'})[v]).hidden,theme:document.documentElement.dataset.theme,homeVisible:!document.getElementById('product-home').hidden,toolVisible:!document.getElementById('portfolio-view').hidden,favicon:document.querySelector('link[rel=icon]')?.getAttribute('href'),title:document.title}},view);
+   if(layout.scroll>w+1||!layout.visible||layout.homeVisible!==(view==='home')||layout.toolVisible!==(view==='botfolio')||layout.favicon!=='/favicon.svg'||!layout.title.startsWith('Secret J')||layout.theme!==theme||(w>900&&(Math.abs(layout.sideLeft)>1||Math.abs(layout.mainRight-w)>20)))failures.push({botfolio:view,w,theme,...layout});
   }
  }
 }
