@@ -119,3 +119,10 @@ test('Botfolio usage is admin-only, aggregate and read-only',async()=>{
  assert.doesNotMatch(JSON.stringify(response.body),/knowledge|vector|reservations|GROQ_API_KEY|password_hash/);
  const js=fs.readFileSync('dist/assets/secretj-admin-console.js','utf8');assert.match(js,/Botfolio AI Usage/);assert.match(js,/botfolio-usage/);assert.match(js,/data-bf-usage-refresh/);assert.match(js,/Not configured on this host/);assert.match(js,/Next request released/);assert.match(js,/Next token release/);assert.match(js,/All current tokens released/);assert.match(js,/timeZone:'Africa\/Cairo'/);assert.match(js,/Both local counters reset/);assert.match(js,/g\.requests_24h,g\.global_request_limit,g\.remaining_requests,'requests'/);assert.match(js,/g\.tokens_24h,g\.system_token_limit,g\.remaining_tokens,'tokens'/);
 });
+
+test('provider reset times use the shared research snapshot and yellow timestamp only',()=>{
+ const js=fs.readFileSync('dist/assets/secretj-admin-console.js','utf8'),page=fs.readFileSync('dist/account.html','utf8');
+ assert.match(js,/class="sj-provider-reset-time"/);assert.match(js,/Last reported reset has passed/);assert.match(js,/data-bf-provider-reset/);assert.match(js,/Provider daily token reset \(TPD\): Not reported/);
+ assert.equal((js.match(/api\(url\+'research-shadow'\)/g)||[]).length,1);
+ assert.match(page,/\.sj-provider-reset-time\{color:#856000!important/);assert.match(page,/\.sj-provider-reset-time\{color:#facc15!important/);
+});
