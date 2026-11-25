@@ -74,8 +74,9 @@ for(const w of [320,375,390,430,600,768,900,1024,1280,1440,1920,2560,3840]){
 for(const w of [375,1440]){
  await page.setViewportSize({width:w,height:900});
  await page.goto('http://127.0.0.1:8765/botfolio.html#botfolio');
+ await page.evaluate(()=>window.scrollTo(0,0));
  await page.locator('.bf-nav .brand').click();
- await page.waitForURL(u=>u.pathname==='/' || u.pathname==='/index.html',{waitUntil:'domcontentloaded'});
+ try{await page.waitForURL(u=>u.pathname==='/' || u.pathname==='/index.html',{waitUntil:'domcontentloaded',timeout:10000});}catch(err){throw new Error('Brand navigation failed at '+w+'; actual URL: '+page.url(),{cause:err});}
  await page.locator('#sj-landing .sj-land-logo').waitFor({state:'visible'});
  if(new URL(page.url()).hash!=='#home')failures.push({botfolio_navigation:'home',w,url:page.url()});
  await page.goto('http://127.0.0.1:8765/botfolio.html#botfolio');
