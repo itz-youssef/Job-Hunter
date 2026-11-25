@@ -16,7 +16,7 @@ const MODEL_LIMITS=Object.freeze({...Object.fromEntries(GOOGLE_MODELS.map(m=>[m,
 const PROVIDER_REQUEST_LIMITS=Object.freeze({...Object.fromEntries(GOOGLE_MODELS.map(m=>[m,20])),[GROQ]:1000,[NEMOTRON]:50,[LITE]:500});
 const EMERGENCY_LIMITS=Object.freeze({...Object.fromEntries(GOOGLE_MODELS.map(m=>[m,19])),[GROQ]:60});
 const NIGHTLY_RESERVE=Object.freeze({...Object.fromEntries(GOOGLE_MODELS.map(m=>[m,10])),[NEMOTRON]:10,[GLM]:10,[GROQ]:10,[LITE]:20});
-const GROQ_TOKEN_BUDGET=160000,GROQ_TOKEN_RESERVE=60000;
+const GROQ_TOKEN_BUDGET=75000,GROQ_TOKEN_RESERVE=60000;
 const isBenchmark=state=>state.runMode==='benchmark';
 const MODEL_INTERVALS=Object.freeze({...Object.fromEntries(GOOGLE_MODELS.map(m=>[m,13000])),[NEMOTRON]:3500,[GLM]:5000,[GROQ]:65000,[LITE]:5000});
 const ROOT=path.resolve(__dirname,'..'),STATE=process.env.RESEARCH_STATE_DIR||path.join(ROOT,'.research-state');

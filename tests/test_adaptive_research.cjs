@@ -254,10 +254,11 @@ test('legacy unattributed requests are preserved and conservatively debited to O
 test('Groq rolling token budget charges failed attempts and preserves an overnight token reserve',()=>{
  const s=A.newState(),now=new Date('2026-11-25T14:00:00Z');s.runMode='benchmark';
  assert.ok(A.groqTokenEstimate('system',{documents:[]})>4096);
- A.reserveGroqTokens(s,99000,now);
+ assert.equal(A.GROQ_TOKEN_BUDGET,75000);assert.equal(A.GROQ_TOKEN_RESERVE,60000);
+ A.reserveGroqTokens(s,14000,now);
  assert.throws(()=>A.reserveGroqTokens(s,1001,now),/model-budget/);
  s.runMode='daily';A.reserveGroqTokens(s,61000,now);
- assert.equal(A.groqTokensUsed(s,now),160000);
+ assert.equal(A.groqTokensUsed(s,now),75000);
  assert.throws(()=>A.reserveGroqTokens(s,1,now),/model-budget/);
  assert.equal(A.groqTokensUsed(s,new Date(now.getTime()+86400001)),0);
 });
