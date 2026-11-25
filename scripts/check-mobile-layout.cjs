@@ -61,6 +61,11 @@ for(const w of [320,375,390,430,600,768,900,1024,1280,1440,1920,2560,3840]){
   await page.evaluate(t=>localStorage.setItem('jh-theme',t),theme);
   await page.reload();
   await page.waitForFunction(()=>!document.getElementById('workspace').hidden && document.getElementById('stat-total').textContent==='2');
+  const heroArtwork=await page.locator('.bf-intro-hero').evaluate(el=>getComputedStyle(el,'::before').backgroundImage);
+  const expectedArtwork=theme==='dark'?'jobhunter-abstract-dark.svg':'botfolio-hero-burgundy.svg';
+  if(!heroArtwork.includes(expectedArtwork))failures.push({botfolio_hero:w,theme,heroArtwork,expectedArtwork});
+  const asset=await page.request.get('http://127.0.0.1:8765/assets/'+expectedArtwork);
+  if(!asset.ok())failures.push({botfolio_hero_asset:w,theme,status:asset.status()});
   for(const view of ['home','botfolio','create','guides']){
    await page.locator('.bf-sidebar nav [data-bf-view="'+view+'"]').click();
    await page.waitForFunction(v=>document.querySelector('.bf-sidebar nav [aria-current="page"]')?.dataset.bfView===v,view);
