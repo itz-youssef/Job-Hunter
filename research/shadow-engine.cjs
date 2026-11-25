@@ -88,12 +88,45 @@ function validate(p,docs,jobs,model,day){
  const fp=fingerprint(j);
  return {key:hash(JSON.stringify(['family',fp,p.family])),kind:'family',company:j.company,title:j.title,job_fingerprint:fp,family:p.family,evidence:{url:d.url,quote,corroboration:departmentProof?'Official department: '+department:q2,checked_at:day},models:[model],status:'candidate'};
 }
+// Existing rule payloads and order are immutable. Only add independent
+// confirmations and promote a candidate; never downgrade or overwrite it.
+const careerScope=r=>r.kind==='career'?norm(r.company)+'|'+norm(r.alias):null;
+function assertAdditive(old,next){
+ const seen=new Map();
+ for(const r of next){if(!r?.key||seen.has(r.key))throw Error('duplicate-or-invalid-rule-key');seen.set(r.key,r);}
+ for(const r of old){
+  const n=seen.get(r.key);
+  if(!n)throw Error('append-only-rule-removal');
+  for(const k of Object.keys(r)){
+   if(k==='models'||k==='status')continue;
+   if(JSON.stringify(r[k])!==JSON.stringify(n[k]))throw Error('append-only-rule-overwrite');
+  }
+  if(!(r.models||[]).every(m=>(n.models||[]).includes(m)))throw Error('append-only-model-removal');
+  if(r.status!==n.status&&!(r.status==='candidate'&&n.status==='cross-checked'&&new Set(n.models||[]).size>=2))throw Error('append-only-rule-status-downgrade');
+ }
+}
 function mergeRules(old,proposals){
- const map=new Map((old||[]).map(r=>[r.key,r]));
- for(const p of proposals){const models=[...new Set([...(map.get(p.key)?.models||[]),...p.models])];map.set(p.key,{...p,models,status:models.length>=2?'cross-checked':'candidate'});}
- const rows=[...map.values()],scopes=new Map();
- for(const r of rows){if(r.kind!=='career')continue;const scope=norm(r.company)+'|'+norm(r.alias);if(!scopes.has(scope))scopes.set(scope,new Set());scopes.get(scope).add(r.level);}
- return rows.map(r=>r.kind==='career'&&scopes.get(norm(r.company)+'|'+norm(r.alias)).size>1?{...r,status:'conflict'}:r);
+ old=old||[];
+ assertAdditive(old,old);
+ const map=new Map(old.map(r=>[r.key,r]));
+ const scopes=new Map();
+ for(const r of [...old,...proposals]){
+  const scope=careerScope(r);if(scope===null)continue;
+  if(!scopes.has(scope))scopes.set(scope,new Set());
+  scopes.get(scope).add(r.level);
+ }
+ for(const p of proposals){
+  const existing=map.get(p.key),scope=careerScope(p),conflict=scope!==null&&scopes.get(scope).size>1;
+  if(existing){
+   const models=[...new Set([...(existing.models||[]),...(p.models||[])])];
+   const status=existing.status==='candidate'&&!conflict&&models.length>=2?'cross-checked':existing.status;
+   map.set(p.key,{...existing,models,status});
+  }else{
+   const models=[...new Set(p.models||[])];
+   map.set(p.key,{...p,models,status:conflict?'conflict':models.length>=2?'cross-checked':'candidate'});
+  }
+ }
+ const rows=[...map.values()];assertAdditive(old,rows);return rows;
 }
 function shadow(j,rules){
  const b=baseline(j),valid=rules.filter(r=>r.status==='cross-checked');let level=b.level,fs=b.families;
@@ -113,4 +146,4 @@ function evaluate(jobs,rules,reference){
  const compare=fn=>metrics(cases.map(c=>({expected:c.expected===true,actual:fn(c).families.some(k=>(c.preference||[]).includes(k))})));
  return {catalog_jobs:jobs.length,changed_level,changed_family,baseline_unknown,shadow_unknown,changes,benchmark:{basis:'Existing limited semantic-role reference; not production accuracy.',old:compare(baseline),shadow:compare(j=>shadow(j,rules))}};
 }
-module.exports={norm,plain,hash,contains,dept,fingerprint,baseline,validate,mergeRules,shadow,metrics,evaluate,levels,families};
+module.exports={norm,plain,hash,contains,dept,fingerprint,baseline,validate,mergeRules,assertAdditive,shadow,metrics,evaluate,levels,families};
