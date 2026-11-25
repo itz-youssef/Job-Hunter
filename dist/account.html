@@ -199,6 +199,26 @@ html[data-theme="light"] .nav button.active *{
 .sj-quota-count{font-size:26px;font-weight:750;line-height:1.4;font-variant-numeric:tabular-nums;margin-top:6px}.sj-quota-count small{display:inline!important;font-size:12px;font-weight:500}
 .sj-quota-track{height:8px;border-radius:9px;background:var(--border);overflow:hidden;margin:8px 0}.sj-quota-track i{display:block;height:100%;border-radius:9px;background:#258b68}.sj-quota-track i.near{background:#b7791f}.sj-quota-track i.full{background:#c44848}
 .sj-quota-card small{display:block;color:var(--muted);font-size:11px;line-height:1.6}.sj-quota-card .sj-quota-status{color:var(--ink);font-weight:650;margin:7px 0}
+
+/* Semantic colors are intentionally confined to the administrator console. */
+html body .sj-admin-root{--sj-green:#087649;--sj-amber:#995000;--sj-red:#b42332;--sj-blue:#175ba6;--sj-violet:#7540a8}
+html[data-theme="dark"] body .sj-admin-root{--sj-green:#6fdfa4;--sj-amber:#ffc36d;--sj-red:#ff858d;--sj-blue:#8ac2ff;--sj-violet:#cfacff}
+html body .sj-admin-root .sj-tone-success{--sj-status:var(--sj-green)}
+html body .sj-admin-root .sj-tone-warning{--sj-status:var(--sj-amber)}
+html body .sj-admin-root .sj-tone-danger{--sj-status:var(--sj-red)}
+html body .sj-admin-root .sj-tone-info{--sj-status:var(--sj-blue)}
+html body .sj-admin-root .sj-tone-emergency{--sj-status:var(--sj-violet)}
+html body .sj-admin-root .sj-tone-neutral{--sj-status:var(--ink)}
+html body .sj-admin-root .sj-semantic-text,html body .sj-admin-root .sj-quota-status,html body .sj-admin-root .sj-admin-badge{color:var(--sj-status,var(--ink))!important}
+html body .sj-admin-root .sj-admin-badge{border-color:var(--sj-status,var(--border))!important}
+html body .sj-admin-root .sj-quota-track{background:var(--border)!important}
+html body .sj-admin-root .sj-quota-track i{background:var(--sj-status,var(--sj-green))!important}
+html body .sj-admin-root .sj-quota-card{border-inline-start:3px solid var(--sj-status,var(--border))!important}
+html body .sj-admin-root .sj-quota-title span,html body .sj-admin-root .sj-quota-count>span{color:var(--sj-status,var(--ink))!important}
+html body .sj-admin-root .sj-research-mode{padding:12px 14px;margin:12px 0;border:1px solid var(--border)!important;border-inline-start:3px solid var(--sj-status,var(--border))!important;border-radius:10px}
+html body .sj-admin-root .sj-research-mode strong{display:block;color:var(--sj-status,var(--ink))!important;font-size:15px}
+html body .sj-admin-root .sj-research-mode small{display:block;margin-top:4px;font-size:12px;overflow-wrap:anywhere}
+
 #registration-consent:not([hidden]){display:flex}
 
 /* The account avatar menu includes sign out without a separate header button. */
@@ -224,7 +244,7 @@ html[data-theme="light"] .nav button.active *{
 <link rel="stylesheet" href="/assets/secretj-global-theme.css?v=linkedin-theme-layer-20261124">
 <script src="/assets/secretj-cv-parser.js" defer></script>
 <script src="/assets/secretj-avatar-crop.js" defer></script>
-<script src="/assets/secretj-admin-console.js?v=emergency-quota-v9-20261125" defer></script>
+<script src="/assets/secretj-admin-console.js?v=semantic-colors-20261125" defer></script>
 <script src="/assets/secretj-eligibility-core.js?v=constraint-aware-f-1" defer></script>
 <script src="/assets/secretj-career-dictionary.js?v=dictionary-20261122" defer></script>
   <script src="/assets/secretj-career-level.js?v=level-classifier-1" defer></script>
