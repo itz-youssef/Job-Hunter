@@ -24,7 +24,7 @@ module.exports=async function handler(req,res){
     if(req.method==='GET' && action==='research-shadow'){
       // Both hosting platforms already route this authenticated admin handler.
       try{
-        const response=await fetch('https://raw.githubusercontent.com/itz-youssef/Job-Hunter/research/shadow-state/research-results/report.json',{signal:AbortSignal.timeout(5000),cache:'no-store'});
+        const response=await fetch('https://raw.githubusercontent.com/itz-youssef/Job-Hunter/refs/heads/research/shadow-state/research-results/report.json',{signal:AbortSignal.timeout(5000),cache:'no-store'});
         if(!response.ok)return core.reply(res,200,{ok:true,report:null});
         const report=await response.json();
         if(report?.mode!=='shadow'||report?.production_unchanged!==true)return core.reply(res,200,{ok:true,report:null});
