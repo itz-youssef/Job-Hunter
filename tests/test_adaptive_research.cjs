@@ -66,7 +66,7 @@ test('missing credentials fail closed without modifying any candidate dictionari
  try{
   const original={mode:'shadow',rules:[{key:'existing'}]};
   fs.writeFileSync(path.join(dir,'career-level-dictionary.json'),JSON.stringify(original));
-  const env={...process.env,RESEARCH_STATE_DIR:dir,RESEARCH_MODE:'daily',GITHUB_EVENT_NAME:'workflow_dispatch',OPENROUTER_API_KEY:'',GEMINI_API_KEY:'',TAVILY_API_KEY:''};
+  const env={...process.env,RESEARCH_STATE_DIR:dir,RESEARCH_MODE:'daily',GITHUB_EVENT_NAME:'workflow_dispatch',OPENROUTER_API_KEY:'',GEMINI_API_KEY:'',GROQ_API_KEY:'',TAVILY_API_KEY:''};
   const r=cp.spawnSync(process.execPath,['research/research-agent.cjs'],{env,encoding:'utf8',timeout:10000});
   assert.equal(r.status,0,r.stderr);
   const report=JSON.parse(fs.readFileSync(path.join(dir,'report.json')));
@@ -180,8 +180,9 @@ test('Google fallback changes endpoint, not the voting slot; failed model is not
  assert.equal(E.mergeRules([one],[two])[0].status,'candidate');
  assert.equal(E.mergeRules([one],[check(proposal,doc,A.NEMOTRON)])[0].status,'cross-checked');
 });
-test('Google cascade respects quotas and stops on shared credential errors',async()=>{
+test('Google cascade stops on shared credential errors when Groq is not configured',async()=>{
  const s=A.newState(),h={disabledModels:new Set(),cooldowns:new Map(),failedGoogle:new Set(),attempts:[]},seen=[];
+ h.groqEnabled=false;
  const send=async model=>{seen.push(model);const e=new Error('provider');e.status=model===A.HYDROGEN?503:403;throw e;};
  await assert.rejects(A.inferSlot(A.HYDROGEN,'s',{},s,{}, {},h,send),e=>e.status===403);
  assert.deepEqual(seen,A.GOOGLE_MODELS.slice(0,2));assert.ok(h.disabledModels.has(A.LITE));assert.equal(A.slotAvailable(s,A.HYDROGEN,h),false);assert.equal(A.slotAvailable(s,A.NEMOTRON,h),true);
@@ -189,5 +190,33 @@ test('Google cascade respects quotas and stops on shared credential errors',asyn
 test('all Google endpoints failing returns failure, never a fabricated decision',async()=>{
  const s=A.newState(),h={disabledModels:new Set(),cooldowns:new Map(),failedGoogle:new Set(),attempts:[]};
  await assert.rejects(A.inferSlot(A.HYDROGEN,'s',{},s,{}, {},h,async()=>{const e=new Error('unavailable');e.status=503;throw e;}),e=>e.status===503);
- assert.equal(h.attempts.length,3);assert.equal(A.slotAvailable(s,A.HYDROGEN,h),false);
+ assert.equal(h.attempts.length,4);assert.equal(A.slotAvailable(s,A.HYDROGEN,h),false);
+});
+
+test('all three Google endpoints failing invokes Groq and keeps the same voting identity',async()=>{
+ const s=A.newState(),h={disabledModels:new Set(),cooldowns:new Map(),failedGoogle:new Set(),attempts:[],groqEnabled:true},seen=[];
+ const send=async model=>{seen.push(model);if(model!==A.GROQ){const e=new Error('unavailable');e.status=503;throw e;}return {proposals:[]};};
+ const args=[A.HYDROGEN,'s',{},s,{groq:'mock'}, {stage:'career'},h,send];
+ assert.deepEqual(await A.inferSlot(...args),{proposals:[]});
+ assert.deepEqual(await A.inferSlot(...args),{proposals:[]});
+ assert.deepEqual(seen,[...A.GOOGLE_MODELS,A.GROQ,A.GROQ]);
+ assert.ok(h.attempts.every(x=>x.slot===A.HYDROGEN));
+ assert.equal(h.attempts.at(-1).model,A.GROQ);
+ assert.equal(A.MODEL_LIMITS[A.GROQ],15);assert.ok(A.MODEL_INTERVALS[A.GROQ]>=60000);
+ assert.equal(E.mergeRules([check(proposal,doc,A.HYDROGEN)],[check(proposal,doc,A.HYDROGEN)])[0].status,'candidate');
+ assert.equal(E.mergeRules([check(proposal,doc,A.HYDROGEN)],[check(proposal,doc,A.NEMOTRON)])[0].status,'cross-checked');
+});
+test('shared Google auth failure bypasses all remaining Google models but never disables Groq',async()=>{
+ const s=A.newState(),h={disabledModels:new Set(),cooldowns:new Map(),failedGoogle:new Set(),attempts:[],groqEnabled:true},seen=[];
+ const send=async model=>{seen.push(model);if(model!==A.GROQ){const e=new Error('forbidden');e.status=403;throw e;}return {proposals:[]};};
+ assert.deepEqual(await A.inferSlot(A.HYDROGEN,'s',{},s,{groq:'mock'}, {},h,send),{proposals:[]});
+ assert.deepEqual(seen,[A.HYDROGEN,A.GROQ]);assert.ok(h.googleDisabled);assert.ok(h.disabledModels.has(A.LITE));assert.ok(A.slotAvailable(s,A.HYDROGEN,h));
+});
+test('Groq exhaustion does not block NVIDIA or exceed the shared research cap',()=>{
+ const s=A.newState(),now=new Date(),h={googleDisabled:true,groqEnabled:true,disabledModels:new Set()};
+ for(let i=0;i<15;i++)A.recordCall(s,A.GROQ,now);
+ assert.equal(A.slotAvailable(s,A.HYDROGEN,h,now),false);
+ assert.equal(A.slotAvailable(s,A.NEMOTRON,h,now),true);
+ s.usage.model=A.MODEL_BUDGET;assert.equal(A.canCall(s,A.GROQ,now),false);
+ assert.ok(fs.readFileSync('.github/workflows/adaptive-dictionary-research.yml','utf8').includes('secrets.GROQ_API_KEY'));
 });

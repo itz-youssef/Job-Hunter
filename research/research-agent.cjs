@@ -5,11 +5,13 @@ const E=require('./shadow-engine.cjs');
 const currentDictionary=require('../dist/assets/secretj-career-dictionary');
 const currentPrefs=require('../dist/assets/secretj-job-preferences');
 const HYDROGEN='gemini-4-hydrogen',NEMOTRON='nvidia/nemotron-3-ultra-550b-a55b:free',LITE='gemini-3.5-flash-lite';
-// HYDROGEN is the stable Google voting slot identity (not necessarily the actual endpoint).
+// HYDROGEN is the legacy stable second-researcher voting identity, never an endpoint attribution.
 const GOOGLE_MODELS=Object.freeze([HYDROGEN,'gemini-3.8-flash','gemini-3.6-flash']);
+const GROQ='openai/gpt-oss-120b';
+const RESEARCH_POOL=Object.freeze([...GOOGLE_MODELS,GROQ]);
 const MODELS=[HYDROGEN,NEMOTRON];
-const MODEL_LIMITS=Object.freeze({...Object.fromEntries(GOOGLE_MODELS.map(m=>[m,15])),[NEMOTRON]:15,[LITE]:100});
-const MODEL_INTERVALS=Object.freeze({...Object.fromEntries(GOOGLE_MODELS.map(m=>[m,13000])),[NEMOTRON]:3500,[LITE]:5000});
+const MODEL_LIMITS=Object.freeze({...Object.fromEntries(GOOGLE_MODELS.map(m=>[m,15])),[NEMOTRON]:15,[GROQ]:15,[LITE]:100});
+const MODEL_INTERVALS=Object.freeze({...Object.fromEntries(GOOGLE_MODELS.map(m=>[m,13000])),[NEMOTRON]:3500,[GROQ]:65000,[LITE]:5000});
 const ROOT=path.resolve(__dirname,'..'),STATE=process.env.RESEARCH_STATE_DIR||path.join(ROOT,'.research-state');
 const MODEL_BUDGET=40,SEARCH_BUDGET=24,MONTH_BUDGET=744,INITIAL_SEARCH_BUDGET=16,BATCH_COMPANIES=1,DOC_CHARS=2600,DAILY_COMPANIES=10,BENCHMARK_COMPANIES=2,TASK_TEXT_CHARS=900,TASK_DOCS=2;
 const BUILTINS=[{name:'Microsoft',url:'https://apply.careers.microsoft.com/'},{name:'Siemens',url:'https://jobs.siemens.com/'},{name:'Valeo',url:'https://valeo.wd3.myworkdayjobs.com/'}];
@@ -80,7 +82,7 @@ function decodeGemini(data){
  return parseJSON((c.content?.parts||[]).filter(p=>!p.thought&&typeof p.text==='string').map(p=>p.text).join(''));
 }
 function providerDay(model,date=new Date()){
- return new Intl.DateTimeFormat('en-CA',{timeZone:model===NEMOTRON?'UTC':'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
+ return new Intl.DateTimeFormat('en-CA',{timeZone:model===NEMOTRON||model===GROQ?'UTC':'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
 }
 function modelLedger(state,model,now=new Date()){
  if(!Object.hasOwn(MODEL_LIMITS,model))throw problem('model-budget');
@@ -134,7 +136,7 @@ async function search(company,state,key,telemetry,extra=''){
 }
 async function inferActual(model,system,payload,state,keys,options={}){
  if(!canCall(state,model))throw problem('model-budget');
- const google=model!==NEMOTRON,key=google?keys.google:keys.openrouter;
+ const google=GOOGLE_MODELS.includes(model)||model===LITE,key=model===GROQ?keys.groq:google?keys.google:keys.openrouter;
  if(!key)throw problem('missing-provider-key');
  const entry=modelLedger(state,model),wait=Math.max(0,MODEL_INTERVALS[model]-(Date.now()-entry.last_at));
  if(wait)await sleep(wait);
@@ -146,15 +148,26 @@ async function inferActual(model,system,payload,state,keys,options={}){
   },options.timeout||90000,'google');
   return decodeGemini(data);
  }
+ if(model===GROQ){
+  const data=await request('https://api.groq.com/openai/v1/chat/completions',key,{
+   model:GROQ,messages:[{role:'system',content:system},{role:'user',content:JSON.stringify(payload)}],
+   temperature:0,reasoning_effort:'low',max_completion_tokens:Math.min(options.maxTokens||4096,4096),response_format:{type:'json_object'}
+  },options.timeout||90000);
+  return decodeResponse(data);
+ }
  const data=await request('https://openrouter.ai/api/v1/chat/completions',key,{model,messages:[{role:'system',content:system},{role:'user',content:JSON.stringify(payload)}],temperature:0,max_tokens:options.maxTokens||4096,reasoning:{enabled:false,exclude:true},provider:{allow_fallbacks:false,max_price:{prompt:0,completion:0}}},options.timeout||90000);
  return decodeResponse(data);
 }
 function slotAvailable(state,slot,health={},now=new Date()){
  if(slot!==HYDROGEN)return !health.disabledModels?.has(slot)&&!(health.cooldowns?.get(slot)>now.getTime())&&canCall(state,slot,now);
- return !health.disabledModels?.has(HYDROGEN)&&GOOGLE_MODELS.some(m=>!health.failedGoogle?.has(m)&&canCall(state,m,now));
+ return RESEARCH_POOL.some(m=>endpointAvailable(state,m,health,now));
+}
+function endpointAvailable(state,model,health={},now=new Date()){
+ if(model===GROQ)return health.groqEnabled!==false&&!health.disabledModels?.has(GROQ)&&!health.failedGoogle?.has(GROQ)&&canCall(state,model,now);
+ return !health.googleDisabled&&!health.disabledModels?.has(HYDROGEN)&&!health.failedGoogle?.has(model)&&canCall(state,model,now);
 }
 function disableGoogle(health){
- health.disabledModels?.add(HYDROGEN);health.disabledModels?.add(LITE);
+ health.googleDisabled=true;health.disabledModels?.add(LITE);
 }
 function googleFallbackError(e){
  return [400,404,408,429,500,502,503,504].includes(e?.status)||['request-timeout','network-or-response-error','empty-content','invalid-json','invalid-json-object','truncated-json','multiple-json-objects','no-choice','output-token-limit','invalid-model-schema','provider-response-error'].includes(diagnostic(e));
@@ -168,8 +181,9 @@ async function inferSlot(slot,system,payload,state,keys,options={},health={},tra
  }
  if(!health.failedGoogle)health.failedGoogle=new Set();
  let last;
- for(const model of GOOGLE_MODELS){
-  if(health.disabledModels?.has(HYDROGEN)||health.failedGoogle.has(model)||!canCall(state,model))continue;
+ for(const model of RESEARCH_POOL){
+  if(!endpointAvailable(state,model,health))continue;
+  if(model===GROQ&&!keys.groq&&transport===inferActual)continue;
   try{
    const result=await transport(model,system,payload,state,keys,options);
    if(options.accept&&!options.accept(result))throw problem('invalid-model-schema');
@@ -177,7 +191,7 @@ async function inferSlot(slot,system,payload,state,keys,options={},health={},tra
    return result;
   }catch(e){
    last=e;health.attempts?.push({slot,model,stage:options.stage||'unknown',outcome:'failed',code:diagnostic(e)});
-   if([401,402,403].includes(e.status)){disableGoogle(health);throw e;}
+   if([401,402,403].includes(e.status)){if(model===GROQ)health.disabledModels?.add(GROQ);else disableGoogle(health);health.failedGoogle.add(model);continue;}
    if(!googleFallbackError(e))throw e;
    // One failed endpoint is quarantined for the rest of this run.
    // No repetitive 503 probing or immediate retries on that endpoint.
@@ -278,7 +292,7 @@ async function benchmark(state,keys,reference,health={}){
     for(let i=0;i<levelCases.length;i++)if(byId.has(i)){levelAnswered++;if(byId.get(i)===levelCases[i].expected)levelCorrect++;}
    }catch(e){failed++;diagnostics.push(diagnostic(e));}
   }
-  if(diagnostics.some(x=>['provider-http-401','provider-http-402','provider-http-403'].includes(x))){health.disabledModels?.add(model);if(model===HYDROGEN)health.disabledModels?.add(LITE);}
+  if(model!==HYDROGEN&&diagnostics.some(x=>['provider-http-401','provider-http-402','provider-http-403'].includes(x)))health.disabledModels?.add(model);
   if(model!==HYDROGEN&&diagnostics.includes('provider-http-404'))health.disabledModels?.add(model);
   if(model!==HYDROGEN&&diagnostics.includes('provider-http-429'))health.cooldowns?.set(model,Date.now()+90000);
   results.push({model,actual_models:[...new Set((health.attempts||[]).slice(attemptStart).filter(x=>x.slot===model&&x.outcome==='success').map(x=>x.model))],errors:[...new Set(diagnostics)],expected_cases:cases.length,answered:decisions.length,failed_batches:failed,metrics:E.metrics(decisions),level_reference:{basis:'Synthetic regression examples, not production accuracy',expected_cases:levelCases.length,answered:levelAnswered,correct:levelCorrect,accuracy:levelAnswered?levelCorrect/levelAnswered:null}});
@@ -290,7 +304,7 @@ async function run(){
  if(scheduled&&![0,1].includes(localHour())){console.log('Outside Cairo midnight window');return;}
  const state=read(path.join(STATE,'state.json'),newState());ledger(state,day);
  if(mode==='daily'&&state.last_attempt===day){console.log('Daily attempt already recorded');return;}
- const keys={openrouter:process.env.OPENROUTER_API_KEY,google:process.env.GEMINI_API_KEY},searchKey=process.env.TAVILY_API_KEY,missing=[...(!keys.openrouter?['OPENROUTER_API_KEY']:[]),...(!keys.google?['GEMINI_API_KEY']:[]),...(!searchKey?['TAVILY_API_KEY']:[])];
+ const keys={openrouter:process.env.OPENROUTER_API_KEY,google:process.env.GEMINI_API_KEY,groq:process.env.GROQ_API_KEY},searchKey=process.env.TAVILY_API_KEY,missing=[...(!keys.openrouter?['OPENROUTER_API_KEY']:[]),...(!keys.google&&!keys.groq?['GEMINI_API_KEY or GROQ_API_KEY']:[]),...(!searchKey?['TAVILY_API_KEY']:[])];
  if(missing.length){console.log('Missing required Actions secrets; no external requests');write('report.json',{status:'awaiting-keys',mode:'shadow',production_unchanged:true,updated_at:new Date().toISOString(),missing});return;}
  const snapshot=read(path.join(ROOT,'dist/data.json'),{jobs:[]}),registry=read(path.join(ROOT,'companies.json'),[]),reference=read(path.join(ROOT,'benchmarks/semantic-role-reference.json'),{});
  if(!Array.isArray(snapshot.jobs)||!snapshot.jobs.length||!Array.isArray(registry))throw Error('catalog unavailable');
@@ -327,8 +341,9 @@ async function run(){
  });
  const proposals=[],used=new Set(),errors=[],disabledModels=new Set(),modelDiagnostics=[],cooldowns=new Map();
  const started=Date.now(),taskStats={career:{planned:0,completed:0,skipped:0},family:{planned:0,completed:0,skipped:0}},preparation={planned:0,completed:0,excerpts_used:0,fallback:0};
- const health={disabledModels,cooldowns,failedGoogle:new Set(),attempts:[]};
- const disableProvider=model=>{if(model===NEMOTRON)disabledModels.add(NEMOTRON);else disableGoogle(health);};
+ const health={disabledModels,cooldowns,failedGoogle:new Set(),attempts:[],groqEnabled:!!keys.groq,googleDisabled:!keys.google};
+ if(!keys.google)disableGoogle(health);
+ const disableProvider=model=>{if(model===NEMOTRON)disabledModels.add(NEMOTRON);else if(model===LITE)disableGoogle(health);};
  const modelBenchmark=mode==='benchmark'?await benchmark(state,keys,reference,health):null;
  let globalBlocked=false;
  for(const group of groups){
@@ -394,7 +409,7 @@ async function run(){
   if(!stats.failed_batches&&!errors.length&&!searchTelemetry.failed&&used.size&&stats.companies_with_evidence===all.length&&Object.values(taskStats).every(t=>t.completed===t.planned))state.last_completed=day;
  }
  stats.models_used=[...new Set(health.attempts.filter(x=>x.outcome==='success'&&['career','family'].includes(x.stage)).map(x=>x.model))];stats.model_requests=state.usage.model-startModel;stats.search_credits=state.usage.search-startSearch;
- const report={status:stats.failed_batches||errors.length||searchTelemetry.failed||!used.size||stats.companies_with_evidence!==all.length||Object.values(taskStats).some(t=>t.completed!==t.planned)||modelBenchmark?.some(x=>x.answered<x.expected_cases||x.level_reference.answered<x.level_reference.expected_cases)?'partial':'completed',mode:'shadow',run_type:mode,production_unchanged:true,updated_at:new Date().toISOString(),cairo_day:day,preferred_model:preferred,architecture:'gemini-failover-v5',google_slot:{identity:HYDROGEN,ordered_models:GOOGLE_MODELS,attempts:health.attempts.filter(x=>x.slot===HYDROGEN),unavailable_models:[...health.failedGoogle]},companies_targeted:all.length,task_stats:taskStats,evidence_preparation:{model:LITE,...preparation,requests:(state.usage.preprocess||0)-startLite},...stats,errors:[...new Set([...errors,...searchTelemetry.errors])],search_success:searchTelemetry.success,search_failures:searchTelemetry.failed,rules:{career:merged.filter(x=>x.kind==='career').length,family:merged.filter(x=>x.kind==='family').length,cross_checked:merged.filter(x=>x.status==='cross-checked').length,conflicts:merged.filter(x=>x.status==='conflict').length},usage:{day:state.usage.day,model_requests_today:state.usage.model,preprocessing_requests_today:state.usage.preprocess||0,per_model:usageView(state),search_credits_today:state.usage.search_day,search_credits_month:state.usage.search},comparison:E.evaluate(jobRows,merged,reference),model_diagnostics:modelDiagnostics,model_benchmark:modelBenchmark,note:'Only public employer data. Evidence checks and cross-model agreement are screening gates, not ground truth. Production never activated.'};
+ const report={status:stats.failed_batches||errors.length||searchTelemetry.failed||!used.size||stats.companies_with_evidence!==all.length||Object.values(taskStats).some(t=>t.completed!==t.planned)||modelBenchmark?.some(x=>x.answered<x.expected_cases||x.level_reference.answered<x.level_reference.expected_cases)?'partial':'completed',mode:'shadow',run_type:mode,production_unchanged:true,updated_at:new Date().toISOString(),cairo_day:day,preferred_model:preferred,architecture:'multi-provider-failover-v6',google_slot:{identity:HYDROGEN,ordered_models:RESEARCH_POOL,attempts:health.attempts.filter(x=>x.slot===HYDROGEN),unavailable_models:[...new Set([...health.failedGoogle,...(health.googleDisabled?GOOGLE_MODELS:[]),...(!health.groqEnabled?[GROQ]:[])])],groq_configured:health.groqEnabled},companies_targeted:all.length,task_stats:taskStats,evidence_preparation:{model:LITE,...preparation,requests:(state.usage.preprocess||0)-startLite},...stats,errors:[...new Set([...errors,...searchTelemetry.errors])],search_success:searchTelemetry.success,search_failures:searchTelemetry.failed,rules:{career:merged.filter(x=>x.kind==='career').length,family:merged.filter(x=>x.kind==='family').length,cross_checked:merged.filter(x=>x.status==='cross-checked').length,conflicts:merged.filter(x=>x.status==='conflict').length},usage:{day:state.usage.day,model_requests_today:state.usage.model,preprocessing_requests_today:state.usage.preprocess||0,per_model:usageView(state),search_credits_today:state.usage.search_day,search_credits_month:state.usage.search},comparison:E.evaluate(jobRows,merged,reference),model_diagnostics:modelDiagnostics,model_benchmark:modelBenchmark,note:'Only public employer data. Evidence checks and cross-model agreement are screening gates, not ground truth. Production never activated.'};
  state.history=[...(state.history||[]).slice(-29),{day,run_type:mode,status:report.status,model_requests:stats.model_requests,validated:stats.validated,changed_family:report.comparison.changed_family,changed_level:report.comparison.changed_level}];
  write('state.json',state);
  if(mode==='daily'){
@@ -405,4 +420,4 @@ async function run(){
  console.log(JSON.stringify({status:report.status,model_requests:stats.model_requests,companies_reviewed:stats.companies_reviewed,validated:stats.validated,cross_checked:report.rules.cross_checked}));
 }
 if(require.main===module)run().catch(e=>{console.error('Research stopped safely:',e.code||e.name||'Error');process.exitCode=1;});
-module.exports={MODELS,GOOGLE_MODELS,slotAvailable,inferSlot,googleFallbackError,HYDROGEN,NEMOTRON,LITE,MODEL_LIMITS,MODEL_INTERVALS,modelLedger,canCall,recordCall,providerDay,usageView,decodeGemini,applyExcerpts,localDate,localHour,modelFor,allowed,publicIp,htmlText,parseJSON,decodeResponse,diagnostic,compactDoc,ledger,roster,selectJobs,newState,MODEL_BUDGET,SEARCH_BUDGET,MONTH_BUDGET,BATCH_COMPANIES,DOC_CHARS,DAILY_COMPANIES,BENCHMARK_COMPANIES,TASK_TEXT_CHARS,TASK_DOCS,cohort,taskModels,makeTask,evidenceWindow,cooldownMs};
+module.exports={MODELS,GOOGLE_MODELS,GROQ,RESEARCH_POOL,endpointAvailable,slotAvailable,inferSlot,googleFallbackError,HYDROGEN,NEMOTRON,LITE,MODEL_LIMITS,MODEL_INTERVALS,modelLedger,canCall,recordCall,providerDay,usageView,decodeGemini,applyExcerpts,localDate,localHour,modelFor,allowed,publicIp,htmlText,parseJSON,decodeResponse,diagnostic,compactDoc,ledger,roster,selectJobs,newState,MODEL_BUDGET,SEARCH_BUDGET,MONTH_BUDGET,BATCH_COMPANIES,DOC_CHARS,DAILY_COMPANIES,BENCHMARK_COMPANIES,TASK_TEXT_CHARS,TASK_DOCS,cohort,taskModels,makeTask,evidenceWindow,cooldownMs};
