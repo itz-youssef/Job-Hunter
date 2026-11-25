@@ -4,6 +4,7 @@
 const core=require('../lib/secretj/core');
 const {removeMember}=require('../lib/secretj/account-deletion');
 const review=require('../lib/secretj/dictionary-review');
+const botfolio=require('../lib/secretj/botfolio');
 
 module.exports=async function handler(req,res){
   try {
@@ -32,6 +33,9 @@ module.exports=async function handler(req,res){
     }
     if(req.method==='PATCH' && action==='dictionary-review'){
       return core.reply(res,200,await review.decide(admin,core.parseBody(req)));
+    }
+    if(req.method==='GET' && action==='botfolio-usage'){
+      return core.reply(res,200,{ok:true,usage:await botfolio.usage(req.env)});
     }
     if(req.method==='GET' && action==='research-shadow'){
       // Both hosting platforms already route this authenticated admin handler.

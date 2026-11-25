@@ -59,6 +59,28 @@ const rejectionLog=r=>{
   return '<details class="sj-rejected-item"><summary><strong>'+html('#'+(i+1)+' · '+x.company+' · '+(p.alias||p.job_title||x.kind))+'</strong> '+colored(p.level||p.family||'—','warning')+' · '+colored(descriptions[x.reason]||x.reason,'danger')+'</summary><div class="sj-rejected-body"><p><strong>Actual model:</strong> '+html(x.actual_model)+' · <strong>Task:</strong> '+html(x.kind)+' · '+badge(x.reason,false,'danger')+'</p><p><strong>Proposed classification:</strong> '+html(p.alias||p.job_title||'—')+' → '+html(p.level||p.family||'—')+'</p><p><strong>Model quote (unverified):</strong> '+html(p.quote||'Not provided')+' '+badge(ev.quote_found?'Found in source text':'Not verified in source text',!!ev.quote_found,ev.quote_found?'success':'danger')+'</p>'+(p.corroboration?'<p><strong>Model corroboration:</strong> '+html(p.corroboration)+'</p>':'')+(ev.source_excerpt?'<p><strong>Actual supplied excerpt:</strong> '+html(ev.source_excerpt)+'</p>':'')+links+'</div></details>';
  }).join(''):'<p class="sj-semantic-text sj-tone-success">No rejected proposals in this run.</p>');
 };
+const botfolioUsage=u=>{
+ const g=u.generation,e=u.embeddings,d=u.daily;
+ if(!g||!e||!d)return '<p class="muted">Botfolio usage is unavailable.</p>';
+ const metric=(label,used,limit,remaining,unit)=>{
+  const tone=metricTone(used,limit),ratio=limit>0?Math.round(100*used/limit):0,fill=Math.max(0,Math.min(100,ratio));
+  return '<div class="sj-quota-card '+toneClass(tone)+'"><div class="sj-quota-title"><strong>'+html(label)+'</strong><span>'+html(ratio)+'%</span></div><div class="sj-quota-count"><span>'+number(used)+'</span> <small>/ '+number(limit)+' '+html(unit)+'</small></div><div class="sj-quota-track" role="progressbar" aria-label="'+html(label)+'" aria-valuemin="0" aria-valuemax="'+html(limit)+'" aria-valuenow="'+html(Math.min(used,limit))+'"><i style="width:'+fill+'%"></i></div><small class="sj-quota-status '+toneClass(tone)+'">'+number(remaining)+' '+html(unit)+' remaining · '+(remaining===0?'System limit reached':'Within system limit')+'</small>';
+ };
+ const kpi=(label,value)=>'<div class="sj-admin-kpi"><strong>'+number(value)+'</strong><small>'+html(label)+'</small></div>';
+ const outcomes={success:'Successful answer',rate_limited:'Provider rate limited',provider_error:'Provider unavailable',invalid_response:'Invalid or incomplete response',pending:'Pending / not reconciled',unknown:'Unknown'};
+ const configured=(flag)=>badge(flag?'Configured on this host':'Not configured on this host',flag,flag?'success':'warning');
+ return '<p>'+configured(g.configured)+' '+badge('No fallback configured',false)+' · Last refreshed '+html(day(u.checked_at))+'</p>'+
+  '<div class="sj-quota-grid">'+
+  metric('GPT-OSS 120B · Groq',g.tokens_24h,g.system_token_limit,g.remaining_tokens,'tokens')+
+  '<small>Rolling 24 hours · Botfolio system allocation</small><small>Model: '+html(g.model)+'</small><small>Provider-reported tokens: '+number(g.reported_tokens_24h)+' from '+number(g.reported_requests)+' requests</small><small>Unverified / reserved tokens: '+number(g.unverified_tokens_24h)+'</small><small>Next reservation release: '+html(day(g.next_release_at))+'</small><small>Last recorded result: '+colored(outcomes[g.last_outcome]||'No recorded result',g.last_outcome==='success'?'success':g.last_outcome==='rate_limited'?'warning':g.last_outcome==='provider_error'||g.last_outcome==='invalid_response'?'danger':'neutral')+' · '+html(day(g.last_request_at))+'</small></div>'+
+  metric('BGE-M3 · Cloudflare',e.estimated_neurons_today,e.system_neuron_limit,e.remaining_neurons,'estimated neurons')+
+  '<small>'+configured(e.configured)+'</small><small>Model: '+html(e.model)+'</small><small>Daily UTC accounting · Reset: '+html(day(e.reset_at))+'</small></div></div>'+
+  '<h4>Generation requests · rolling 24 hours</h4><div class="sj-admin-kpis">'+
+  kpi('Groq attempts',g.requests_24h)+kpi('Successful answers',g.successful)+kpi('Failed attempts',g.failed)+kpi('Pending / unclassified',Number(g.pending)+Number(g.unknown))+'</div>'+
+  '<h4>Daily Botfolio limits · UTC</h4><div class="sj-admin-kpis">'+
+  kpi('Accepted chat attempts',d.chat_attempts)+kpi('Indexing attempts',d.indexing_attempts)+kpi('Chats / bot / day',d.per_bot)+kpi('Chats / IP / day',d.per_ip)+kpi('Indexing / owner / day',d.per_owner_indexing)+'</div>'+
+  '<p class="muted">No separate global Botfolio request-count cap: generation is bounded by the rolling token budget and per-bot/IP limits. Groq quota is shared with Job Hunter and other account traffic. Counts are Botfolio ledger reservations, including failed attempts, not account-wide provider telemetry. Cache hits do not call Groq. Configuration and last observed outcome are not an active health probe.</p>';
+};
 async function render(root,api,state){
  if(state.user?.role!=='admin'){root.textContent='Administrator access required';return;}
  const url='/api/secretj-admin?action=';
@@ -77,12 +99,22 @@ async function render(root,api,state){
  '<section class="sj-admin-section"><div class="sj-admin-heading"><div><h3>👥 User management</h3><p class="muted">Role access, account activation, session security and private usage metadata</p></div><input id="sj-admin-search" type="search" placeholder="Search accounts" aria-label="Search accounts"></div>'+
  '<div class="sj-admin-users" id="sj-admin-users"></div><div id="sj-admin-detail" class="sj-admin-detail" hidden></div></section>'+
  '<section class="sj-admin-section"><div class="sj-admin-heading"><h3>⚙️ Operations & monitor health</h3><a href="https://github.com/itz-youssef/Job-Hunter/actions" target="_blank" rel="noopener noreferrer">GitHub Actions ↗</a></div><div id="sj-admin-ops" class="sj-admin-ops muted">Checking published scan status…</div></section>'+ 
+ '<section class="sj-admin-section"><div class="sj-admin-heading"><div><h3>Botfolio AI Usage</h3><p class="muted">Model status, requests and system budgets. Separate from Job Hunter research.</p></div><button class="btn secondary" data-bf-usage-refresh>Refresh usage</button></div><div id="sj-admin-botfolio-usage" aria-live="polite" class="muted">Loading Botfolio usage…</div></section>'+
  '<section class="sj-admin-section"><div class="sj-admin-heading"><div><h3>AI Intelligence Lab</h3><p class="muted">Experimental career-level and occupational dictionaries. Production matching and alerts remain unchanged.</p></div><a href="https://github.com/itz-youssef/Job-Hunter/actions/workflows/adaptive-dictionary-research.yml" target="_blank" rel="noopener noreferrer">Research runs ↗</a></div><div id="sj-admin-research" class="muted">Loading shadow evaluation…</div></section>'+
  '<section class="sj-admin-section"><div class="sj-admin-heading"><div><h3>Dictionary conflict review</h3><p class="muted">Approve or reject conflicting proposals. Decisions apply to reviewed shadow dictionaries, not live matching or alerts.</p></div><button class="btn secondary" data-dictionary-export>Download dictionaries (.json)</button></div><div id="sj-admin-dictionary-review" aria-live="polite" class="muted">Loading conflicts…</div></section>'+ 
  '<section class="sj-admin-section"><h3>🛡️ Administrative activity</h3>'+
  (overview.activity||[]).map(a=>'<div class="sj-admin-activity"><strong>'+html(a.action)+'</strong><span>'+html(a.actor_email||'Administrator')+'</span><small>'+html(day(a.created_at))+'</small></div>').join('')+
  (!overview.activity?.length?'<p class="muted">No administrative actions yet.</p>':'')+'</section>'+
  '<div class="notice">Security: actions are checked on the server against your active administrator session. This console does not expose passwords, session tokens, or private CV file contents.</div>';
+ const usageEl=root.querySelector('#sj-admin-botfolio-usage'),usageButton=root.querySelector('[data-bf-usage-refresh]');
+ async function loadBotfolioUsage(){
+  usageButton.disabled=true;
+  try{const result=await api(url+'botfolio-usage');if(usageEl.isConnected)usageEl.innerHTML=botfolioUsage(result.usage||{});}
+  catch{if(usageEl.isConnected)usageEl.textContent='Botfolio usage unavailable. Refresh to try again.';}
+  finally{usageButton.disabled=false;}
+ }
+ usageButton.addEventListener('click',loadBotfolioUsage);
+ void loadBotfolioUsage();
  api(url+'research-shadow').then(result=>{
   const el=root.querySelector('#sj-admin-research');if(!el)return;
   const r=result.report;
