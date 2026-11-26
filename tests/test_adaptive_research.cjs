@@ -452,3 +452,42 @@ test('Groq short RPD countdown is telemetry, not an automatic full local refill'
  assert.equal(u.provider_reset_at,'2026-11-26T08:49:00.000Z');
  assert.equal(u.system_reset_at,'2026-11-27T00:00:00.000Z');
 });
+
+
+test('replay 13 logged November 26 proposals with exact model-visible excerpts',()=>{
+ const rows=require('./fixtures/shadow-rejections-20261126.json');
+ const accepted=[],rejected=[];
+ for(const row of rows){
+  const m=row.source.match(/ Department:\s*(.*?)\s*Duties: (.*)$/);
+  assert.ok(m,row.title);
+  const j={company:row.company,title:row.title,url:row.url,department:m[1],description:m[2]};
+  const key=E.fingerprint(j),d={id:'replay',company:j.company,job_id:key,url:j.url,text:row.source,duties:m[2]};
+  const p={kind:'family',job_id:key,evidence_id:d.id,family:row.family,quote:row.quote,corroboration:row.corroboration};
+  const result=E.validateDetailed(p,new Map([[d.id,d]]),new Map([[key,j]]),row.model,'2026-11-26');
+  if(result.rule){
+   accepted.push(row.number);
+   assert.equal(result.rule.status,'candidate');assert.deepEqual(result.rule.models,[row.model]);
+   assert.ok(row.source.includes(result.rule.evidence.quote));
+   if(!result.rule.evidence.corroboration.startsWith('Official department: '))assert.ok(m[2].includes(result.rule.evidence.corroboration));
+  }else rejected.push({number:row.number,reason:result.reason});
+ }
+ console.log('Historical rejection replay:',JSON.stringify({accepted,rejected}));
+ assert.deepEqual(accepted,[1,3,4,5,6,7,8,9,10,12,13]);
+ assert.deepEqual(rejected.map(x=>x.number),[2,11]);
+});
+test('exact departments and recovered duties never bypass identity, provenance, primary work or independent evidence',()=>{
+ const run=(department,duties,family,quote,corroboration='',overrides={})=>{
+  const j={company:'Test',title:'Specialist',department,description:duties,url:'https://example.com/role'};
+  const id=E.fingerprint(j),d={id:'d',job_id:id,company:j.company,url:j.url,duties,text:'Title: Specialist Department: '+department+' Duties: '+duties,...overrides};
+  return E.validateDetailed({kind:'family',job_id:id,evidence_id:d.id,family,quote,corroboration},new Map([[d.id,d]]),new Map([[id,j]]),A.HYDROGEN,'2026-11-26');
+ };
+ assert.ok(run('Operations','Manage shipments and coordinate dispatch.','operations','Department: Operations').rule);
+ assert.equal(run('Engineering','Maintain industrial equipment and inspect mechanical assemblies.','software','Department: Engineering').rule,null);
+ assert.equal(run('Engineering','Maintain industrial equipment. Requirements: Write production code. Conduct code reviews for engineers.','software','Department: Engineering').rule,null);
+ assert.equal(run('Engineering','Write production code for applications. Requirements: Conduct code reviews for engineers.','software','Department: Engineering').rule,null);
+ assert.equal(run('Engineering','Write production code for applications. Conduct code reviews for engineers.','software','Department: Engineering','Fabricated software engineering evidence.').rule,null);
+ assert.equal(run('','Review financial statements for clients. Requirements: Build financial models.','finance','Review financial statements for clients.','Build financial models.').rule,null);
+ assert.equal(run('','Manage project schedules and dependencies. Manage project documentation for clients.','project','Manage project schedules and dependencies.','Manage project schedules and dependencies.').rule,null);
+ assert.equal(run('','Manage employee payroll. Support employees with optional software access.','it_support','Support employees with optional software access.').rule,null);
+ assert.equal(run('Operations','Coordinate daily shipments.','operations','Department: Operations','',{company:'Other'}).rule,null);
+});
