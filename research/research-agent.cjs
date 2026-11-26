@@ -135,6 +135,14 @@ function legacyDebit(state,model,now=new Date()){
  // all unattributed calls against that account, not against Google or Groq.
  return model===NEMOTRON?{cairo:old.day===localDate(now)?Number(old.count||0):0,provider:old.provider_day===providerDay(model,now)?Number(old.count||0):0}:{cairo:0,provider:0};
 }
+// Daily model budgets follow the provider's accounting calendar, not Cairo
+// midnight. Groq has an existing conservative UTC local request window;
+// its RPD reset header is telemetry, not proof that every request refilled.
+// Keep the separate shared Cairo-day cap and rolling token cap unchanged.
+function modelRequestsUsed(state,model,now=new Date()){
+ const e=modelLedger(state,model,now),legacy=legacyDebit(state,model,now);
+ return e.provider_count+legacy.provider;
+}
 function effectiveLimit(state,model){
  return MODEL_LIMITS[model]-(isBenchmark(state)?NIGHTLY_RESERVE[model]:0);
 }
@@ -155,8 +163,7 @@ function reserveGroqTokens(state,estimate,now=new Date()){
  state.usage.groq_token_reservations.push(reservation);return reservation;
 }
 function budgetBlockReason(state,model,now=new Date(),emergency=false){
- const e=modelLedger(state,model,now),legacy=legacyDebit(state,model,now);
- const used=Math.max(e.day_count+legacy.cairo,e.provider_count+legacy.provider);
+ const used=modelRequestsUsed(state,model,now);
  const emergencyCap=emergency&&EMERGENCY_LIMITS[model];
  if(emergency&&!emergencyCap)return 'emergency-not-allowed';
  if(used>=(emergencyCap||MODEL_LIMITS[model]))return emergency?'emergency-limit':'system-limit';
@@ -179,11 +186,11 @@ function recordCall(state,model,now=new Date(),emergency=false){
 function usageView(state,now=new Date()){
  const cairoReset=nextDayReset('Africa/Cairo',now),utcReset=nextDayReset('UTC',now),pacificReset=nextDayReset('America/Los_Angeles',now);
  return Object.fromEntries(Object.keys(MODEL_LIMITS).map(model=>{
-  const e=modelLedger(state,model,now),legacy=legacyDebit(state,model,now),limit=MODEL_LIMITS[model],used=Math.max(e.day_count+legacy.cairo,e.provider_count+legacy.provider);
+  const e=modelLedger(state,model,now),legacy=legacyDebit(state,model,now),limit=MODEL_LIMITS[model],used=modelRequestsUsed(state,model,now);
   const providerCounterReset=model===NEMOTRON||model===GROQ||model===GLM?utcReset:pacificReset;
   const requestReset=model===GROQ?(state.usage.groq_provider_reset_at||null):model===NEMOTRON||model===GLM?utcReset:pacificReset;
   const emergencyLimit=EMERGENCY_LIMITS[model]||null;
-  return [model,{used_today:e.day_count,provider_day_used:e.provider_count,system_used:used,limit,provider_day:e.provider_day,nightly_reserve:NIGHTLY_RESERVE[model],legacy_debit:Math.max(legacy.cairo,legacy.provider),remaining:Math.max(0,limit-used),benchmark_remaining:Math.max(0,limit-NIGHTLY_RESERVE[model]-used),budget_block:budgetBlockReason(state,model,now),system_limit_reached:used>=limit,emergency_limit:emergencyLimit,emergency_remaining:emergencyLimit?Math.max(0,emergencyLimit-Math.max(used,limit)):0,emergency_used:emergencyLimit?Math.max(0,used-limit):0,provider_request_limit:PROVIDER_REQUEST_LIMITS[model]??null,estimated_provider_headroom:PROVIDER_REQUEST_LIMITS[model]==null?null:Math.max(0,PROVIDER_REQUEST_LIMITS[model]-used),...(model===GLM?{estimated_neurons_reserved:e.provider_count*GLM_NEURONS_PER_CALL,neuron_system_limit:GLM_NEURON_BUDGET}: {}),cairo_reset_at:cairoReset,provider_counter_reset_at:providerCounterReset,provider_reset_at:requestReset,...(model===GROQ?{provider_reset_observed_at:state.usage.groq_provider_reset_observed_at||null,provider_tpm_reset_at:state.usage.groq_provider_tpm_reset_at||null,provider_tpm_observed_at:state.usage.groq_provider_tpm_observed_at||null}:{}),full_counter_reset_at:new Date(Math.max(Date.parse(cairoReset),Date.parse(providerCounterReset))).toISOString()}];
+  return [model,{used_today:e.day_count,provider_day_used:e.provider_count,system_used:used,limit,provider_day:e.provider_day,nightly_reserve:NIGHTLY_RESERVE[model],legacy_debit:legacy.provider,provider_legacy_debit:legacy.provider,reset_policy:model===GROQ?'local-utc-provider-rpd-unverified':'provider-calendar',remaining:Math.max(0,limit-used),benchmark_remaining:Math.max(0,limit-NIGHTLY_RESERVE[model]-used),budget_block:budgetBlockReason(state,model,now),system_limit_reached:used>=limit,emergency_limit:emergencyLimit,emergency_remaining:emergencyLimit?Math.max(0,emergencyLimit-Math.max(used,limit)):0,emergency_used:emergencyLimit?Math.max(0,used-limit):0,provider_request_limit:PROVIDER_REQUEST_LIMITS[model]??null,estimated_provider_headroom:PROVIDER_REQUEST_LIMITS[model]==null?null:Math.max(0,PROVIDER_REQUEST_LIMITS[model]-used),...(model===GLM?{estimated_neurons_reserved:e.provider_count*GLM_NEURONS_PER_CALL,neuron_system_limit:GLM_NEURON_BUDGET}: {}),cairo_reset_at:cairoReset,provider_counter_reset_at:providerCounterReset,provider_reset_at:requestReset,...(model===GROQ?{provider_reset_observed_at:state.usage.groq_provider_reset_observed_at||null,provider_tpm_reset_at:state.usage.groq_provider_tpm_reset_at||null,provider_tpm_observed_at:state.usage.groq_provider_tpm_observed_at||null}:{}),system_reset_at:providerCounterReset,full_counter_reset_at:new Date(Math.max(Date.parse(cairoReset),Date.parse(providerCounterReset))).toISOString()}];
  }));
 }
 function diagnostic(e){
@@ -290,7 +297,7 @@ function emergencyCandidates(state,health={},now=new Date(),localSkips=new Set()
  if(healthy.some(m=>budgetBlockReason(state,m,now)==='nightly-reserve'))return [];
  return healthy.filter(m=>!localSkips.has(m)&&budgetBlockReason(state,m,now)==='system-limit'&&!budgetBlockReason(state,m,now,true))
   .sort((x,y)=>{
-   const used=m=>{const e=modelLedger(state,m,now);return Math.max(e.day_count,e.provider_count);};
+   const used=m=>modelRequestsUsed(state,m,now);
    return (PROVIDER_REQUEST_LIMITS[y]-used(y))-(PROVIDER_REQUEST_LIMITS[x]-used(x))||RESEARCH_POOL.indexOf(x)-RESEARCH_POOL.indexOf(y);
   });
 }
@@ -611,4 +618,4 @@ async function run(){
  console.log(JSON.stringify({status:report.status,model_requests:stats.model_requests,companies_reviewed:stats.companies_reviewed,validated:stats.validated,cross_checked:report.rules.cross_checked}));
 }
 if(require.main===module)run().catch(e=>{console.error('Research stopped safely:',e.code||e.name||'Error');process.exitCode=1;});
-module.exports={MODELS,GLM,GLM_NEURON_BUDGET,GLM_NEURONS_PER_CALL,glmNeuronEstimate,glmConfigured,rejectedProposalRecord,PROVIDER_REQUEST_LIMITS,EMERGENCY_LIMITS,EMERGENCY_MODEL_BUDGET,emergencyCandidates,nextDayReset,durationMs,captureGroqReset,budgetBlockReason,budgetException,NIGHTLY_RESERVE,GROQ_TOKEN_BUDGET,GROQ_TOKEN_RESERVE,migrateLegacyUsage,legacyDebit,effectiveLimit,groqTokensUsed,groqTokenEstimate,reserveGroqTokens,GOOGLE_MODELS,GROQ,RESEARCH_POOL,endpointAvailable,slotAvailable,inferSlot,googleFallbackError,HYDROGEN,NEMOTRON,LITE,MODEL_LIMITS,MODEL_INTERVALS,modelLedger,canCall,recordCall,providerDay,usageView,decodeGemini,applyExcerpts,localDate,localHour,modelFor,allowed,publicIp,htmlText,parseJSON,decodeResponse,diagnostic,compactDoc,ledger,roster,selectJobs,newState,MODEL_BUDGET,SEARCH_BUDGET,MONTH_BUDGET,BATCH_COMPANIES,DOC_CHARS,DAILY_COMPANIES,BENCHMARK_COMPANIES,TASK_TEXT_CHARS,TASK_DOCS,cohort,taskModels,makeTask,evidenceWindow,cooldownMs};
+module.exports={MODELS,GLM,GLM_NEURON_BUDGET,GLM_NEURONS_PER_CALL,glmNeuronEstimate,glmConfigured,rejectedProposalRecord,PROVIDER_REQUEST_LIMITS,EMERGENCY_LIMITS,EMERGENCY_MODEL_BUDGET,emergencyCandidates,nextDayReset,durationMs,captureGroqReset,budgetBlockReason,budgetException,NIGHTLY_RESERVE,GROQ_TOKEN_BUDGET,GROQ_TOKEN_RESERVE,migrateLegacyUsage,legacyDebit,effectiveLimit,groqTokensUsed,groqTokenEstimate,reserveGroqTokens,GOOGLE_MODELS,GROQ,RESEARCH_POOL,endpointAvailable,slotAvailable,inferSlot,googleFallbackError,HYDROGEN,NEMOTRON,LITE,MODEL_LIMITS,MODEL_INTERVALS,modelLedger,modelRequestsUsed,canCall,recordCall,providerDay,usageView,decodeGemini,applyExcerpts,localDate,localHour,modelFor,allowed,publicIp,htmlText,parseJSON,decodeResponse,diagnostic,compactDoc,ledger,roster,selectJobs,newState,MODEL_BUDGET,SEARCH_BUDGET,MONTH_BUDGET,BATCH_COMPANIES,DOC_CHARS,DAILY_COMPANIES,BENCHMARK_COMPANIES,TASK_TEXT_CHARS,TASK_DOCS,cohort,taskModels,makeTask,evidenceWindow,cooldownMs};

@@ -67,12 +67,14 @@ const projectResearchUsage=(u,r,now=Date.now())=>{
   const zone=providerSchedule(name)||'UTC';
   const cExpired=expired(m.cairo_reset_at)||dayExpired;
   const pExpired=expired(m.provider_counter_reset_at)||(typeof m.provider_day==='string'&&m.provider_day<dateIn(zone));
-  if(!cExpired&&!pExpired)return [name,m];
+  // Recalculate even on an unexpired old-format report: its system_used
+  // may have been the maximum of the two independent counters.
   const c=cExpired?0:Number(m.used_today||0),p=pExpired?0:Number(m.provider_day_used||0);
-  // Older reports expose only the maximum unattributed debit: retain it
-  // conservatively until both accounting windows have elapsed.
-  const legacy=cExpired&&pExpired?0:Number(m.legacy_debit||0);
-  const used=Math.max(c,p)+legacy,limit=Number(m.limit),emergency=Number(m.emergency_limit||0);
+  // Match backend provider-calendar accounting; Cairo usage is informational.
+  // Old reports have a conservative combined legacy debit, so retain it only
+  // until the provider window expires. Never infer a full Groq refill from RPD telemetry.
+  const legacy=pExpired?0:Number(m.provider_legacy_debit??m.legacy_debit??0);
+  const used=p+legacy,limit=Number(m.limit),emergency=Number(m.emergency_limit||0);
   const cReset=nextProviderMidnight('Africa/Cairo',now),pReset=nextProviderMidnight(zone,now);
   const block=m.budget_block;
   return [name,{...m,used_today:c,provider_day_used:p,system_used:used,legacy_debit:legacy,
@@ -81,8 +83,8 @@ const projectResearchUsage=(u,r,now=Date.now())=>{
    emergency_remaining:emergency?Math.max(0,emergency-Math.max(used,limit)):0,
    estimated_provider_headroom:m.provider_request_limit==null?null:Math.max(0,Number(m.provider_request_limit)-used),
    ...(pExpired&&m.neuron_system_limit?{estimated_neurons_reserved:0}:{}),
-   budget_block:used>=limit?'system-limit':block==='token-system-limit'||block==='nightly-token-reserve'?block:!dayExpired&&block==='shared-system-limit'?block:null,
-   cairo_reset_at:cReset,provider_counter_reset_at:pReset,full_counter_reset_at:new Date(Math.max(Date.parse(cReset),Date.parse(pReset))).toISOString()}];
+   budget_block:used>=limit?'system-limit':block==='token-system-limit'||block==='nightly-token-reserve'?block:!dayExpired&&block==='shared-system-limit'?block:!pExpired&&block==='nightly-reserve'?block:null,
+   cairo_reset_at:cReset,provider_counter_reset_at:pReset,system_reset_at:pReset,full_counter_reset_at:new Date(Math.max(Date.parse(cReset),Date.parse(pReset))).toISOString()}];
  }));
  return {...u,day:dayNow,model_requests_today:dayExpired?0:u.model_requests_today,preprocessing_requests_today:dayExpired?0:u.preprocessing_requests_today,search_credits_today:dayExpired?0:u.search_credits_today,per_model};
 };
@@ -99,9 +101,9 @@ const modelBudgetCards=(u,r)=>{
   const ratio=Math.round(100*used/limit),fill=Math.min(100,ratio),full=used>=limit,hardReached=Number(m.emergency_limit)>0&&used>=Number(m.emergency_limit);
   const quotaTone=toneForRatio(100*used/limit),emergencyTone=hardReached?'danger':Number(m.emergency_used)>0?'emergency':'info';
   const status=hardReached?'Emergency hard limit reached':full?(m.emergency_used>0?'Emergency capacity in use':m.emergency_remaining>0?'Normal limit reached · emergency reserve':'System limit reached'):m.budget_block==='nightly-reserve'?'Nightly reserve protected':m.budget_block==='token-system-limit'||m.budget_block==='nightly-token-reserve'?'Token budget restricted':m.budget_block==='shared-system-limit'?'Shared limit reached':'Within system limit';
-  return '<div class="sj-quota-card '+toneClass(quotaTone)+'"><div class="sj-quota-title"><strong>'+html(names[name])+'</strong><span class="sj-semantic-text">'+html(ratio)+'%</span></div><div class="sj-quota-count"><span class="sj-semantic-text">'+html(used)+'</span> <small>/ '+html(limit)+' requests</small></div><div class="sj-quota-track" role="progressbar" aria-label="'+html(names[name]+' system usage')+'" aria-valuemin="0" aria-valuemax="'+html(limit)+'" aria-valuenow="'+html(Math.min(used,limit))+'" aria-valuetext="'+html(used+' of '+limit)+'"><i class="'+(full?'full':ratio>=80?'near':'')+'" style="width:'+fill+'%"></i></div><small class="sj-quota-status '+toneClass(hardReached?'danger':Number(m.emergency_used)>0?'emergency':m.budget_block==='nightly-reserve'?'info':m.budget_block?'warning':quotaTone)+'">'+html(status)+' · '+html(Math.max(0,limit-used))+' remaining</small><small>Cairo: '+html(m.used_today??'—')+' · Provider day: '+html(m.provider_day_used??'—')+(m.legacy_debit?' · Legacy debit: '+html(m.legacy_debit):'')+'</small>'+(m.benchmark_remaining!=null?'<small>Benchmark available: '+html(m.benchmark_remaining)+' · Nightly reserve: '+html(m.nightly_reserve)+'</small>':'')+(m.emergency_limit?'<small class="sj-semantic-text '+toneClass(emergencyTone)+'">Emergency: '+html(m.emergency_used)+' used · '+html(m.emergency_remaining)+' extra remaining · hard cap '+html(m.emergency_limit)+'</small><small>Estimated provider headroom: '+html(m.estimated_provider_headroom)+'</small>':'')+(m.neuron_system_limit?'<small>Estimated reserved neurons: '+html(m.estimated_neurons_reserved)+' / '+html(m.neuron_system_limit)+' · Not live Cloudflare usage</small>':'')+(m.cairo_reset_at?'<small>Cairo counter resets: '+html(cairoTime(m.cairo_reset_at))+'</small><small>Provider-day counter resets: '+html(cairoTime(m.provider_counter_reset_at))+'</small>'+(m.full_counter_reset_at?'<small>Both local counters reset: '+html(cairoTime(m.full_counter_reset_at))+'</small>':''):'')+providerResetMarkup(name,cairoTime)+'</div>';
+  return '<div class="sj-quota-card '+toneClass(quotaTone)+'"><div class="sj-quota-title"><strong>'+html(names[name])+'</strong><span class="sj-semantic-text">'+html(ratio)+'%</span></div><div class="sj-quota-count"><span class="sj-semantic-text">'+html(used)+'</span> <small>/ '+html(limit)+' requests</small></div><div class="sj-quota-track" role="progressbar" aria-label="'+html(names[name]+' system usage')+'" aria-valuemin="0" aria-valuemax="'+html(limit)+'" aria-valuenow="'+html(Math.min(used,limit))+'" aria-valuetext="'+html(used+' of '+limit)+'"><i class="'+(full?'full':ratio>=80?'near':'')+'" style="width:'+fill+'%"></i></div><small class="sj-quota-status '+toneClass(hardReached?'danger':Number(m.emergency_used)>0?'emergency':m.budget_block==='nightly-reserve'?'info':m.budget_block?'warning':quotaTone)+'">'+html(status)+' · '+html(Math.max(0,limit-used))+' remaining</small><small>Cairo activity (informational): '+html(m.used_today??'—')+' · Provider day: '+html(m.provider_day_used??'—')+(m.legacy_debit?' · Legacy debit: '+html(m.legacy_debit):'')+'</small>'+(m.benchmark_remaining!=null?'<small>Benchmark available: '+html(m.benchmark_remaining)+' · Nightly reserve: '+html(m.nightly_reserve)+'</small>':'')+(m.emergency_limit?'<small class="sj-semantic-text '+toneClass(emergencyTone)+'">Emergency: '+html(m.emergency_used)+' used · '+html(m.emergency_remaining)+' extra remaining · hard cap '+html(m.emergency_limit)+'</small><small>Estimated provider headroom: '+html(m.estimated_provider_headroom)+'</small>':'')+(m.neuron_system_limit?'<small>Estimated reserved neurons: '+html(m.estimated_neurons_reserved)+' / '+html(m.neuron_system_limit)+' · Not live Cloudflare usage</small>':'')+(m.cairo_reset_at?'<small>Cairo activity resets: '+html(cairoTime(m.cairo_reset_at))+'</small><small>System request counter resets: '+providerResetTime(m.system_reset_at||m.provider_counter_reset_at,cairoTime)+(name==='openai/gpt-oss-120b'?' · Local UTC window; provider full refill unverified':' · Provider calendar')+'</small>'+(m.full_counter_reset_at?'<small>Both local counters reset: '+html(cairoTime(m.full_counter_reset_at))+'</small>':''):'')+providerResetMarkup(name,cairoTime)+'</div>';
  }).join('');
- return '<h4>Daily model budgets — system limits</h4><p class="muted">Last published snapshot: '+html(day(r.updated_at))+' · Report Cairo day '+html(snapshotDay)+' · Current Cairo day '+html(u.day)+'. Counters below are estimated from the last published report and calendar resets; new in-flight calls are not visible until publication. Includes failed API attempts; local quota skips do not consume requests. Not live provider telemetry.</p><div class="sj-quota-grid">'+rows+'</div>';
+ return '<h4>Daily model budgets — system limits</h4><p class="muted">Last published snapshot: '+html(day(r.updated_at))+' · Report Cairo day '+html(snapshotDay)+' · Current Cairo day '+html(u.day)+'. System request counters follow the provider calendar (Groq uses its existing local UTC window). Estimates use the last published report; new in-flight calls are not visible until publication. Includes failed API attempts; local quota skips do not consume requests. Not live provider telemetry.</p><div class="sj-quota-grid">'+rows+'</div>';
 };
 const rejectionLog=r=>{
  const rows=r.rejected_proposals_log;
@@ -206,7 +208,7 @@ async function render(root,api,state){
     ['Companies reviewed',r.companies_reviewed],['Companies with evidence',r.companies_with_evidence],['Live source pages',r.live_sources],['Job documents',r.job_documents],['Validated proposals',r.validated,Number(r.validated)>0?'success':'neutral'],['Career candidates',rules.career],['Family candidates',rules.family],['Cross-checked rules',rules.cross_checked],['Rejected proposals',r.rejected,Number(r.rejected)>0?'warning':'neutral'],['Changed career levels',c.changed_level],['Changed job families',c.changed_family],['Model calls (last report)',u.model_request_limit?`${u.model_requests_today} / ${u.model_request_limit}${u.emergency_request_limit?' (hard '+u.emergency_request_limit+')':''}`:u.model_requests_today,metricTone(u.model_requests_today,u.model_request_limit)],['Search credits this month',u.search_credits_month,metricTone(u.search_credits_month,744)]
    ].map(([k,v,tone])=>'<div class="sj-admin-kpi"><strong class="sj-semantic-text '+toneClass(tone||'neutral')+'">'+html(v??'—')+'</strong><small>'+html(k)+'</small></div>').join('')+'</div>'+
    '<p>Models: '+html((r.models_used||[]).join(', ')||'Not run')+' · Failed batches: '+colored(r.failed_batches??'—',r.failed_batches==null?'neutral':Number(r.failed_batches)>0?'danger':'success')+' · Search failures: '+colored(r.search_failures??'—',r.search_failures==null?'neutral':Number(r.search_failures)>0?'danger':'success')+'</p>'+ (Array.isArray(r.errors)&&r.errors.length?'<p>Research diagnostics: '+colored(r.errors.join(', '),'warning')+'</p>':'')+
-   modelBudgetCards(u,r)+
+   '<div data-research-budget-cards>'+modelBudgetCards(u,r)+'</div>'+
    rejectionLog(r)+
    '<p class="sj-research-line sj-tone-info"><strong>Current Groq allocation:</strong> 75,000 Job Hunter · 120,000 Botfolio · 5,000 unallocated safety margin · Benchmark token ceiling 15,000</p>'+
    (u.groq_token_limit?'<p class="sj-research-line sj-tone-info"><strong>Groq rolling 24h token budget (last report):</strong> '+colored(u.groq_tokens_rolling_24h,metricTone(u.groq_tokens_rolling_24h,u.groq_token_limit))+' / '+html(u.groq_token_limit)+' · Nightly token reserve '+colored(u.groq_token_nightly_reserve,'emergency')+(u.groq_next_token_release_at?' · Next token reservation expires '+html(new Intl.DateTimeFormat('en-GB',{timeZone:'Africa/Cairo',dateStyle:'medium',timeStyle:'short'}).format(new Date(u.groq_next_token_release_at)))+' Cairo':'')+'</p>':'')+
@@ -218,6 +220,17 @@ async function render(root,api,state){
    '<p>'+html(r.note||'No research model has access to email dispatch.')+'</p>'+
    (Array.isArray(c.changes)&&c.changes.length?'<h4>Sample differences — review required</h4>'+c.changes.slice(0,20).map(j=>'<div class="sj-admin-activity"><strong>'+html(j.company)+' · '+html(j.title)+'</strong><small>'+html((j.before?.families||[]).join(', '))+' / '+html(j.before?.level||'unknown')+' → '+html((j.after?.families||[]).join(', '))+' / '+html(j.after?.level||'unknown')+'</small></div>').join(''):'');
   syncGroqReset();
+  // Re-render only the quota cards at a clock-minute change. No network
+  // calls, provider probes, or token consumption; stop when console closes.
+  let renderedMinute=Math.floor(Date.now()/60000);
+  const clock=setInterval(()=>{
+   if(!root.isConnected||!el.isConnected){clearInterval(clock);return;}
+   const minute=Math.floor(Date.now()/60000);
+   if(minute===renderedMinute)return;
+   renderedMinute=minute;
+   const cards=el.querySelector('[data-research-budget-cards]');
+   if(cards){cards.innerHTML=modelBudgetCards(u,r);syncGroqReset();}
+  },1000);
  }).catch(()=>{const el=root.querySelector('#sj-admin-research');if(el){el.innerHTML='<p>Research report unavailable. Production unaffected.</p>'+modelBudgetCards({},{});syncGroqReset();}});
  const reviewEl=root.querySelector('#sj-admin-dictionary-review');
  const evidence=r=>{
