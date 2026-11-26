@@ -223,4 +223,4 @@ function evaluate(jobs,rules,reference){
  const compare=fn=>metrics(cases.map(c=>({expected:c.expected===true,actual:fn(c).families.some(k=>(c.preference||[]).includes(k))})));
  return {catalog_jobs:jobs.length,changed_level,changed_family,baseline_unknown,shadow_unknown,changes,benchmark:{basis:'Existing limited semantic-role reference; not production accuracy.',old:compare(baseline),shadow:compare(j=>shadow(j,rules))}};
 }
-module.exports={norm,plain,hash,contains,dept,fingerprint,baseline,validate,validateDetailed,mergeRules,assertAdditive,shadow,metrics,evaluate,levels,families};
+module.exports={norm,plain,hash,contains,dept,fingerprint,baseline,validate,validateDetailed,mergeRules,assertAdditive,shadow,metrics,evaluate,levels,families,negative,independent};

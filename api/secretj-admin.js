@@ -4,6 +4,7 @@
 const core=require('../lib/secretj/core');
 const {removeMember}=require('../lib/secretj/account-deletion');
 const review=require('../lib/secretj/dictionary-review');
+const semantic=require('../lib/secretj/semantic-feedback');
 const botfolio=require('../lib/secretj/botfolio');
 
 module.exports=async function handler(req,res){
@@ -33,6 +34,12 @@ module.exports=async function handler(req,res){
     }
     if(req.method==='PATCH' && action==='dictionary-review'){
       return core.reply(res,200,await review.decide(admin,core.parseBody(req)));
+    }
+    if(req.method==='GET' && action==='semantic-review'){
+      return core.reply(res,200,{ok:true,reviews:await semantic.load()});
+    }
+    if(req.method==='PATCH' && action==='semantic-review'){
+      return core.reply(res,200,await semantic.decide(admin,core.parseBody(req)));
     }
     if(req.method==='GET' && action==='botfolio-usage'){
       return core.reply(res,200,{ok:true,usage:await botfolio.usage(req.env)});
