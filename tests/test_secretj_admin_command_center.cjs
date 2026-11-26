@@ -180,3 +180,16 @@ test('provider-window projection ignores Cairo-day usage after provider reset, p
  const next={...u,per_model:{[model]:{...u.per_model[model],provider_day:'2026-11-26',provider_day_used:1,used_today:19,system_used:19,provider_counter_reset_at:'2026-11-27T08:00:00Z'}}};
  assert.equal(projectResearchUsage(next,{},Date.parse('2026-11-26T08:01:00Z')).per_model[model].system_used,1);
 });
+
+
+test('semantic feedback is admin-only and does not approve dictionary rules',async()=>{
+ for(const method of ['GET','PATCH']){const {response,queries}=await call(method,'semantic-review',{},'member');assert.equal(response.statusCode,403);assert.equal(queries.length,1);}
+ const F=require('../lib/secretj/semantic-feedback');
+ const row={id:'c'.repeat(64),day:'2026-11-26',kind:'family',proposed:'finance',source:'Actual source',original_quote:'Original',verdict:'uncertain',judge_model:'judge',explanation:'Insufficient evidence',verified_quotes:[]};
+ const state={semantic_reviews:[row],career_rules:[],family_rules:[]},rev=F.revision(row);
+ const events=[{detail:{case_id:row.id,revision:rev,verdict:'supported'},created_at:'2026-11-26T09:00:00Z'}];
+ assert.equal(F.buildView(state,events)[0].feedback.verdict,'supported');
+ assert.equal(F.buildView({semantic_reviews:[{...row,source:'Changed evidence'}]},events)[0].feedback,null);
+ assert.deepEqual(state.career_rules,[]);assert.deepEqual(state.family_rules,[]);
+ const src=fs.readFileSync('lib/secretj/semantic-feedback.js','utf8');assert.doesNotMatch(src,/UPDATE public\.sj_|DELETE FROM|review_dictionary_conflict/);
+});

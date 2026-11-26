@@ -491,3 +491,39 @@ test('exact departments and recovered duties never bypass identity, provenance, 
  assert.equal(run('','Manage employee payroll. Support employees with optional software access.','it_support','Support employees with optional software access.').rule,null);
  assert.equal(run('Operations','Coordinate daily shipments.','operations','Department: Operations','',{company:'Other'}).rule,null);
 });
+
+
+test('semantic judge independently repairs grounded evidence but never adds a second vote',()=>{
+ const J=require('../research/semantic-review.cjs'),row=require('./fixtures/shadow-rejections-20261126.json')[10],m=row.source.match(/ Department:\s*(.*?)\s*Duties: (.*)$/);
+ const j={company:row.company,title:row.title,url:row.url,department:m[1],description:m[2]},key=E.fingerprint(j),d={id:'judge',job_id:key,company:j.company,url:j.url,text:row.source,duties:m[2]};
+ const p={kind:'family',job_id:key,evidence_id:d.id,family:row.family,quote:row.quote,corroboration:row.corroboration},docs=new Map([[d.id,d]]),jobs=new Map([[key,j]]);
+ const initial=E.validateDetailed(p,docs,jobs,A.HYDROGEN,'2026-11-26');
+ const c=J.buildCase(p,docs,jobs,{model:'gemini-3.6-flash',slot:A.HYDROGEN,day:'2026-11-26'},initial);
+ assert.ok(c);assert.equal(initial.rule,null);
+ const result={id:c.publicCase.id,verdict:'supported',explanation:'Sales organization management is a core sales duty, but only one explicit duty is present.',alternative:'',quote:p.quote,corroboration:''};
+ const judged=J.adjudicate(c,result,{model:A.NEMOTRON,slot:A.NEMOTRON},'2026-11-26');
+ assert.equal(judged.rule,null);assert.equal(judged.review.decision,'human-review');
+ assert.equal(J.adjudicate(c,result,{model:'gemini-3.8-flash',slot:A.HYDROGEN},'2026-11-26').review.verdict,'unavailable');
+ assert.equal(J.adjudicate(c,{...result,quote:'Made up quote about sales management.'},{model:A.NEMOTRON,slot:A.NEMOTRON},'2026-11-26').review.verdict,'uncertain');
+ assert.equal(J.buildCase({...p,quote:'Made up quote about sales management.'},docs,jobs,{model:A.HYDROGEN,slot:A.HYDROGEN,day:'2026-11-26'},{rule:null,reason:'quote-not-in-source'}),null);
+ const candidate=J.buildCase(proposal,new Map([[doc.id,doc]]),new Map([[id,job]]),{model:A.HYDROGEN,slot:A.HYDROGEN,day:'2026-11-26'},{rule:check(proposal),reason:null});
+ const audit=J.adjudicate(candidate,{id:candidate.publicCase.id,verdict:'unsupported',explanation:'Possible competing role.',quote:proposal.quote,corroboration:proposal.corroboration},{model:A.NEMOTRON,slot:A.NEMOTRON},'2026-11-26');
+ assert.equal(audit.rule,null);assert.equal(audit.review.decision,'audit-flagged');
+ const repaired=J.adjudicate({...candidate,publicCase:{...candidate.publicCase,initial_status:'rejected'}},{id:candidate.publicCase.id,verdict:'supported',explanation:'Both duties directly support machine learning.',quote:proposal.quote,corroboration:proposal.corroboration},{model:A.NEMOTRON,slot:A.NEMOTRON},'2026-11-26');
+ assert.equal(repaired.review.decision,'recovered-candidate');assert.deepEqual(repaired.rule.models,[A.HYDROGEN]);assert.equal(repaired.rule.status,'candidate');
+});
+test('semantic reviews use bounded normal calls after research and preserve quotas on exhaustion',async()=>{
+ const J=require('../research/semantic-review.cjs'),s=A.newState(),now=new Date();A.ledger(s,A.localDate(now));
+ const cases=Array.from({length:20},(_,i)=>{const c=J.buildCase(proposal,new Map([[doc.id,doc]]),new Map([[id,job]]),{model:A.HYDROGEN,slot:A.HYDROGEN,day:A.localDate(now)},{rule:null,reason:'missing-job-family-anchor'});c.publicCase.id=E.hash('case'+i);return c;});
+ const h={nemotronEnabled:true,glmEnabled:false,attempts:[],failedFirst:new Set(),disabledModels:new Set(),cooldowns:new Map()};
+ let calls=0;
+ const result=await A.reviewSemantics(cases,s,{},h,A.localDate(now),Date.now(),async(model,system,payload,state,keys,opts)=>{
+  assert.equal(model,A.NEMOTRON);assert.equal(opts.emergency,false);assert.ok(payload.cases.length<=2);calls++;
+  A.recordCall(state,model,new Date());return {reviews:payload.cases.map(c=>({id:c.id,verdict:'supported',explanation:'Verified primary duties.',quote:proposal.quote,corroboration:proposal.corroboration}))};
+ });
+ assert.equal(calls,6);assert.equal(result.requests,6);assert.equal(result.recovered.length,12);assert.equal(result.reviews.length,20);assert.equal(result.reviews.filter(x=>x.verdict==='unavailable').length,8);
+ assert.equal(s.usage.model,6);
+ for(let i=6;i<A.MODEL_LIMITS[A.NEMOTRON];i++)A.recordCall(s,A.NEMOTRON,new Date());
+ const blocked=await A.reviewSemantics(cases,s,{},h,A.localDate(now),Date.now(),async()=>{throw Error('must not call');});
+ assert.equal(blocked.requests,0);assert.equal(blocked.reviews.length,20);
+});
