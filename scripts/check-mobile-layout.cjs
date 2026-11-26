@@ -130,12 +130,12 @@ for(const [w,h] of [[320,600],[375,812],[768,600],[1440,900],[1920,1080],[800,36
   await page.evaluate(t=>localStorage.setItem('bf-chat-theme',t),theme);await page.reload();
   await page.locator('#chat-form').waitFor({state:'visible'});
   await page.locator('#suggestions button').first().click();
-  await page.waitForFunction(()=>document.querySelectorAll('#messages .bubble.assistant').length===2);
+  await page.waitForFunction(()=>!document.querySelector('#messages .bf-typing')&&document.querySelectorAll('#messages .bubble.assistant').length===2);
   const geometry=await page.evaluate(()=>{const b=s=>document.querySelector(s).getBoundingClientRect();return {scroll:document.documentElement.scrollWidth,theme:document.documentElement.dataset.theme,formBottom:b('#chat-form').bottom,formTop:b('#chat-form').top,messagesBottom:b('#messages').bottom,scrollable:document.querySelector('#messages').scrollHeight>document.querySelector('#messages').clientHeight,safe:!document.querySelector('#messages script'),text:document.querySelector('#messages .bubble.assistant:last-of-type')?.textContent}});
   if(geometry.scroll>w+1||geometry.theme!==theme||geometry.formBottom>h+1||geometry.formTop<0||geometry.messagesBottom>geometry.formTop||!geometry.scrollable||!geometry.safe)failures.push({public_chat:w,h,theme,...geometry});
+  if([375,1440].includes(w))await page.screenshot({path:'botfolio-public-chat-'+theme+'-'+w+'.png',animations:'disabled'});
   await page.locator('#theme').click();
   if(await page.evaluate(()=>document.documentElement.dataset.theme)===theme)failures.push({public_chat_theme:w,h,theme});
-  if([375,1440].includes(w))await page.screenshot({path:'botfolio-public-chat-'+theme+'-'+w+'.png',animations:'disabled'});
  }
 }
 failChat=true;await page.locator('#message').fill('Retry question');await page.locator('#chat-form button').click();await page.waitForFunction(()=>document.getElementById('chat-status').textContent==='Daily limit reached');
