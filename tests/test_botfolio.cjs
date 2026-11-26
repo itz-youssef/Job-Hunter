@@ -159,16 +159,16 @@ test('low semantic relevance stops Groq, grounded replies map refusal markers, c
 
 test('Qwen fallback uses separate model allocation and only runs after primary failure',async()=>{
  const original=global.fetch,calls=[],reservations=[],settled=[];
- let primaryBlocked=false,qwenBlocked=false,primaryStatus=200,qwenStatus=200;
+ let primaryBlocked=false,qwenBlocked=false,secondBlocked=false,primaryStatus=200,qwenStatus=200,secondStatus=200;
  core.setQueryForTests(async(sql,args)=>{
   if(sql.includes('INSERT INTO public.sj_botfolio_groq_budget')){
    assert.match(sql,/coalesce\(e->>'model','openai\/gpt-oss-120b'\)=\$5::text/);
-   reservations.push(args);return (args[4]===B.CHAT_MODEL?primaryBlocked:qwenBlocked)?[]:[{id:1}];
+   reservations.push(args);return (args[4]===B.CHAT_MODEL?primaryBlocked:args[4]===B.FALLBACK_MODEL?qwenBlocked:secondBlocked)?[]:[{id:1}];
   }
   if(sql.includes('UPDATE public.sj_botfolio_groq_budget')){settled.push(args);return [];}
   throw Error('Unexpected SQL');
  });
- global.fetch=async(url,options)=>{const b=JSON.parse(options.body);calls.push(b);const s=b.model===B.CHAT_MODEL?primaryStatus:qwenStatus;return {ok:s===200,status:s,json:async()=>({choices:[{finish_reason:'stop',message:{content:'Grounded answer'}}],usage:{total_tokens:100}})};};
+ global.fetch=async(url,options)=>{const b=JSON.parse(options.body);calls.push(b);const s=b.model===B.CHAT_MODEL?primaryStatus:b.model===B.FALLBACK_MODEL?qwenStatus:secondStatus;return {ok:s===200,status:s,json:async()=>({choices:[{finish_reason:'stop',message:{content:'Grounded answer'}}],usage:{total_tokens:100}})};};
  const messages=B.buildMessages({name:'Alex',headline:'Engineer'},[{text:'Worked with Python'}],'What skills?',[]),env={GROQ_API_KEY:'test'};
  try{
   assert.equal(await B.generateWithFallback(env,messages),'Grounded answer');assert.equal(calls.length,1);assert.equal(calls[0].model,B.CHAT_MODEL);
@@ -177,17 +177,29 @@ test('Qwen fallback uses separate model allocation and only runs after primary f
   assert.deepEqual(reservations.at(-1).slice(2),[900,190000,B.FALLBACK_MODEL]);
   primaryBlocked=false;primaryStatus=429;assert.equal(await B.generateWithFallback(env,messages),'Grounded answer');
   assert.deepEqual(calls.slice(-2).map(x=>x.model),[B.CHAT_MODEL,B.FALLBACK_MODEL]);assert.equal(settled.at(-2)[2],'rate_limited');
-  primaryBlocked=true;qwenBlocked=true;await assert.rejects(B.generateWithFallback(env,messages),e=>e.status===429);assert.equal(calls.length,4);
-  primaryBlocked=false;qwenBlocked=false;primaryStatus=503;qwenStatus=503;await assert.rejects(B.generateWithFallback(env,messages),e=>e.status===503);assert.equal(calls.length,6);
+  primaryBlocked=true;qwenBlocked=true;assert.equal(await B.generateWithFallback(env,messages),'Grounded answer');assert.equal(calls.length,5);assert.equal(calls.at(-1).model,B.SECOND_FALLBACK_MODEL);assert.equal(calls.at(-1).reasoning_effort,'low');assert.deepEqual(calls.at(-1).messages,messages);assert.deepEqual(reservations.at(-1).slice(2),[900,190000,B.SECOND_FALLBACK_MODEL]);
+  secondBlocked=true;await assert.rejects(B.generateWithFallback(env,messages),e=>e.status===429);assert.equal(calls.length,5);
+  primaryBlocked=false;qwenBlocked=false;secondBlocked=false;primaryStatus=503;qwenStatus=503;secondStatus=503;await assert.rejects(B.generateWithFallback(env,messages),e=>e.status===503);assert.equal(calls.length,8);assert.deepEqual(calls.slice(-3).map(x=>x.model),B.GENERATION_MODELS);
  }finally{global.fetch=original;core.setQueryForTests(null);}
 });
 test('fallback usage is model-specific and legacy primary accounting is preserved',async()=>{
  core.setQueryForTests(async(sql,args)=>{
-  if(sql.includes('WITH active AS')){assert.match(sql,/coalesce\(e->>'model','openai\/gpt-oss-120b'\)=\$1::text/);return args[0]===B.CHAT_MODEL?[{requests:7,tokens:700}]:[{requests:3,tokens:300}];}
+  if(sql.includes('WITH active AS')){assert.match(sql,/coalesce\(e->>'model','openai\/gpt-oss-120b'\)=\$1::text/);return args[0]===B.CHAT_MODEL?[{requests:7,tokens:700}]:args[0]===B.FALLBACK_MODEL?[{requests:3,tokens:300}]:[{requests:2,tokens:200}];}
   return [{}];
  });
  try{const u=await B.usage({GROQ_API_KEY:'test'});
   assert.equal(u.generation.tokens_24h,700);assert.equal(u.generation.system_token_limit,120000);
-  assert.equal(u.fallback_generation.model,B.FALLBACK_MODEL);assert.equal(u.fallback_generation.tokens_24h,300);assert.equal(u.fallback_generation.remaining_tokens,189700);assert.equal(u.fallback_generation.remaining_requests,897);
+  assert.equal(u.fallback_generation.model,B.FALLBACK_MODEL);assert.equal(u.fallback_generation.tokens_24h,300);assert.equal(u.fallback_generation.remaining_tokens,189700);assert.equal(u.fallback_generation.remaining_requests,897);assert.equal(u.second_fallback_generation.model,B.SECOND_FALLBACK_MODEL);assert.equal(u.second_fallback_generation.remaining_tokens,189800);assert.equal(u.second_fallback_generation.remaining_requests,898);
  }finally{core.setQueryForTests(null);}
+});
+
+
+test('valid scope refusals never trigger another generation model and safeguard cannot generate answers',async()=>{
+ const original=global.fetch;let calls=0;
+ core.setQueryForTests(async(sql)=>sql.includes('INSERT INTO')?[{id:1}]:[]);
+ global.fetch=async()=>{calls++;return {ok:true,status:200,json:async()=>({choices:[{finish_reason:'stop',message:{content:'OUT_OF_SCOPE'}}],usage:{total_tokens:50}})};};
+ try{
+  assert.equal(await B.generateWithFallback({GROQ_API_KEY:'test'},[{role:'user',content:'Question'}]),'OUT_OF_SCOPE');
+  assert.equal(calls,1);await assert.rejects(B.reserveGroq(1,'openai/gpt-oss-safeguard-20b'),/Unexpected Botfolio model/);assert.equal(calls,1);
+ }finally{global.fetch=original;core.setQueryForTests(null);}
 });
