@@ -162,3 +162,21 @@ test('research calendar projection expires local daily counters without erasing 
  assert.equal(u.per_model['gemini-4-hydrogen'].system_used,7);
  assert.equal(after.per_model['gemini-4-hydrogen'].provider_counter_reset_at,'2026-11-27T08:00:00.000Z');
 });
+
+
+test('provider-window projection ignores Cairo-day usage after provider reset, preserves caps and rolling tokens',()=>{
+ const js=fs.readFileSync('dist/assets/secretj-admin-console.js','utf8');
+ const {projectResearchUsage}=new Function(js.slice(js.indexOf('const nextProviderMidnight='),js.indexOf('const modelBudgetCards='))+'return {projectResearchUsage};')();
+ const model='gemini-4-hydrogen',u={day:'2026-11-26',model_requests_today:18,groq_tokens_rolling_24h:1200,per_model:{[model]:{limit:18,used_today:18,provider_day_used:18,system_used:18,provider_day:'2026-11-25',cairo_reset_at:'2026-11-26T22:00:00Z',provider_counter_reset_at:'2026-11-26T08:00:00Z'}}};
+ const before=projectResearchUsage(u,{},Date.parse('2026-11-26T07:59:59Z'));
+ const after=projectResearchUsage(u,{},Date.parse('2026-11-26T08:00:00Z'));
+ assert.equal(before.per_model[model].system_used,18);
+ assert.equal(after.per_model[model].system_used,0);
+ assert.equal(after.per_model[model].remaining,18);
+ assert.equal(after.per_model[model].used_today,18);
+ assert.equal(after.model_requests_today,18);
+ assert.equal(after.groq_tokens_rolling_24h,1200);
+ assert.equal(u.per_model[model].system_used,18);
+ const next={...u,per_model:{[model]:{...u.per_model[model],provider_day:'2026-11-26',provider_day_used:1,used_today:19,system_used:19,provider_counter_reset_at:'2026-11-27T08:00:00Z'}}};
+ assert.equal(projectResearchUsage(next,{},Date.parse('2026-11-26T08:01:00Z')).per_model[model].system_used,1);
+});

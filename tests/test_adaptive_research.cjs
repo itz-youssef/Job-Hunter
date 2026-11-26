@@ -407,3 +407,48 @@ test('daily research uses one Cairo-time morning schedule and preserves manual m
  assert.match(workflow,/cron: '15 10 \* \* \*'/);assert.match(workflow,/timezone: 'Africa\/Cairo'/);assert.doesNotMatch(workflow,/0 21,22/);assert.match(source,/scheduled&&!\[10,11\]/);assert.match(source,/state\.last_attempt===day/);
  assert.equal(A.localHour(new Date('2026-11-26T08:15:00Z')),10);assert.equal(A.localHour(new Date('2026-07-26T07:15:00Z')),10);
 });
+
+
+test('provider calendar resets system quota at UTC and Pacific boundaries even with Cairo-day calls',()=>{
+ const s=A.newState(),before=new Date('2026-11-26T07:59:59Z'),after=new Date('2026-11-26T08:00:00Z');
+ A.ledger(s,A.localDate(before));
+ for(let i=0;i<A.MODEL_LIMITS[A.HYDROGEN];i++)A.recordCall(s,A.HYDROGEN,before);
+ A.recordCall(s,A.LITE,before);
+ assert.equal(A.canCall(s,A.HYDROGEN,before),false);
+ assert.equal(A.usageView(s,before)[A.HYDROGEN].remaining,0);
+ assert.equal(A.usageView(s,after)[A.HYDROGEN].system_used,0);
+ assert.equal(A.usageView(s,after)[A.HYDROGEN].used_today,18);
+ assert.equal(A.usageView(s,after)[A.LITE].system_used,0);
+ assert.equal(A.canCall(s,A.HYDROGEN,after),true);
+ A.recordCall(s,A.HYDROGEN,after);
+ assert.equal(A.usageView(s,after)[A.HYDROGEN].system_used,1);
+ assert.equal(s.usage.model,19); // shared Cairo cap still counts every call
+ const t=A.newState(),utcBefore=new Date('2026-11-26T23:59:59Z'),utcAfter=new Date('2026-11-27T00:00:00Z');
+ A.ledger(t,A.localDate(utcBefore));
+ for(const m of [A.NEMOTRON,A.GLM]){
+  for(let i=0;i<A.MODEL_LIMITS[m];i++)A.recordCall(t,m,utcBefore);
+  assert.equal(A.canCall(t,m,utcBefore),false);
+  assert.equal(A.usageView(t,utcAfter)[m].system_used,0);
+  assert.equal(A.canCall(t,m,utcAfter),true);
+ }
+ assert.equal(A.usageView(t,utcAfter)[A.GLM].estimated_neurons_reserved,0);
+});
+test('Cairo midnight alone cannot refill a provider calendar budget; rolling Groq tokens and shared cap stay intact',()=>{
+ const s=A.newState(),a=new Date('2026-11-25T21:59:59Z'),b=new Date('2026-11-25T22:00:00Z');
+ A.ledger(s,A.localDate(a));for(let i=0;i<A.MODEL_LIMITS[A.NEMOTRON];i++)A.recordCall(s,A.NEMOTRON,a);
+ A.reserveGroqTokens(s,1200,a);A.ledger(s,A.localDate(b));
+ assert.equal(A.canCall(s,A.NEMOTRON,b),false);
+ assert.equal(A.groqTokensUsed(s,new Date('2026-11-26T00:00:00Z')),1200);
+ assert.equal(A.canCall(s,A.NEMOTRON,new Date('2026-11-26T00:00:00Z')),true);
+ s.usage.model=A.EMERGENCY_MODEL_BUDGET;
+ assert.equal(A.canCall(s,A.NEMOTRON,new Date('2026-11-26T00:00:00Z')),false);
+});
+test('Groq short RPD countdown is telemetry, not an automatic full local refill',()=>{
+ const s=A.newState(),now=new Date('2026-11-26T08:45:00Z');A.ledger(s,A.localDate(now));
+ A.recordCall(s,A.GROQ,now);
+ A.captureGroqReset(s,{get:()=> '4m'},now);
+ const after=new Date('2026-11-26T08:49:01Z'),u=A.usageView(s,after)[A.GROQ];
+ assert.equal(u.system_used,1);assert.equal(u.reset_policy,'local-utc-provider-rpd-unverified');
+ assert.equal(u.provider_reset_at,'2026-11-26T08:49:00.000Z');
+ assert.equal(u.system_reset_at,'2026-11-27T00:00:00.000Z');
+});
