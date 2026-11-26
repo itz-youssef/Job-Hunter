@@ -15,7 +15,7 @@ const customWorkflow = fs.readFileSync('.github/workflows/custom-companies.yml',
 const coreWorkflow = fs.readFileSync('.github/workflows/monitor.yml', 'utf8');
 
 test('dashboard cron description matches real Cloudflare worker configuration', () => {
-  assert.match(wrangler, /crons\s*=\s*\["\*\/5 \* \* \* \*", "3,18,33,48 \* \* \* \*"\]/);
+  assert.match(wrangler, /crons\s*=\s*\["\*\/5 \* \* \* \*", "3,18,33,48 \* \* \* \*", "15,25,35,45,55 7,8,9 \* \* \*"\]/);
   assert.match(worker, /"\*\/5 \* \* \* \*": "custom-companies\.yml"/);
   assert.match(worker, /"3,18,33,48 \* \* \* \*": "monitor\.yml"/);
   assert.match(inlineJS, /const CUSTOM_SCAN_MINUTES=Array\.from\(\{length:12\},\(_,i\)=>i\*5\)/);
