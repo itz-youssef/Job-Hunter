@@ -551,6 +551,40 @@ async function reviewSemantics(cases,state,keys,health,day,started,transport=inf
  for(const c of pending)if(!chosenIds.has(c.publicCase.id))reviews.push(J.unavailable(c,allow?'review-sampling-or-budget-cap':'core-research-priority'));
  return {eligible:unique.length,selected:chosen.length,requests,cached,reviews,recovered,core_complete:coreComplete};
 }
+// Explicit manual test: replay the fixed historical regression excerpts.
+// Never publish a rule, modify the research report, or repeat search.
+function validationReplayCases(rows,day){
+ const results=[],cases=[];
+ for(const row of rows){
+  const m=row.source.match(/ Department:\s*(.*?)\s*Duties: (.*)$/);
+  if(!m)throw Error('invalid-validation-replay-fixture');
+  const j={company:row.company,title:row.title,url:row.url,department:m[1],description:m[2]};
+  const id=E.fingerprint(j),d={id:'replay',job_id:id,company:j.company,url:j.url,text:row.source,duties:m[2]};
+  const docs=new Map([[d.id,d]]),jobs=new Map([[id,j]]);
+  const p={kind:'family',job_id:id,evidence_id:d.id,family:row.family,quote:row.quote,corroboration:row.corroboration};
+  const slot=[NEMOTRON,GLM].includes(row.model)?NEMOTRON:HYDROGEN;
+  const result=E.validateDetailed(p,docs,jobs,slot,day);
+  const c=J.buildCase(p,docs,jobs,{model:row.model,slot,day},result);
+  if(c)cases.push(c);
+  results.push({number:row.number,company:row.company,title:row.title,family:row.family,origin_model:row.model,historical_rejection:row.oldReason,deterministic:result.rule?'candidate':'rejected',reason:result.reason,review_id:c?.publicCase.id||null});
+ }
+ return {results,cases};
+}
+async function runValidationReplay(state,day,keys){
+ const rows=require('../tests/fixtures/shadow-rejections-20261126.json');
+ const {results,cases}=validationReplayCases(rows,day);
+ const start=state.usage.model;
+ const health={disabledModels:new Set(),cooldowns:new Map(),failedGoogle:new Set(),failedFirst:new Set(),attempts:[],googleDisabled:!keys.google,nemotronEnabled:!!keys.openrouter,glmEnabled:false,groqEnabled:false};
+ // A manual live test may run after today's primary attempt, even if it
+ // was partial. Once per Cairo day, same spare-only guard, no shared models.
+ const allowed=state.last_attempt===day&&state.last_validation_test!==day;
+ if(allowed){state.last_validation_test=day;write('state.json',state);}
+ const semantic=await reviewSemantics(cases,state,keys,health,day,Date.now(),inferActual,Date.now,allowed);
+ const byId=new Map(semantic.reviews.map(x=>[x.id,x]));
+ const report={mode:'validation-test',production_unchanged:true,shadow_dictionaries_unchanged:true,updated_at:new Date().toISOString(),basis:'Historical reconstructed excerpts, not fresh research or measured production accuracy',cairo_day:day,live_judge_allowed:allowed,skip_reason:allowed?null:state.last_attempt!==day?'primary-research-not-attempted':'validation-test-already-attempted',search_credits:0,model_requests:state.usage.model-start,judge_attempts:semantic.requests,deterministic_passed:results.filter(r=>r.deterministic==='candidate').length,deterministic_rejected:results.filter(r=>r.deterministic==='rejected').length,semantic_recovered:semantic.recovered.length,results:results.map(r=>({...r,semantic:byId.get(r.review_id)||null})),attempts:health.attempts};
+ write('validation-test.json',report);
+ console.log(JSON.stringify(report,null,2));
+}
 async function run(){
  const day=localDate(),mode=process.env.RESEARCH_MODE||'daily',scheduled=process.env.GITHUB_EVENT_NAME==='schedule';
  if(scheduled&&![10,11].includes(localHour())){console.log('Outside Cairo morning research window');return;}
@@ -558,6 +592,7 @@ async function run(){
  Object.defineProperty(state,'runMode',{value:mode,enumerable:false});
  if(mode==='daily'&&state.last_attempt===day){console.log('Daily attempt already recorded');return;}
  const keys={openrouter:process.env.OPENROUTER_API_KEY,google:process.env.GEMINI_API_KEY,groq:process.env.GROQ_API_KEY,cfToken:process.env.RESEARCH_CF_API_TOKEN,cfAccount:process.env.RESEARCH_CF_ACCOUNT_ID},searchKey=process.env.TAVILY_API_KEY,missing=[...(!keys.openrouter?['OPENROUTER_API_KEY']:[]),...(!keys.google&&!keys.groq?['GEMINI_API_KEY or GROQ_API_KEY']:[]),...(!searchKey?['TAVILY_API_KEY']:[])];
+ if(mode==='validation-test'){if(scheduled)throw Error('validation-test-manual-only');await runValidationReplay(state,day,keys);return;}
  if(missing.length){console.log('Missing required Actions secrets; no external requests');write('report.json',{status:'awaiting-keys',mode:'shadow',production_unchanged:true,updated_at:new Date().toISOString(),missing});return;}
  const snapshot=read(path.join(ROOT,'dist/data.json'),{jobs:[]}),registry=read(path.join(ROOT,'companies.json'),[]),reference=read(path.join(ROOT,'benchmarks/semantic-role-reference.json'),{});
  if(!Array.isArray(snapshot.jobs)||!snapshot.jobs.length||!Array.isArray(registry))throw Error('catalog unavailable');
@@ -692,4 +727,4 @@ async function run(){
  console.log(JSON.stringify({status:report.status,model_requests:stats.model_requests,companies_reviewed:stats.companies_reviewed,validated:stats.validated,cross_checked:report.rules.cross_checked}));
 }
 if(require.main===module)run().catch(e=>{console.error('Research stopped safely:',e.code||e.name||'Error');process.exitCode=1;});
-module.exports={judgeHeadroom,reviewSemantics,MODELS,GLM,GLM_NEURON_BUDGET,GLM_NEURONS_PER_CALL,glmNeuronEstimate,glmConfigured,rejectedProposalRecord,PROVIDER_REQUEST_LIMITS,EMERGENCY_LIMITS,EMERGENCY_MODEL_BUDGET,emergencyCandidates,nextDayReset,durationMs,captureGroqReset,budgetBlockReason,budgetException,NIGHTLY_RESERVE,GROQ_TOKEN_BUDGET,GROQ_TOKEN_RESERVE,migrateLegacyUsage,legacyDebit,effectiveLimit,groqTokensUsed,groqTokenEstimate,reserveGroqTokens,GOOGLE_MODELS,GROQ,RESEARCH_POOL,endpointAvailable,slotAvailable,inferSlot,googleFallbackError,HYDROGEN,NEMOTRON,LITE,MODEL_LIMITS,MODEL_INTERVALS,modelLedger,modelRequestsUsed,canCall,recordCall,providerDay,usageView,decodeGemini,applyExcerpts,localDate,localHour,modelFor,allowed,publicIp,htmlText,parseJSON,decodeResponse,diagnostic,compactDoc,ledger,roster,selectJobs,newState,MODEL_BUDGET,SEARCH_BUDGET,MONTH_BUDGET,BATCH_COMPANIES,DOC_CHARS,DAILY_COMPANIES,BENCHMARK_COMPANIES,TASK_TEXT_CHARS,TASK_DOCS,cohort,taskModels,makeTask,evidenceWindow,cooldownMs};
+module.exports={validationReplayCases,judgeHeadroom,reviewSemantics,MODELS,GLM,GLM_NEURON_BUDGET,GLM_NEURONS_PER_CALL,glmNeuronEstimate,glmConfigured,rejectedProposalRecord,PROVIDER_REQUEST_LIMITS,EMERGENCY_LIMITS,EMERGENCY_MODEL_BUDGET,emergencyCandidates,nextDayReset,durationMs,captureGroqReset,budgetBlockReason,budgetException,NIGHTLY_RESERVE,GROQ_TOKEN_BUDGET,GROQ_TOKEN_RESERVE,migrateLegacyUsage,legacyDebit,effectiveLimit,groqTokensUsed,groqTokenEstimate,reserveGroqTokens,GOOGLE_MODELS,GROQ,RESEARCH_POOL,endpointAvailable,slotAvailable,inferSlot,googleFallbackError,HYDROGEN,NEMOTRON,LITE,MODEL_LIMITS,MODEL_INTERVALS,modelLedger,modelRequestsUsed,canCall,recordCall,providerDay,usageView,decodeGemini,applyExcerpts,localDate,localHour,modelFor,allowed,publicIp,htmlText,parseJSON,decodeResponse,diagnostic,compactDoc,ledger,roster,selectJobs,newState,MODEL_BUDGET,SEARCH_BUDGET,MONTH_BUDGET,BATCH_COMPANIES,DOC_CHARS,DAILY_COMPANIES,BENCHMARK_COMPANIES,TASK_TEXT_CHARS,TASK_DOCS,cohort,taskModels,makeTask,evidenceWindow,cooldownMs};
