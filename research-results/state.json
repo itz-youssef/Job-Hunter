@@ -6,7 +6,7 @@
     "month": "2026-11",
     "search": 26,
     "day": "2026-11-26",
-    "model": 19,
+    "model": 20,
     "search_day": 10,
     "model_usage": {
       "gemini-4-hydrogen": {
@@ -19,9 +19,9 @@
       "nvidia/nemotron-3-ultra-550b-a55b:free": {
         "day": "2026-11-26",
         "provider_day": "2026-11-26",
-        "day_count": 7,
-        "provider_count": 7,
-        "last_at": 1795683041937
+        "day_count": 8,
+        "provider_count": 8,
+        "last_at": 1795687417361
       },
       "gemini-3.5-flash-lite": {
         "day": "2026-11-26",
@@ -169,5 +169,6 @@
       "IBM",
       "Schneider Electric"
     ]
-  }
+  },
+  "last_validation_test": "2026-11-26"
 }
