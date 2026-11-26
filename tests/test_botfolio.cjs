@@ -26,7 +26,7 @@ test('owner auth, scope checks, explicit public sharing and public metadata only
 });
 test('create embeddings and chat with mocked provider, separate tenant and bounded budget',async()=>{
  const vector=Array(1024).fill(0);vector[0]=1;let inserted,models=[],reserve=[],groqCalls=0,groqDebits=[],groqSettles=[];const originalFetch=global.fetch;
- core.setQueryForTests(async(sql,args)=>{if(sql.includes('sj_sessions'))return [{id:UID,role:'member'}];if(sql.includes('INSERT INTO public.sj_botfolio_groq_budget')){groqDebits.push(args);return [{id:1}];}if(sql.includes('count(*)'))return [{n:0}];if(sql.includes('UPDATE public.sj_botfolio_groq_budget')){groqSettles.push(args);return [];}if(sql.includes('sj_botfolio_limits')){assert.match(sql,/\$2::int WHERE \$2::int <= \$3::int/);assert.match(sql,/EXCLUDED.used <= \$3::int/);reserve.push(args);return [{used:args[1]}];}if(sql.includes('INSERT INTO public.sj_botfolio_bots')){inserted=JSON.parse(args[4]);assert.equal(args[1],UID);assert.match(sql,/\$1::uuid,\$2::uuid,s::smallint,\$3::text,\$4::text,\$5::jsonb,\$6::text,false/);return [{id:ID,name:'Alex',published:false}];}if(sql.includes('JOIN public.sj_users'))return [{id:ID,name:'Alex',headline:'Engineer',knowledge:inserted,embedding_model:B.EMBED_MODEL}];throw Error(sql);});
+ core.setQueryForTests(async(sql,args)=>{if(sql.includes('sj_sessions'))return [{id:UID,role:'member'}];if(sql.includes('INSERT INTO public.sj_botfolio_groq_budget')){groqDebits.push(args);return [{id:1}];}if(sql.includes('count(*)'))return [{n:0}];if(sql.includes('UPDATE public.sj_botfolio_groq_budget')){groqSettles.push(args);return [];}if(sql.includes('sj_botfolio_limits')){if(sql.includes('owner-chat:')){assert.match(sql,/ON CONFLICT\(bucket,day\)/);assert.deepEqual(args,[UID,20]);}else{assert.match(sql,/\$2::int WHERE \(\$3::int IS NULL OR \$2::int <= \$3::int\)/);assert.match(sql,/EXCLUDED.used <= \$3::int/);}reserve.push(args);return [{used:args[1]}];}if(sql.includes('INSERT INTO public.sj_botfolio_bots')){inserted=JSON.parse(args[4]);assert.equal(args[1],UID);assert.match(sql,/CASE WHEN u.role='admin'/);assert.match(sql,/ON CONFLICT\(user_id,slot\) DO NOTHING/);return [{id:ID,name:'Alex',published:false}];}if(sql.includes('JOIN public.sj_users'))return [{id:ID,name:'Alex',headline:'Engineer',knowledge:inserted,embedding_model:B.EMBED_MODEL,user_id:UID,owner_role:'member'}];throw Error(sql);});
  const ai={run:async(model,body)=>{models.push(model);assert.equal(model,B.EMBED_MODEL);return {data:body.text.map(()=>vector)};}};
  global.fetch=async(url,options)=>{groqCalls++;assert.equal(url,'https://api.groq.com/openai/v1/chat/completions');assert.equal(options.headers.Authorization,'Bearer test-groq-key');const body=JSON.parse(options.body);assert.equal(body.model,'openai/gpt-oss-120b');assert.equal(body.reasoning_effort,'low');assert.equal(body.include_reasoning,false);assert.match(body.messages[1].content,/software engineer/);return {ok:true,status:200,json:async()=>({choices:[{finish_reason:'stop',message:{content:'Alex worked as a software engineer.'}}],usage:{total_tokens:280}})};};
  try{const c=req('POST','create',{name:'Alex',headline:'Engineer',knowledge:'Alex worked as a software engineer on application development.',reviewed:true});c.env.BOTFOLIO_AI=ai;assert.equal((await call(c)).status,201);
@@ -202,4 +202,47 @@ test('valid scope refusals never trigger another generation model and safeguard 
   assert.equal(await B.generateWithFallback({GROQ_API_KEY:'test'},[{role:'user',content:'Question'}]),'OUT_OF_SCOPE');
   assert.equal(calls,1);await assert.rejects(B.reserveGroq(1,'openai/gpt-oss-safeguard-20b'),/Unexpected Botfolio model/);assert.equal(calls,1);
  }finally{global.fetch=original;core.setQueryForTests(null);}
+});
+
+test('one portfolio for members, unlimited personal quota for admins',async()=>{
+ let role='member',count=1,quotaCalls=[],inserted=0;const vector=Array(1024).fill(0);vector[0]=1;
+ core.setQueryForTests(async(sql,args)=>{
+  if(sql.includes('sj_sessions'))return [{id:UID,role}];
+  if(sql.includes('count(*)'))return [{n:count}];
+  if(sql.includes('sj_botfolio_limits')){quotaCalls.push(args);return [{used:1}];}
+  if(sql.includes('INSERT INTO public.sj_botfolio_bots')){inserted++;assert.match(sql,/u.role='admin' OR NOT EXISTS/);assert.match(sql,/ON CONFLICT\(user_id,slot\) DO NOTHING/);return [{id:ID}];}
+  if(sql.includes('FROM public.sj_botfolio_bots WHERE user_id'))return [];
+  throw Error('Unexpected query');
+ });
+ const make=()=>{const r=req('POST','create',{name:'Test',knowledge:'Professional software engineering experience with Python.',reviewed:true});r.env.BOTFOLIO_AI={run:async(m,b)=>({data:b.text.map(()=>vector)})};return r;};
+ try{
+  assert.equal((await call(req('GET','list'))).data.limits.max_bots,1);
+  assert.equal((await call(make())).status,409);assert.equal(quotaCalls.length,0);
+  count=0;assert.equal((await call(make())).status,201);assert.equal(quotaCalls[0][2],5);
+  role='admin';count=100;assert.deepEqual((await call(req('GET','list'))).data.limits,{max_bots:null,daily_messages:null});
+  assert.equal((await call(make())).status,201);assert.ok(quotaCalls.some(a=>a[0]==='create:'+UID&&a[2]===null));assert.equal(inserted,2);
+ }finally{core.setQueryForTests(null);}
+});
+test('owner chat quota is independent of bot id and admin exemption does not change global caps',async()=>{
+ let used=0;core.setQueryForTests(async(sql,args)=>{
+  assert.match(sql,/owner-chat:/);assert.match(sql,/ON CONFLICT\(bucket,day\)/);assert.equal(args[0],UID);
+  if(args[1]!==null&&used>=args[1])return [];return [{used:++used}];
+ });
+ try{for(let i=0;i<20;i++)await B.consumeOwnerChat(UID,false);
+  await assert.rejects(B.consumeOwnerChat(UID,false),e=>e.status===429);
+  await B.consumeOwnerChat(UID,true);assert.equal(used,21);
+  assert.equal(B.GROQ_ROLLING_TOKEN_CAP,120000);assert.equal(B.GROQ_ROLLING_REQUEST_CAP,900);assert.equal(B.DAILY_NEURONS,1800);
+ }finally{core.setQueryForTests(null);}
+});
+test('public guest chat stays available and only authenticated admin owner bypasses IP cap',async()=>{
+ const originalAnswer=B.answer,originalConsume=B.consume,originalOwner=B.consumeOwnerChat;
+ let role='member',viewerRole='admin',ipCalls=0,ownerCalls=[];B.answer=async()=> 'Answer';B.consume=async()=>{ipCalls++;};B.consumeOwnerChat=async(...a)=>ownerCalls.push(a);
+ core.setQueryForTests(async(sql)=>{if(sql.includes('sj_sessions'))return [{id:UID,role:viewerRole}];if(sql.includes('JOIN public.sj_users'))return [{id:ID,user_id:UID,owner_role:role,embedding_model:B.EMBED_MODEL}];throw Error('Unexpected query');});
+ try{
+  const send=auth=>call(req('POST','chat',{id:ID,message:'Experience?'},ID,auth));
+  assert.equal((await send(false)).status,200);assert.equal(ipCalls,1);assert.deepEqual(ownerCalls.pop(),[UID,false]);
+  role='admin';assert.equal((await send(false)).status,200);assert.equal(ipCalls,2);assert.deepEqual(ownerCalls.pop(),[UID,true]);
+  assert.equal((await send(true)).status,200);assert.equal(ipCalls,2);assert.deepEqual(ownerCalls.pop(),[UID,true]);
+  viewerRole='member';assert.equal((await send(true)).status,200);assert.equal(ipCalls,3);
+ }finally{B.answer=originalAnswer;B.consume=originalConsume;B.consumeOwnerChat=originalOwner;core.setQueryForTests(null);}
 });

@@ -5,7 +5,7 @@ const fields='id,name,headline,published,created_at,updated_at';
 const valid=(v,n,label)=>core.validateText(v||'',n,label);
 const publicMeta=row=>({id:row.id,name:row.name,headline:row.headline});
 async function getPublic(id,withKnowledge=false){
- const rows=await core.query('SELECT '+(withKnowledge?'b.id,b.name,b.headline,b.knowledge,b.embedding_model,b.updated_at':'b.id,b.name,b.headline')+' FROM public.sj_botfolio_bots b JOIN public.sj_users u ON u.id=b.user_id WHERE b.id=$1 AND b.published=true AND u.is_active=true LIMIT 1',[id]);
+ const rows=await core.query('SELECT '+(withKnowledge?'b.id,b.name,b.headline,b.knowledge,b.embedding_model,b.updated_at,b.user_id,u.role AS owner_role':'b.id,b.name,b.headline')+' FROM public.sj_botfolio_bots b JOIN public.sj_users u ON u.id=b.user_id WHERE b.id=$1 AND b.published=true AND u.is_active=true LIMIT 1',[id]);
  if(!rows.length)throw core.fail(404,'This portfolio is unavailable.');
  return rows[0];
 }
@@ -21,17 +21,21 @@ module.exports=async function(req,res){
    if(bot.embedding_model!==B.EMBED_MODEL)throw core.fail(503,'This portfolio needs to be re-indexed.');
    const ip=String(req.headers?.['x-forwarded-for']||'unknown').slice(0,100);
    phase='reserve-chat';
-   await B.consume('ip:'+core.hash(ip),1,B.MAX_IP_CHATS);await B.consume('bot:'+bot.id,1,B.MAX_BOT_CHATS);
+   const adminOwned=bot.owner_role==='admin';
+   const viewer=adminOwned?await core.userForRequest(req):null;
+   const adminOwner=adminOwned&&viewer?.role==='admin'&&viewer.id===bot.user_id;
+   if(!adminOwner)await B.consume('ip:'+core.hash(ip),1,B.MAX_IP_CHATS);
+   await B.consumeOwnerChat(bot.user_id,adminOwned);
    phase='answer';
    const answer=await B.answer(req.env,bot,message,body.history);
    return core.reply(res,200,{ok:true,answer});
   }
   phase='authentication';
-  const user=await core.requireUser(req),uid=user.id;
+  const user=await core.requireUser(req),uid=user.id,isAdmin=user.role==='admin';
   if(action==='list'&&method==='GET'){
    phase='list';
    const rows=await core.query('SELECT '+fields+' FROM public.sj_botfolio_bots WHERE user_id=$1 ORDER BY created_at DESC',[uid]);
-   return core.reply(res,200,{ok:true,bots:rows,ai_ready:B.ready(req.env)});
+   return core.reply(res,200,{ok:true,bots:rows,ai_ready:B.ready(req.env),limits:{max_bots:isAdmin?null:B.MAX_BOTS,daily_messages:isAdmin?null:B.MAX_BOT_CHATS}});
   }
   if(action==='create'&&method==='POST'){
    const body=core.parseBody(req),name=valid(body.name,100,'Bot name'),headline=valid(body.headline,220,'Headline');
@@ -42,14 +46,14 @@ module.exports=async function(req,res){
    const chunks=B.splitText(body.knowledge),ai=B.getAI(req.env);
    phase='check-capacity';
    const free=await core.query('SELECT count(*)::int AS n FROM public.sj_botfolio_bots WHERE user_id=$1',[uid]);
-   if(Number(free[0]?.n)>=B.MAX_BOTS)throw core.fail(409,'You can create up to 5 portfolios in this pilot.');
+   if(!isAdmin&&Number(free[0]?.n)>=B.MAX_BOTS)throw core.fail(409,'Your account can have one portfolio. Delete your existing portfolio before creating another.');
    phase='reserve-indexing';
-   await B.consume('create:'+uid,1,B.MAX_INDEX_ATTEMPTS);
+   await B.consume('create:'+uid,1,isAdmin?null:B.MAX_INDEX_ATTEMPTS);
    phase='embedding';
    const vectors=await B.embed(ai,chunks),knowledge=chunks.map((text,i)=>({text,vector:vectors[i]}));
    phase='save-draft';
-   const rows=await core.query('INSERT INTO public.sj_botfolio_bots(id,user_id,slot,name,headline,knowledge,embedding_model,published) SELECT $1::uuid,$2::uuid,s::smallint,$3::text,$4::text,$5::jsonb,$6::text,false FROM generate_series(1,5) s WHERE NOT EXISTS (SELECT 1 FROM public.sj_botfolio_bots WHERE user_id=$2::uuid AND slot=s) ORDER BY s LIMIT 1 RETURNING '+fields,[core.randomUUID(),uid,name,headline,JSON.stringify(knowledge),B.EMBED_MODEL]);
-   if(!rows.length)throw core.fail(409,'Portfolio limit reached.');
+   const rows=await core.query(`INSERT INTO public.sj_botfolio_bots(id,user_id,slot,name,headline,knowledge,embedding_model,published) SELECT $1::uuid,$2::uuid,CASE WHEN u.role='admin' THEN COALESCE((SELECT max(slot) FROM public.sj_botfolio_bots WHERE user_id=u.id),0)+1 ELSE 1 END,$3::text,$4::text,$5::jsonb,$6::text,false FROM public.sj_users u WHERE u.id=$2::uuid AND u.is_active=true AND (u.role='admin' OR NOT EXISTS (SELECT 1 FROM public.sj_botfolio_bots WHERE user_id=u.id)) ON CONFLICT(user_id,slot) DO NOTHING RETURNING `+fields,[core.randomUUID(),uid,name,headline,JSON.stringify(knowledge),B.EMBED_MODEL]);
+   if(!rows.length)throw core.fail(409,isAdmin?'Another portfolio was created at the same time. Please retry.':'Your account already has a portfolio.');
    return core.reply(res,201,{ok:true,bot:rows[0]});
   }
   if(action==='publish'&&method==='PATCH'){
@@ -67,6 +71,7 @@ module.exports=async function(req,res){
  }catch(error){
   // Log only a fixed phase and an allowlisted SQLSTATE format, never request contents or provider/DB error messages.
   if(!error?.status||error.status>=500){const code=typeof error?.code==='string'&&/^[0-9A-Z]{5}$/.test(error.code)?error.code:'unknown';console.warn('botfolio request failed',{phase,code});}
+  if(phase==='save-draft'&&error?.code==='23514')return core.reply(res,503,{ok:false,error:'Portfolio capacity upgrade is not installed yet.'});
   if(error?.code==='42P01')return core.reply(res,503,{ok:false,error:'Botfolio storage is not ready.'});return core.safeError(res,error);
  }
 };
