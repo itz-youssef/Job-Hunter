@@ -79,7 +79,9 @@ const exactDepartments={
  sales:new Set(['sales','business development']),marketing:new Set(['marketing','digital marketing','growth marketing']),
  hr:new Set(['human resources','hr','people operations']),customer_success:new Set(['customer success','customer service'])
 };
-const requirementHeading=/\b(?:requirements|qualifications|what you (?:bring|need)|what we (?:are looking for|re looking for)|you might be a fit if|who you are|about (?:you|the company)|preferred qualifications|must have|nice to have|benefits|how we work|about lean)\b\s*[:–—-]?/i;
+// Heading boundaries, not ordinary mentions like "regulatory requirements".
+const requirementHeading=/\b(?:requirements|qualifications|preferred qualifications|benefits)\s*[:–—-]|\b(?:what you (?:bring|need)|what we (?:are looking for|re looking for)|you might be a fit if|who you are|about (?:you|the company)|must have|nice to have|how we work)\b/i;
+const uppercaseHeading=/\b(?:REQUIREMENTS|QUALIFICATIONS|PREFERRED QUALIFICATIONS|BENEFITS|ABOUT US|ABOUT THE COMPANY)\b/;
 const requirementSignal=/\b(?:\d+\+?\s*(?:[-–]\s*\d+\s*)?years? (?:of |in )|experience (?:in|with|of)|proficiency in|familiarity with|knowledge of|ability to|degree in|required skills|must have|nice to have|preferred qualification|track record of)\b/i;
 // The actual model-visible text is the upper bound on usable evidence.
 function visibleDuties(d){
@@ -88,7 +90,7 @@ function visibleDuties(d){
  const marker=text.indexOf(' Duties: ');
  const exposed=marker>=0?text.slice(marker+9):raw;
  const exact=text.includes(raw)?raw:raw.startsWith(exposed)?exposed:'';
- return exact.split(requirementHeading,1)[0].trim();
+ return exact.split(requirementHeading,1)[0].split(uppercaseHeading,1)[0].trim();
 }
 function dutyProof(text,q,family){
  return quoteOK(text,q)&&!requirementSignal.test(q)&&anchors[family]?.test(q)&&duty.test(q);
@@ -142,7 +144,8 @@ function validateDetailed(p,docs,jobs,model,day){
  const header='Department: '+department;
  const departmentField=department.length>=2&&(plain(d.text).includes(header+' Duties:')||plain(d.text).startsWith(header+'. '));
  const departmentQuote=departmentField&&(norm(quote)===norm(header)||norm(quote)===norm(department));
- const departmentProof=departmentQuote&&!negative.test(department)&&(exactDepartments[p.family]?.has(norm(department))||anchors[p.family]?.test(department));
+ const anchorDepartment=department.match(anchors[p.family]||/$^/);
+ const departmentProof=departmentQuote&&!negative.test(department)&&(exactDepartments[p.family]?.has(norm(department))||(anchorDepartment&&norm(anchorDepartment[0])===norm(department)));
  let proof=departmentProof?[quote,'Official department: '+department]:null;
  if(!proof&&dutyProof(text,quote,p.family)&&dutyProof(text,q2,p.family)&&independent(text,quote,q2))proof=[quote,q2];
  // Only repair weak-but-real evidence. Fabricated, duplicate or negative
