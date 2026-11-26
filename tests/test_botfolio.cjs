@@ -155,3 +155,39 @@ test('low semantic relevance stops Groq, grounded replies map refusal markers, c
   assert.equal(groq,2);assert.equal(embeds,3);
  }finally{global.fetch=prior;core.setQueryForTests(null);}
 });
+
+
+test('Qwen fallback uses separate model allocation and only runs after primary failure',async()=>{
+ const original=global.fetch,calls=[],reservations=[],settled=[];
+ let primaryBlocked=false,qwenBlocked=false,primaryStatus=200,qwenStatus=200;
+ core.setQueryForTests(async(sql,args)=>{
+  if(sql.includes('INSERT INTO public.sj_botfolio_groq_budget')){
+   assert.match(sql,/coalesce\(e->>'model','openai\/gpt-oss-120b'\)=\$5::text/);
+   reservations.push(args);return (args[4]===B.CHAT_MODEL?primaryBlocked:qwenBlocked)?[]:[{id:1}];
+  }
+  if(sql.includes('UPDATE public.sj_botfolio_groq_budget')){settled.push(args);return [];}
+  throw Error('Unexpected SQL');
+ });
+ global.fetch=async(url,options)=>{const b=JSON.parse(options.body);calls.push(b);const s=b.model===B.CHAT_MODEL?primaryStatus:qwenStatus;return {ok:s===200,status:s,json:async()=>({choices:[{finish_reason:'stop',message:{content:'Grounded answer'}}],usage:{total_tokens:100}})};};
+ const messages=B.buildMessages({name:'Alex',headline:'Engineer'},[{text:'Worked with Python'}],'What skills?',[]),env={GROQ_API_KEY:'test'};
+ try{
+  assert.equal(await B.generateWithFallback(env,messages),'Grounded answer');assert.equal(calls.length,1);assert.equal(calls[0].model,B.CHAT_MODEL);
+  primaryBlocked=true;assert.equal(await B.generateWithFallback(env,messages),'Grounded answer');
+  assert.equal(calls.length,2);assert.equal(calls[1].model,B.FALLBACK_MODEL);assert.equal(calls[1].reasoning_effort,'none');assert.deepEqual(calls[1].messages,calls[0].messages);
+  assert.deepEqual(reservations.at(-1).slice(2),[900,190000,B.FALLBACK_MODEL]);
+  primaryBlocked=false;primaryStatus=429;assert.equal(await B.generateWithFallback(env,messages),'Grounded answer');
+  assert.deepEqual(calls.slice(-2).map(x=>x.model),[B.CHAT_MODEL,B.FALLBACK_MODEL]);assert.equal(settled.at(-2)[2],'rate_limited');
+  primaryBlocked=true;qwenBlocked=true;await assert.rejects(B.generateWithFallback(env,messages),e=>e.status===429);assert.equal(calls.length,4);
+  primaryBlocked=false;qwenBlocked=false;primaryStatus=503;qwenStatus=503;await assert.rejects(B.generateWithFallback(env,messages),e=>e.status===503);assert.equal(calls.length,6);
+ }finally{global.fetch=original;core.setQueryForTests(null);}
+});
+test('fallback usage is model-specific and legacy primary accounting is preserved',async()=>{
+ core.setQueryForTests(async(sql,args)=>{
+  if(sql.includes('WITH active AS')){assert.match(sql,/coalesce\(e->>'model','openai\/gpt-oss-120b'\)=\$1::text/);return args[0]===B.CHAT_MODEL?[{requests:7,tokens:700}]:[{requests:3,tokens:300}];}
+  return [{}];
+ });
+ try{const u=await B.usage({GROQ_API_KEY:'test'});
+  assert.equal(u.generation.tokens_24h,700);assert.equal(u.generation.system_token_limit,120000);
+  assert.equal(u.fallback_generation.model,B.FALLBACK_MODEL);assert.equal(u.fallback_generation.tokens_24h,300);assert.equal(u.fallback_generation.remaining_tokens,189700);assert.equal(u.fallback_generation.remaining_requests,897);
+ }finally{core.setQueryForTests(null);}
+});
