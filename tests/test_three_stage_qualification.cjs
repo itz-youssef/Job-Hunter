@@ -22,7 +22,9 @@ test('model functions are absent from compatibility gate',()=>{
 test('both monitoring paths qualify without AI before storing or sending',()=>{
  const code=fs.readFileSync('lib/secretj/native-preference-monitor.js','utf8');
  assert.match(code,/await qualifyJobs\(selected,latest\[0\],env,fetchImpl\)/);
- assert.match(code,/await qualifyJobs\(selected,user,env,fetchImpl\)/);
+ assert.match(code,/await qualifyJobs\(selected,user\)/);
+ assert.match(code,/await reservePeriodic\(users,result\.jobs\)/);
+ assert.match(code,/jobs:watchPayload\(sig,verified\.accepted\)/);
  assert.match(code,/qualification_status'='accepted'/);
  assert.doesNotMatch(code,/qualification\.aiReview\(/);
  assert.doesNotMatch(code,/sj_ai_qualification_cache/);
