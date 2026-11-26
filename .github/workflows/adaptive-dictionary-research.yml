@@ -8,11 +8,12 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'Benchmark both free models or run daily research'
+        description: 'Daily research, model benchmark, or isolated validation test'
         type: choice
         options:
           - benchmark
           - daily
+          - validation-test
         default: benchmark
 
 permissions:
@@ -66,10 +67,19 @@ jobs:
             git push origin HEAD:refs/heads/research/shadow-state
           fi
       - name: Upload research report
-        if: always()
+        if: always() && inputs.mode != 'validation-test'
         uses: actions/upload-artifact@v4
         with:
           name: adaptive-dictionary-shadow-report
           path: ${{ runner.temp }}/shadow-state/research-results/report.json
           if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload isolated validation test report
+        if: always() && inputs.mode == 'validation-test'
+        uses: actions/upload-artifact@v4
+        with:
+          name: adaptive-validation-test-report
+          path: ${{ runner.temp }}/shadow-state/research-results/validation-test.json
+          if-no-files-found: error
           retention-days: 14

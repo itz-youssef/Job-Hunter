@@ -562,3 +562,21 @@ test('no judge calls on incomplete core, benchmark, shared endpoints or protecte
  for(let i=0;i<A.MODEL_LIMITS[A.NEMOTRON]-A.NIGHTLY_RESERVE[A.NEMOTRON];i++)A.recordCall(s,A.NEMOTRON,now);
  assert.equal(A.judgeHeadroom(s,A.NEMOTRON,now),false);
 });
+
+
+test('manual validation replay uses historical fixtures only and isolates the daily report',()=>{
+ const rows=require('./fixtures/shadow-rejections-20261126.json'),replay=A.validationReplayCases(rows,'2026-11-26');
+ assert.equal(replay.results.length,13);
+ assert.deepEqual(replay.results.filter(r=>r.deterministic==='rejected').map(r=>r.number),[2,11]);
+ assert.ok(replay.cases.some(c=>c.publicCase.initial_status==='rejected'));
+ assert.ok(replay.cases.some(c=>c.publicCase.initial_status==='candidate'));
+ const J=require('../research/semantic-review.cjs');
+ const selected=J.selectCases(replay.cases);
+ assert.equal(selected.length,3);assert.ok(selected.every(c=>c.publicCase.origin_slot===A.HYDROGEN));
+ const fs=require('node:fs'),source=fs.readFileSync('research/research-agent.cjs','utf8'),workflow=fs.readFileSync('.github/workflows/adaptive-dictionary-research.yml','utf8');
+ const body=source.slice(source.indexOf('async function runValidationReplay'),source.indexOf('async function run(){'));
+ assert.match(body,/state\.last_attempt===day&&state\.last_validation_test!==day/);
+ assert.match(body,/write\('validation-test\.json',report\)/);
+ assert.doesNotMatch(body,/write\('report\.json'|mergeRules|fetchOfficial|searchOfficial|state\.family_rules\s*=|state\.career_rules\s*=/);
+ assert.match(workflow,/- validation-test/);assert.match(workflow,/adaptive-validation-test-report/);
+});
