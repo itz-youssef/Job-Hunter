@@ -92,3 +92,13 @@ jobs:
             grep -q 'GH_DISPATCH_TOKEN'
           echo "Worker deployed; allow up to 15 minutes for cron propagation."
           echo "After GitHub Actions workflow_dispatch runs appear, set repository variable CLOUDFLARE_SCHEDULER_ACTIVE=true to disable legacy scheduled jobs."
+      - name: Safely catch up today's Adaptive run if still in Cairo morning window
+        env:
+          GH_DISPATCH_TOKEN: ${{ secrets.GH_SCHEDULER_PAT }}
+        run: |
+          node --input-type=module <<'NODE'
+          import {dispatchDue} from './cloudflare/scheduler/worker.mjs';
+          const now=Date.now();
+          const outcome=await dispatchDue({cron:"15,25,35,45,55 7,8,9 * * *",scheduledTime:now},process.env,fetch,now);
+          console.log("Adaptive catch-up:",JSON.stringify(outcome));
+          NODE
