@@ -24,7 +24,7 @@ const levelSignals={
  director_head_executive:/\b(?:director|vice president|head of|chief executive|chief technology officer)\b/i
 };
 const anchors={
- software:/\b(?:software engineering|software development|develop(?:ing)? (?:software|applications)|build(?:ing)? applications|application development|coding and programming)\b/i,
+ software:/\b(?:software engineering|software development|develop(?:ing)? (?:software|applications)|build(?:ing)? applications|application development|coding and programming|production code|code reviews?|software architecture|software applications|application code|software systems)\b/i,
  backend:/\b(?:backend|back.end|server.side|rest(?:ful)? apis?|microservices)\b/i,
  frontend:/\b(?:frontend|front.end|client.side|user interfaces|react\.js|angular development)\b/i,
  fullstack:/\b(?:full.stack|both frontend and backend)\b/i,
@@ -40,12 +40,12 @@ const anchors={
  cloud:/\b(?:cloud engineering|cloud infrastructure|cloud architecture|cloud services)\b/i,
  devops:/\b(?:devops|site reliability|ci\/cd|deployment pipelines|infrastructure automation)\b/i,
  qa:/\b(?:software testing|quality assurance|test automation|test cases|regression testing)\b/i,
- it_support:/\b(?:it support|technical support|help desk|service desk|desktop support)\b/i,
+ it_support:/\b(?:it support|technical support|help desk|service desk|desktop support|software asset management|software access|(?:approved |user )?pc rights|software approval and packaging|end.user support|user access (?:requests|management)|user requests relating to software)\b/i,
  network:/\b(?:network engineering|network administration|network infrastructure|routing and switching)\b/i,
  systems:/\b(?:systems administration|system administration|linux administration|windows server)\b/i,
  database:/\b(?:database administration|database engineering|database performance|database administrator)\b/i,
  product:/\b(?:product management|product roadmap|product strategy|product backlog)\b/i,
- project:/\b(?:project management|program management|project planning|scrum master)\b/i,
+ project:/\b(?:project management|program management|project planning|scrum master|project schedules?|project schedul(?:ing|ers?)|project planners?|project documentation|documentation deliverables|project deliverables|project milestones|project controls)\b/i,
  ux_ui:/\b(?:user experience|user interface design|ux research|usability testing|product design)\b/i,
  graphic:/\b(?:graphic design|visual design|motion design|digital design)\b/i,
  business_analysis:/\b(?:business analysis|business requirements|requirements gathering|process mapping)\b/i,
@@ -60,15 +60,58 @@ const anchors={
  talent_acquisition:/\b(?:talent acquisition|recruitment|candidate sourcing|hiring process)\b/i,
  hr:/\b(?:human resources|hr operations|employee relations|payroll|onboarding employees)\b/i,
  marketing:/\b(?:marketing|marketing campaigns|product activation|customer adoption campaigns|seo|brand strategy)\b/i,
- finance:/\b(?:finance|accounting|financial reporting|audit|taxation)\b/i,
- operations:/\b(?:operations management|supply chain|procurement|logistics)\b/i,
+ finance:/\b(?:finance|accounting|financial reporting|audit|taxation|financial statements|financial model(?:s|ing|ling)?|financial (?:and operational )?due diligence|creditworthiness|working capital|cash flow|valuation|fixed income|yield curves|portfolio liquidity|investment analysis|financial forecasting)\b/i,
+ operations:/\b(?:operations management|supply chain|procurement|logistics|hub operations|warehouse operations|shipment (?:dispatch|tracking)|dispatch of (?:the )?shipments|credit (?:activation|limit activation)|kyc documentation)\b/i,
  customer_success:/\b(?:customer success|customer service|customer experience|client support)\b/i,
- sales:/\b(?:sales|business development|sales pipeline|prospecting)\b/i
+ sales:/\b(?:sales|business development|sales pipeline|prospecting|sales organi[sz]ation|sales org|sales playbook|sales quota|account executives)\b/i
 };
-const duty=/\b(?:responsibilit(?:y|ies)|duties|you will|develop|design|build|implement|maintain|manage|monitor|investigate|test|deploy|coordinate|prepare|analy[sz]e|create|support|lead|deliver|conduct|work on|work across)\b/i;
+// Recognize verb inflections but do not treat a title, skill list, or
+// employment requirement as a responsibility just because it has an anchor.
+const duty=/\b(?:responsibilit(?:y|ies)|responsible for|duties|you will|you.ll|develop(?:s|ed|ing)?|design(?:s|ed|ing)?|build(?:s|ing)?|implement(?:s|ed|ing)?|maintain(?:s|ed|ing)?|manag(?:e|es|ed|ing)|monitor(?:s|ed|ing)?|investigat(?:e|es|ed|ing)|test(?:s|ed|ing)?|deploy(?:s|ed|ing)?|coordinat(?:e|es|ed|ing)|prepar(?:e|es|ed|ing)|analy[sz](?:e|es|ed|ing)|creat(?:e|es|ed|ing)|support(?:s|ed|ing)?|lead(?:s|ing)?|deliver(?:s|ed|ing)?|conduct(?:s|ed|ing)?|review(?:s|ed|ing)?|assess(?:es|ed|ing)?|own(?:s|ed|ing)?|writ(?:e|es|ing)|hir(?:e|es|ing)|coach(?:es|ed|ing)?|oversee(?:s|ing)?|triag(?:e|es|ing)|establish(?:es|ed|ing)?|driv(?:e|es|ing)|execut(?:e|es|ing)|archiv(?:e|es|ing)|verify|verifying|work on|work across)\b/i;
+// Only unambiguous exact official department values qualify on their own.
+// "Engineering", "GTM", "Technology", etc. still need two real duties.
+const exactDepartments={
+ operations:new Set(['operations','operations management','supply chain','logistics','procurement']),
+ finance:new Set(['finance','accounting','finance and accounting','financial planning and analysis','investment','investments','treasury']),
+ software:new Set(['software engineering','software development','application development']),
+ it_support:new Set(['it support','technical support','service desk','help desk','desktop support']),
+ product:new Set(['product management']),project:new Set(['project management','program management','project planning']),
+ sales:new Set(['sales','business development']),marketing:new Set(['marketing','digital marketing','growth marketing']),
+ hr:new Set(['human resources','hr','people operations']),customer_success:new Set(['customer success','customer service'])
+};
+// Heading boundaries, not ordinary mentions like "regulatory requirements".
+const requirementHeading=/\b(?:requirements|qualifications|preferred qualifications|benefits)\s*[:–—-]|\b(?:what you (?:bring|need)|what we (?:are looking for|re looking for)|you might be a fit if|who you are|about (?:you|the company)|must have|nice to have|how we work)\b/i;
+const uppercaseHeading=/\b(?:REQUIREMENTS|QUALIFICATIONS|PREFERRED QUALIFICATIONS|BENEFITS|ABOUT US|ABOUT THE COMPANY)\b/;
+const requirementSignal=/\b(?:\d+\+?\s*(?:[-–]\s*\d+\s*)?years? (?:of |in )|experience (?:in|with|of)|proficiency in|familiarity with|knowledge of|ability to|degree in|required skills|must have|nice to have|preferred qualification|track record of)\b/i;
+// The actual model-visible text is the upper bound on usable evidence.
+function visibleDuties(d){
+ const text=plain(d.text),raw=plain(d.duties||'');
+ if(!raw)return '';
+ const marker=text.indexOf(' Duties: ');
+ const exposed=marker>=0?text.slice(marker+9):raw;
+ const exact=text.includes(raw)?raw:raw.startsWith(exposed)?exposed:'';
+ return exact.split(requirementHeading,1)[0].split(uppercaseHeading,1)[0].trim();
+}
+function dutyProof(text,q,family){
+ return quoteOK(text,q)&&!requirementSignal.test(q)&&anchors[family]?.test(q)&&duty.test(q);
+}
+function independent(text,a,b){
+ if(!a||!b||a===b||a.includes(b)||b.includes(a))return false;
+ const i=text.indexOf(a),j=text.indexOf(b);
+ return i>=0&&j>=0&&(i+a.length<=j||j+b.length<=i);
+}
+// Deterministically recover *verbatim* evidence from the same visible
+// primary-duty passage. Never change the model's chosen family, use a
+// requirements section, invent a quote, or add an independent model vote.
+function recoverDuties(text,family,original,second){
+ const parts=[original,second,...text.split(/(?<=[.!?])\s+|\s+(?:[-•→]\s+|\d+\.\s+)/)];
+ const valid=[...new Set(parts.map(plain))].filter(q=>dutyProof(text,q,family));
+ for(const a of valid)for(const b of valid)if(independent(text,a,b))return [a,b];
+ return null;
+}
 const negative=/\b(?:not|no|without|unrelated|optional|nice to have|a plus|preferred|benefit)\b/i;
 function quoteOK(text,q){q=plain(q);return q.length>=20&&q.length<=420&&plain(text).includes(q)&&!negative.test(q);}
-// One validation path, unchanged acceptance gates. Return first failed gate.
+// One validation path; strict provenance and candidate-only publication. Return first failed gate.
 function validateDetailed(p,docs,jobs,model,day){
  const reject=reason=>({rule:null,reason}),accept=rule=>({rule,reason:null});
  if(!p||!['career','family'].includes(p.kind))return reject('invalid-proposal-kind');
@@ -94,21 +137,32 @@ function validateDetailed(p,docs,jobs,model,day){
  if(d.job_id!==p.job_id)return reject('evidence-job-mismatch');
  if(norm(d.company)!==norm(j.company))return reject('evidence-company-mismatch');
  if(!families.has(p.family))return reject('unknown-job-family');
- if(!anchors[p.family]?.test(quote))return reject('missing-job-family-anchor');
  if(!baseline(j).families.includes('other'))return reject('job-already-classified');
- const department=dept(j);
- const departmentProof=department.length>=4&&contains(quote,department)&&anchors[p.family].test(department)&&!negative.test(department);
- const dutiesProof=duty.test(quote)&&quoteOK(d.duties||'',quote)&&quoteOK(d.duties||'',q2)&&q2!==quote&&!quote.includes(q2)&&!q2.includes(quote)&&anchors[p.family].test(q2)&&duty.test(q2);
- if(!departmentProof&&!dutiesProof){
+ const department=dept(j),text=visibleDuties(d);
+ // A department must be the actual structured employer value, explicitly
+ // visible in the supplied header, not a word mentioned elsewhere in prose.
+ const header='Department: '+department;
+ const departmentField=department.length>=2&&(plain(d.text).includes(header+' Duties:')||plain(d.text).startsWith(header+'. '));
+ const departmentQuote=departmentField&&(norm(quote)===norm(header)||norm(quote)===norm(department));
+ const anchorDepartment=department.match(anchors[p.family]||/$^/);
+ const departmentProof=departmentQuote&&!negative.test(department)&&(exactDepartments[p.family]?.has(norm(department))||(anchorDepartment&&norm(anchorDepartment[0])===norm(department)));
+ let proof=departmentProof?[quote,'Official department: '+department]:null;
+ if(!proof&&dutyProof(text,quote,p.family)&&dutyProof(text,q2,p.family)&&independent(text,quote,q2))proof=[quote,q2];
+ // Only repair weak-but-real evidence. Fabricated, duplicate or negative
+ // corroboration remains rejected; never use a different job or family.
+ const badSecond=q2&&(!plain(d.text).includes(q2)||negative.test(q2)||q2===quote||quote.includes(q2)||q2.includes(quote));
+ if(!proof&&!badSecond&&(departmentQuote||dutyProof(text,quote,p.family)))proof=recoverDuties(text,p.family,quote,q2);
+ if(!proof){
+  if(!anchors[p.family]?.test(quote))return reject('missing-job-family-anchor');
   if(!duty.test(quote))return reject('missing-duty-signal');
-  if(!quoteOK(d.duties||'',quote))return reject('quote-not-supported-by-duties');
-  if(!quoteOK(d.duties||'',q2))return reject('corroboration-not-supported-by-duties');
-  if(q2===quote||quote.includes(q2)||q2.includes(quote))return reject('corroboration-not-independent');
+  if(!quoteOK(text,quote)||requirementSignal.test(quote))return reject('quote-not-supported-by-duties');
+  if(!quoteOK(text,q2)||requirementSignal.test(q2))return reject('corroboration-not-supported-by-duties');
+  if(!independent(text,quote,q2))return reject('corroboration-not-independent');
   if(!anchors[p.family].test(q2))return reject('corroboration-missing-family-anchor');
   return reject('corroboration-missing-duty-signal');
  }
  const fp=fingerprint(j);
- return accept({key:hash(JSON.stringify(['family',fp,p.family])),kind:'family',company:j.company,title:j.title,job_fingerprint:fp,family:p.family,evidence:{url:d.url,quote,corroboration:departmentProof?'Official department: '+department:q2,checked_at:day},models:[model],status:'candidate'});
+ return accept({key:hash(JSON.stringify(['family',fp,p.family])),kind:'family',company:j.company,title:j.title,job_fingerprint:fp,family:p.family,evidence:{url:d.url,quote:proof[0],corroboration:proof[1],checked_at:day},models:[model],status:'candidate'});
 }
 function validate(p,docs,jobs,model,day){return validateDetailed(p,docs,jobs,model,day).rule;}
 // Existing rule payloads and order are immutable. Only add independent
