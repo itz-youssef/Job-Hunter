@@ -4,55 +4,62 @@
   "family_rules": [],
   "usage": {
     "month": "2026-11",
-    "search": 16,
-    "day": "2026-11-25",
-    "model": 41,
-    "search_day": 16,
+    "search": 26,
+    "day": "2026-11-26",
+    "model": 19,
+    "search_day": 10,
     "model_usage": {
       "gemini-4-hydrogen": {
-        "day": "2026-11-25",
-        "provider_day": "2026-11-25",
-        "day_count": 7,
-        "provider_count": 7,
-        "last_at": 1795620194797
+        "day": "2026-11-26",
+        "provider_day": "2026-11-26",
+        "day_count": 1,
+        "provider_count": 1,
+        "last_at": 1795682779830
       },
       "nvidia/nemotron-3-ultra-550b-a55b:free": {
-        "day": "2026-11-25",
-        "provider_day": "2026-11-25",
-        "day_count": 12,
-        "provider_count": 12,
-        "last_at": 1795620611568
-      },
-      "gemini-3.5-flash-lite": {
-        "day": "2026-11-25",
-        "provider_day": "2026-11-25",
+        "day": "2026-11-26",
+        "provider_day": "2026-11-26",
         "day_count": 7,
         "provider_count": 7,
-        "last_at": 1795620493115
+        "last_at": 1795683041937
+      },
+      "gemini-3.5-flash-lite": {
+        "day": "2026-11-26",
+        "provider_day": "2026-11-26",
+        "day_count": 5,
+        "provider_count": 5,
+        "last_at": 1795682887005
       },
       "gemini-3.8-flash": {
-        "day": "2026-11-25",
-        "provider_day": "2026-11-25",
+        "day": "2026-11-26",
+        "provider_day": "2026-11-26",
         "day_count": 1,
         "provider_count": 1,
-        "last_at": 1795620195120
+        "last_at": 1795682782283
       },
       "gemini-3.6-flash": {
-        "day": "2026-11-25",
-        "provider_day": "2026-11-25",
-        "day_count": 1,
-        "provider_count": 1,
-        "last_at": 1795620195754
+        "day": "2026-11-26",
+        "provider_day": "2026-11-26",
+        "day_count": 8,
+        "provider_count": 8,
+        "last_at": 1795683039023
       },
       "openai/gpt-oss-120b": {
-        "day": "2026-11-25",
-        "provider_day": "2026-11-25",
-        "day_count": 6,
-        "provider_count": 6,
-        "last_at": 1795620610871
+        "day": "2026-11-26",
+        "provider_day": "2026-11-26",
+        "day_count": 2,
+        "provider_count": 2,
+        "last_at": 1795683104839
+      },
+      "@cf/zai-org/glm-4.7-flash": {
+        "day": "2026-11-26",
+        "provider_day": "2026-11-26",
+        "day_count": 0,
+        "provider_count": 0,
+        "last_at": 0
       }
     },
-    "preprocess": 7,
+    "preprocess": 5,
     "legacy_model_requests": {
       "day": "2026-11-25",
       "provider_day": "2026-11-25",
@@ -82,12 +89,23 @@
       {
         "at": 1795620610871,
         "tokens": 714
+      },
+      {
+        "at": 1795683039835,
+        "tokens": 707
+      },
+      {
+        "at": 1795683104839,
+        "tokens": 1247
       }
     ],
-    "groq_provider_reset_at": "2026-11-25T15:38:49.965Z"
+    "groq_provider_reset_at": "2026-11-26T08:56:05.306Z",
+    "groq_provider_reset_observed_at": "2026-11-26T08:51:46.106Z",
+    "groq_provider_tpm_reset_at": "2026-11-26T08:51:52.953Z",
+    "groq_provider_tpm_observed_at": "2026-11-26T08:51:46.106Z"
   },
   "cursor": 0,
-  "last_attempt": "",
+  "last_attempt": "2026-11-26",
   "last_completed": "",
   "history": [
     {
@@ -125,6 +143,31 @@
       "validated": 0,
       "changed_family": 0,
       "changed_level": 0
+    },
+    {
+      "day": "2026-11-26",
+      "run_type": "daily",
+      "status": "partial",
+      "model_requests": 19,
+      "validated": 0,
+      "changed_family": 0,
+      "changed_level": 0
     }
-  ]
+  ],
+  "research_cohort": {
+    "day": "2026-11-26",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "names": [
+      "VOIS",
+      "Bosta",
+      "Thndr",
+      "Klivvr",
+      "Emergence",
+      "Lean Technologies",
+      "Chatbase",
+      "Lua Global",
+      "IBM",
+      "Schneider Electric"
+    ]
+  }
 }

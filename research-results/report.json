@@ -1,12 +1,72 @@
 {
-  "status": "completed",
+  "status": "partial",
   "mode": "shadow",
-  "run_type": "benchmark",
+  "run_type": "daily",
   "production_unchanged": true,
-  "updated_at": "2026-11-25T15:30:12.492Z",
-  "cairo_day": "2026-11-25",
-  "preferred_model": "gemini-4-hydrogen",
-  "architecture": "emergency-quota-v9",
+  "updated_at": "2026-11-26T08:51:46.108Z",
+  "cairo_day": "2026-11-26",
+  "preferred_model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "architecture": "nemotron-glm-fallback-v10",
+  "first_slot": {
+    "identity": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "ordered_models": [
+      "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "@cf/zai-org/glm-4.7-flash"
+    ],
+    "glm_configured": true,
+    "attempts": [
+      {
+        "slot": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "stage": "career",
+        "outcome": "success",
+        "tier": "normal"
+      },
+      {
+        "slot": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "stage": "career",
+        "outcome": "success",
+        "tier": "normal"
+      },
+      {
+        "slot": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "stage": "career",
+        "outcome": "success",
+        "tier": "normal"
+      },
+      {
+        "slot": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "stage": "career",
+        "outcome": "success",
+        "tier": "normal"
+      },
+      {
+        "slot": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "stage": "career",
+        "outcome": "success",
+        "tier": "normal"
+      },
+      {
+        "slot": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "stage": "career",
+        "outcome": "success",
+        "tier": "normal"
+      },
+      {
+        "slot": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "stage": "career",
+        "outcome": "success",
+        "tier": "normal"
+      }
+    ],
+    "unavailable_models": []
+  },
   "google_slot": {
     "identity": "gemini-4-hydrogen",
     "ordered_models": [
@@ -25,7 +85,7 @@
       {
         "slot": "gemini-4-hydrogen",
         "model": "gemini-4-hydrogen",
-        "stage": "benchmark-family",
+        "stage": "family",
         "outcome": "failed",
         "code": "provider-http-503",
         "tier": "normal"
@@ -33,51 +93,72 @@
       {
         "slot": "gemini-4-hydrogen",
         "model": "gemini-3.8-flash",
-        "stage": "benchmark-family",
-        "outcome": "failed",
-        "code": "provider-http-503",
-        "tier": "normal"
-      },
-      {
-        "slot": "gemini-4-hydrogen",
-        "model": "gemini-3.6-flash",
-        "stage": "benchmark-family",
+        "stage": "family",
         "outcome": "failed",
         "code": "request-timeout",
         "tier": "normal"
       },
       {
         "slot": "gemini-4-hydrogen",
-        "model": "openai/gpt-oss-120b",
-        "stage": "benchmark-family",
-        "outcome": "success",
-        "tier": "normal"
-      },
-      {
-        "slot": "gemini-4-hydrogen",
-        "model": "openai/gpt-oss-120b",
-        "stage": "benchmark-level",
-        "outcome": "success",
-        "tier": "normal"
-      },
-      {
-        "slot": "gemini-4-hydrogen",
-        "model": "openai/gpt-oss-120b",
-        "stage": "career",
-        "outcome": "success",
-        "tier": "normal"
-      },
-      {
-        "slot": "gemini-4-hydrogen",
-        "model": "openai/gpt-oss-120b",
+        "model": "gemini-3.6-flash",
         "stage": "family",
         "outcome": "success",
         "tier": "normal"
       },
       {
         "slot": "gemini-4-hydrogen",
+        "model": "gemini-3.6-flash",
+        "stage": "family",
+        "outcome": "success",
+        "tier": "normal"
+      },
+      {
+        "slot": "gemini-4-hydrogen",
+        "model": "gemini-3.6-flash",
+        "stage": "family",
+        "outcome": "success",
+        "tier": "normal"
+      },
+      {
+        "slot": "gemini-4-hydrogen",
+        "model": "gemini-3.6-flash",
+        "stage": "family",
+        "outcome": "success",
+        "tier": "normal"
+      },
+      {
+        "slot": "gemini-4-hydrogen",
+        "model": "gemini-3.6-flash",
+        "stage": "family",
+        "outcome": "success",
+        "tier": "normal"
+      },
+      {
+        "slot": "gemini-4-hydrogen",
+        "model": "gemini-3.6-flash",
+        "stage": "family",
+        "outcome": "success",
+        "tier": "normal"
+      },
+      {
+        "slot": "gemini-4-hydrogen",
+        "model": "gemini-3.6-flash",
+        "stage": "family",
+        "outcome": "success",
+        "tier": "normal"
+      },
+      {
+        "slot": "gemini-4-hydrogen",
+        "model": "gemini-3.6-flash",
+        "stage": "family",
+        "outcome": "failed",
+        "code": "provider-http-503",
+        "tier": "normal"
+      },
+      {
+        "slot": "gemini-4-hydrogen",
         "model": "openai/gpt-oss-120b",
-        "stage": "career",
+        "stage": "family",
         "outcome": "success",
         "tier": "normal"
       },
@@ -96,44 +177,385 @@
     ],
     "groq_configured": true
   },
-  "companies_targeted": 2,
+  "companies_targeted": 10,
   "task_stats": {
     "career": {
-      "planned": 4,
-      "completed": 4,
-      "skipped": 0
+      "planned": 7,
+      "completed": 7,
+      "skipped": 3
     },
     "family": {
-      "planned": 4,
-      "completed": 4,
-      "skipped": 0
+      "planned": 9,
+      "completed": 9,
+      "skipped": 1
     }
   },
   "evidence_preparation": {
     "model": "gemini-3.5-flash-lite",
-    "planned": 4,
-    "completed": 2,
-    "excerpts_used": 1,
-    "fallback": 3,
-    "requests": 3
+    "planned": 16,
+    "completed": 4,
+    "excerpts_used": 2,
+    "fallback": 15,
+    "requests": 5
   },
   "companies_total": 60,
-  "companies_reviewed": 2,
-  "companies_with_evidence": 2,
-  "live_sources": 6,
-  "job_documents": 8,
-  "proposals": 4,
-  "rejected": 4,
+  "companies_reviewed": 10,
+  "companies_with_evidence": 9,
+  "live_sources": 15,
+  "job_documents": 33,
+  "proposals": 13,
+  "rejected": 13,
   "validated": 0,
   "failed_batches": 0,
   "models_used": [
-    "openai/gpt-oss-120b",
-    "nvidia/nemotron-3-ultra-550b-a55b:free"
+    "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "gemini-3.6-flash",
+    "openai/gpt-oss-120b"
   ],
-  "model_requests": 15,
-  "search_credits": 2,
+  "model_requests": 19,
+  "search_credits": 10,
+  "rejected_proposals_log": [
+    {
+      "company": "VOIS",
+      "kind": "family",
+      "actual_model": "gemini-3.6-flash",
+      "voting_slot": "gemini-4-hydrogen",
+      "reason": "missing-job-family-anchor",
+      "day": "2026-11-26",
+      "proposal": {
+        "kind": "family",
+        "alias": "",
+        "level": "",
+        "family": "it_support",
+        "job_title": "Senior Service Management Specialist German Speaker (VOIS)",
+        "job_url": "https://jobs.vodafone.com/careers/job/563018698388698",
+        "evidence_id": "job-27437ff56600002545087192294bf3178a02d2fc33faee0b0ad21bb748975f3f",
+        "quote": "manage user requests relating to software access and PC rights. You will oversee the triage of customer requests, support software approval and packaging processes",
+        "corroboration": "manage application archives and approved PC rights, maintain process documentation, and report on monthly performance, trends and changes."
+      },
+      "evidence": {
+        "url": "https://jobs.vodafone.com/careers/job/563018698388698",
+        "job_url": "https://jobs.vodafone.com/careers/job/563018698388698",
+        "job_title": "Senior Service Management Specialist German Speaker (VOIS)",
+        "quote_found": true,
+        "source_excerpt": "Title: Senior Service Management Specialist German Speaker (VOIS) Department: Duties: any, Ireland, and with a network of teams in Czech Republic, Italy, Greece, and Portugal. #VOIS #BeUnrivalled #CreateTheFuture ## About this Role We are seeking a Software Asset Management Analyst to manage user requests relating to software access and PC rights. You will oversee the triage of customer requests, support software approval and packaging processes, manage application archives and approved PC rights, maintain process documentation, and report on monthly performance, trends and changes. Working collaboratively with Asset Management colleagues and internal stakeholders, you will help maintain effective IT governance, reduce organisational risk and support the continued development"
+      }
+    },
+    {
+      "company": "VOIS",
+      "kind": "family",
+      "actual_model": "gemini-3.6-flash",
+      "voting_slot": "gemini-4-hydrogen",
+      "reason": "missing-job-family-anchor",
+      "day": "2026-11-26",
+      "proposal": {
+        "kind": "family",
+        "alias": "",
+        "level": "",
+        "family": "product",
+        "job_title": "Product GTM Activation Manager - VOIS",
+        "job_url": "https://jobs.vodafone.com/careers/job/563018698421260",
+        "evidence_id": "job-c85acca837e4bd2ba00301934108b24b5bccb0171d8adce3aa07e6f15244db8b",
+        "quote": "Define and implement product activation and go-to-market strategies for SoHo and SME customer segments. Translate customer behaviours, pain points, market dynamics, sales drivers and sales motions into actionable activation strategies.",
+        "corroboration": "Drive the execution of activation plans across key Vodafone OpCos, ensuring plans and launches are delivered on time."
+      },
+      "evidence": {
+        "url": "https://jobs.vodafone.com/careers/job/563018698421260",
+        "job_url": "https://jobs.vodafone.com/careers/job/563018698421260",
+        "job_title": "Product GTM Activation Manager - VOIS",
+        "quote_found": true,
+        "source_excerpt": "Title: Product GTM Activation Manager - VOIS Department: Duties: al Vodafone operating companies (OpCos), you will drive launches, campaigns and targeted acceleration initiatives that support customer acquisition and commercial growth. ## What you’ll do Define and implement product activation and go-to-market strategies for SoHo and SME customer segments. Translate customer behaviours, pain points, market dynamics, sales drivers and sales motions into actionable activation strategies. Drive the execution of activation plans across key Vodafone OpCos, ensuring plans and launches are delivered on time. Develop and execute sales launch campaigns with OpCos to support customer acquisition and growth ambitions. Create demand-generation frameworks, guidelines a"
+      }
+    },
+    {
+      "company": "Bosta",
+      "kind": "family",
+      "actual_model": "gemini-3.6-flash",
+      "voting_slot": "gemini-4-hydrogen",
+      "reason": "missing-job-family-anchor",
+      "day": "2026-11-26",
+      "proposal": {
+        "kind": "family",
+        "alias": "",
+        "level": "",
+        "family": "operations",
+        "job_title": "Last Mile - Senior Hub Coordinator ( Shorouk )",
+        "job_url": "https://jobs.lever.co/Bosta/e2b2907d-77a1-4e09-9ae1-39f08d94478d",
+        "evidence_id": "job-4b60415a8285873109dfacf44ffa6ce3fc8a432fb7a0eeb2e2c5c1060c488179",
+        "quote": "Department: Operations",
+        "corroboration": ""
+      },
+      "evidence": {
+        "url": "https://jobs.lever.co/Bosta/e2b2907d-77a1-4e09-9ae1-39f08d94478d",
+        "job_url": "https://jobs.lever.co/Bosta/e2b2907d-77a1-4e09-9ae1-39f08d94478d",
+        "job_title": "Last Mile - Senior Hub Coordinator ( Shorouk )",
+        "quote_found": true,
+        "source_excerpt": "Title: Last Mile - Senior Hub Coordinator ( Shorouk ) Department: Operations Duties: le : Responsible for managing daily hub operations, coordinating shipments, tracking KPIs, and ensuring smooth workflow and service quality in line with Bosta’s standards. Job Code : 2025OPER-133 Job Responsibilities: 1. Receive the new pickups closed in bosta flyers. 2. Ensure that the tracking number was written correctly on the flyer with the marker by the couriers. 3. Receive the shipments(new pickups) on the system and add the tracking numbers on the “Receiving Pickups” sheet. 4. Arrange day-to-day dispatch of the shipments and sort shipments based on delivery addresses. 5. Add the cash collection and Refund shipments to the courier’s routes. Send the routes directly to the stars’ App."
+      }
+    },
+    {
+      "company": "Bosta",
+      "kind": "family",
+      "actual_model": "gemini-3.6-flash",
+      "voting_slot": "gemini-4-hydrogen",
+      "reason": "missing-job-family-anchor",
+      "day": "2026-11-26",
+      "proposal": {
+        "kind": "family",
+        "alias": "",
+        "level": "",
+        "family": "operations",
+        "job_title": "Last Mile - Senior Hub Coordinator ( Qalyub)",
+        "job_url": "https://jobs.lever.co/Bosta/9e5ee64a-e171-4edb-9da2-c3247310e610",
+        "evidence_id": "job-5d9154200bd19810608ce0cb3f8d2250da7fa4d505152cf0cb8fe64ad5740006",
+        "quote": "Department: Operations",
+        "corroboration": ""
+      },
+      "evidence": {
+        "url": "https://jobs.lever.co/Bosta/9e5ee64a-e171-4edb-9da2-c3247310e610",
+        "job_url": "https://jobs.lever.co/Bosta/9e5ee64a-e171-4edb-9da2-c3247310e610",
+        "job_title": "Last Mile - Senior Hub Coordinator ( Qalyub)",
+        "quote_found": true,
+        "source_excerpt": "Title: Last Mile - Senior Hub Coordinator ( Qalyub) Department: Operations Duties: le : Responsible for managing daily hub operations, coordinating shipments, tracking KPIs, and ensuring smooth workflow and service quality in line with Bosta’s standards. Job Code : 2024OPER-364 Job Responsibilities: 1. Receive the new pickups closed in bosta flyers. 2. Ensure that the tracking number was written correctly on the flyer with the marker by the couriers. 3. Receive the shipments(new pickups) on the system and add the tracking numbers on the “Receiving Pickups” sheet. 4. Arrange day-to-day dispatch of the shipments and sort shipments based on delivery addresses. 5. Add the cash collection and Refund shipments to the courier’s routes. Send the routes directly to the stars’ App."
+      }
+    },
+    {
+      "company": "Thndr",
+      "kind": "family",
+      "actual_model": "gemini-3.6-flash",
+      "voting_slot": "gemini-4-hydrogen",
+      "reason": "missing-job-family-anchor",
+      "day": "2026-11-26",
+      "proposal": {
+        "kind": "family",
+        "alias": "",
+        "level": "",
+        "family": "finance",
+        "job_title": "Fixed Income Associate",
+        "job_url": "https://jobs.ashbyhq.com/thndr/339d760b-71c7-4428-b379-5e0a8ea411fa",
+        "evidence_id": "job-6ee23f26292cb78b3aa5d59fbe92a10cd961532718c3ed12184ee4154c8c9da7",
+        "quote": "Review companies’ financial statements to understand their financial position and assess their creditworthiness.",
+        "corroboration": "Build and update financial models to analyse yield curves, duration, convexity, and the relative value of different instruments."
+      },
+      "evidence": {
+        "url": "https://jobs.ashbyhq.com/thndr/339d760b-71c7-4428-b379-5e0a8ea411fa",
+        "job_url": "https://jobs.ashbyhq.com/thndr/339d760b-71c7-4428-b379-5e0a8ea411fa",
+        "job_title": "Fixed Income Associate",
+        "quote_found": true,
+        "source_excerpt": "Title: Fixed Income Associate Department: Investment Duties: rest rates, inflation, and monetary policy, and assess how they affect the market. - Review companies’ financial statements to understand their financial position and assess their creditworthiness. - Build and update financial models to analyse yield curves, duration, convexity, and the relative value of different instruments. - Track daily yields, prices, auction results, and other market developments, sharing relevant updates with the team. - Prepare regular market updates covering yield movements, auctions, and key economic developments. - Support portfolio managers and traders with research ahead of auctions, new issuances, and investment decisions. - Monitor portfolio liquidity, upcomin"
+      }
+    },
+    {
+      "company": "Klivvr",
+      "kind": "family",
+      "actual_model": "gemini-3.6-flash",
+      "voting_slot": "gemini-4-hydrogen",
+      "reason": "missing-job-family-anchor",
+      "day": "2026-11-26",
+      "proposal": {
+        "kind": "family",
+        "alias": "",
+        "level": "",
+        "family": "operations",
+        "job_title": "Back-office Credit Activation Officer",
+        "job_url": "https://jobs.lever.co/klivvr/e23452ed-dd1c-435d-a1ee-3ac51f359760",
+        "evidence_id": "job-45ce3c578921bdd0329dd4daba09d596a42bc622268057198b7229aa9a835858",
+        "quote": "Department: Operations",
+        "corroboration": ""
+      },
+      "evidence": {
+        "url": "https://jobs.lever.co/klivvr/e23452ed-dd1c-435d-a1ee-3ac51f359760",
+        "job_url": "https://jobs.lever.co/klivvr/e23452ed-dd1c-435d-a1ee-3ac51f359760",
+        "job_title": "Back-office Credit Activation Officer",
+        "quote_found": true,
+        "source_excerpt": "Title: Back-office Credit Activation Officer Department: Operations Duties: e credit activation officer. In this role, you’ll be responsible for meticulously reviewing credit applications and financial documents to ensure they meet regulatory standards and internal policies. You will also manage the activation of approved credit limits within our systems. What you will do:: Review credit applications and financial statements to assess eligibility for credit limit activation. Verify the accuracy, completeness, and authenticity of all submitted documentation. Ensure adherence to internal risk policies and regulatory standards throughout the review process. Collaborate with internal teams to resolve discrepancies and gather any missing information. Activate approved cr"
+      }
+    },
+    {
+      "company": "Klivvr",
+      "kind": "family",
+      "actual_model": "gemini-3.6-flash",
+      "voting_slot": "gemini-4-hydrogen",
+      "reason": "missing-job-family-anchor",
+      "day": "2026-11-26",
+      "proposal": {
+        "kind": "family",
+        "alias": "",
+        "level": "",
+        "family": "operations",
+        "job_title": "Credit Documents & KYC Archiving Officer",
+        "job_url": "https://jobs.lever.co/klivvr/f1c65c65-725b-432c-8c33-09b4bc6559c1",
+        "evidence_id": "job-3c62488c27559a966a15251b5816233a8e89691732669ce8d4f73c8aa6347f23",
+        "quote": "Department: Operations",
+        "corroboration": ""
+      },
+      "evidence": {
+        "url": "https://jobs.lever.co/klivvr/f1c65c65-725b-432c-8c33-09b4bc6559c1",
+        "job_url": "https://jobs.lever.co/klivvr/f1c65c65-725b-432c-8c33-09b4bc6559c1",
+        "job_title": "Credit Documents & KYC Archiving Officer",
+        "quote_found": true,
+        "source_excerpt": "Title: Credit Documents & KYC Archiving Officer Department: Operations Duties: We’re seeking a highly organized and detail-oriented Credit Documents & KYC Archiving Officer to manage the secure storage and systematic archiving of credit and Know Your Customer (KYC) documents. This role is vital to ensuring compliance with regulatory requirements and internal policies related to document retention and data protection. What you will do:: Establish and maintain an efficient physical filing system for credit and KYC documentation. Archive all records in line with regulatory standards and company policies for accessibility and security. Perform routine audits of archived files to verify compliance and identify any gaps or incomplete documentation. Coordinate with Compliance"
+      }
+    },
+    {
+      "company": "Emergence",
+      "kind": "family",
+      "actual_model": "gemini-3.6-flash",
+      "voting_slot": "gemini-4-hydrogen",
+      "reason": "corroboration-missing-family-anchor",
+      "day": "2026-11-26",
+      "proposal": {
+        "kind": "family",
+        "alias": "",
+        "level": "",
+        "family": "finance",
+        "job_title": "VP, Finance, Emergence Automotive",
+        "job_url": "https://jobs.ashbyhq.com/emergence/5541bbe5-4b8c-4263-8c32-e9ab13d3c1e5",
+        "evidence_id": "job-8106c54acd755b64bf0274fd50bd55e8eaa173b3956f0b4a69c32e7734b2e8b0",
+        "quote": "Own the finance cadence across the automotive portfolio: forecasting, performance management, KPI reporting, operating reviews, and decision support for CEOs.",
+        "corroboration": "Build operating models that go well beyond a budget, covering scenario planning, retention and cohort economics, cash and working capital, unit econ"
+      },
+      "evidence": {
+        "url": "https://jobs.ashbyhq.com/emergence/5541bbe5-4b8c-4263-8c32-e9ab13d3c1e5",
+        "job_url": "https://jobs.ashbyhq.com/emergence/5541bbe5-4b8c-4263-8c32-e9ab13d3c1e5",
+        "job_title": "VP, Finance, Emergence Automotive",
+        "quote_found": true,
+        "source_excerpt": "Title: VP, Finance, Emergence Automotive Department: Emergence Duties: at moves easily between the boardroom and the day-to-day. You can sit with a CEO and dig into retention, sales productivity, cash conversion, or pricing, then step back and ask whether we should buy, build, integrate, finance, or change course. We want a thought partner who produces analyst-level work and also has the judgment and point of view to change our decisions. WHAT YOU WILL DO - Own the finance cadence across the automotive portfolio: forecasting, performance management, KPI reporting, operating reviews, and decision support for CEOs. - Build operating models that go well beyond a budget, covering scenario planning, retention and cohort economics, cash and working capital, unit econ"
+      }
+    },
+    {
+      "company": "Emergence",
+      "kind": "family",
+      "actual_model": "gemini-3.6-flash",
+      "voting_slot": "gemini-4-hydrogen",
+      "reason": "missing-job-family-anchor",
+      "day": "2026-11-26",
+      "proposal": {
+        "kind": "family",
+        "alias": "",
+        "level": "",
+        "family": "finance",
+        "job_title": "Investment Associate",
+        "job_url": "https://jobs.ashbyhq.com/emergence/dd1b8501-7cf1-4963-87bc-43ad94071434",
+        "evidence_id": "job-cd7317132118cc3e2e22cc8e282e7f9234eeb8fb9cba23b90aefb38eb73a5468",
+        "quote": "Lead financial and operational due diligence on acquisition targets, owning the workstream from kickoff to IC.",
+        "corroboration": "Build comprehensive financial models covering unit economics, SaaS KPIs, valuation, and operating leverage."
+      },
+      "evidence": {
+        "url": "https://jobs.ashbyhq.com/emergence/dd1b8501-7cf1-4963-87bc-43ad94071434",
+        "job_url": "https://jobs.ashbyhq.com/emergence/dd1b8501-7cf1-4963-87bc-43ad94071434",
+        "job_title": "Investment Associate",
+        "quote_found": true,
+        "source_excerpt": "Title: Investment Associate Department: M&A Duties: rough close - on majority buyout transactions in enterprise software. WHAT YOU'LL DO - Lead financial and operational due diligence on acquisition targets, owning the workstream from kickoff to IC. - Build comprehensive financial models covering unit economics, SaaS KPIs, valuation, and operating leverage. - Run quality of earnings analyses and own the net working capital bridge and indebtedness definitions. - Write and present Investment Committee memos with clear diligence findings and a defensible point of view. - Assess and synthesize deal terms and majority buyout structures, identifying risks in negotiated positions. - Collaborate with legal, finance, and operations teams to drive clea"
+      }
+    },
+    {
+      "company": "Lean Technologies",
+      "kind": "family",
+      "actual_model": "gemini-3.6-flash",
+      "voting_slot": "gemini-4-hydrogen",
+      "reason": "missing-job-family-anchor",
+      "day": "2026-11-26",
+      "proposal": {
+        "kind": "family",
+        "alias": "",
+        "level": "",
+        "family": "software",
+        "job_title": "Staff Engineer",
+        "job_url": "https://jobs.ashbyhq.com/LeanTech/5bff3911-0439-4c06-8a6c-0343064dd08f",
+        "evidence_id": "job-84f5914eaab95369c3e940ccfbc2b6e5e5155f9e640788d7db4eaf8532369b84",
+        "quote": "Department: Engineering",
+        "corroboration": ""
+      },
+      "evidence": {
+        "url": "https://jobs.ashbyhq.com/LeanTech/5bff3911-0439-4c06-8a6c-0343064dd08f",
+        "job_url": "https://jobs.ashbyhq.com/LeanTech/5bff3911-0439-4c06-8a6c-0343064dd08f",
+        "job_title": "Staff Engineer",
+        "quote_found": true,
+        "source_excerpt": "Title: Staff Engineer Department: Engineering Duties: ngineer on the Credit Scoring & Underwriting squad, you'll lead the technical architecture and execution across credit insights products. That means the insights and data platform our lenders already build on, and the new products we're putting on top of it. It's a hands-on job. You'll write production code, and you'll be the person the team pulls in when a problem is hard or badly defined. You'll also put real time into helping the engineers around you get better, through code reviews and mentoring. ABOUT LEAN Lean is the leading financial infrastructure provider in the Middle East. We power some of the region's largest companies with APIs that enable payments, account verification, financi"
+      }
+    },
+    {
+      "company": "Chatbase",
+      "kind": "family",
+      "actual_model": "gemini-3.6-flash",
+      "voting_slot": "gemini-4-hydrogen",
+      "reason": "missing-duty-signal",
+      "day": "2026-11-26",
+      "proposal": {
+        "kind": "family",
+        "alias": "",
+        "level": "",
+        "family": "sales",
+        "job_title": "Head of Sales",
+        "job_url": "https://jobs.ashbyhq.com/chatbase/32305a33-bbba-43bd-8191-35a7ebaefa0c",
+        "evidence_id": "job-411714077af4a727b037bc3e52fa4b7a85c9ac149e4db667eccd2f802862143e",
+        "quote": "Hiring, coaching and building the sales org as it scales.",
+        "corroboration": "8+ years in B2B SaaS sales, with a track record of beating quota and ideally of leading AEs."
+      },
+      "evidence": {
+        "url": "https://jobs.ashbyhq.com/chatbase/32305a33-bbba-43bd-8191-35a7ebaefa0c",
+        "job_url": "https://jobs.ashbyhq.com/chatbase/32305a33-bbba-43bd-8191-35a7ebaefa0c",
+        "job_title": "Head of Sales",
+        "quote_found": true,
+        "source_excerpt": "Title: Head of Sales Department: GTM Duties: ar for the AE team: how we run discovery, forecast, price and win. → Hiring, coaching and building the sales org as it scales. → The feedback loop to product, so what you hear in deals shapes what we build. YOU MIGHT BE A FIT IF → 8+ years in B2B SaaS sales, with a track record of beating quota and ideally of leading AEs. → You've sold to support, CX, IT or digital leaders at mid-market and enterprise companies. → You want to build the sales playbook from the ground up. HOW WE WORK → High ownership, high output. Everyone owns outcomes end to end. We hire people who are precise, fast and great at unblocking themselves. → Speed is a habit. We decide fast, ship fast and fix fast. → Critical fee"
+      }
+    },
+    {
+      "company": "Schneider Electric",
+      "kind": "family",
+      "actual_model": "openai/gpt-oss-120b",
+      "voting_slot": "gemini-4-hydrogen",
+      "reason": "missing-job-family-anchor",
+      "day": "2026-11-26",
+      "proposal": {
+        "kind": "family",
+        "alias": "",
+        "level": "",
+        "family": "project",
+        "job_title": "Senior Associate, Customer Project Planning",
+        "job_url": "https://careers.se.com/jobs/144365?lang=en-US",
+        "evidence_id": "job-4a3c9b1400285092a602c95388c4b884501551c922cf15a04a49e22dac5a2ead",
+        "quote": "Manage end-to-end project schedules for large-scale, complex, and/or multiple projects.",
+        "corroboration": "Customer Project Planning"
+      },
+      "evidence": {
+        "url": "https://careers.se.com/jobs/144365?lang=en-US",
+        "job_url": "https://careers.se.com/jobs/144365?lang=en-US",
+        "job_title": "Senior Associate, Customer Project Planning",
+        "quote_found": true,
+        "source_excerpt": "Title: Senior Associate, Customer Project Planning Department: Duties: Role: As part of a project team, you will manage project schedules from initiation through closure for large-scale, complex projects. You will serve as a regional focal point for scheduling, strengthen planning capabilities, and help ensure that Schneider Electric quality standards are consistently applied across projects and subcontractors. Key Responsibilities Manage end-to-end project schedules for large-scale, complex, and/or multiple projects. Lead or coordinate project planners assigned to major projects and support regional capability development. Establish scheduling processes, standards, templates, methodologies, and common planning assumptions. Ensure consistency across program sch"
+      }
+    },
+    {
+      "company": "Schneider Electric",
+      "kind": "family",
+      "actual_model": "openai/gpt-oss-120b",
+      "voting_slot": "gemini-4-hydrogen",
+      "reason": "missing-job-family-anchor",
+      "day": "2026-11-26",
+      "proposal": {
+        "kind": "family",
+        "alias": "",
+        "level": "",
+        "family": "project",
+        "job_title": "Specialist, Customer Project Document Management",
+        "job_url": "https://careers.se.com/jobs/144364?lang=en-US",
+        "evidence_id": "job-832276db306b321bfc4bfe3ca728377d26a020b7d1155879bd89eafe320cb5d5",
+        "quote": "Manage project documentation from project initiation through completion, including the final documentation package.",
+        "corroboration": "Customer Project Document Management"
+      },
+      "evidence": {
+        "url": "https://careers.se.com/jobs/144364?lang=en-US",
+        "job_url": "https://careers.se.com/jobs/144364?lang=en-US",
+        "job_title": "Specialist, Customer Project Document Management",
+        "quote_found": true,
+        "source_excerpt": "Title: Specialist, Customer Project Document Management Department: Duties: Mission Manage project documentation from project initiation through completion, including the final documentation package. Serve as the primary point of contact for Project Managers, customers, and stakeholders regarding project documentation. Coordinate documentation deliverables and manage stakeholder and customer exchanges. Ensure documentation quality, compliance with specifications, and adherence to agreed lead times. Maintain accurate information flow, status reporting, and basic documentation KPIs for the Project Manager and Team Leader. Key Responsibilities and Activities Project Documentation Management Perform responsibilities aligned with the Customer Project Document Manager rol"
+      }
+    }
+  ],
   "errors": [],
-  "search_success": 2,
+  "search_success": 10,
   "search_failures": 0,
   "rules": {
     "career": 0,
@@ -142,41 +564,41 @@
     "conflicts": 0
   },
   "usage": {
-    "day": "2026-11-25",
-    "model_requests_today": 41,
+    "day": "2026-11-26",
+    "model_requests_today": 19,
     "model_request_limit": 124,
     "emergency_request_limit": 157,
     "groq_next_token_release_at": "2026-11-26T15:24:45.757Z",
-    "preprocessing_requests_today": 7,
+    "preprocessing_requests_today": 5,
     "per_model": {
       "gemini-4-hydrogen": {
-        "used_today": 7,
-        "provider_day_used": 7,
-        "system_used": 7,
+        "used_today": 1,
+        "provider_day_used": 1,
+        "system_used": 1,
         "limit": 18,
-        "provider_day": "2026-11-25",
+        "provider_day": "2026-11-26",
         "nightly_reserve": 10,
         "legacy_debit": 0,
-        "remaining": 11,
-        "benchmark_remaining": 1,
+        "remaining": 17,
+        "benchmark_remaining": 7,
         "budget_block": null,
         "system_limit_reached": false,
         "emergency_limit": 19,
         "emergency_remaining": 1,
         "emergency_used": 0,
         "provider_request_limit": 20,
-        "estimated_provider_headroom": 13,
-        "cairo_reset_at": "2026-11-25T22:00:00.000Z",
-        "provider_counter_reset_at": "2026-11-26T08:00:00.000Z",
-        "provider_reset_at": "2026-11-26T08:00:00.000Z",
-        "full_counter_reset_at": "2026-11-26T08:00:00.000Z"
+        "estimated_provider_headroom": 19,
+        "cairo_reset_at": "2026-11-26T22:00:00.000Z",
+        "provider_counter_reset_at": "2026-11-27T08:00:00.000Z",
+        "provider_reset_at": "2026-11-27T08:00:00.000Z",
+        "full_counter_reset_at": "2026-11-27T08:00:00.000Z"
       },
       "gemini-3.8-flash": {
         "used_today": 1,
         "provider_day_used": 1,
         "system_used": 1,
         "limit": 18,
-        "provider_day": "2026-11-25",
+        "provider_day": "2026-11-26",
         "nightly_reserve": 10,
         "legacy_debit": 0,
         "remaining": 17,
@@ -188,112 +610,139 @@
         "emergency_used": 0,
         "provider_request_limit": 20,
         "estimated_provider_headroom": 19,
-        "cairo_reset_at": "2026-11-25T22:00:00.000Z",
-        "provider_counter_reset_at": "2026-11-26T08:00:00.000Z",
-        "provider_reset_at": "2026-11-26T08:00:00.000Z",
-        "full_counter_reset_at": "2026-11-26T08:00:00.000Z"
+        "cairo_reset_at": "2026-11-26T22:00:00.000Z",
+        "provider_counter_reset_at": "2026-11-27T08:00:00.000Z",
+        "provider_reset_at": "2026-11-27T08:00:00.000Z",
+        "full_counter_reset_at": "2026-11-27T08:00:00.000Z"
       },
       "gemini-3.6-flash": {
-        "used_today": 1,
-        "provider_day_used": 1,
-        "system_used": 1,
+        "used_today": 8,
+        "provider_day_used": 8,
+        "system_used": 8,
         "limit": 18,
-        "provider_day": "2026-11-25",
+        "provider_day": "2026-11-26",
         "nightly_reserve": 10,
         "legacy_debit": 0,
-        "remaining": 17,
-        "benchmark_remaining": 7,
+        "remaining": 10,
+        "benchmark_remaining": 0,
         "budget_block": null,
         "system_limit_reached": false,
         "emergency_limit": 19,
         "emergency_remaining": 1,
         "emergency_used": 0,
         "provider_request_limit": 20,
-        "estimated_provider_headroom": 19,
-        "cairo_reset_at": "2026-11-25T22:00:00.000Z",
-        "provider_counter_reset_at": "2026-11-26T08:00:00.000Z",
-        "provider_reset_at": "2026-11-26T08:00:00.000Z",
-        "full_counter_reset_at": "2026-11-26T08:00:00.000Z"
+        "estimated_provider_headroom": 12,
+        "cairo_reset_at": "2026-11-26T22:00:00.000Z",
+        "provider_counter_reset_at": "2026-11-27T08:00:00.000Z",
+        "provider_reset_at": "2026-11-27T08:00:00.000Z",
+        "full_counter_reset_at": "2026-11-27T08:00:00.000Z"
       },
       "nvidia/nemotron-3-ultra-550b-a55b:free": {
-        "used_today": 12,
-        "provider_day_used": 12,
-        "system_used": 26,
+        "used_today": 7,
+        "provider_day_used": 7,
+        "system_used": 7,
         "limit": 40,
-        "provider_day": "2026-11-25",
+        "provider_day": "2026-11-26",
         "nightly_reserve": 10,
-        "legacy_debit": 14,
-        "remaining": 14,
-        "benchmark_remaining": 4,
+        "legacy_debit": 0,
+        "remaining": 33,
+        "benchmark_remaining": 23,
         "budget_block": null,
         "system_limit_reached": false,
         "emergency_limit": null,
         "emergency_remaining": 0,
         "emergency_used": 0,
         "provider_request_limit": 50,
-        "estimated_provider_headroom": 24,
-        "cairo_reset_at": "2026-11-25T22:00:00.000Z",
-        "provider_counter_reset_at": "2026-11-26T00:00:00.000Z",
-        "provider_reset_at": null,
-        "full_counter_reset_at": "2026-11-26T00:00:00.000Z"
+        "estimated_provider_headroom": 43,
+        "cairo_reset_at": "2026-11-26T22:00:00.000Z",
+        "provider_counter_reset_at": "2026-11-27T00:00:00.000Z",
+        "provider_reset_at": "2026-11-27T00:00:00.000Z",
+        "full_counter_reset_at": "2026-11-27T00:00:00.000Z"
       },
-      "openai/gpt-oss-120b": {
-        "used_today": 6,
-        "provider_day_used": 6,
-        "system_used": 6,
-        "limit": 30,
-        "provider_day": "2026-11-25",
+      "@cf/zai-org/glm-4.7-flash": {
+        "used_today": 0,
+        "provider_day_used": 0,
+        "system_used": 0,
+        "limit": 20,
+        "provider_day": "2026-11-26",
         "nightly_reserve": 10,
         "legacy_debit": 0,
-        "remaining": 24,
-        "benchmark_remaining": 14,
+        "remaining": 20,
+        "benchmark_remaining": 10,
+        "budget_block": null,
+        "system_limit_reached": false,
+        "emergency_limit": null,
+        "emergency_remaining": 0,
+        "emergency_used": 0,
+        "provider_request_limit": null,
+        "estimated_provider_headroom": null,
+        "estimated_neurons_reserved": 0,
+        "neuron_system_limit": 8000,
+        "cairo_reset_at": "2026-11-26T22:00:00.000Z",
+        "provider_counter_reset_at": "2026-11-27T00:00:00.000Z",
+        "provider_reset_at": "2026-11-27T00:00:00.000Z",
+        "full_counter_reset_at": "2026-11-27T00:00:00.000Z"
+      },
+      "openai/gpt-oss-120b": {
+        "used_today": 2,
+        "provider_day_used": 2,
+        "system_used": 2,
+        "limit": 30,
+        "provider_day": "2026-11-26",
+        "nightly_reserve": 10,
+        "legacy_debit": 0,
+        "remaining": 28,
+        "benchmark_remaining": 18,
         "budget_block": null,
         "system_limit_reached": false,
         "emergency_limit": 60,
         "emergency_remaining": 30,
         "emergency_used": 0,
         "provider_request_limit": 1000,
-        "estimated_provider_headroom": 994,
-        "cairo_reset_at": "2026-11-25T22:00:00.000Z",
-        "provider_counter_reset_at": "2026-11-26T00:00:00.000Z",
-        "provider_reset_at": "2026-11-25T15:38:49.965Z",
-        "full_counter_reset_at": "2026-11-26T00:00:00.000Z"
+        "estimated_provider_headroom": 998,
+        "cairo_reset_at": "2026-11-26T22:00:00.000Z",
+        "provider_counter_reset_at": "2026-11-27T00:00:00.000Z",
+        "provider_reset_at": "2026-11-26T08:56:05.306Z",
+        "provider_reset_observed_at": "2026-11-26T08:51:46.106Z",
+        "provider_tpm_reset_at": "2026-11-26T08:51:52.953Z",
+        "provider_tpm_observed_at": "2026-11-26T08:51:46.106Z",
+        "full_counter_reset_at": "2026-11-27T00:00:00.000Z"
       },
       "gemini-3.5-flash-lite": {
-        "used_today": 7,
-        "provider_day_used": 7,
-        "system_used": 7,
+        "used_today": 5,
+        "provider_day_used": 5,
+        "system_used": 5,
         "limit": 200,
-        "provider_day": "2026-11-25",
+        "provider_day": "2026-11-26",
         "nightly_reserve": 20,
         "legacy_debit": 0,
-        "remaining": 193,
-        "benchmark_remaining": 173,
+        "remaining": 195,
+        "benchmark_remaining": 175,
         "budget_block": null,
         "system_limit_reached": false,
         "emergency_limit": null,
         "emergency_remaining": 0,
         "emergency_used": 0,
         "provider_request_limit": 500,
-        "estimated_provider_headroom": 493,
-        "cairo_reset_at": "2026-11-25T22:00:00.000Z",
-        "provider_counter_reset_at": "2026-11-26T08:00:00.000Z",
-        "provider_reset_at": "2026-11-26T08:00:00.000Z",
-        "full_counter_reset_at": "2026-11-26T08:00:00.000Z"
+        "estimated_provider_headroom": 495,
+        "cairo_reset_at": "2026-11-26T22:00:00.000Z",
+        "provider_counter_reset_at": "2026-11-27T08:00:00.000Z",
+        "provider_reset_at": "2026-11-27T08:00:00.000Z",
+        "full_counter_reset_at": "2026-11-27T08:00:00.000Z"
       }
     },
-    "groq_tokens_rolling_24h": 6082,
-    "groq_token_limit": 160000,
+    "groq_tokens_rolling_24h": 8036,
+    "groq_token_limit": 75000,
     "groq_token_nightly_reserve": 60000,
-    "search_credits_today": 16,
-    "search_credits_month": 16
+    "search_credits_today": 10,
+    "search_credits_month": 26
   },
   "comparison": {
-    "catalog_jobs": 2331,
+    "catalog_jobs": 2330,
     "changed_level": 0,
     "changed_family": 0,
-    "baseline_unknown": 1388,
-    "shadow_unknown": 1388,
+    "baseline_unknown": 1384,
+    "shadow_unknown": 1384,
     "changes": [],
     "benchmark": {
       "basis": "Existing limited semantic-role reference; not production accuracy.",
@@ -325,65 +774,10 @@
       "stage": "evidence-extraction",
       "code": "provider-http-503",
       "companies": [
-        "Deloitte"
+        "Thndr"
       ]
     }
   ],
-  "model_benchmark": [
-    {
-      "model": "gemini-4-hydrogen",
-      "actual_models": [
-        "openai/gpt-oss-120b"
-      ],
-      "errors": [],
-      "expected_cases": 12,
-      "answered": 12,
-      "failed_batches": 0,
-      "metrics": {
-        "n": 12,
-        "tp": 6,
-        "fp": 1,
-        "fn": 0,
-        "tn": 5,
-        "precision": 0.8571428571428571,
-        "recall": 1,
-        "accuracy": 0.9166666666666666
-      },
-      "level_reference": {
-        "basis": "Synthetic regression examples, not production accuracy",
-        "expected_cases": 16,
-        "answered": 16,
-        "correct": 12,
-        "accuracy": 0.75
-      }
-    },
-    {
-      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
-      "actual_models": [
-        "nvidia/nemotron-3-ultra-550b-a55b:free"
-      ],
-      "errors": [],
-      "expected_cases": 12,
-      "answered": 12,
-      "failed_batches": 0,
-      "metrics": {
-        "n": 12,
-        "tp": 6,
-        "fp": 0,
-        "fn": 0,
-        "tn": 6,
-        "precision": 1,
-        "recall": 1,
-        "accuracy": 1
-      },
-      "level_reference": {
-        "basis": "Synthetic regression examples, not production accuracy",
-        "expected_cases": 16,
-        "answered": 16,
-        "correct": 16,
-        "accuracy": 1
-      }
-    }
-  ],
+  "model_benchmark": null,
   "note": "Only public employer data. Evidence checks and cross-model agreement are screening gates, not ground truth. Production never activated."
 }
