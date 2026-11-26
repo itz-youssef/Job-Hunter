@@ -138,3 +138,49 @@ test("no public HTTP request handler is exposed", () => {
   assert.equal(typeof scheduler.fetch, "undefined");
   assert.equal(typeof scheduler.scheduled, "function");
 });
+
+
+const ADAPTIVE_CRON="15,25,35,45,55 7,8,9 * * *";
+function adaptiveMock({runs=[],last_attempt="",stateStatus=200,dispatchStatus=204}={}){
+ const calls=[];
+ return {calls,mock:async(url,options)=>{
+  calls.push({url,options});
+  if(url.includes("/runs?"))return new Response(JSON.stringify({workflow_runs:runs}),{status:200});
+  if(url.includes("/contents/"))return new Response(JSON.stringify({last_attempt}),{status:stateStatus});
+  return new Response(null,{status:dispatchStatus});
+ }};
+}
+test("adaptive dispatches daily at 10:15 Cairo in winter and summer, independently of scanners",async()=>{
+ for(const time of ["2026-11-26T08:15:00Z","2026-07-26T07:15:00Z"]){
+  const now=Date.parse(time),{calls,mock}=adaptiveMock();
+  const r=await dispatchDue({cron:ADAPTIVE_CRON,scheduledTime:now},ENV,mock,now);
+  assert.equal(r.result,"dispatched");assert.equal(calls.length,3);
+  assert.match(calls[0].url,/adaptive-dictionary-research\.yml\/runs/);
+  assert.match(calls[1].url,/research-results\/state\.json/);
+  assert.deepEqual(JSON.parse(calls[2].options.body),{ref:"main",inputs:{mode:"daily"}});
+ }
+});
+test("adaptive retries at 10:25 and 11:55 but ignores other Cairo hours",async()=>{
+ for(const time of ["2026-11-26T08:25:00Z","2026-11-26T09:55:00Z"]){
+  const {mock}=adaptiveMock();assert.equal((await dispatchDue({cron:ADAPTIVE_CRON},ENV,mock,Date.parse(time))).result,"dispatched");
+ }
+ for(const time of ["2026-11-26T07:15:00Z","2026-11-26T10:15:00Z"]){
+  const {calls,mock}=adaptiveMock();assert.equal((await dispatchDue({cron:ADAPTIVE_CRON},ENV,mock,Date.parse(time))).result,"ignored");assert.equal(calls.length,0);
+ }
+});
+test("adaptive skips active run and today's persisted attempt; yesterday's attempt does not block",async()=>{
+ const now=Date.parse("2026-11-26T08:25:00Z");
+ for(const status of ["queued","in_progress"]){
+  const {calls,mock}=adaptiveMock({runs:[run("adaptive-dictionary-research.yml",status)]});
+  assert.equal((await dispatchDue({cron:ADAPTIVE_CRON},ENV,mock,now)).reason,"adaptive-active");assert.equal(calls.length,1);
+ }
+ const done=adaptiveMock({last_attempt:"2026-11-26"});
+ assert.equal((await dispatchDue({cron:ADAPTIVE_CRON},ENV,done.mock,now)).reason,"adaptive-day-already-attempted");assert.equal(done.calls.length,2);
+ const prev=adaptiveMock({last_attempt:"2026-11-25"});
+ assert.equal((await dispatchDue({cron:ADAPTIVE_CRON},ENV,prev.mock,now)).result,"dispatched");
+});
+test("adaptive fails closed if the authoritative shadow state is unavailable",async()=>{
+ const {calls,mock}=adaptiveMock({stateStatus:503});
+ await assert.rejects(dispatchDue({cron:ADAPTIVE_CRON},ENV,mock,Date.parse("2026-11-26T08:15:00Z")),/state check failed/);
+ assert.equal(calls.length,2);
+});

@@ -143,3 +143,22 @@ test('Groq product allocations leave 5000 tokens unallocated and preserve reques
  assert.equal(B.GROQ_ROLLING_TOKEN_CAP,120000);assert.equal(A.GROQ_TOKEN_BUDGET,75000);assert.equal(200000-B.GROQ_ROLLING_TOKEN_CAP-A.GROQ_TOKEN_BUDGET,5000);assert.equal(B.GROQ_ROLLING_REQUEST_CAP,900);assert.equal(A.EMERGENCY_LIMITS[A.GROQ],60);
  const js=fs.readFileSync('dist/assets/secretj-admin-console.js','utf8');assert.match(js,/120,000 accounted tokens/);assert.match(js,/75,000 Job Hunter/);
 });
+
+
+test('research calendar projection expires local daily counters without erasing rolling token usage',()=>{
+ const js=fs.readFileSync('dist/assets/secretj-admin-console.js','utf8');
+ const helpers=new Function(js.slice(js.indexOf('const nextProviderMidnight='),js.indexOf('const modelBudgetCards='))+'return {projectResearchUsage};')();
+ const u={day:'2026-11-25',model_requests_today:41,groq_tokens_rolling_24h:6082,per_model:{
+  'gemini-4-hydrogen':{limit:18,used_today:7,provider_day_used:7,system_used:7,cairo_reset_at:'2026-11-25T22:00:00Z',provider_counter_reset_at:'2026-11-26T08:00:00Z',provider_day:'2026-11-25'},
+  'nvidia/nemotron-3-ultra-550b-a55b:free':{limit:40,used_today:12,provider_day_used:12,system_used:26,legacy_debit:14,cairo_reset_at:'2026-11-25T22:00:00Z',provider_counter_reset_at:'2026-11-26T00:00:00Z',provider_day:'2026-11-25'}
+ }};
+ const r={cairo_day:'2026-11-25'};
+ const before=helpers.projectResearchUsage(u,r,Date.parse('2026-11-26T07:59:00Z'));
+ assert.equal(before.per_model['gemini-4-hydrogen'].system_used,7);
+ assert.equal(before.per_model['nvidia/nemotron-3-ultra-550b-a55b:free'].system_used,0);
+ const after=helpers.projectResearchUsage(u,r,Date.parse('2026-11-26T08:15:00Z'));
+ assert.equal(after.per_model['gemini-4-hydrogen'].system_used,0);
+ assert.equal(after.model_requests_today,0);assert.equal(after.groq_tokens_rolling_24h,6082);
+ assert.equal(u.per_model['gemini-4-hydrogen'].system_used,7);
+ assert.equal(after.per_model['gemini-4-hydrogen'].provider_counter_reset_at,'2026-11-27T08:00:00.000Z');
+});
