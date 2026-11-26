@@ -193,3 +193,10 @@ test('semantic feedback is admin-only and does not approve dictionary rules',asy
  assert.deepEqual(state.career_rules,[]);assert.deepEqual(state.family_rules,[]);
  const src=fs.readFileSync('lib/secretj/semantic-feedback.js','utf8');assert.doesNotMatch(src,/UPDATE public\.sj_|DELETE FROM|review_dictionary_conflict/);
 });
+
+
+test('human calibration counts agreement and errors without treating labels as global accuracy',()=>{
+ const F=require('../lib/secretj/semantic-feedback'),mk=(id,h,j)=>({detail:{case_id:id.repeat(64),revision:'a'.repeat(64),judge_model:'example',verdict:h,judge_verdict:j}});
+ const rows=F.calibration([mk('b','supported','supported'),mk('c','unsupported','supported'),mk('d','supported','unsupported'),mk('e','uncertain','uncertain'),mk('e','uncertain','uncertain')]);
+ assert.deepEqual(rows,[{model:'example',labeled:4,agreement:2,decisive:3,decisive_agreement:1,false_support:1,false_rejection:1,agreement_rate:.5,decisive_agreement_rate:1/3}]);
+});

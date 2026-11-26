@@ -500,16 +500,16 @@ test('semantic judge independently repairs grounded evidence but never adds a se
  const initial=E.validateDetailed(p,docs,jobs,A.HYDROGEN,'2026-11-26');
  const c=J.buildCase(p,docs,jobs,{model:'gemini-3.6-flash',slot:A.HYDROGEN,day:'2026-11-26'},initial);
  assert.ok(c);assert.equal(initial.rule,null);
- const result={id:c.publicCase.id,verdict:'supported',explanation:'Sales organization management is a core sales duty, but only one explicit duty is present.',alternative:'',quote:p.quote,corroboration:''};
+ const result={id:c.publicCase.id,checks:['pass','pass','unknown','pass'],explanation:'Sales organization management is a core sales duty, but only one explicit duty is present.',alternative:'',quote:p.quote,corroboration:''};
  const judged=J.adjudicate(c,result,{model:A.NEMOTRON,slot:A.NEMOTRON},'2026-11-26');
  assert.equal(judged.rule,null);assert.equal(judged.review.decision,'human-review');
  assert.equal(J.adjudicate(c,result,{model:'gemini-3.8-flash',slot:A.HYDROGEN},'2026-11-26').review.verdict,'unavailable');
  assert.equal(J.adjudicate(c,{...result,quote:'Made up quote about sales management.'},{model:A.NEMOTRON,slot:A.NEMOTRON},'2026-11-26').review.verdict,'uncertain');
  assert.equal(J.buildCase({...p,quote:'Made up quote about sales management.'},docs,jobs,{model:A.HYDROGEN,slot:A.HYDROGEN,day:'2026-11-26'},{rule:null,reason:'quote-not-in-source'}),null);
  const candidate=J.buildCase(proposal,new Map([[doc.id,doc]]),new Map([[id,job]]),{model:A.HYDROGEN,slot:A.HYDROGEN,day:'2026-11-26'},{rule:check(proposal),reason:null});
- const audit=J.adjudicate(candidate,{id:candidate.publicCase.id,verdict:'unsupported',explanation:'Possible competing role.',quote:proposal.quote,corroboration:proposal.corroboration},{model:A.NEMOTRON,slot:A.NEMOTRON},'2026-11-26');
+ const audit=J.adjudicate(candidate,{id:candidate.publicCase.id,checks:['pass','fail','pass','unknown'],explanation:'Possible competing role.',quote:proposal.quote,corroboration:proposal.corroboration},{model:A.NEMOTRON,slot:A.NEMOTRON},'2026-11-26');
  assert.equal(audit.rule,null);assert.equal(audit.review.decision,'audit-flagged');
- const repaired=J.adjudicate({...candidate,publicCase:{...candidate.publicCase,initial_status:'rejected'}},{id:candidate.publicCase.id,verdict:'supported',explanation:'Both duties directly support machine learning.',quote:proposal.quote,corroboration:proposal.corroboration},{model:A.NEMOTRON,slot:A.NEMOTRON},'2026-11-26');
+ const repaired=J.adjudicate({...candidate,publicCase:{...candidate.publicCase,initial_status:'rejected'}},{id:candidate.publicCase.id,checks:['pass','pass','pass','pass'],explanation:'Both duties directly support machine learning.',quote:proposal.quote,corroboration:proposal.corroboration},{model:A.NEMOTRON,slot:A.NEMOTRON},'2026-11-26');
  assert.equal(repaired.review.decision,'recovered-candidate');assert.deepEqual(repaired.rule.models,[A.HYDROGEN]);assert.equal(repaired.rule.status,'candidate');
 });
 test('semantic reviews use bounded normal calls after research and preserve quotas on exhaustion',async()=>{
@@ -518,12 +518,47 @@ test('semantic reviews use bounded normal calls after research and preserve quot
  const h={nemotronEnabled:true,glmEnabled:false,attempts:[],failedFirst:new Set(),disabledModels:new Set(),cooldowns:new Map()};
  let calls=0;
  const result=await A.reviewSemantics(cases,s,{},h,A.localDate(now),Date.now(),async(model,system,payload,state,keys,opts)=>{
-  assert.equal(model,A.NEMOTRON);assert.equal(opts.emergency,false);assert.ok(payload.cases.length<=2);calls++;
-  A.recordCall(state,model,new Date());return {reviews:payload.cases.map(c=>({id:c.id,verdict:'supported',explanation:'Verified primary duties.',quote:proposal.quote,corroboration:proposal.corroboration}))};
+  assert.equal(model,A.NEMOTRON);assert.equal(opts.emergency,false);assert.ok(payload.cases.length<=3);calls++;
+  A.recordCall(state,model,new Date());return {reviews:payload.cases.map(c=>({id:c.id,checks:['pass','pass','pass','pass'],explanation:'Verified primary duties.',quote:proposal.quote,corroboration:proposal.corroboration}))};
  });
- assert.equal(calls,6);assert.equal(result.requests,6);assert.equal(result.recovered.length,12);assert.equal(result.reviews.length,20);assert.equal(result.reviews.filter(x=>x.verdict==='unavailable').length,8);
- assert.equal(s.usage.model,6);
- for(let i=6;i<A.MODEL_LIMITS[A.NEMOTRON];i++)A.recordCall(s,A.NEMOTRON,new Date());
+ assert.equal(calls,2);assert.equal(result.requests,2);assert.equal(result.recovered.length,6);assert.equal(result.reviews.length,20);assert.equal(result.reviews.filter(x=>x.verdict==='unavailable').length,14);
+ assert.equal(s.usage.model,2);
+ for(let i=2;i<A.MODEL_LIMITS[A.NEMOTRON]-A.NIGHTLY_RESERVE[A.NEMOTRON];i++)A.recordCall(s,A.NEMOTRON,new Date());
  const blocked=await A.reviewSemantics(cases,s,{},h,A.localDate(now),Date.now(),async()=>{throw Error('must not call');});
  assert.equal(blocked.requests,0);assert.equal(blocked.reviews.length,20);
+});
+
+
+test('process rubric requires all checks and grounded evidence, never trusts a naked verdict',()=>{
+ const J=require('../research/semantic-review.cjs'),day='2026-11-26',meta={model:A.HYDROGEN,slot:A.HYDROGEN,day},judge={model:A.NEMOTRON,slot:A.NEMOTRON};
+ const c=J.buildCase(proposal,new Map([[doc.id,doc]]),new Map([[id,job]]),meta,{rule:null,reason:'missing-job-family-anchor'});
+ const good={id:c.publicCase.id,checks:['pass','pass','pass','pass'],explanation:'Core ML duties.',quote:proposal.quote,corroboration:proposal.corroboration};
+ assert.ok(J.adjudicate(c,good,judge,day).rule);
+ assert.equal(J.adjudicate(c,{...good,checks:['pass','pass','unknown','pass'],verdict:'supported'},judge,day).rule,null);
+ assert.equal(J.adjudicate(c,{...good,checks:['pass','pass','pass','pass'],alternative:'software'},judge,day).rule,null);
+ assert.equal(J.adjudicate(c,{...good,checks:undefined,verdict:'supported'},judge,day).review.verdict,'unavailable');
+ assert.equal(J.adjudicate(c,{...good,checks:['pass','fail','unknown','pass']},judge,day).review.verdict,'uncertain');
+ const original=J.adjudicate(c,good,judge,day).review,hit=J.cachedResponse(c,original,day);
+ assert.ok(hit);assert.ok(J.adjudicate(c,hit.response,hit.judge,day).rule);
+ assert.equal(J.cachedResponse(c,original,'2026-12-04'),null);
+ const d2={...doc,text:doc.text+' Updated job context.'};
+ const changed=J.buildCase(proposal,new Map([[doc.id,d2]]),new Map([[id,job]]),meta,{rule:null,reason:'missing-job-family-anchor'});
+ assert.notEqual(c.publicCase.id,changed.publicCase.id);assert.equal(J.cachedResponse(changed,original,day),null);
+});
+test('no judge calls on incomplete core, benchmark, shared endpoints or protected reserves; cache still usable',async()=>{
+ const J=require('../research/semantic-review.cjs'),s=A.newState(),now=new Date(),day=A.localDate(now);A.ledger(s,day);
+ const c=J.buildCase(proposal,new Map([[doc.id,doc]]),new Map([[id,job]]),{model:A.HYDROGEN,slot:A.HYDROGEN,day},{rule:null,reason:'missing-job-family-anchor'});
+ const h={nemotronEnabled:true,glmEnabled:true,groqEnabled:true,attempts:[],failedFirst:new Set(),disabledModels:new Set(),cooldowns:new Map()};
+ const no=async()=>{throw Error('must not call');};
+ assert.equal(A.judgeHeadroom(s,A.GROQ),false);assert.equal(A.judgeHeadroom(s,A.GLM),false);assert.equal(A.judgeHeadroom(s,A.LITE),false);
+ const blocked=await A.reviewSemantics([c],s,{},h,day,Date.now(),no,Date.now,false);
+ assert.equal(blocked.requests,0);assert.equal(blocked.reviews[0].reason,'core-research-priority');
+ s.runMode='benchmark';assert.equal((await A.reviewSemantics([c],s,{},h,day,Date.now(),no)).requests,0);
+ s.runMode='daily';
+ const good={id:c.publicCase.id,checks:['pass','pass','pass','pass'],explanation:'Verified duties.',quote:proposal.quote,corroboration:proposal.corroboration};
+ s.semantic_reviews=[J.adjudicate(c,good,{model:A.NEMOTRON,slot:A.NEMOTRON},day).review];
+ const cached=await A.reviewSemantics([c],s,{},h,day,Date.now(),no,Date.now,false);
+ assert.equal(cached.requests,0);assert.equal(cached.cached,1);assert.equal(cached.recovered.length,1);
+ for(let i=0;i<A.MODEL_LIMITS[A.NEMOTRON]-A.NIGHTLY_RESERVE[A.NEMOTRON];i++)A.recordCall(s,A.NEMOTRON,now);
+ assert.equal(A.judgeHeadroom(s,A.NEMOTRON,now),false);
 });

@@ -36,7 +36,7 @@ module.exports=async function handler(req,res){
       return core.reply(res,200,await review.decide(admin,core.parseBody(req)));
     }
     if(req.method==='GET' && action==='semantic-review'){
-      return core.reply(res,200,{ok:true,reviews:await semantic.load()});
+      return core.reply(res,200,{ok:true,...await semantic.loadReport()});
     }
     if(req.method==='PATCH' && action==='semantic-review'){
       return core.reply(res,200,await semantic.decide(admin,core.parseBody(req)));
