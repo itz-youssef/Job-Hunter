@@ -20,6 +20,11 @@ function fixture(){
    {generated_at:new Date().toISOString(),jobs}
  })}};
  core.setQueryForTests(async(sql,args=[])=>{
+  if(sql.startsWith('WITH input AS')){
+   const input=JSON.parse(args[0]);assert.equal(input.length,1);const row=input[0],initial=state!==row.signature;
+   for(const item of row.jobs)if(!queue.has(item.key))queue.set(item.key,{job_key:item.key,job_snapshot:item.job,status:initial?'baseline':'pending'});
+   state=row.signature;return [{user_id:ID}];
+  }
   if(sql.includes('FROM public.sj_users u'))return [{id:ID,email:'member@example.com',email_eligible:true,...settings}];
   if(sql.startsWith('SELECT preference_signature'))return state?[{preference_signature:state}]:[];
   if(sql.startsWith('INSERT INTO public.sj_native_watch_state')){state=args[1];return [];}
@@ -196,4 +201,36 @@ test('cron has standalone queue draining and source failures cannot suppress exi
  assert.match(source,/job_snapshot->>'qualification_preference_signature'=\$2/);
  assert.match(source,/job_snapshot->>'source_catalog_stale' IS DISTINCT FROM 'true'/);
  assert.doesNotMatch(source,/DELETE FROM public\.sj_native_watch_jobs WHERE user_id=\$1/);
+});
+
+
+test('periodic matching batches distinct users in bounded writes without changing matched jobs',async()=>{
+ const jobs=[other('ai','Junior AI Engineer'),other('hr','HR Manager')],calls=[];
+ const users=Array.from({length:100},(_,i)=>({id:'11111111-1111-4111-8111-'+String(i).padStart(12,'0'),egypt_only:false,internships:false,career_levels:i%2?['senior','manager']:['junior'],role_families:i%2?['hr']:['ai_ml'],max_experience_years:null,preferences_updated_at:'2026-11-26T00:00:00Z'}));
+ core.setQueryForTests(async(sql,args)=>{
+  assert.match(sql,/WITH input AS/);assert.match(sql,/FOR SHARE OF p,u/);assert.match(sql,/WHEN existing.status='sent' THEN 'sent'/);
+  const rows=JSON.parse(args[0]);calls.push(rows);return rows.map(r=>({user_id:r.user_id}));
+ });
+ try{
+  const result=await monitor.reservePeriodic(users,jobs);assert.deepEqual(result,{processed:100,failed:0});
+  assert.equal(calls.length,3);assert.deepEqual(calls.map(x=>x.length),[40,40,20]);
+  for(const row of calls.flat()){
+   const u=users.find(x=>x.id===row.user_id);
+   const expected=(await monitor.qualifyJobs(monitor.matching(jobs,u),u)).accepted.map(j=>j.url);
+   assert.deepEqual(row.jobs.map(x=>x.key),expected);
+   assert.equal(row.signature,monitor.signature(u));
+   assert.ok(row.jobs.every(x=>x.job.qualification_preference_signature===row.signature));
+  }
+ }finally{core.setQueryForTests(null);}
+});
+test('batch SQL failure leaves failed users for the next scheduled scan and continues other batches',async()=>{
+ let calls=0;
+ core.setQueryForTests(async(sql,args)=>{
+  if(++calls===1)throw Error('synthetic failure');
+  return JSON.parse(args[0]).map(r=>({user_id:r.user_id}));
+ });
+ try{
+  const users=Array.from({length:41},(_,i)=>({id:'11111111-1111-4111-8111-'+String(i).padStart(12,'0'),role_families:[],career_levels:[]}));
+  assert.deepEqual(await monitor.reservePeriodic(users,[]),{processed:1,failed:40});
+ }finally{core.setQueryForTests(null);}
 });
