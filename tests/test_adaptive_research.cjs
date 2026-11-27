@@ -580,3 +580,61 @@ test('manual validation replay uses historical fixtures only and isolates the da
  assert.doesNotMatch(body,/write\('report\.json'|mergeRules|fetchOfficial|searchOfficial|state\.family_rules\s*=|state\.career_rules\s*=/);
  assert.match(workflow,/- validation-test/);assert.match(workflow,/adaptive-validation-test-report/);
 });
+
+test('partial employer coverage does not block completed grounded research cases',async()=>{
+ const J=require('../research/semantic-review.cjs'),s=A.newState(),day=A.localDate(new Date());A.ledger(s,day);
+ const stats={companies_reviewed:10,companies_with_evidence:9,failed_batches:0},tasks={career:{planned:7,completed:7},family:{planned:9,completed:9}};
+ assert.equal(A.semanticReviewReady('daily',stats,tasks,[]),true);
+ assert.equal(A.semanticReviewReady('daily',stats,{...tasks,family:{planned:9,completed:8}},['provider-http-503']),true);
+ assert.equal(A.semanticReviewReady('daily',stats,tasks,['time-or-model-budget']),false);
+ assert.equal(A.semanticReviewReady('daily',stats,tasks,[],true),false);
+ assert.equal(A.semanticReviewReady('benchmark',stats,tasks,[]),false);
+ assert.equal(A.semanticReviewReady('daily',stats,{career:{planned:1,completed:0}},[]),false);
+ const c=J.buildCase(proposal,new Map([[doc.id,doc]]),new Map([[id,job]]),{model:A.HYDROGEN,slot:A.HYDROGEN,day},{rule:null,reason:'missing-job-family-anchor'});
+ const h={nemotronEnabled:true,failedFirst:new Set(),disabledModels:new Set(),cooldowns:new Map(),attempts:[]};
+ const out=await A.reviewSemantics([c],s,{},h,day,Date.now(),async(model,system,payload,state,keys,opts)=>{
+  assert.equal(model,A.NEMOTRON);assert.equal(opts.emergency,false);A.recordCall(state,model,new Date());
+  return {reviews:[{id:c.publicCase.id,checks:['pass','pass','pass','pass'],explanation:'Grounded duties.',quote:proposal.quote,corroboration:proposal.corroboration}]};
+ },Date.now,false,A.semanticReviewReady('daily',stats,tasks,[]));
+ assert.equal(out.core_complete,false);assert.equal(out.review_allowed,true);assert.equal(out.requests,1);
+ assert.equal(out.recovered.length,1);assert.deepEqual(out.recovered[0].rule.models,[A.HYDROGEN]);assert.equal(out.recovered[0].rule.status,'candidate');
+});
+test('judge batches prioritize rejected cases, preserve independence and never exceed two calls',()=>{
+ const J=require('../research/semantic-review.cjs');
+ const row=(id,origin_slot,initial_status='rejected',initial_reason='missing-job-family-anchor')=>({publicCase:{id,origin_slot,initial_status,initial_reason}});
+ const mixed=[...Array.from({length:4},(_,i)=>row('n'+i,A.NEMOTRON)),...Array.from({length:3},(_,i)=>row('g'+i,A.HYDROGEN)),row('audit',A.HYDROGEN,'candidate')];
+ const plan=J.planBatches(mixed,A.MODELS);assert.equal(plan.length,2);assert.equal(plan.flatMap(b=>b.cases).length,6);
+ assert.ok(plan.every(b=>b.cases.length<=3&&b.cases.every(c=>c.publicCase.origin_slot!==b.slot)));
+ const one=J.planBatches(mixed,[A.NEMOTRON]);assert.equal(one.length,2);assert.ok(one.every(b=>b.slot===A.NEMOTRON&&b.cases.every(c=>c.publicCase.origin_slot===A.HYDROGEN)));
+ const prioritised=J.planBatches([row('weak',A.NEMOTRON,'rejected','quote-not-supported-by-duties'),...Array.from({length:3},(_,i)=>row('strong'+i,A.NEMOTRON))],[A.HYDROGEN]);
+ assert.ok(prioritised[0].cases.every(c=>c.publicCase.id.startsWith('strong')));
+ assert.equal(J.planBatches(mixed,[]).length,0);
+});
+test('a failed judge endpoint cannot consume a second request on the same failed endpoint',async()=>{
+ const J=require('../research/semantic-review.cjs'),s=A.newState(),day=A.localDate(new Date());A.ledger(s,day);
+ const cases=Array.from({length:6},(_,i)=>{const c=J.buildCase(proposal,new Map([[doc.id,doc]]),new Map([[id,job]]),{model:A.HYDROGEN,slot:A.HYDROGEN,day},{rule:null,reason:'missing-job-family-anchor'});c.publicCase.id=E.hash('failure'+i);return c;});
+ const h={nemotronEnabled:true,failedFirst:new Set(),disabledModels:new Set(),cooldowns:new Map(),attempts:[]};
+ const out=await A.reviewSemantics(cases,s,{},h,day,Date.now(),async(model,system,payload,state)=>{A.recordCall(state,model,new Date());throw Object.assign(Error('provider-http-503'),{status:503,code:'provider-http-503'});});
+ assert.equal(out.requests,1);assert.ok(h.failedFirst.has(A.NEMOTRON));assert.equal(out.recovered.length,0);assert.equal(out.reviews.length,6);
+});
+
+test('Nov 27 saved research regression: all five eligible rejected proposals can be reviewed despite 9/10 evidence coverage',async()=>{
+ const J=require('../research/semantic-review.cjs'),rows=require('./fixtures/shadow-cases-20261127.json'),day=A.localDate(new Date());
+ const {cases,results}=A.validationReplayCases(rows,day);
+ assert.equal(results.length,13);
+ const hard=results.find(r=>r.number===13);assert.equal(hard.deterministic,'rejected');assert.equal(hard.reason,'quote-not-in-source');assert.equal(hard.review_id,null);
+ const s=A.newState();A.ledger(s,day);
+ const h={nemotronEnabled:true,googleDisabled:false,failedGoogle:new Set([A.HYDROGEN,'gemini-3.8-flash']),failedFirst:new Set(),disabledModels:new Set(),cooldowns:new Map(),attempts:[]};
+ const stats={companies_reviewed:10,companies_with_evidence:9,failed_batches:0},tasks={career:{planned:7,completed:7},family:{planned:9,completed:9}};
+ let visited=[];
+ const out=await A.reviewSemantics(cases,s,{},h,day,Date.now(),async(model,system,payload,state,keys,opts)=>{
+  assert.equal(model,'gemini-3.6-flash');assert.equal(opts.emergency,false);
+  A.recordCall(state,model,new Date());visited.push(...payload.cases.map(c=>c.title));
+  // Deliberately return uncertainty: mock transport proves routing only,
+  // not a real model's correctness or permission to publish.
+  return {reviews:payload.cases.map(c=>({id:c.id,checks:['unknown','unknown','unknown','unknown'],explanation:'Offline routing regression; not a semantic verdict.',alternative:'',quote:'',corroboration:''}))};
+ },Date.now,false,A.semanticReviewReady('daily',stats,tasks,[]));
+ assert.equal(out.review_allowed,true);assert.equal(out.core_complete,false);assert.equal(out.requests,2);
+ assert.ok(visited.some(t=>/Staff Engineer/.test(t)));assert.ok(visited.some(t=>/Product GTM Activation Manager/.test(t)));
+ assert.equal(visited.length,6);assert.equal(out.recovered.length,0);assert.equal(out.reviews.length,cases.length);
+});
