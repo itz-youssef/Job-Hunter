@@ -274,3 +274,31 @@ test('local chat omits knowledge transfer but retains publication, model version
   queries=[];await send('Experience?');assert.match(queries[0].sql,/b\.knowledge/);
  }finally{core.setQueryForTests(null);}
 });
+
+test('isolated Botfolio knowledge preserves authorization and existing answer input, with source fallback',async()=>{
+ const isolated=require('../lib/secretj/isolated-read-routing');
+ const originalAnswer=B.answer,originalConsume=B.consume,originalOwner=B.consumeOwnerChat;
+ const knowledge=[{text:'Original professional facts',vector:[1,2]}];
+ let active=true,fullReads=0,metaReads=0,remoteReads=0;
+ B.answer=async(env,bot)=>{assert.deepEqual(bot.knowledge,knowledge);assert.equal(bot.user_id,UID);return 'Same answer';};
+ B.consume=async()=>{};B.consumeOwnerChat=async()=>{};
+ core.setQueryForTests(async(sql,args)=>{
+  if(sql.includes('JOIN public.sj_users')){
+   assert.equal(args[0],ID);assert.match(sql,/b\.published=true AND u\.is_active=true/);
+   if(!active)return [];
+   const row={id:ID,name:'Alex',headline:'Engineer',user_id:UID,owner_role:'member',embedding_model:B.EMBED_MODEL};
+   if(sql.includes('record_digest')){metaReads++;return [{...row,record_digest:'a'.repeat(64)}];}
+   fullReads++;return [{...row,knowledge}];
+  }
+  throw Error('Unexpected query');
+ });
+ const send=async(flag)=>{const r=req('POST','chat',{id:ID,message:'Experience?'},ID,false);Object.assign(r.env,{SECRETJ_BOTFOLIO_ISOLATED_READS:flag,BOTFOLIO_DATABASE_URL:'postgresql://test:test@ep-super-haze-bgxz5xuw.c-9.eu-central-1.aws.neon.tech/neondb'});return call(r);};
+ try{
+  const base=await send('false');assert.equal(base.status,200);
+  isolated.setQueryForTests(async(service,sql,args)=>{remoteReads++;assert.equal(args[2],UID);return [{knowledge}];});
+  assert.deepEqual(await send('true'),base);assert.equal(metaReads,1);assert.equal(fullReads,1);assert.equal(remoteReads,1);
+  isolated.setQueryForTests(async()=>[]);
+  assert.deepEqual(await send('true'),base);assert.equal(fullReads,2);
+  active=false;assert.equal((await send('true')).status,404);
+ }finally{isolated.setQueryForTests(null);core.setQueryForTests(null);B.answer=originalAnswer;B.consume=originalConsume;B.consumeOwnerChat=originalOwner;}
+});
