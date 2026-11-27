@@ -90,8 +90,12 @@ test('personal monitoring subscribers do not require alert opt-in; only email di
  const source=fs.readFileSync('lib/secretj/native-preference-monitor.js','utf8');
  assert.match(source,/LEFT JOIN public\.sj_email_verifications/);
  assert.match(source,/email_eligible/);
- assert.match(source,/users\.filter\(u=>u\.email_eligible===true&&prefs\.hasFilters\(u\)\)/);
- assert.doesNotMatch(source,/WHERE u\.is_active=true AND p\.email_alerts=true/);
+ const subscribers=source.slice(source.indexOf('async function subscriptions('),source.indexOf('function matching('));
+ assert.doesNotMatch(subscribers,/WHERE u\.is_active=true AND p\.email_alerts=true/);
+ assert.match(source,/knownUsers\.filter\(u=>u\.email_eligible===true&&prefs\.hasFilters\(u\)\)/);
+ const standalone=source.slice(source.indexOf('async function queuedSubscriptions('),source.indexOf('async function deliverQueued('));
+ assert.match(standalone,/WHERE u\.is_active=true AND p\.email_alerts=true AND v\.verified_at IS NOT NULL/);
+ assert.match(source,/rows\.filter\(u=>u\.id&&u\.email_eligible===true&&prefs\.hasFilters\(u\)\)/);
 });
 test('clear preferences still populate a complete monitoring feed, without mass emailing',()=>{
  const result=monitor.matching([
