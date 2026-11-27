@@ -173,10 +173,22 @@ BEGIN
  GET DIAGNOSTICS n=ROW_COUNT; RETURN n;
 END $$;
 REVOKE ALL ON FUNCTION secretj_migration_sync.prune_prepared_knowledge() FROM PUBLIC;
+CREATE OR REPLACE FUNCTION secretj_migration_sync.get_job_payloads(p_digests text[])
+RETURNS TABLE(digest text,content jsonb) LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog AS $$
+ SELECT p.digest,p.content FROM secretj_migration_sync.payloads p
+ WHERE cardinality(p_digests)<=251 AND p.digest=ANY(p_digests)
+ AND p.digest=encode(sha256(convert_to(p.content::text,'UTF8')),'hex')
+$$;
+CREATE OR REPLACE FUNCTION secretj_migration_sync.get_bot_knowledge(p_owner uuid,p_bot uuid,p_digest text)
+RETURNS TABLE(knowledge jsonb) LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog AS $$
+ SELECT k.knowledge FROM secretj_migration_sync.bot_knowledge k WHERE k.owner_id=p_owner AND k.bot_id=p_bot AND k.digest=p_digest
+ AND k.digest=encode(sha256(convert_to(k.knowledge::text,'UTF8')),'hex')
+$$;
+REVOKE ALL ON FUNCTION secretj_migration_sync.get_job_payloads(text[]),secretj_migration_sync.get_bot_knowledge(uuid,uuid,text) FROM PUBLIC;
 DO $$ BEGIN
  IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='secretj_vercel_reader') THEN
   GRANT EXECUTE ON FUNCTION secretj_migration_sync.put_job_payloads(jsonb),secretj_migration_sync.put_bot_knowledge(uuid,uuid,jsonb) TO secretj_vercel_reader;
-  GRANT SELECT ON secretj_migration_sync.payloads,secretj_migration_sync.bot_knowledge TO secretj_vercel_reader;
+  GRANT EXECUTE ON FUNCTION secretj_migration_sync.get_job_payloads(text[]),secretj_migration_sync.get_bot_knowledge(uuid,uuid,text) TO secretj_vercel_reader;
  END IF;
 END $$;
 COMMIT;
