@@ -8,12 +8,14 @@ const publicMeta=row=>({id:row.id,name:row.name,headline:row.headline});
 async function getPublic(id,withChat=false,omitKnowledge=false,env){
  const useIsolated=withChat&&!omitKnowledge&&isolated.enabled('botfolio',env);
  if(useIsolated){
+  const primary=isolated.primaryPayloadsEnabled('botfolio',env);
+  const proof=primary?"encode(sha256(convert_to(b.knowledge::text,'UTF8')),'hex') AS knowledge_digest":"encode(sha256(convert_to(to_jsonb(b)::text,'UTF8')),'hex') AS record_digest";
   const rows=await core.query(`SELECT b.id,b.name,b.headline,b.embedding_model,b.updated_at,b.user_id,u.role AS owner_role,
-   encode(sha256(convert_to(to_jsonb(b)::text,'UTF8')),'hex') AS record_digest
+   ${proof}
    FROM public.sj_botfolio_bots b JOIN public.sj_users u ON u.id=b.user_id WHERE b.id=$1 AND b.published=true AND u.is_active=true LIMIT 1`,[id]);
   if(!rows.length)throw core.fail(404,'This portfolio is unavailable.');
-  const knowledge=await isolated.botKnowledge(env,rows[0]);
-  if(knowledge!==null){const {record_digest,...bot}=rows[0];return {...bot,knowledge};}
+  const knowledge=primary?await isolated.primaryBotKnowledge(env,rows[0]):await isolated.botKnowledge(env,rows[0]);
+  if(knowledge!==null){const {record_digest,knowledge_digest,...bot}=rows[0];return {...bot,knowledge};}
  }
  const rows=await core.query('SELECT '+(withChat?'b.id,b.name,b.headline,'+(omitKnowledge?'':'b.knowledge,')+'b.embedding_model,b.updated_at,b.user_id,u.role AS owner_role':'b.id,b.name,b.headline')+' FROM public.sj_botfolio_bots b JOIN public.sj_users u ON u.id=b.user_id WHERE b.id=$1 AND b.published=true AND u.is_active=true LIMIT 1',[id]);
  if(!rows.length)throw core.fail(404,'This portfolio is unavailable.');
@@ -67,7 +69,9 @@ module.exports=async function(req,res){
    phase='embedding';
    const vectors=await B.embed(ai,chunks),knowledge=chunks.map((text,i)=>({text,vector:vectors[i]}));
    phase='save-draft';
-   const rows=await core.query(`INSERT INTO public.sj_botfolio_bots(id,user_id,slot,name,headline,knowledge,embedding_model,published) SELECT $1::uuid,$2::uuid,CASE WHEN u.role='admin' THEN COALESCE((SELECT max(slot) FROM public.sj_botfolio_bots WHERE user_id=u.id),0)+1 ELSE 1 END,$3::text,$4::text,$5::jsonb,$6::text,false FROM public.sj_users u WHERE u.id=$2::uuid AND u.is_active=true AND (u.role='admin' OR NOT EXISTS (SELECT 1 FROM public.sj_botfolio_bots WHERE user_id=u.id)) ON CONFLICT(user_id,slot) DO NOTHING RETURNING `+fields,[core.randomUUID(),uid,name,headline,JSON.stringify(knowledge),B.EMBED_MODEL]);
+   const botId=core.randomUUID();
+   await isolated.prepareBotKnowledge(req.env,uid,botId,knowledge);
+   const rows=await core.query(`INSERT INTO public.sj_botfolio_bots(id,user_id,slot,name,headline,knowledge,embedding_model,published) SELECT $1::uuid,$2::uuid,CASE WHEN u.role='admin' THEN COALESCE((SELECT max(slot) FROM public.sj_botfolio_bots WHERE user_id=u.id),0)+1 ELSE 1 END,$3::text,$4::text,$5::jsonb,$6::text,false FROM public.sj_users u WHERE u.id=$2::uuid AND u.is_active=true AND (u.role='admin' OR NOT EXISTS (SELECT 1 FROM public.sj_botfolio_bots WHERE user_id=u.id)) ON CONFLICT(user_id,slot) DO NOTHING RETURNING `+fields,[botId,uid,name,headline,JSON.stringify(knowledge),B.EMBED_MODEL]);
    if(!rows.length)throw core.fail(409,isAdmin?'Another portfolio was created at the same time. Please retry.':'Your account already has a portfolio.');
    await isolated.syncAfterWrite('botfolio',req.env,uid,rows[0].id,req.waitUntil);
    return core.reply(res,201,{ok:true,bot:rows[0]});
