@@ -12,10 +12,10 @@ async function request(query,queryImpl,env){
   core.setQueryForTests(async(sql,args)=>{
     if(sql.includes('FROM public.sj_sessions s JOIN public.sj_users u'))
       return [{id:UID,email:'member@example.com',is_active:true}];
-    if(sql===api.CORE_FEED_SQL){
+    if(sql===api.CORE_FEED_SQL||sql===api.ISOLATED_FEED_SQL){
       const state=(await queryImpl('SELECT FROM public.sj_native_watch_state',[args[0]]))[0];
       if(state?.preferences_current!==true)return [{...state,job_key:null}];
-      const page=await queryImpl('SELECT FROM public.sj_native_watch_jobs',args);
+      const page=await queryImpl(sql===api.ISOLATED_FEED_SQL?'SELECT record_digest FROM public.sj_native_watch_jobs':'SELECT FROM public.sj_native_watch_jobs',args);
       return page.length?page.map(row=>({...state,...row})):[{...state,job_key:null}];
     }
     return queryImpl(sql,args);
@@ -251,4 +251,19 @@ test('verified core feed needs exactly one statement after authentication, inclu
    assert.equal(res.statusCode,200);assert.equal(res.body.ready,true);assert.equal(res.body.jobs.length,records.length);assert.equal(count,1);
   }finally{core.setQueryForTests(null);}
  }
+});
+
+test('isolated fallback rechecks changed preferences in the same core snapshot',async()=>{
+ const isolated=require('../lib/secretj/isolated-read-routing');
+ const env={SECRETJ_JOB_HUNTER_ISOLATED_READS:'true',JOB_HUNTER_DATABASE_URL:'postgresql://test:test@ep-soft-cloud-bgoaznc6.c-9.eu-central-1.aws.neon.tech/neondb'};
+ let stateReads=0;
+ isolated.setQueryForTests(async()=>[]);
+ try{
+  const {status,result}=await request({action:'feed'},(sql,args)=>{
+   if(sql.includes('sj_native_watch_state'))return [{preferences_current:++stateReads===1}];
+   if(sql.includes('record_digest'))return [{job_key:'https://example.com/job',record_digest:'a'.repeat(64),status:'baseline'}];
+   throw Error('A stale page must not load');
+  },env);
+  assert.equal(status,200);assert.equal(result.ready,false);assert.deepEqual(result.jobs,[]);assert.equal(stateReads,2);
+ }finally{isolated.setQueryForTests(null);}
 });
