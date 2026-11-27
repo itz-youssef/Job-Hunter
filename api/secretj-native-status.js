@@ -3,6 +3,7 @@
 const core=require('../lib/secretj/core');
 const prefs=require('../dist/assets/secretj-job-preferences');
 const matchCache=require('../lib/secretj/preference-cache');
+const isolated=require('../lib/secretj/isolated-read-routing');
 function createHandler(env=process.env){return async function handler(req,res){
  try{
   core.allowedMethod(req,['GET']);
@@ -25,12 +26,24 @@ function createHandler(env=process.env){return async function handler(req,res){
     if(!Number.isSafeInteger(offset)||offset<0||offset>100000)
       throw core.fail(400,'Invalid feed offset');
     const limit=250;
-    const rows=await core.query(
+    const params=[user.id,limit+1,offset];
+    let rows=null;
+    if(isolated.enabled('jobHunter',env)){
+      const metadata=await core.query(
+        `SELECT w.job_key,w.status,w.discovered_at,w.sent_at,
+          encode(sha256(convert_to(to_jsonb(w)::text,'UTF8')),'hex') AS record_digest
+          FROM public.sj_native_watch_jobs w WHERE w.user_id=$1
+          ORDER BY w.discovered_at DESC,w.job_key ASC LIMIT $2 OFFSET $3`,params);
+      rows=await isolated.jobSnapshots(env,user.id,metadata);
+    }
+    // Exact-version miss or isolated-store failure: use the original
+    // authorized source query, never an incomplete or stale shadow page.
+    if(rows===null)rows=await core.query(
       `SELECT job_key,job_snapshot,status,discovered_at,sent_at
        FROM public.sj_native_watch_jobs
        WHERE user_id=$1
        ORDER BY discovered_at DESC,job_key ASC LIMIT $2 OFFSET $3`,
-      [user.id,limit+1,offset]);
+      params);
     // Fast path: records matched by the current saved preferences and exact
     // dictionary implementation are already validated in Neon. Reusing them
     // avoids an additional preferences query and per-job classification.
