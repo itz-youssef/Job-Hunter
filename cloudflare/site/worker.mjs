@@ -131,6 +131,8 @@ export async function scheduled(controller,env,ctx){
     console.warn('secretj-personalized-alerts',{status:'failed',code:String(error?.code||'runtime_error').slice(0,30)});
     throw error;
   }finally{
+    if(ctx?.waitUntil&&env.SECRETJ_PRODUCT_PRIMARY_PAYLOADS==='true'&&when.getUTCHours()===8&&when.getUTCMinutes()===16)
+      ctx.waitUntil(isolatedRouting.prunePreparedKnowledge(env));
     // Commit journal is already durable. Independent bounded write-through
     // runs after job delivery, never ahead of the email queue or source scan.
     if(ctx?.waitUntil&&env.SECRETJ_ISOLATED_WRITE_THROUGH==='true'&&when.getUTCMinutes()%5===0){
