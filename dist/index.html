@@ -346,7 +346,7 @@ a:hover{color:var(--ink)}
   const liveFile = name => RAW + name + '?v=' + Date.now();
   const el = (selector) => document.querySelector(selector);
   const esc = (x) => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const state = { member:null, memberLoading:true, memberPrefs:null, memberPrefsConfigured:false, reviewExcluded:false, watchFeed:[], watchFeedLoaded:false, watchFeedLoading:false, watchFeedPendingSince:0, watchFeedError:'', snapshot:{}, publicCatalogLoading:true, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'recent', jobType:'all', feedLimit:40, companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
+  const state = { member:null, memberLoading:true, memberPrefs:null, memberPrefsConfigured:false, reviewExcluded:false, watchFeed:[], watchFeedLoaded:false, watchFeedLoading:false, watchFeedSilent:false, watchFeedPendingSince:0, watchFeedError:'', snapshot:{}, publicCatalogLoading:true, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'recent', jobType:'all', feedLimit:40, companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
   // Skeletons make authenticated feed/profile hydration obvious, not a fake zero.
   function loadingSkeleton(message='Loading matching opportunities…',detail='Retrieving your saved preferences and job feed.',count=4){
     return '<section class="sj-loading-shell" role="status" aria-live="polite" aria-busy="true">'+
@@ -427,6 +427,7 @@ a:hover{color:var(--ink)}
     if(!state.member||!state.memberPrefsConfigured||state.memberLoading||state.watchFeedLoading)return;
     const userId=state.member.id,sequence=memberSequence;
     state.watchFeedLoading=true;
+    state.watchFeedSilent=sjSilent;
     if(!state.watchFeedLoaded&&state.page==='jobs')render(sjSilent);
     try{
       const feed=await loadMatchingFeed(userId,sequence,sjSilent);
@@ -441,6 +442,7 @@ a:hover{color:var(--ink)}
       state.watchFeedPendingSince=0;
     }finally{
       state.watchFeedLoading=false;
+      state.watchFeedSilent=false;
     }
     syncFeedCount();render(sjSilent);
   }
@@ -457,6 +459,7 @@ a:hover{color:var(--ink)}
       if(sequence!==memberSequence)return;
       const changed=state.member?.id!==result.user?.id;
       identityChanged=changed;
+      if(changed)profileDirty=false;
       state.member=result.user||null;
       if(changed || !state.member){
         if(changed){landingViews.clear();state.memberLoading=true;}
@@ -511,6 +514,7 @@ a:hover{color:var(--ink)}
       if(sequence!==memberSequence)return;
       landingViews.clear();
       identityChanged=!!state.member;
+      profileDirty=false;
       state.member=null;profile={...blankProfile(),photo:''};cvEntry=null;
       state.memberEmail=null;state.memberPrefs=null;state.memberPrefsConfigured=false;state.watchFeed=[];state.watchFeedLoaded=false;state.watchFeedError='';state.saved=new Set();state.savedRecords=[];
       state.memberError=e.message;
@@ -1306,7 +1310,7 @@ a:hover{color:var(--ink)}
     const feedMetrics=saved?'':`<div class="feed-metrics" aria-label="Job feed counts"><div class="feed-metric"><strong id="feed-match-count">${list.length}</strong><small>In your feed</small></div><div class="feed-metric"><strong id="feed-catalog-count">${catalog.length}</strong><small>Detected jobs</small></div></div>`;
     const heading=saved?h:h.replace('</p></div>','</p>'+feedMetrics+'</div>');
     return heading+
-      `${personalizedView&&state.watchFeedLoading?
+      `${personalizedView&&state.watchFeedLoading&&!state.watchFeedSilent?
         '<div class="sj-loading-inline" role="status" aria-live="polite"><span class="sj-loading-ring" aria-hidden="true"></span>Refreshing your matching jobs…</div>':''}`+
       `${personalized&&!saved?`<section class="job-filter-panel" aria-label="Matching transparency"><p class="tiny"><strong>Personalized preference monitoring</strong> runs independently from <strong>All Detected Jobs</strong>. Company-native filters are used where verified, with other sources clearly handled through catalog fallback. The general discovery catalog is never reduced by your preferences.</p><p class="tiny">The general catalog currently contains ${hiddenCount} detected jobs, available separately under Review All Jobs and global Search. Your personalized feed reads the same private monitoring records as your email alerts, including the initial baseline of existing opportunities.</p>${personalizedView&&!state.watchFeedLoaded?`<p class="tiny"><strong>Monitoring status:</strong> ${esc(state.watchFeedError||'Waiting for the source monitor to finish its initial scan.')} Your personalized feed only shows jobs accepted by the configured verification pipeline. While the scan is pending, Review All Jobs remains available without falsely marking unverified postings as matches.</p>`:''}<button class="btn secondary" type="button" data-review-excluded aria-pressed="${state.reviewExcluded}">${state.reviewExcluded?'Return to personalized feed':'Review all detected jobs ('+allPublicJobs().length+')'}</button></section>`:''}
       <section class="job-filter-panel" aria-label="Job search filters">
@@ -1720,7 +1724,7 @@ a:hover{color:var(--ink)}
       if(cvPreviewBlobUrl){URL.revokeObjectURL(cvPreviewBlobUrl);cvPreviewBlobUrl=null;}
     });
     readSaved();
-    document.addEventListener('input',event=>{if(event.target.closest('#profile-form'))profileDirty=true;});
+    document.addEventListener('input', event=>{if(event.target.closest('#profile-form'))profileDirty=true;});
     document.addEventListener('focusout',()=>{if(backgroundRenderPending)setTimeout(()=>{if(backgroundRenderPending)render(true);},0);});
     let syncTimer;
     const scheduleMemberSync=(force=false)=>{
@@ -2017,7 +2021,7 @@ a:hover{color:var(--ink)}
       if(document.hidden)return;
       if(document.activeElement?.id==='job-search')return;
       refresh(true,true);
-      refreshMatchingFeed(true);
+      refreshMatchingFeed();
     },60000);
     // Quick follow-up only while the user's saved preferences are still
     // awaiting their FIRST matching feed. Never poll continuously when ready.
