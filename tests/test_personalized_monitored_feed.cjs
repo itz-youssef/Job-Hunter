@@ -12,6 +12,12 @@ async function request(query,queryImpl,env){
   core.setQueryForTests(async(sql,args)=>{
     if(sql.includes('FROM public.sj_sessions s JOIN public.sj_users u'))
       return [{id:UID,email:'member@example.com',is_active:true}];
+    if(sql===api.CORE_FEED_SQL){
+      const state=(await queryImpl('SELECT FROM public.sj_native_watch_state',[args[0]]))[0];
+      if(state?.preferences_current!==true)return [{...state,job_key:null}];
+      const page=await queryImpl('SELECT FROM public.sj_native_watch_jobs',args);
+      return page.length?page.map(row=>({...state,...row})):[{...state,job_key:null}];
+    }
     return queryImpl(sql,args);
   });
   let result={};
@@ -225,4 +231,24 @@ test('isolated feed has identical output and authoritative fallback on a missing
   const miss=await request({action:'feed'},sql,env);assert.deepEqual(miss,baseline);
   assert.equal(fullReads,2);assert.equal(metaReads,2);
  }finally{isolated.setQueryForTests(null);}
+});
+
+test('verified core feed needs exactly one statement after authentication, including empty page',async()=>{
+ const cache=require('../lib/secretj/preference-cache');
+ const sig='a'.repeat(64);
+ const snapshot={title:'Junior Engineer',url:'https://example.com/j',qualification_status:'accepted',qualification_mode:'dictionary-title-v1',qualification_preference_signature:sig,qualification_matcher_fingerprint:cache.fingerprint};
+ for(const records of [[{job_key:snapshot.url,job_snapshot:snapshot,status:'baseline'}],[]]){
+  let count=0;
+  core.setQueryForTests(async(sql,args)=>{
+   if(sql.includes('FROM public.sj_sessions s JOIN public.sj_users u'))return [{id:UID,is_active:true}];
+   count++;assert.equal(sql,api.CORE_FEED_SQL);assert.deepEqual(args,[UID,251,0]);
+   const state={preferences_current:true,preference_signature:sig};
+   return records.length?records.map(row=>({...state,...row})):[{...state,job_key:null}];
+  });
+  try{
+   const res={statusCode:200,setHeader(){},end(v){this.body=JSON.parse(v);}};
+   await api.createHandler({SECRETJ_JOB_HUNTER_ISOLATED_READS:'false'})({method:'GET',headers:{cookie:COOKIE},query:{action:'feed'}},res);
+   assert.equal(res.statusCode,200);assert.equal(res.body.ready,true);assert.equal(res.body.jobs.length,records.length);assert.equal(count,1);
+  }finally{core.setQueryForTests(null);}
+ }
 });
