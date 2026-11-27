@@ -146,23 +146,31 @@
    /\b(?:hire|hiring|performance reviews?|performance appraisals?|people management|direct reports)\b/i,
    /\b(?:own|ownership of|accountable for)\s+(?:the\s+)?(?:engineering|technical|technology)\s+(?:strategy|roadmap|organization|department)\b/i
  ];
- function assess(job,p){
-   if(!hasFilters(p))return {match:true,status:'unrestricted',reasons:[],requiredYears:null,categories:classify(job),evidence:[]};
+ // Immutable job facts may be reused by trusted server callers. The browser
+ // and legacy callers keep the same authoritative decision function.
+ function prepare(job){
+   const fields=classify(job);
+   const level=careerLevel?.evaluate(job,eligibilityCore);
+   const early=eligibilityCore?[0,1,2].map(n=>eligibilityCore.evaluate(job,n)):null;
+   return {fields,level,early,years:yearsRequired(job)};
+ }
+ function assess(job,p,facts){
+   if(!hasFilters(p))return {match:true,status:'unrestricted',reasons:[],requiredYears:null,categories:facts?facts.fields:classify(job),evidence:[]};
    const title=String(job.title||job.position||job.job_title||'');
    const location=String(job.location||job.job_location||'');
    const selected=Array.isArray(p.role_families)?p.role_families:[];
-   const fields=classify(job);
+   const fields=facts?facts.fields:classify(job);
    const reasons=[],evidence=[];
    let review=false,required=null;
    if(p.egypt_only===true&&!egypt.test(location))reasons.push('Outside selected location');
    // New multi-level selections supersede legacy internship-only switch.
    const chosenLevels=Array.isArray(p.career_levels)?p.career_levels:[];
-   if(!chosenLevels.length&&p.internships===true&&careerLevel&&!careerLevel.match(job,['internship'],eligibilityCore).match)reasons.push('Not an internship');
+   if(!chosenLevels.length&&p.internships===true&&careerLevel&&!careerLevel.match(job,['internship'],eligibilityCore,facts?.level).match)reasons.push('Not an internship');
    if(selected.length&&!fields.some(key=>selected.includes(key)))
      reasons.push('Outside selected career fields');
    const limit=p.max_experience_years===null||p.max_experience_years===undefined||p.max_experience_years===''?null:Number(p.max_experience_years);
    if(chosenLevels.length&&careerLevel){
-     const levelResult=careerLevel.match(job,chosenLevels,eligibilityCore);
+     const levelResult=careerLevel.match(job,chosenLevels,eligibilityCore,facts?.level);
      required=levelResult.requiredYears;
      evidence.push(...levelResult.evidence);
      if(!levelResult.match)reasons.push('Outside selected career levels');
@@ -171,13 +179,13 @@
      if(limit<=2&&eligibilityCore){
        // Selected on a frozen, independently labeled comparison of six models.
        // REVIEW stays visible; it is never called a confirmed match.
-       const result=eligibilityCore.evaluate(job,limit);
+       const result=facts?.early?.[limit]||eligibilityCore.evaluate(job,limit);
        required=result.requiredYears;
        evidence.push(...result.evidence,...result.sourceSpans.slice(0,2));
        if(result.decision==='exclude')reasons.push(...result.reasons);
        if(result.decision==='review')review=true;
      }else{
-       required=yearsRequired(job);
+       required=facts?facts.years:yearsRequired(job);
        if(required!==null&&required>limit)reasons.push('Requires '+required+' years; maximum '+limit);
        if(required===null)review=true;
      }
@@ -197,5 +205,5 @@
   const pattern=re=>re?{pattern:re.source,flags:re.flags}:null;
   return {categories:categories.map(([key,label,re])=>({key,label,title_pattern:pattern(re)})),title_aliases:titleAliases.map(([family,re])=>({family,...pattern(re)})),software_parent_families:['backend','frontend','fullstack','mobile','web'],software_title_pattern:pattern(/\bsoftware\s+(?:engineering|development|intern|internship|trainee|graduate|associate)\b/i),fallback:'other',matching_basis:'title only'};
  }
- return {exportDictionary,categories:categories.map(([key,label])=>({key,label})),careerLevels:careerLevel?.levels||[],classify,hasFilters,isMatch,yearsRequired,explain,assess};
+ return {exportDictionary,categories:categories.map(([key,label])=>({key,label})),careerLevels:careerLevel?.levels||[],classify,hasFilters,isMatch,yearsRequired,explain,assess,prepare};
 });
