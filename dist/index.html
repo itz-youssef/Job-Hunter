@@ -248,7 +248,7 @@ a:hover{color:var(--ink)}
 })();
 </script>
 <link rel="stylesheet" href="/assets/secretj-interaction-polish.css?v=20261127">
-<link rel="stylesheet" href="/assets/secretj-job-feed-editorial.css?v=20261127-fullwidth">
+<link rel="stylesheet" href="/assets/secretj-job-feed-editorial.css?v=unified-tools-20261127">
 <link rel="stylesheet" href="/assets/secretj-mobile-workspace.css?v=compact-header-1">
 </head>
 <body>
@@ -763,6 +763,8 @@ a:hover{color:var(--ink)}
   }
   function go(page){state.page=names[page]?page:'home';location.hash=state.page;el('#page-label').textContent=names[state.page];document.querySelectorAll('nav button[data-page]').forEach(b=>{b.classList.toggle('active',b.dataset.page===state.page);b.setAttribute('aria-current',b.dataset.page===state.page?'page':'false');});render();}
   function top(eyebrow,title,desc,action=''){return `<div class="section-top"><div><span class="eyebrow">${esc(eyebrow)}</span><h1>${esc(title)}</h1><p class="subtitle">${esc(desc)}</p></div>${action}</div>`;}
+  function editorialMetrics(items){return '<div class="feed-metrics">'+items.map(([label,value])=>'<div class="feed-metric"><strong>'+esc(value)+'</strong><small>'+esc(label)+'</small></div>').join('')+'</div>';}
+  function editorialHeading(eyebrow,title,desc,items){return top(eyebrow,title,desc).replace('</p></div>','</p>'+editorialMetrics(items)+'</div>');}
   const stat=(label,note,value)=>`<article class="stat"><span>${esc(label)}</span><strong>${esc(value)}</strong><small>${esc(note)}</small></article>`;
   const empty=(title,desc)=>`<div class="empty"><strong>${esc(title)}</strong><p>${esc(desc)}</p></div>`;
   // Resolve the employer company (not the ATS hostname) for a job.
@@ -1307,10 +1309,10 @@ a:hover{color:var(--ink)}
     const hiddenCount=personalized?allPublicJobs().length:0;
     const companyBrowsing=!saved&&state.companyFilter!=='all';
     const personalizedView=personalized&&!state.reviewExcluded&&!globalSearch&&!companyBrowsing&&state.jobType!=='internship';
-    const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':companyBrowsing?'All jobs at '+state.companyFilter:globalSearch?'Search all detected opportunities':personalized?'Your personalized job feed':'All detected opportunities',saved?(state.member?'Jobs saved to your account.':'Jobs you’ve bookmarked on this device.'):companyBrowsing?'Showing every published job we currently have for this company, across all career levels and fields. Your personal email alerts are unchanged.':globalSearch?'Searching all published listings, including those outside your saved preferences. Email alerts remain personalized.':personalized?'Opportunities detected by your personalized monitoring system, the same source used for email alerts.':'Explore every discovered opening with a valid application link. Sign in and save preferences to personalize your feed and alerts.');
-    const feedMetrics=saved?'':`<div class="feed-metrics" aria-label="Job feed counts"><div class="feed-metric"><strong id="feed-match-count">${list.length}</strong><small>In your feed</small></div><div class="feed-metric"><strong id="feed-catalog-count">${catalog.length}</strong><small>Detected jobs</small></div></div>`;
-    const heading=saved?h:h.replace('</p></div>','</p>'+feedMetrics+'</div>');
-    return heading+
+    const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Your saved jobs.':companyBrowsing?'All jobs at '+state.companyFilter:globalSearch?'Search all detected opportunities':personalized?'Your personalized job feed':'All detected opportunities',saved?(state.member?'Jobs saved to your account.':'Jobs you’ve bookmarked on this device.'):companyBrowsing?'Showing every published job we currently have for this company, across all career levels and fields. Your personal email alerts are unchanged.':globalSearch?'Searching all published listings, including those outside your saved preferences. Email alerts remain personalized.':personalized?'Opportunities detected by your personalized monitoring system, the same source used for email alerts.':'Explore every discovered opening with a valid application link. Sign in and save preferences to personalize your feed and alerts.');
+    const feedMetrics=saved?editorialMetrics([['Saved roles',whole.length],['Companies',new Set(whole.map(companyOf)).size]]):`<div class="feed-metrics" aria-label="Job feed counts"><div class="feed-metric"><strong id="feed-match-count">${list.length}</strong><small>In your feed</small></div><div class="feed-metric"><strong id="feed-catalog-count">${catalog.length}</strong><small>Detected jobs</small></div></div>`;
+    const heading=h.replace('</p></div>','</p>'+feedMetrics+'</div>');
+    return heading+(saved?'<section class="sj-editorial-summary"><div><strong>Your saved jobs</strong><p>Review and revisit the roles you have bookmarked.</p></div><a class="btn primary" href="/account.html?view=saved">Manage saved jobs</a></section>':'')+
       `${personalizedView&&state.watchFeedLoading&&!state.watchFeedSilent?
         '<div class="sj-loading-inline" role="status" aria-live="polite"><span class="sj-loading-ring" aria-hidden="true"></span>Refreshing your matching jobs…</div>':''}`+
       `${personalized&&!saved?`<section class="job-filter-panel" aria-label="Matching transparency"><p class="tiny"><strong>Personalized preference monitoring</strong> runs independently from <strong>All Detected Jobs</strong>. Company-native filters are used where verified, with other sources clearly handled through catalog fallback. The general discovery catalog is never reduced by your preferences.</p><p class="tiny">The general catalog currently contains ${hiddenCount} detected jobs, available separately under Review All Jobs and global Search. Your personalized feed reads the same private monitoring records as your email alerts, including the initial baseline of existing opportunities.</p>${personalizedView&&!state.watchFeedLoaded?`<p class="tiny"><strong>Monitoring status:</strong> ${esc(state.watchFeedError||'Waiting for the source monitor to finish its initial scan.')} Your personalized feed only shows jobs accepted by the configured verification pipeline. While the scan is pending, Review All Jobs remains available without falsely marking unverified postings as matches.</p>`:''}<button class="btn secondary" type="button" data-review-excluded aria-pressed="${state.reviewExcluded}">${state.reviewExcluded?'Return to personalized feed':'Review all detected jobs ('+allPublicJobs().length+')'}</button></section>`:''}
@@ -1498,14 +1500,15 @@ a:hover{color:var(--ink)}
     const pin=c.pinned===true;
     const actions=c.managed&&state.member?.role==='admin'&&!IS_CLOUDFLARE?(
       `<button class="btn secondary" title="${pin?'Unpin':'Pin'} company" data-pin="${esc(c.url)}" data-pinned="${pin?'true':'false'}">${pin?'📌 Pinned':'📍 Pin'}</button>`+
-      `<button class="btn secondary" data-edit-name="${esc(c.url)}">✎ Edit name</button>`+
-      `<button class="btn danger" data-remove="${esc(c.url)}">Remove</button>`
+      `<button class="btn secondary" data-edit-name="${esc(c.url)}">✎ Edit name</button>`
     ):'';
-    return `<div class="company-card">${companyBrand(c)}<div class="company-name"><strong>${pin?'📌 ':''}${esc(c.name)}</strong><small>${esc(c.message || (c.managed?'Added to your watchlist':'Built-in monitored source'))}</small>${c.last?`<small>Last check: ${esc(prettyDate(c.last))}</small>`:''}${expectedCheckLabel(c)}${c.managed&&Number.isInteger(c.public_jobs)?`<small>Detected vacancies: ${c.public_jobs}</small>`:''}</div><div class="company-actions">${state.member?.role==='admin'?`<button class="btn secondary logo-edit-button" data-edit-logo="${esc(logoKey(c))}" aria-label="Change ${esc(c.name)} logo">Edit logo</button>`:''}${badge(label,color)}${url!=='#'?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="btn secondary">Careers ↗</a>`:''}${actions}</div></div>`;
+    return `<div class="company-card" data-company-name="${esc(c.name)}" data-company-status="${esc(status)}">${companyBrand(c)}<div class="company-name"><strong>${pin?'📌 ':''}${esc(c.name)}</strong><small>${esc(c.message || (c.managed?'Added to your watchlist':'Built-in monitored source'))}</small>${c.last?`<small>Last check: ${esc(prettyDate(c.last))}</small>`:''}${expectedCheckLabel(c)}${c.managed&&Number.isInteger(c.public_jobs)?`<small>Detected vacancies: ${c.public_jobs}</small>`:''}</div><div class="company-actions">${state.member?.role==='admin'?`<button class="btn secondary logo-edit-button" data-edit-logo="${esc(logoKey(c))}" aria-label="Change ${esc(c.name)} logo">Edit logo</button>`:''}${badge(label,color)}${url!=='#'?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="btn secondary">Careers ↗</a>`:''}${actions}</div></div>`;
   }
   function companiesPage(){
     const all=monitoredSources(), active=all.filter(c=>c.active).length, pending=all.filter(c=>c.status==='pending').length;
-    return top('YOUR WATCHLIST','My companies','Every company and its actual monitoring status, together.',IS_CLOUDFLARE||state.member?.role!=='admin'?'':`<button class="btn primary" data-action="open-company">+ Add company</button>`)+
+    return editorialHeading('MY COMPANIES','Your company watchlist.','Explore monitored employers and their actual monitoring status.',[['Tracked companies',all.length],['Monitoring',active]])+
+      `<section class="sj-editorial-summary"><div><strong>Your companies</strong><p>Browse monitored employers and visit their official careers pages.</p></div>${IS_CLOUDFLARE||state.member?.role!=='admin'?'':`<button class="btn primary" data-action="open-company">+ Add company</button>`}</section>`+
+      '<section class="job-filter-panel sj-company-filter"><label class="filter-field">Search company<input id="sj-company-search" type="search" placeholder="Company name" autocomplete="off"></label><label class="filter-field">Monitoring status<select id="sj-company-status"><option value="all">All statuses</option><option value="monitoring">Monitoring</option><option value="pending">Waiting for scan</option><option value="partial">Partial coverage</option><option value="error">Scan error</option><option value="needs_adapter">Needs adapter</option><option value="access_blocked">Access blocked</option><option value="configured">Configured</option></select></label></section>' +
       `<section class="stats">${stat('Tracked companies','Built-in + manually added',all.length)}${stat('Monitoring','Last scan succeeded',active)}${stat('Waiting for scan','Not checked yet',pending)}${stat('Custom career pages','Managed from this site',state.companies.length)}</section>`+
       monitoringPanel()+
       `${IS_CLOUDFLARE?'<p class="tiny">Company monitoring status is shown here. Editing is available only to authorized administrators.</p>':''}`+
@@ -1548,14 +1551,23 @@ a:hover{color:var(--ink)}
   function memberEmailAlertsPage(){
     if(!state.member || state.memberLoading)return accountGate('Email alerts');
     const mail=state.memberEmail;
-    return top('YOUR NOTIFICATIONS','Email alerts','Test delivery to your own email and manage your preferences.')+
-      '<section class="panel">'+accountError('/api/secretj-email?action=status')+
-      '<h2>Personal alerts</h2><p>Destination: <strong>'+esc(mail?.recipient||state.member.email)+'</strong></p>'+
-      '<p>'+(!mail?'Email status could not be loaded.':mail.configured?(mail.verified?'Your email is verified.':'Send a test, then enter the verification code below.'):'Email delivery is not configured yet. The site administrator must connect the email service.')+'</p>'+
-      '<button class="btn primary" data-email-test '+(state.emailBusy||!mail?.configured?'disabled':'')+'>'+(state.emailBusy?'Sending…':'Check email — send test')+'</button> '+
-      '<button class="btn secondary" data-email-status>Refresh email status</button> <a class="btn secondary" href="/account.html?view=preferences">Manage email &amp; preferences</a>'+
+    const prefs=state.memberPrefs;
+    const status=!mail?'Unknown':mail.verified?'Verified':'Not verified';
+    const enabled=typeof prefs?.email_alerts==='boolean'?(prefs.email_alerts?'On':'Off'):'Not set';
+    const row=(label,value)=>'<div class="sj-alert-row"><strong>'+esc(label)+'</strong><span>'+esc(value)+'</span></div>';
+    return editorialHeading('EMAIL ALERTS','Your email alerts.','Manage how Job Hunter sends opportunities to your inbox.',[['Email verification',status],['Alerts',enabled]])+
+      '<section class="sj-editorial-summary"><div><strong>Email alerts</strong><p>Receive relevant opportunities based on your saved preferences.</p></div><button class="btn primary" data-email-test '+(state.emailBusy||!mail?.configured?'disabled':'')+'>'+(state.emailBusy?'Sending…':'Check email — send test')+'</button></section>'+
+      '<div class="sj-alert-grid"><section class="panel">'+accountError('/api/secretj-email?action=status')+
+      '<h2>Alert settings</h2><p class="muted">Control what you receive through your account preferences.</p>'+
+      row('Destination',mail?.recipient||state.member.email)+row('Email verification',status)+row('Alert status',enabled)+
+      row('Egypt only',typeof prefs?.egypt_only==='boolean'?(prefs.egypt_only?'On':'Off'):'Not set')+
+      row('Include internships',typeof prefs?.internships==='boolean'?(prefs.internships?'On':'Off'):'Not set')+
+      '<div class="sj-alert-actions"><a class="btn primary" href="/account.html?view=preferences">Manage email &amp; preferences</a></div></section>'+
+      '<section class="panel"><h2>Email delivery status</h2><p class="muted">'+(!mail?'Email status could not be loaded.':mail.configured?(mail.verified?'Your email is verified.':'Send a test, then enter the verification code below.'):'Email delivery is not configured yet. The site administrator must connect the email service.')+'</p>'+
+      row('Latest test request',mail?.last_test_at?prettyDate(mail.last_test_at):'Not available')+
+      '<div class="sj-alert-actions"><button class="btn secondary" data-email-status>Refresh email status</button></div>'+
       (mail?.configured&&!mail.verified?'<form id="workspace-email-verify"><label>Verification code <input name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required></label><button class="btn secondary" type="submit">Verify email</button></form>':'')+
-      '<p class="tiny">One test every 15 minutes. Provider acceptance is confirmed; inbox delivery can take a moment. Check spam too.</p></section>';
+      '<p class="tiny">One test every 15 minutes. Provider acceptance is confirmed; inbox delivery can take a moment. Check spam too.</p></section></div>';
   }
   function alertsPage(){return memberEmailAlertsPage();}
   async function sendEmailTest(){
@@ -1605,6 +1617,7 @@ a:hover{color:var(--ink)}
     document.body?.classList?.toggle('sj-editorial-home',state.page==='home'||state.page==='hunter');
     document.body?.classList?.toggle('jh-workspace',['jobs','saved','companies','alerts'].includes(state.page));
     document.body?.classList?.toggle('jh-feed',state.page==='jobs');
+    document.body?.classList?.toggle('jh-editorial',['jobs','saved','companies','alerts'].includes(state.page));
     const landing=state.page==='home'||state.page==='hunter';
     const html=state.page==='home'?home():state.page==='hunter'?jobHunterIntro():state.page==='radar'?radarHome():state.page==='resume'?resumePage():state.page==='cv'?cvPage():state.page==='profile'?profilePage():state.page==='jobs'?jobsPage():state.page==='saved'?jobsPage(true):state.page==='companies'?companiesPage():alertsPage();
     // Repeated background reads must not recreate unchanged DOM.
@@ -1651,7 +1664,7 @@ a:hover{color:var(--ink)}
       render();
     }catch(e){toast(e.message,true);}
   }
-  async function removeCompany(url){const token=window.prompt('Enter your admin token to remove this company:');if(!token)return;if(!confirm('Remove this company from monitoring?'))return;try{await companyApi('DELETE',{url},token);toast('Company removed from monitoring');await refresh(true);}catch(e){toast(e.message,true);}}
+  function filterCompanyCards(){const q=where(el('#sj-company-search')?.value||''),status=el('#sj-company-status')?.value||'all';document.querySelectorAll('#main-content .company-card').forEach(card=>{card.hidden=!(where(card.dataset.companyName).includes(q)&&(status==='all'||card.dataset.companyStatus===status));});}
   // Lazy logos never affect the scanner or dashboard if a provider icon is missing.
   document.addEventListener('load', event=>{
     const image=event.target;
@@ -1725,6 +1738,8 @@ a:hover{color:var(--ink)}
       if(cvPreviewBlobUrl){URL.revokeObjectURL(cvPreviewBlobUrl);cvPreviewBlobUrl=null;}
     });
     readSaved();
+    document.addEventListener('input',event=>{if(event.target.id==='sj-company-search')filterCompanyCards();});
+    document.addEventListener('change',event=>{if(event.target.id==='sj-company-status')filterCompanyCards();});
     const mobileLayout=window.matchMedia?.('(max-width: 750px)');
     const sidebar=el('#sj-workspace-sidebar'),shell=el('.workspace-shell'),layout=el('.layout'),mobileToggle=el('#sj-mobile-nav-toggle');
     function setMobileMenu(open){
@@ -1919,7 +1934,7 @@ a:hover{color:var(--ink)}
       }
       const pin=event.target.closest('[data-pin]');
       if(pin){editCompany(pin.dataset.pin,{pinned:pin.dataset.pinned!=='true'});return;}
-      const remove=event.target.closest('[data-remove]');if(remove){removeCompany(remove.dataset.remove);return;}
+
     });
     document.addEventListener('input',event=>{
       if(event.target.id!=='job-search')return;
