@@ -1227,7 +1227,7 @@ a:hover{color:var(--ink)}
       badge('AI reviewed','green'):j.qualification_mode==='rules-only'?
       badge('Verified title / experience rules','grey'):'';
     const reviewMessage=evidence&&!evidence.match?`<p class="tiny">Outside preferences: ${esc(evidence.reasons.join(' · '))}${evidence.evidence?.length?' · Evidence: '+esc(evidence.evidence.join(' · ')):''}</p>`:evidence?.status==='experience-unverified'?`<p class="tiny">Needs review: experience level is not fully verified. ${esc((evidence.evidence||[]).join(' · '))}</p>`:'';
-    return `<article class="job-card"><div class="job-card-top">${brandForJob(j)}<div class="job-details"><h3>${esc(titleOf(j))}</h3><p>${esc(companyOf(j))} · ${esc(locationOf(j))}</p></div>${score>=8?`<span class="score">${score} pts</span>`:''}</div><div class="job-info">${badge(j.employment||j.job_type||'Role')}${monitoringBadge}${verificationBadge}${careerBadge}${/egypt|cairo|giza|alexandria/i.test(locationOf(j))?badge('Egypt','green'):badge(locationOf(j),'grey')}${postedDate(j)?badge('Posted: '+prettyDate(postedDate(j))):badge(firstSeenDate(j)?'First seen: '+prettyDate(firstSeenDate(j)):'Posting date unavailable','grey')}</div>${snippet(j)?`<p class="job-desc">${esc(snippet(j))}</p>`:''}${reasons?`<p class="tiny" style="margin-bottom:14px">${esc(reasons)}</p>`:''}${reviewMessage}${reviewBadge}<div class="job-actions"><button class="plain-button ${saved?'saved':''}" data-save="${esc(id)}">${saved?'♥ Saved':'♡ Save job'}</button><div class="right">${url==='#'?badge('No application link','grey'):`<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View job ↗</a>`}</div></div></article>`;
+    return `<article class="job-card"><div class="job-card-top">${brandForJob(j)}<div class="job-details"><h3>${esc(titleOf(j))}</h3><p>${esc(companyOf(j))} · ${esc(locationOf(j))}</p></div>${score>=8?`<span class="score">${score} pts</span>`:''}</div><div class="job-info">${badge(j.employment||j.job_type||'Role')}${monitoringBadge}${verificationBadge}${careerBadge}${/egypt|cairo|giza|alexandria/i.test(locationOf(j))?badge('Egypt','green'):badge(locationOf(j),'grey')}${postedDate(j)?badge('Posted: '+prettyDate(postedDate(j))):badge(firstSeenDate(j)?'First seen: '+prettyDate(firstSeenDate(j)):'Posting date unavailable','grey')}</div>${snippet(j)?`<p class="job-desc">${esc(snippet(j))}</p>`:''}${reasons?`<p class="tiny" style="margin-bottom:14px">${esc(reasons)}</p>`:''}${reviewMessage}${reviewBadge}<div class="job-actions"><button class="plain-button ${saved?'saved':''}" data-save="${esc(id)}">${saved?(state.page==='saved'?'Unsave':'♥ Saved'):'♡ Save job'}</button><div class="right">${url==='#'?badge('No application link','grey'):`<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View job ↗</a>`}</div></div></article>`;
   }
   function jobDateForFilter(j){
     return state.dateBasis==='firstseen'?firstSeenDate(j):postedDate(j);
@@ -1365,7 +1365,7 @@ a:hover{color:var(--ink)}
     const catalogCount=el('#feed-catalog-count');
     if(catalogCount)catalogCount.textContent=String(allPublicJobs().length);
     const nav=el('#nav-job-count');
-    if(nav)nav.textContent=String(filtered.length);
+    if(nav&&state.page==='jobs')nav.textContent=String(filtered.length);
   }
   // Brand-domain allowlist: ATS hosting domains (Lever/Workable/Ashby) are not company logos.
   // Uses company website favicons; unknown domains retain a clean monogram.
@@ -1637,6 +1637,7 @@ a:hover{color:var(--ink)}
       if(landing)landingViews.set(state.page,{html,nodes:null});
     }
     renderedPage=state.page;lastRenderedHtml=html;
+    if(state.page==='companies'&&el('#sj-company-search')&&el('#sj-company-status')){el('#sj-company-search').value=companySearch;el('#sj-company-status').value=companyStatus;filterCompanyCards();}
     if(state.page==='home'||state.page==='hunter')window.SecretJLanding?.syncAvatar?.();
     if(state.page==='home'||state.page==='hunter')syncLandingTheme();
   }
@@ -1664,7 +1665,8 @@ a:hover{color:var(--ink)}
       render();
     }catch(e){toast(e.message,true);}
   }
-  function filterCompanyCards(){const q=where(el('#sj-company-search')?.value||''),status=el('#sj-company-status')?.value||'all';document.querySelectorAll('#main-content .company-card').forEach(card=>{card.hidden=!(where(card.dataset.companyName).includes(q)&&(status==='all'||card.dataset.companyStatus===status));});}
+  let companySearch='',companyStatus='all';
+  function filterCompanyCards(){const q=where(companySearch),status=companyStatus;document.querySelectorAll('#main-content .company-card').forEach(card=>{card.hidden=!(where(card.dataset.companyName).includes(q)&&(status==='all'||card.dataset.companyStatus===status));});}
   // Lazy logos never affect the scanner or dashboard if a provider icon is missing.
   document.addEventListener('load', event=>{
     const image=event.target;
@@ -1738,8 +1740,8 @@ a:hover{color:var(--ink)}
       if(cvPreviewBlobUrl){URL.revokeObjectURL(cvPreviewBlobUrl);cvPreviewBlobUrl=null;}
     });
     readSaved();
-    document.addEventListener('input',event=>{if(event.target.id==='sj-company-search')filterCompanyCards();});
-    document.addEventListener('change',event=>{if(event.target.id==='sj-company-status')filterCompanyCards();});
+    document.addEventListener('input',event=>{if(event.target.id==='sj-company-search'){companySearch=event.target.value;filterCompanyCards();}});
+    document.addEventListener('change',event=>{if(event.target.id==='sj-company-status'){companyStatus=event.target.value;filterCompanyCards();}});
     const mobileLayout=window.matchMedia?.('(max-width: 750px)');
     const sidebar=el('#sj-workspace-sidebar'),shell=el('.workspace-shell'),layout=el('.layout'),mobileToggle=el('#sj-mobile-nav-toggle');
     function setMobileMenu(open){
