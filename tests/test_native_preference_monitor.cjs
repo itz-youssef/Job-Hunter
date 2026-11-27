@@ -5,6 +5,17 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const core=require('../lib/secretj/core');
 const monitor=require('../lib/secretj/native-preference-monitor');
+function decodeWatchRows(encoded){
+ const rows=JSON.parse(encoded);
+ return rows.map((row,index)=>{
+  if(!Object.hasOwn(row,'jobs_ref'))return row;
+  assert.ok(Number.isInteger(row.jobs_ref)&&row.jobs_ref>=0&&row.jobs_ref<index);
+  const {jobs_ref,...rest}=row;
+  assert.ok(Array.isArray(rows[jobs_ref].jobs));
+  assert.ok(!Object.hasOwn(rows[jobs_ref],'jobs_ref'));
+  return {...rest,jobs:rows[jobs_ref].jobs};
+ });
+}
 const ID='e07bb2d6-a213-45d0-ab23-e5051967a616';
 const other=(id,title,description='')=>({id,company:'Example',title,description,
   location:'Cairo, Egypt',url:'https://example.com/jobs/'+id});
@@ -209,7 +220,7 @@ test('periodic matching batches distinct users in bounded writes without changin
  const users=Array.from({length:100},(_,i)=>({id:'11111111-1111-4111-8111-'+String(i).padStart(12,'0'),egypt_only:false,internships:false,career_levels:i%2?['senior','manager']:['junior'],role_families:i%2?['hr']:['ai_ml'],max_experience_years:null,preferences_updated_at:'2026-11-26T00:00:00Z'}));
  core.setQueryForTests(async(sql,args)=>{
   assert.match(sql,/WITH input AS/);assert.match(sql,/FOR SHARE OF p,u/);assert.match(sql,/WHEN existing.status='sent' THEN 'sent'/);
-  const rows=JSON.parse(args[0]);calls.push(rows);return rows.map(r=>({user_id:r.user_id}));
+  const rows=decodeWatchRows(args[0]);calls.push(rows);return rows.map(r=>({user_id:r.user_id}));
  });
  try{
   const result=await monitor.reservePeriodic(users,jobs);assert.deepEqual(result,{processed:100,failed:0});
@@ -237,14 +248,15 @@ test('batch SQL failure leaves failed users for the next scheduled scan and cont
 
 test('exact preference reuse preserves per-user payload and avoids redundant assessment at scale',async()=>{
  const prefs=require('../dist/assets/secretj-job-preferences');
- const original=prefs.assess;let evaluations=0,calls=0,rowsSeen=0;
+ const original=prefs.assess;let evaluations=0,calls=0,rowsSeen=0,wireBytes=0,expandedBytes=0;
  const jobs=[other('ai','Junior AI Engineer'),other('hr','HR Manager')];
- const users=Array.from({length:1000},(_,i)=>({id:'11111111-1111-4111-8111-'+String(i).padStart(12,'0'),egypt_only:false,internships:false,career_levels:i%2?['senior','manager']:['junior'],role_families:i%2?['hr']:['ai_ml'],max_experience_years:null,preferences_updated_at:'2026-11-26T00:00:00Z'}));
+ const users=Array.from({length:5000},(_,i)=>({id:'11111111-1111-4111-8111-'+String(i).padStart(12,'0'),egypt_only:false,internships:false,career_levels:i%2?['senior','manager']:['junior'],role_families:i%2?['hr']:['ai_ml'],max_experience_years:null,preferences_updated_at:'2026-11-26T00:00:00Z'}));
  const expected=await Promise.all(users.slice(0,2).map(async u=>(await monitor.qualifyJobs(monitor.matching(jobs,u),u)).accepted));
  prefs.assess=(...args)=>{evaluations++;return original(...args);};
  core.setQueryForTests(async(sql,args)=>{
   calls++;
-  const rows=JSON.parse(args[0]);rowsSeen+=rows.length;
+  const rows=decodeWatchRows(args[0]);rowsSeen+=rows.length;
+  wireBytes+=Buffer.byteLength(args[0]);expandedBytes+=Buffer.byteLength(JSON.stringify(rows));
   for(const row of rows){
    const i=Number(row.user_id.slice(-12)),u=users[i];
    assert.equal(row.signature,monitor.signature(u));
@@ -255,8 +267,10 @@ test('exact preference reuse preserves per-user payload and avoids redundant ass
   return rows.map(r=>({user_id:r.user_id}));
  });
  try{
-  assert.deepEqual(await monitor.reservePeriodic(users,jobs),{processed:1000,failed:0});
-  assert.equal(rowsSeen,1000);assert.equal(calls,25);assert.equal(evaluations,4);
+  assert.deepEqual(await monitor.reservePeriodic(users,jobs),{processed:5000,failed:0});
+  assert.equal(rowsSeen,5000);assert.equal(calls,125);assert.equal(evaluations,4);
+  assert.ok(wireBytes<expandedBytes*0.7,`wire=${wireBytes}, expanded=${expandedBytes}`);
+  console.log(`Synthetic 5000-account batch transport: ${wireBytes}/${expandedBytes} bytes`);
   // New invocation must re-evaluate a changed catalog, never stale-cache results.
   jobs[0]={...jobs[0],title:'Senior AI Engineer'};
   core.setQueryForTests(async(sql,args)=>JSON.parse(args[0]).map(r=>({user_id:r.user_id})));
