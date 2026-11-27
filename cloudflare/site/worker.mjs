@@ -85,7 +85,8 @@ export async function handleRequest(request,env,ctx){
   if(pathname==='/api/secretj-native-status')
     return runNodeHandler(nativeStatusHandler.createHandler(env),request);
   const handler=handlers.get(pathname);
-  if(handler)return runNodeHandler(handler,request,env,ctx);
+  if(pathname==='/api/secretj-botfolio'&&handler)return runNodeHandler(handler,request,env,ctx);
+  if(handler)return runNodeHandler(handler,request,env);
 
   if(url.pathname.startsWith('/api/')){
     // Do not silently proxy old administrative routes to Vercel.
