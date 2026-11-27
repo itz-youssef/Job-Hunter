@@ -154,3 +154,31 @@ test('login UI includes separate OTP form, resend and return actions',()=>{
  assert.match(js,/authUrl\('resend-login'\)/);
  assert.match(js,/loginChallenge=null/);
 });
+
+test('password sign-in requires OTP even if legacy flag is unset or false',async()=>{
+ for(const flag of [undefined,'false']){
+  await fixture(async f=>{
+   if(flag===undefined)delete process.env.SECRETJ_LOGIN_OTP_ENABLED;
+   else process.env.SECRETJ_LOGIN_OTP_ENABLED=flag;
+   const first=await response(req('login',{email:'user@example.org',password}));
+   assert.equal(first.status,200);
+   assert.equal(first.body.requires_otp,true);
+   assert.equal(first.body.user,undefined);
+   assert.equal(first.headers['Set-Cookie'],undefined);
+   assert.equal(f.sessions(),0);
+   assert.equal(f.sent().length,1);
+  });
+ }
+});
+test('missing mail configuration never permits a password-only session',async()=>{
+ await fixture(async f=>{
+  delete process.env.SECRETJ_LOGIN_OTP_ENABLED;
+  delete process.env.RESEND_API_KEY;
+  const result=await response(req('login',{email:'user@example.org',password}));
+  assert.equal(result.status,503);
+  assert.equal(result.headers['Set-Cookie'],undefined);
+  assert.equal(f.sessions(),0);
+  assert.equal(f.record(),null);
+  assert.equal(f.sent().length,0);
+ });
+});
