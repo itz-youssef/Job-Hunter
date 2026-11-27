@@ -4,8 +4,8 @@ const idOf=v=>{if(typeof v!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0
 const fields='id,name,headline,published,created_at,updated_at';
 const valid=(v,n,label)=>core.validateText(v||'',n,label);
 const publicMeta=row=>({id:row.id,name:row.name,headline:row.headline});
-async function getPublic(id,withKnowledge=false){
- const rows=await core.query('SELECT '+(withKnowledge?'b.id,b.name,b.headline,b.knowledge,b.embedding_model,b.updated_at,b.user_id,u.role AS owner_role':'b.id,b.name,b.headline')+' FROM public.sj_botfolio_bots b JOIN public.sj_users u ON u.id=b.user_id WHERE b.id=$1 AND b.published=true AND u.is_active=true LIMIT 1',[id]);
+async function getPublic(id,withChat=false,omitKnowledge=false){
+ const rows=await core.query('SELECT '+(withChat?'b.id,b.name,b.headline,'+(omitKnowledge?'':'b.knowledge,')+'b.embedding_model,b.updated_at,b.user_id,u.role AS owner_role':'b.id,b.name,b.headline')+' FROM public.sj_botfolio_bots b JOIN public.sj_users u ON u.id=b.user_id WHERE b.id=$1 AND b.published=true AND u.is_active=true LIMIT 1',[id]);
  if(!rows.length)throw core.fail(404,'This portfolio is unavailable.');
  return rows[0];
 }
@@ -16,7 +16,12 @@ module.exports=async function(req,res){
   const action=req.query?.action||'list',method=req.method;
   if(action==='public'&&method==='GET')return core.reply(res,200,{ok:true,bot:publicMeta(await getPublic(idOf(req.query?.id)))});
   if(action==='chat'&&method==='POST'){
-   const body=core.parseBody(req),bot=await getPublic(idOf(body.id),true);
+   const body=core.parseBody(req),id=idOf(body.id);
+   // An exact local response never needs the CV vectors. Retain the same
+   // published/active lookup, embedding-version checks and quota debits.
+   // Invalid questions retain the original lookup-before-validation order.
+   const direct=typeof body.message==='string'&&body.message.length<=900?B.localResponse(body.message.trim()):null;
+   const bot=await getPublic(id,true,direct!==null);
    const message=valid(body.message,900,'Question');if(!message)throw core.fail(400,'Enter a question.');
    if(bot.embedding_model!==B.EMBED_MODEL)throw core.fail(503,'This portfolio needs to be re-indexed.');
    const ip=String(req.headers?.['x-forwarded-for']||'unknown').slice(0,100);
@@ -27,7 +32,7 @@ module.exports=async function(req,res){
    if(!adminOwner)await B.consume('ip:'+core.hash(ip),1,B.MAX_IP_CHATS);
    await B.consumeOwnerChat(bot.user_id,adminOwned);
    phase='answer';
-   const answer=await B.answer(req.env,bot,message,body.history);
+   const answer=await B.answer(req.env,bot,message,body.history,direct);
    return core.reply(res,200,{ok:true,answer});
   }
   phase='authentication';
