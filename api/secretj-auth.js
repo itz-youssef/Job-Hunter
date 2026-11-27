@@ -7,6 +7,7 @@
 const {randomBytes,randomInt,timingSafeEqual}=require('node:crypto');
 const core=require('../lib/secretj/core');
 const emailService=require('./secretj-email');
+const {codeEmail}=require('../lib/secretj/email-templates');
 const {removeMember}=require('../lib/secretj/account-deletion');
 const CODE_LIFETIME_MINUTES=10;
 const challengePattern=/^[A-Za-z0-9_-]{42,44}$/;
@@ -16,9 +17,8 @@ const codeDigest=(token,code,salt)=>core.hash('secretj-login-otp:'+token+':'+cod
 const signupTokenHash=token=>core.hash('secretj-signup-challenge:'+token);
 const signupCodeDigest=(token,code,salt)=>core.hash('secretj-signup-otp:'+token+':'+code+':'+salt);
 async function dispatchSignupCode(to,code){
-  await emailService.send(to,'Secret J: Verify your new account',
-    'Your Secret J account verification code is: '+code+
-    '\\n\\nThis code expires in 10 minutes. Never share it. If you did not create this account, ignore this message.');
+  const message=codeEmail('signup',code,CODE_LIFETIME_MINUTES);
+  await emailService.send(to,message.subject,message.text,process.env,message);
 }
 function equalHash(a,b){
   return /^[a-f0-9]{64}$/.test(String(a||''))&&/^[a-f0-9]{64}$/.test(String(b||''))&&
@@ -29,10 +29,8 @@ function requireEmailDelivery(){
     throw core.fail(503,'Email sign-in verification is not configured. Please contact support.');
 }
 async function dispatchCode(to,code){
-  await emailService.send(to,'Secret J: Your sign-in verification code',
-    'Your Secret J sign-in code is: '+code+
-    '\n\nThis code expires in '+CODE_LIFETIME_MINUTES+
-    ' minutes. Never share it with anyone. If you did not try to sign in, ignore this message.');
+  const message=codeEmail('login',code,CODE_LIFETIME_MINUTES);
+  await emailService.send(to,message.subject,message.text,process.env,message);
 }
 module.exports=async function handler(req,res){
   try{
