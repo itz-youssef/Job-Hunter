@@ -283,7 +283,8 @@ html body .sj-admin-root #sj-admin-research .sj-quota-card :is(.sj-quota-title,.
 <script src="/assets/secretj-account.js?v=nav-cache-20261125" defer></script>
 <script src="/assets/secretj-welcome-tour.js?v=welcome-1" defer></script>
 <link rel="stylesheet" href="/assets/responsive.css?v=20261113-mobile-1">
-<link rel="stylesheet" href="/assets/secretj-loading.css?v=global-startup-20261125">
+<link rel="stylesheet" href="/assets/secretj-loading.css?v=operation-progress-20261127">
+<script src="/assets/secretj-progress.js?v=20261127"></script>
 
 <style>
 /* LinkedIn branding and destructive account management, in both themes. */
@@ -316,7 +317,7 @@ html[data-theme="dark"] body .sj-delete-account:hover{
 (()=>{
   const root=document.documentElement;
   const finish=()=>{clearTimeout(deadline);root.removeAttribute('data-sj-startup');};
-  const deadline=setTimeout(finish,4000);
+  const deadline=setTimeout(finish,2000);
   window.SecretJStartup={finish};
   try{
     const theme=localStorage.getItem('jh-theme');

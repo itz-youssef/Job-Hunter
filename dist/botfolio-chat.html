@@ -10,7 +10,9 @@
  <title>Secret J — AI Portfolio | Botfolio</title>
  <link rel="stylesheet" href="/assets/botfolio.css">
  <link rel="stylesheet" href="/assets/botfolio-public-chat.css?v=20261126">
- <script src="/assets/botfolio-chat.js?v=account-limits-20261126" defer></script>
+ <link rel="stylesheet" href="/assets/secretj-loading.css?v=operation-progress-20261127">
+<script src="/assets/secretj-progress.js?v=20261127"></script>
+<script src="/assets/botfolio-chat.js?v=operation-progress-20261127" defer></script>
 </head>
 <body class="chat-page bf-public-chat">
  <div class="bf-chat-art" aria-hidden="true"><svg viewBox="0 0 1440 850" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor"><path d="M-90 610 C 150 710 225 410 440 475 S 790 745 1090 360 S 1390 125 1590 -45"/><path d="M-90 628 C 150 728 225 428 440 493 S 790 763 1090 378 S 1390 143 1590 -27"/><path d="M-90 646 C 150 746 225 446 440 511 S 790 781 1090 396 S 1390 161 1590 -9"/><path d="M-90 664 C 150 764 225 464 440 529 S 790 799 1090 414 S 1390 179 1590 9"/><path d="M-90 682 C 150 782 225 482 440 547 S 790 817 1090 432 S 1390 197 1590 27"/><path d="M-90 700 C 150 800 225 500 440 565 S 790 835 1090 450 S 1390 215 1590 45"/><path d="M-90 718 C 150 818 225 518 440 583 S 790 853 1090 468 S 1390 233 1590 63"/><path d="M-90 736 C 150 836 225 536 440 601 S 790 871 1090 486 S 1390 251 1590 81"/><path d="M-90 754 C 150 854 225 554 440 619 S 790 889 1090 504 S 1390 269 1590 99"/><path d="M-90 772 C 150 872 225 572 440 637 S 790 907 1090 522 S 1390 287 1590 117"/><path d="M-90 790 C 150 890 225 590 440 655 S 790 925 1090 540 S 1390 305 1590 135"/><path d="M-90 808 C 150 908 225 608 440 673 S 790 943 1090 558 S 1390 323 1590 153"/><circle cx="120" cy="175" r="52"/><circle cx="120" cy="175" r="65"/><path d="M1290 610v50m-25-25h50"/></svg></div>
@@ -18,7 +20,7 @@
   <header class="chat-head">
    <div class="bf-chat-profile">
     <p class="bf-chat-brand">SECRET J <span>/</span> BOTFOLIO</p>
-    <div class="bf-chat-identity"><div class="mark"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7" width="16" height="13" rx="4"/><path d="M12 7V3M2 12v4M22 12v4M9 16h6"/><circle cx="9" cy="12" r=".7"/><circle cx="15" cy="12" r=".7"/></svg></div><div class="bf-chat-name"><h1 id="name">Loading portfolio…</h1><p id="headline"></p><span class="bf-chat-role">AI Portfolio Assistant</span></div></div>
+    <div class="bf-chat-identity"><div class="mark"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7" width="16" height="13" rx="4"/><path d="M12 7V3M2 12v4M22 12v4M9 16h6"/><circle cx="9" cy="12" r=".7"/><circle cx="15" cy="12" r=".7"/></svg></div><div class="bf-chat-name"><h1 id="name" aria-busy="true"><span class="sj-loading-ring" aria-hidden="true" style="width:16px;height:16px;border-width:2px;vertical-align:middle;margin-inline-end:7px"></span>Loading portfolio…</h1><p id="headline"></p><span class="bf-chat-role">AI Portfolio Assistant</span></div></div>
    </div>
    <button id="theme" aria-label="Switch to dark mode" aria-pressed="false" type="button"><span class="bf-theme-moon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 15a8.5 8.5 0 0 1-11-11A8.5 8.5 0 1 0 20 15Z"/></svg></span><span class="bf-theme-sun"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4 19 5"/></svg></span></button>
   </header>

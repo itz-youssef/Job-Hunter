@@ -5,7 +5,13 @@
 (function(root,factory){
   const api=factory();
   if(typeof module==='object' && module.exports)module.exports=api;
-  if(root)root.SecretJCVParser=api;
+  if(root){
+    const tracked=(fn,label)=>function(...args){
+      const progress=root.SecretJProgress;
+      return progress?progress.track(()=>fn.apply(this,args),label):fn.apply(this,args);
+    };
+    root.SecretJCVParser={...api,extract:tracked(api.extract,'Reading CV…'),extractText:tracked(api.extractText,'Reading CV…')};
+  }
 })(typeof window!=='undefined'?window:null,function(){
 'use strict';
 const FIELDS=['display_name','headline','location','summary','skills',

@@ -58,12 +58,13 @@ try{const theme=localStorage.getItem('jh-theme');document.documentElement.datase
 </script>
 <link rel="stylesheet" href="/assets/secretj-global-theme.css?v=20261113-uniform-2">
 <link rel="stylesheet" href="/assets/responsive.css?v=20261113-mobile-1">
-<link rel="stylesheet" href="/assets/secretj-loading.css?v=global-startup-20261125">
+<link rel="stylesheet" href="/assets/secretj-loading.css?v=operation-progress-20261127">
+<script src="/assets/secretj-progress.js?v=20261127"></script>
 <script id="sj-startup-script">
 (()=>{
   const root=document.documentElement;
   const finish=()=>{clearTimeout(deadline);root.removeAttribute('data-sj-startup');};
-  const deadline=setTimeout(finish,4000);
+  const deadline=setTimeout(finish,2000);
   window.SecretJStartup={finish};
   try{
     const theme=localStorage.getItem('jh-theme');
