@@ -6,6 +6,8 @@
 const {randomBytes,randomInt,timingSafeEqual}=require('node:crypto');
 const core=require('../lib/secretj/core');
 const templates=require('../lib/secretj/email-templates');
+// Rasterized from the existing Secret J emblem; embedded, not remotely fetched.
+const logo={filename:'secret-j.png',content_id:'secretj-logo',content_type:'image/png',content:'iVBORw0KGgoAAAANSUhEUgAAAEQAAABEBAMAAADKPY6BAAAAGFBMVEX////r6+vGxsajo6OQkJCCgoItLS0SEhI4m86PAAAB1UlEQVR42u2Wv2/TQBTHP/dsWHuFZmFyUnWAKQgBayr6B6RIZUei3bvwx8DSpVOlljkIwQ6imWCI1HpuSnNslQi+Dk6J4z7fSZ15iyX7c1+/d+/HnQHAdNrctIvv5UeA5I1Fs+IgB5IAgXn04xISMNsNBJjsGARajQSsdEEwmwTsBQh3bAhJM4THBG0doRtGVpDEhhGxkhCxnizHECs2htxrQrybx60jo0PzdH2WhFRZbez0EP+1nenI2R6Yt58Af7Q7C1t1ZAjwhwAyLcE8gBTlI4S4xRSoGxpHZi+zAJIsiOkqtrrxKsImwGrIF1oZpP0gYnpwPxgROJhEkBx8HCnCiHcVJNVVnlQbUo9oI5Yj4mn8j9wWMbdXcTEVP/qi9WqlGPxgeHfe6qIgxUF+Xaq5/qPifQ5TB1A43V3jAH8EMAJoK0gGMD6G8w9A/VRIHdDNAT/4uOT4t6Ki4oDOwjiuVbyXmy87deQUMP1ayy8iHmCtOjhqI38iUwB5PXeufpoOpRzArWt1s2Xrk1z4DGCevSw1XtUi5i8p5+XqtZ2LyW/ldvELA897gXry75zAt1DJjR0J+PHDZpH9SwQY5Y3EwM1m+c8Hyw3EcF5hq+pF6cQBXAGcJXuPKUi+HQAAAABJRU5ErkJggg=='};
 
 function configured(config=process.env){
   return Boolean(config.RESEND_API_KEY&&
@@ -22,7 +24,7 @@ async function send(to,subject,text,config=process.env,template=null){
     body:JSON.stringify({
       from:config.SECRETJ_EMAIL_FROM,
       ...(template?.sender?{from:template.sender+' <'+config.SECRETJ_EMAIL_FROM+'>'}:{}),
-      to:[to],subject,text,...(template?.html?{html:template.html}:{})
+      to:[to],subject,text,...(template?.html?{html:template.html,attachments:[logo]}:{})
     }),
     signal:AbortSignal.timeout(15000)
   });
