@@ -1,95 +1,198 @@
 {
   "version": 1,
   "career_rules": [],
-  "family_rules": [],
+  "family_rules": [
+    {
+      "key": "056a97fc5e2a3d8feca579b555917a98acb86b1ce1e961e88944d16ae8df8612",
+      "kind": "family",
+      "company": "VOIS",
+      "title": "Senior Service Management Specialist German Speaker (VOIS)",
+      "job_fingerprint": "27437ff56600002545087192294bf3178a02d2fc33faee0b0ad21bb748975f3f",
+      "family": "it_support",
+      "evidence": {
+        "url": "https://jobs.vodafone.com/careers/job/563018698388698",
+        "quote": "#VOIS #BeUnrivalled #CreateTheFuture ## About this Role We are seeking a Software Asset Management Analyst to manage user requests relating to software access and PC rights.",
+        "corroboration": "You will oversee the triage of customer requests, support software approval and packaging processes, manage application archives and approved PC rights, maintain process documentation, and report on monthly performance, trends and changes.",
+        "checked_at": "2026-11-27"
+      },
+      "models": [
+        "nvidia/nemotron-3-ultra-550b-a55b:free"
+      ],
+      "status": "candidate"
+    },
+    {
+      "key": "9adb89b28475e5935cbec6b61e049a740a4365b7f97b3faaa4ead91f4798fb60",
+      "kind": "family",
+      "company": "Bosta",
+      "title": "Last Mile - Senior Hub Coordinator ( Shorouk )",
+      "job_fingerprint": "4b60415a8285873109dfacf44ffa6ce3fc8a432fb7a0eeb2e2c5c1060c488179",
+      "family": "operations",
+      "evidence": {
+        "url": "https://jobs.lever.co/Bosta/e2b2907d-77a1-4e09-9ae1-39f08d94478d",
+        "quote": "Department: Operations",
+        "corroboration": "Official department: Operations",
+        "checked_at": "2026-11-27"
+      },
+      "models": [
+        "nvidia/nemotron-3-ultra-550b-a55b:free"
+      ],
+      "status": "candidate"
+    },
+    {
+      "key": "be2c9b18b55d6f57f0636b394812e49f30ef1cab74b57f6ca25c3c0bbf5d25bf",
+      "kind": "family",
+      "company": "Bosta",
+      "title": "Last Mile - Senior Hub Coordinator ( Qalyub)",
+      "job_fingerprint": "5d9154200bd19810608ce0cb3f8d2250da7fa4d505152cf0cb8fe64ad5740006",
+      "family": "operations",
+      "evidence": {
+        "url": "https://jobs.lever.co/Bosta/9e5ee64a-e171-4edb-9da2-c3247310e610",
+        "quote": "Department: Operations",
+        "corroboration": "Official department: Operations",
+        "checked_at": "2026-11-27"
+      },
+      "models": [
+        "nvidia/nemotron-3-ultra-550b-a55b:free"
+      ],
+      "status": "candidate"
+    },
+    {
+      "key": "4a53674c279dc597ea61f73e95d2fd26d003378f1acda5e055093ef7262f4dfc",
+      "kind": "family",
+      "company": "Klivvr",
+      "title": "Back-office Credit Activation Officer",
+      "job_fingerprint": "45ce3c578921bdd0329dd4daba09d596a42bc622268057198b7229aa9a835858",
+      "family": "operations",
+      "evidence": {
+        "url": "https://jobs.lever.co/klivvr/e23452ed-dd1c-435d-a1ee-3ac51f359760",
+        "quote": "Department: Operations",
+        "corroboration": "Official department: Operations",
+        "checked_at": "2026-11-27"
+      },
+      "models": [
+        "nvidia/nemotron-3-ultra-550b-a55b:free"
+      ],
+      "status": "candidate"
+    },
+    {
+      "key": "1433e258b8fb1b7f9f47cc236c6a29a3b01bb5c3decc636ee5b299010053ef4a",
+      "kind": "family",
+      "company": "Klivvr",
+      "title": "Credit Documents & KYC Archiving Officer",
+      "job_fingerprint": "3c62488c27559a966a15251b5816233a8e89691732669ce8d4f73c8aa6347f23",
+      "family": "operations",
+      "evidence": {
+        "url": "https://jobs.lever.co/klivvr/f1c65c65-725b-432c-8c33-09b4bc6559c1",
+        "quote": "Department: Operations",
+        "corroboration": "Official department: Operations",
+        "checked_at": "2026-11-27"
+      },
+      "models": [
+        "nvidia/nemotron-3-ultra-550b-a55b:free"
+      ],
+      "status": "candidate"
+    },
+    {
+      "key": "55e1aaa7c634915b17533216a6d90d13b33a37b9680ff0c45819b3b0342c2201",
+      "kind": "family",
+      "company": "Emergence",
+      "title": "VP, Finance, Emergence Automotive",
+      "job_fingerprint": "8106c54acd755b64bf0274fd50bd55e8eaa173b3956f0b4a69c32e7734b2e8b0",
+      "family": "finance",
+      "evidence": {
+        "url": "https://jobs.ashbyhq.com/emergence/5541bbe5-4b8c-4263-8c32-e9ab13d3c1e5",
+        "quote": "Own the finance cadence across the automotive portfolio: forecasting, performance management, KPI reporting, operating reviews, and decision support for CEOs.",
+        "corroboration": "Build operating models that go well beyond a budget, covering scenario planning, retention and cohort economics, cash and working capital, unit econ",
+        "checked_at": "2026-11-27"
+      },
+      "models": [
+        "nvidia/nemotron-3-ultra-550b-a55b:free"
+      ],
+      "status": "candidate"
+    },
+    {
+      "key": "128fb6dd469faa97290b26cf40596ff630f811039a08eaa6da68501f145933fb",
+      "kind": "family",
+      "company": "Emergence",
+      "title": "Investment Associate",
+      "job_fingerprint": "cd7317132118cc3e2e22cc8e282e7f9234eeb8fb9cba23b90aefb38eb73a5468",
+      "family": "finance",
+      "evidence": {
+        "url": "https://jobs.ashbyhq.com/emergence/dd1b8501-7cf1-4963-87bc-43ad94071434",
+        "quote": "Lead financial and operational due diligence on acquisition targets, owning the workstream from kickoff to IC.",
+        "corroboration": "Build comprehensive financial models covering unit economics, SaaS KPIs, valuation, and operating leverage.",
+        "checked_at": "2026-11-27"
+      },
+      "models": [
+        "nvidia/nemotron-3-ultra-550b-a55b:free"
+      ],
+      "status": "candidate"
+    }
+  ],
   "usage": {
     "month": "2026-11",
-    "search": 26,
-    "day": "2026-11-26",
-    "model": 20,
+    "search": 36,
+    "day": "2026-11-27",
+    "model": 18,
     "search_day": 10,
     "model_usage": {
       "gemini-4-hydrogen": {
-        "day": "2026-11-26",
-        "provider_day": "2026-11-26",
-        "day_count": 1,
-        "provider_count": 1,
-        "last_at": 1795682779830
-      },
-      "nvidia/nemotron-3-ultra-550b-a55b:free": {
-        "day": "2026-11-26",
-        "provider_day": "2026-11-26",
-        "day_count": 8,
-        "provider_count": 8,
-        "last_at": 1795687417361
-      },
-      "gemini-3.5-flash-lite": {
-        "day": "2026-11-26",
-        "provider_day": "2026-11-26",
-        "day_count": 5,
-        "provider_count": 5,
-        "last_at": 1795682887005
-      },
-      "gemini-3.8-flash": {
-        "day": "2026-11-26",
-        "provider_day": "2026-11-26",
-        "day_count": 1,
-        "provider_count": 1,
-        "last_at": 1795682782283
-      },
-      "gemini-3.6-flash": {
-        "day": "2026-11-26",
-        "provider_day": "2026-11-26",
-        "day_count": 8,
-        "provider_count": 8,
-        "last_at": 1795683039023
-      },
-      "openai/gpt-oss-120b": {
-        "day": "2026-11-26",
-        "provider_day": "2026-11-26",
+        "day": "2026-11-27",
+        "provider_day": "2026-11-27",
         "day_count": 2,
         "provider_count": 2,
+        "last_at": 1795767384187
+      },
+      "nvidia/nemotron-3-ultra-550b-a55b:free": {
+        "day": "2026-11-27",
+        "provider_day": "2026-11-27",
+        "day_count": 9,
+        "provider_count": 9,
+        "last_at": 1795767478586
+      },
+      "gemini-3.5-flash-lite": {
+        "day": "2026-11-27",
+        "provider_day": "2026-11-27",
+        "day_count": 16,
+        "provider_count": 16,
+        "last_at": 1795767477801
+      },
+      "gemini-3.8-flash": {
+        "day": "2026-11-27",
+        "provider_day": "2026-11-27",
+        "day_count": 1,
+        "provider_count": 1,
+        "last_at": 1795767395092
+      },
+      "gemini-3.6-flash": {
+        "day": "2026-11-27",
+        "provider_day": "2026-11-27",
+        "day_count": 6,
+        "provider_count": 6,
+        "last_at": 1795767476306
+      },
+      "openai/gpt-oss-120b": {
+        "day": "2026-11-27",
+        "provider_day": "2026-11-27",
+        "day_count": 0,
+        "provider_count": 0,
         "last_at": 1795683104839
       },
       "@cf/zai-org/glm-4.7-flash": {
-        "day": "2026-11-26",
-        "provider_day": "2026-11-26",
+        "day": "2026-11-27",
+        "provider_day": "2026-11-27",
         "day_count": 0,
         "provider_count": 0,
         "last_at": 0
       }
     },
-    "preprocess": 5,
+    "preprocess": 16,
     "legacy_model_requests": {
       "day": "2026-11-25",
       "provider_day": "2026-11-25",
       "count": 14
     },
     "groq_token_reservations": [
-      {
-        "at": 1795620285757,
-        "tokens": 1207
-      },
-      {
-        "at": 1795620350805,
-        "tokens": 975
-      },
-      {
-        "at": 1795620415811,
-        "tokens": 1088
-      },
-      {
-        "at": 1795620480830,
-        "tokens": 1265
-      },
-      {
-        "at": 1795620545838,
-        "tokens": 833
-      },
-      {
-        "at": 1795620610871,
-        "tokens": 714
-      },
       {
         "at": 1795683039835,
         "tokens": 707
@@ -104,8 +207,8 @@
     "groq_provider_tpm_reset_at": "2026-11-26T08:51:52.953Z",
     "groq_provider_tpm_observed_at": "2026-11-26T08:51:46.106Z"
   },
-  "cursor": 0,
-  "last_attempt": "2026-11-26",
+  "cursor": 10,
+  "last_attempt": "2026-11-27",
   "last_completed": "",
   "history": [
     {
@@ -152,23 +255,343 @@
       "validated": 0,
       "changed_family": 0,
       "changed_level": 0
+    },
+    {
+      "day": "2026-11-27",
+      "run_type": "daily",
+      "status": "partial",
+      "model_requests": 18,
+      "validated": 7,
+      "changed_family": 0,
+      "changed_level": 0
     }
   ],
-  "research_cohort": {
-    "day": "2026-11-26",
-    "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
-    "names": [
-      "VOIS",
-      "Bosta",
-      "Thndr",
-      "Klivvr",
-      "Emergence",
-      "Lean Technologies",
-      "Chatbase",
-      "Lua Global",
-      "IBM",
-      "Schneider Electric"
-    ]
-  },
-  "last_validation_test": "2026-11-26"
+  "research_cohort": null,
+  "last_validation_test": "2026-11-26",
+  "semantic_reviews": [
+    {
+      "id": "f822082d49556321f2e978602168e11f39a83000cc633029d9621c7835954fb8",
+      "kind": "family",
+      "company": "VOIS",
+      "title": "Senior Service Management Specialist German Speaker (VOIS)",
+      "source_url": "https://jobs.vodafone.com/careers/job/563018698388698",
+      "job_url": "https://jobs.vodafone.com/careers/job/563018698388698",
+      "proposed": "it_support",
+      "origin_model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "origin_slot": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "initial_status": "candidate",
+      "initial_reason": null,
+      "original_quote": "We are seeking a Software Asset Management Analyst to manage user requests relating to software access and PC rights. You will oversee the triage of customer requests, support software approval and packaging processes, manage application archives and approved PC rights",
+      "original_corroboration": "maintain process documentation, and report on monthly performance, trends and changes. Working collaboratively with Asset Management colleagues and internal stakeholders, you will help maintain effective IT governance, reduce organisational risk and support the continued development",
+      "source": "Title: Senior Service Management Specialist German Speaker (VOIS) Department: Duties: any, Ireland, and with a network of teams in Czech Republic, Italy, Greece, and Portugal. #VOIS #BeUnrivalled #CreateTheFuture ## About this Role We are seeking a Software Asset Management Analyst to manage user requests relating to software access and PC rights. You will oversee the triage of customer requests, support software approval and packaging processes, manage application archives and approved PC rights, maintain process documentation, and report on monthly performance, trends and changes. Working collaboratively with Asset Management colleagues and internal stakeholders, you will help maintain effective IT governance, reduce organisational risk and support the continued development",
+      "day": "2026-11-27",
+      "review_version": "semantic-process-v2",
+      "verdict": "unavailable",
+      "reason": "core-research-priority",
+      "decision": "human-review",
+      "judge_model": null,
+      "judge_slot": null,
+      "explanation": "",
+      "alternative": "",
+      "verified_quotes": [],
+      "checks": null
+    },
+    {
+      "id": "fa4ffeb1468e5f6d524758faf47de28460a0d3aa9bbbb6f69b1d9e0aa06e1087",
+      "kind": "family",
+      "company": "VOIS",
+      "title": "Product GTM Activation Manager - VOIS",
+      "source_url": "https://jobs.vodafone.com/careers/job/563018698421260",
+      "job_url": "https://jobs.vodafone.com/careers/job/563018698421260",
+      "proposed": "marketing",
+      "origin_model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "origin_slot": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "initial_status": "rejected",
+      "initial_reason": "corroboration-missing-family-anchor",
+      "original_quote": "Define and implement product activation and go-to-market strategies for SoHo and SME customer segments. Translate customer behaviours, pain points, market dynamics, sales drivers and sales motions into actionable activation strategies.",
+      "original_corroboration": "Drive the execution of activation plans across key Vodafone OpCos, ensuring plans and launches are delivered on time. Develop and execute sales launch campaigns with OpCos to support customer acquisition and growth ambitions.",
+      "source": "Title: Product GTM Activation Manager - VOIS Department: Duties: al Vodafone operating companies (OpCos), you will drive launches, campaigns and targeted acceleration initiatives that support customer acquisition and commercial growth. ## What you’ll do Define and implement product activation and go-to-market strategies for SoHo and SME customer segments. Translate customer behaviours, pain points, market dynamics, sales drivers and sales motions into actionable activation strategies. Drive the execution of activation plans across key Vodafone OpCos, ensuring plans and launches are delivered on time. Develop and execute sales launch campaigns with OpCos to support customer acquisition and growth ambitions. Create demand-generation frameworks, guidelines a",
+      "day": "2026-11-27",
+      "review_version": "semantic-process-v2",
+      "verdict": "unavailable",
+      "reason": "core-research-priority",
+      "decision": "human-review",
+      "judge_model": null,
+      "judge_slot": null,
+      "explanation": "",
+      "alternative": "",
+      "verified_quotes": [],
+      "checks": null
+    },
+    {
+      "id": "b873d86fecdc474d80707139587b05726fe257cedc940311647d59553c29a02d",
+      "kind": "family",
+      "company": "Bosta",
+      "title": "Last Mile - Senior Hub Coordinator ( Shorouk )",
+      "source_url": "https://jobs.lever.co/Bosta/e2b2907d-77a1-4e09-9ae1-39f08d94478d",
+      "job_url": "https://jobs.lever.co/Bosta/e2b2907d-77a1-4e09-9ae1-39f08d94478d",
+      "proposed": "operations",
+      "origin_model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "origin_slot": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "initial_status": "candidate",
+      "initial_reason": null,
+      "original_quote": "Department: Operations",
+      "original_corroboration": "Responsible for managing daily hub operations, coordinating shipments, tracking KPIs, and ensuring smooth workflow and service quality in line with Bosta’s standards.",
+      "source": "Title: Last Mile - Senior Hub Coordinator ( Shorouk ) Department: Operations Duties: le : Responsible for managing daily hub operations, coordinating shipments, tracking KPIs, and ensuring smooth workflow and service quality in line with Bosta’s standards. Job Code : 2025OPER-133 Job Responsibilities: 1. Receive the new pickups closed in bosta flyers. 2. Ensure that the tracking number was written correctly on the flyer with the marker by the couriers. 3. Receive the shipments(new pickups) on the system and add the tracking numbers on the “Receiving Pickups” sheet. 4. Arrange day-to-day dispatch of the shipments and sort shipments based on delivery addresses. 5. Add the cash collection and Refund shipments to the courier’s routes. Send the routes directly to the stars’ App.",
+      "day": "2026-11-27",
+      "review_version": "semantic-process-v2",
+      "verdict": "unavailable",
+      "reason": "core-research-priority",
+      "decision": "human-review",
+      "judge_model": null,
+      "judge_slot": null,
+      "explanation": "",
+      "alternative": "",
+      "verified_quotes": [],
+      "checks": null
+    },
+    {
+      "id": "a42b3ba33ed76f8a6e09d78be44fa8c471a80595518f2a9b3439118eba7c062c",
+      "kind": "family",
+      "company": "Bosta",
+      "title": "Last Mile - Senior Hub Coordinator ( Qalyub)",
+      "source_url": "https://jobs.lever.co/Bosta/9e5ee64a-e171-4edb-9da2-c3247310e610",
+      "job_url": "https://jobs.lever.co/Bosta/9e5ee64a-e171-4edb-9da2-c3247310e610",
+      "proposed": "operations",
+      "origin_model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "origin_slot": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "initial_status": "candidate",
+      "initial_reason": null,
+      "original_quote": "Department: Operations",
+      "original_corroboration": "Responsible for managing daily hub operations, coordinating shipments, tracking KPIs, and ensuring smooth workflow and service quality in line with Bosta’s standards.",
+      "source": "Title: Last Mile - Senior Hub Coordinator ( Qalyub) Department: Operations Duties: le : Responsible for managing daily hub operations, coordinating shipments, tracking KPIs, and ensuring smooth workflow and service quality in line with Bosta’s standards. Job Code : 2024OPER-364 Job Responsibilities: 1. Receive the new pickups closed in bosta flyers. 2. Ensure that the tracking number was written correctly on the flyer with the marker by the couriers. 3. Receive the shipments(new pickups) on the system and add the tracking numbers on the “Receiving Pickups” sheet. 4. Arrange day-to-day dispatch of the shipments and sort shipments based on delivery addresses. 5. Add the cash collection and Refund shipments to the courier’s routes. Send the routes directly to the stars’ App.",
+      "day": "2026-11-27",
+      "review_version": "semantic-process-v2",
+      "verdict": "unavailable",
+      "reason": "core-research-priority",
+      "decision": "human-review",
+      "judge_model": null,
+      "judge_slot": null,
+      "explanation": "",
+      "alternative": "",
+      "verified_quotes": [],
+      "checks": null
+    },
+    {
+      "id": "7eeb9920e6d5220b969bf833a434dbd0a2056c7d2c4d98a835cb38bbc25042f8",
+      "kind": "family",
+      "company": "Klivvr",
+      "title": "Back-office Credit Activation Officer",
+      "source_url": "https://jobs.lever.co/klivvr/e23452ed-dd1c-435d-a1ee-3ac51f359760",
+      "job_url": "https://jobs.lever.co/klivvr/e23452ed-dd1c-435d-a1ee-3ac51f359760",
+      "proposed": "operations",
+      "origin_model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "origin_slot": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "initial_status": "candidate",
+      "initial_reason": null,
+      "original_quote": "Department: Operations",
+      "original_corroboration": "Review credit applications and financial statements to assess eligibility for credit limit activation. Verify the accuracy, completeness, and authenticity of all submitted documentation.",
+      "source": "Title: Back-office Credit Activation Officer Department: Operations Duties: e credit activation officer. In this role, you’ll be responsible for meticulously reviewing credit applications and financial documents to ensure they meet regulatory standards and internal policies. You will also manage the activation of approved credit limits within our systems. What you will do:: Review credit applications and financial statements to assess eligibility for credit limit activation. Verify the accuracy, completeness, and authenticity of all submitted documentation. Ensure adherence to internal risk policies and regulatory standards throughout the review process. Collaborate with internal teams to resolve discrepancies and gather any missing information. Activate approved cr",
+      "day": "2026-11-27",
+      "review_version": "semantic-process-v2",
+      "verdict": "unavailable",
+      "reason": "core-research-priority",
+      "decision": "human-review",
+      "judge_model": null,
+      "judge_slot": null,
+      "explanation": "",
+      "alternative": "",
+      "verified_quotes": [],
+      "checks": null
+    },
+    {
+      "id": "f8ff71db9552de65c2facb86054b392cbb67ea4406227e2d599da9fde71f44a7",
+      "kind": "family",
+      "company": "Klivvr",
+      "title": "Credit Documents & KYC Archiving Officer",
+      "source_url": "https://jobs.lever.co/klivvr/f1c65c65-725b-432c-8c33-09b4bc6559c1",
+      "job_url": "https://jobs.lever.co/klivvr/f1c65c65-725b-432c-8c33-09b4bc6559c1",
+      "proposed": "operations",
+      "origin_model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "origin_slot": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "initial_status": "candidate",
+      "initial_reason": null,
+      "original_quote": "Department: Operations",
+      "original_corroboration": "Establish and maintain an efficient physical filing system for credit and KYC documentation. Archive all records in line with regulatory standards and company policies for accessibility and security.",
+      "source": "Title: Credit Documents & KYC Archiving Officer Department: Operations Duties: We’re seeking a highly organized and detail-oriented Credit Documents & KYC Archiving Officer to manage the secure storage and systematic archiving of credit and Know Your Customer (KYC) documents. This role is vital to ensuring compliance with regulatory requirements and internal policies related to document retention and data protection. What you will do:: Establish and maintain an efficient physical filing system for credit and KYC documentation. Archive all records in line with regulatory standards and company policies for accessibility and security. Perform routine audits of archived files to verify compliance and identify any gaps or incomplete documentation. Coordinate with Compliance",
+      "day": "2026-11-27",
+      "review_version": "semantic-process-v2",
+      "verdict": "unavailable",
+      "reason": "core-research-priority",
+      "decision": "human-review",
+      "judge_model": null,
+      "judge_slot": null,
+      "explanation": "",
+      "alternative": "",
+      "verified_quotes": [],
+      "checks": null
+    },
+    {
+      "id": "5affc41f5c3598fa54d847c639cb92b7834a6b4d54000d78cf5e278af488e16a",
+      "kind": "family",
+      "company": "Emergence",
+      "title": "VP, Finance, Emergence Automotive",
+      "source_url": "https://jobs.ashbyhq.com/emergence/5541bbe5-4b8c-4263-8c32-e9ab13d3c1e5",
+      "job_url": "https://jobs.ashbyhq.com/emergence/5541bbe5-4b8c-4263-8c32-e9ab13d3c1e5",
+      "proposed": "finance",
+      "origin_model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "origin_slot": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "initial_status": "candidate",
+      "initial_reason": null,
+      "original_quote": "Own the finance cadence across the automotive portfolio: forecasting, performance management, KPI reporting, operating reviews, and decision support for CEOs.",
+      "original_corroboration": "Build operating models that go well beyond a budget, covering scenario planning, retention and cohort economics, cash and working capital, unit econ",
+      "source": "Title: VP, Finance, Emergence Automotive Department: Emergence Duties: at moves easily between the boardroom and the day-to-day. You can sit with a CEO and dig into retention, sales productivity, cash conversion, or pricing, then step back and ask whether we should buy, build, integrate, finance, or change course. We want a thought partner who produces analyst-level work and also has the judgment and point of view to change our decisions. WHAT YOU WILL DO - Own the finance cadence across the automotive portfolio: forecasting, performance management, KPI reporting, operating reviews, and decision support for CEOs. - Build operating models that go well beyond a budget, covering scenario planning, retention and cohort economics, cash and working capital, unit econ",
+      "day": "2026-11-27",
+      "review_version": "semantic-process-v2",
+      "verdict": "unavailable",
+      "reason": "core-research-priority",
+      "decision": "human-review",
+      "judge_model": null,
+      "judge_slot": null,
+      "explanation": "",
+      "alternative": "",
+      "verified_quotes": [],
+      "checks": null
+    },
+    {
+      "id": "eb4a10127393c05c6cb3c378cce24ba3b76b73fed3407e2a949d45439ed674a9",
+      "kind": "family",
+      "company": "Emergence",
+      "title": "Investment Associate",
+      "source_url": "https://jobs.ashbyhq.com/emergence/dd1b8501-7cf1-4963-87bc-43ad94071434",
+      "job_url": "https://jobs.ashbyhq.com/emergence/dd1b8501-7cf1-4963-87bc-43ad94071434",
+      "proposed": "finance",
+      "origin_model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "origin_slot": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "initial_status": "candidate",
+      "initial_reason": null,
+      "original_quote": "Lead financial and operational due diligence on acquisition targets, owning the workstream from kickoff to IC.",
+      "original_corroboration": "Build comprehensive financial models covering unit economics, SaaS KPIs, valuation, and operating leverage.",
+      "source": "Title: Investment Associate Department: M&A Duties: rough close - on majority buyout transactions in enterprise software. WHAT YOU'LL DO - Lead financial and operational due diligence on acquisition targets, owning the workstream from kickoff to IC. - Build comprehensive financial models covering unit economics, SaaS KPIs, valuation, and operating leverage. - Run quality of earnings analyses and own the net working capital bridge and indebtedness definitions. - Write and present Investment Committee memos with clear diligence findings and a defensible point of view. - Assess and synthesize deal terms and majority buyout structures, identifying risks in negotiated positions. - Collaborate with legal, finance, and operations teams to drive clea",
+      "day": "2026-11-27",
+      "review_version": "semantic-process-v2",
+      "verdict": "unavailable",
+      "reason": "core-research-priority",
+      "decision": "human-review",
+      "judge_model": null,
+      "judge_slot": null,
+      "explanation": "",
+      "alternative": "",
+      "verified_quotes": [],
+      "checks": null
+    },
+    {
+      "id": "1c7bd5fc4227fdcd541dd68b90b5422854b96fddf501662fd7d880a8e33e4d92",
+      "kind": "family",
+      "company": "Lean Technologies",
+      "title": "Staff Engineer",
+      "source_url": "https://jobs.ashbyhq.com/LeanTech/5bff3911-0439-4c06-8a6c-0343064dd08f",
+      "job_url": "https://jobs.ashbyhq.com/LeanTech/5bff3911-0439-4c06-8a6c-0343064dd08f",
+      "proposed": "software",
+      "origin_model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "origin_slot": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "initial_status": "rejected",
+      "initial_reason": "missing-job-family-anchor",
+      "original_quote": "you'll lead the technical architecture and execution across credit insights products",
+      "original_corroboration": "You'll write production code, and you'll be the person the team pulls in when a problem is hard or badly defined",
+      "source": "Title: Staff Engineer Department: Engineering Duties: ngineer on the Credit Scoring & Underwriting squad, you'll lead the technical architecture and execution across credit insights products. That means the insights and data platform our lenders already build on, and the new products we're putting on top of it. It's a hands-on job. You'll write production code, and you'll be the person the team pulls in when a problem is hard or badly defined. You'll also put real time into helping the engineers around you get better, through code reviews and mentoring. ABOUT LEAN Lean is the leading financial infrastructure provider in the Middle East. We power some of the region's largest companies with APIs that enable payments, account verification, financi",
+      "day": "2026-11-27",
+      "review_version": "semantic-process-v2",
+      "verdict": "unavailable",
+      "reason": "core-research-priority",
+      "decision": "human-review",
+      "judge_model": null,
+      "judge_slot": null,
+      "explanation": "",
+      "alternative": "",
+      "verified_quotes": [],
+      "checks": null
+    },
+    {
+      "id": "a1a3cc39abcd417e5f6fd93cc50d67a8d3caf77551da94964f534d8e8ffe150f",
+      "kind": "family",
+      "company": "Chatbase",
+      "title": "Partnerships Lead, Startups & Channel",
+      "source_url": "https://jobs.ashbyhq.com/chatbase/6443e622-bae6-4e9f-8520-29364713df4d",
+      "job_url": "https://jobs.ashbyhq.com/chatbase/6443e622-bae6-4e9f-8520-29364713df4d",
+      "proposed": "sales",
+      "origin_model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "origin_slot": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "initial_status": "rejected",
+      "initial_reason": "quote-not-supported-by-duties",
+      "original_quote": "Title: Partnerships Lead, Startups & Channel Department: GTM Duties: businesses use to talk to their customers, from fast-growing startups to global brands like Dolby, Roche, Pearson, Bridgestone and Chuck E. Cheese. Our agents resolve millions of conversations across support, sales and operations.",
+      "original_corroboration": "We launched in 2023 and we're profitable. WHY NOW This is the moment. The product is working, customers keep finding new ways to use it, and we're growing fast. Most of our biggest growth levers haven't been pulled yet.",
+      "source": "Title: Partnerships Lead, Startups & Channel Department: GTM Duties: businesses use to talk to their customers, from fast-growing startups to global brands like Dolby, Roche, Pearson, Bridgestone and Chuck E. Cheese. Our agents resolve millions of conversations across support, sales and operations. We launched in 2023 and we're profitable. WHY NOW This is the moment. The product is working, customers keep finding new ways to use it, and we're growing fast. Most of our biggest growth levers haven't been pulled yet. The people who join now will build the teams, playbooks and products that make Chatbase many times bigger than it is today, and they'll share in that upside. → Top-of-market pay, plus equity. We pay at the top end of the market, and everyone gets eq",
+      "day": "2026-11-27",
+      "review_version": "semantic-process-v2",
+      "verdict": "unavailable",
+      "reason": "core-research-priority",
+      "decision": "human-review",
+      "judge_model": null,
+      "judge_slot": null,
+      "explanation": "",
+      "alternative": "",
+      "verified_quotes": [],
+      "checks": null
+    },
+    {
+      "id": "6ee708cb219d269ca4e69a30d825f1cb98c5a280cd0bf5a08789434eca881343",
+      "kind": "family",
+      "company": "Chatbase",
+      "title": "Videographer & Editor",
+      "source_url": "https://jobs.ashbyhq.com/chatbase/1410a1fe-7bc2-4769-a50f-970ce9f77cf8",
+      "job_url": "https://jobs.ashbyhq.com/chatbase/1410a1fe-7bc2-4769-a50f-970ce9f77cf8",
+      "proposed": "marketing",
+      "origin_model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "origin_slot": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "initial_status": "rejected",
+      "initial_reason": "quote-not-supported-by-duties",
+      "original_quote": "Title: Videographer & Editor Department: Marketing Duties: businesses use to talk to their customers, from fast-growing startups to global brands like Dolby, Roche, Pearson, Bridgestone and Chuck E. Cheese. Our agents resolve millions of conversations across support, sales and operations.",
+      "original_corroboration": "We launched in 2023 and we're profitable. WHY NOW This is the moment. The product is working, customers keep finding new ways to use it, and we're growing fast. Most of our biggest growth levers haven't been pulled yet.",
+      "source": "Title: Videographer & Editor Department: Marketing Duties: businesses use to talk to their customers, from fast-growing startups to global brands like Dolby, Roche, Pearson, Bridgestone and Chuck E. Cheese. Our agents resolve millions of conversations across support, sales and operations. We launched in 2023 and we're profitable. WHY NOW This is the moment. The product is working, customers keep finding new ways to use it, and we're growing fast. Most of our biggest growth levers haven't been pulled yet. The people who join now will build the teams, playbooks and products that make Chatbase many times bigger than it is today, and they'll share in that upside. → Top-of-market pay, plus equity. We pay at the top end of the market, and everyone gets eq",
+      "day": "2026-11-27",
+      "review_version": "semantic-process-v2",
+      "verdict": "unavailable",
+      "reason": "core-research-priority",
+      "decision": "human-review",
+      "judge_model": null,
+      "judge_slot": null,
+      "explanation": "",
+      "alternative": "",
+      "verified_quotes": [],
+      "checks": null
+    },
+    {
+      "id": "81ca458dcc9eeac380845ccac97aaf52e476aed4ebbb28b3d23c75b5364f5a52",
+      "kind": "family",
+      "company": "Schneider Electric",
+      "title": "Mechanical Design Principle Engineer",
+      "source_url": "https://careers.se.com/jobs/130704?lang=en-US",
+      "job_url": "https://careers.se.com/jobs/130704?lang=en-US",
+      "proposed": "embedded",
+      "origin_model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "origin_slot": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "initial_status": "rejected",
+      "initial_reason": "missing-job-family-anchor",
+      "original_quote": "Act as the Subject Matter Expert (SME) for mechanical systems in mission-critical facilities. • Review and approve engineering designs, specifications, and calculations",
+      "original_corroboration": "Develop and optimize cooling strategies (e.g., CRAC/CRAH, liquid cooling, free cooling, containment systems). • Perform load calculations, airflow analysis, and thermal modeling.",
+      "source": "Title: Mechanical Design Principle Engineer Department: Duties: systems, and ventilation. • Act as the Subject Matter Expert (SME) for mechanical systems in mission-critical facilities. • Review and approve engineering designs, specifications, and calculations 2. Design & Engineering • Develop and optimize cooling strategies (e.g., CRAC/CRAH, liquid cooling, free cooling, containment systems). • Perform load calculations, airflow analysis, and thermal modeling. • Ensure designs meet uptime requirements (Tier standards – Uptime Institute). 3. Project Execution • Support project lifecycle from tender design to commissioning. • Review vendor submittals and ensure compliance with project requirements. • Provide technical support during construction, testing,",
+      "day": "2026-11-27",
+      "review_version": "semantic-process-v2",
+      "verdict": "unavailable",
+      "reason": "core-research-priority",
+      "decision": "human-review",
+      "judge_model": null,
+      "judge_slot": null,
+      "explanation": "",
+      "alternative": "",
+      "verified_quotes": [],
+      "checks": null
+    }
+  ]
 }

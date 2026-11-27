@@ -1,5 +1,132 @@
 {
   "mode": "shadow",
-  "version": "2026-11-26",
-  "rules": []
+  "version": "2026-11-27",
+  "rules": [
+    {
+      "key": "056a97fc5e2a3d8feca579b555917a98acb86b1ce1e961e88944d16ae8df8612",
+      "kind": "family",
+      "company": "VOIS",
+      "title": "Senior Service Management Specialist German Speaker (VOIS)",
+      "job_fingerprint": "27437ff56600002545087192294bf3178a02d2fc33faee0b0ad21bb748975f3f",
+      "family": "it_support",
+      "evidence": {
+        "url": "https://jobs.vodafone.com/careers/job/563018698388698",
+        "quote": "#VOIS #BeUnrivalled #CreateTheFuture ## About this Role We are seeking a Software Asset Management Analyst to manage user requests relating to software access and PC rights.",
+        "corroboration": "You will oversee the triage of customer requests, support software approval and packaging processes, manage application archives and approved PC rights, maintain process documentation, and report on monthly performance, trends and changes.",
+        "checked_at": "2026-11-27"
+      },
+      "models": [
+        "nvidia/nemotron-3-ultra-550b-a55b:free"
+      ],
+      "status": "candidate"
+    },
+    {
+      "key": "9adb89b28475e5935cbec6b61e049a740a4365b7f97b3faaa4ead91f4798fb60",
+      "kind": "family",
+      "company": "Bosta",
+      "title": "Last Mile - Senior Hub Coordinator ( Shorouk )",
+      "job_fingerprint": "4b60415a8285873109dfacf44ffa6ce3fc8a432fb7a0eeb2e2c5c1060c488179",
+      "family": "operations",
+      "evidence": {
+        "url": "https://jobs.lever.co/Bosta/e2b2907d-77a1-4e09-9ae1-39f08d94478d",
+        "quote": "Department: Operations",
+        "corroboration": "Official department: Operations",
+        "checked_at": "2026-11-27"
+      },
+      "models": [
+        "nvidia/nemotron-3-ultra-550b-a55b:free"
+      ],
+      "status": "candidate"
+    },
+    {
+      "key": "be2c9b18b55d6f57f0636b394812e49f30ef1cab74b57f6ca25c3c0bbf5d25bf",
+      "kind": "family",
+      "company": "Bosta",
+      "title": "Last Mile - Senior Hub Coordinator ( Qalyub)",
+      "job_fingerprint": "5d9154200bd19810608ce0cb3f8d2250da7fa4d505152cf0cb8fe64ad5740006",
+      "family": "operations",
+      "evidence": {
+        "url": "https://jobs.lever.co/Bosta/9e5ee64a-e171-4edb-9da2-c3247310e610",
+        "quote": "Department: Operations",
+        "corroboration": "Official department: Operations",
+        "checked_at": "2026-11-27"
+      },
+      "models": [
+        "nvidia/nemotron-3-ultra-550b-a55b:free"
+      ],
+      "status": "candidate"
+    },
+    {
+      "key": "4a53674c279dc597ea61f73e95d2fd26d003378f1acda5e055093ef7262f4dfc",
+      "kind": "family",
+      "company": "Klivvr",
+      "title": "Back-office Credit Activation Officer",
+      "job_fingerprint": "45ce3c578921bdd0329dd4daba09d596a42bc622268057198b7229aa9a835858",
+      "family": "operations",
+      "evidence": {
+        "url": "https://jobs.lever.co/klivvr/e23452ed-dd1c-435d-a1ee-3ac51f359760",
+        "quote": "Department: Operations",
+        "corroboration": "Official department: Operations",
+        "checked_at": "2026-11-27"
+      },
+      "models": [
+        "nvidia/nemotron-3-ultra-550b-a55b:free"
+      ],
+      "status": "candidate"
+    },
+    {
+      "key": "1433e258b8fb1b7f9f47cc236c6a29a3b01bb5c3decc636ee5b299010053ef4a",
+      "kind": "family",
+      "company": "Klivvr",
+      "title": "Credit Documents & KYC Archiving Officer",
+      "job_fingerprint": "3c62488c27559a966a15251b5816233a8e89691732669ce8d4f73c8aa6347f23",
+      "family": "operations",
+      "evidence": {
+        "url": "https://jobs.lever.co/klivvr/f1c65c65-725b-432c-8c33-09b4bc6559c1",
+        "quote": "Department: Operations",
+        "corroboration": "Official department: Operations",
+        "checked_at": "2026-11-27"
+      },
+      "models": [
+        "nvidia/nemotron-3-ultra-550b-a55b:free"
+      ],
+      "status": "candidate"
+    },
+    {
+      "key": "55e1aaa7c634915b17533216a6d90d13b33a37b9680ff0c45819b3b0342c2201",
+      "kind": "family",
+      "company": "Emergence",
+      "title": "VP, Finance, Emergence Automotive",
+      "job_fingerprint": "8106c54acd755b64bf0274fd50bd55e8eaa173b3956f0b4a69c32e7734b2e8b0",
+      "family": "finance",
+      "evidence": {
+        "url": "https://jobs.ashbyhq.com/emergence/5541bbe5-4b8c-4263-8c32-e9ab13d3c1e5",
+        "quote": "Own the finance cadence across the automotive portfolio: forecasting, performance management, KPI reporting, operating reviews, and decision support for CEOs.",
+        "corroboration": "Build operating models that go well beyond a budget, covering scenario planning, retention and cohort economics, cash and working capital, unit econ",
+        "checked_at": "2026-11-27"
+      },
+      "models": [
+        "nvidia/nemotron-3-ultra-550b-a55b:free"
+      ],
+      "status": "candidate"
+    },
+    {
+      "key": "128fb6dd469faa97290b26cf40596ff630f811039a08eaa6da68501f145933fb",
+      "kind": "family",
+      "company": "Emergence",
+      "title": "Investment Associate",
+      "job_fingerprint": "cd7317132118cc3e2e22cc8e282e7f9234eeb8fb9cba23b90aefb38eb73a5468",
+      "family": "finance",
+      "evidence": {
+        "url": "https://jobs.ashbyhq.com/emergence/dd1b8501-7cf1-4963-87bc-43ad94071434",
+        "quote": "Lead financial and operational due diligence on acquisition targets, owning the workstream from kickoff to IC.",
+        "corroboration": "Build comprehensive financial models covering unit economics, SaaS KPIs, valuation, and operating leverage.",
+        "checked_at": "2026-11-27"
+      },
+      "models": [
+        "nvidia/nemotron-3-ultra-550b-a55b:free"
+      ],
+      "status": "candidate"
+    }
+  ]
 }
