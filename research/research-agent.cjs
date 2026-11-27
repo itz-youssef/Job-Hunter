@@ -504,8 +504,7 @@ function judgeHeadroom(state,model,now=new Date()){
 // cases from other employers. Still protect unfinished research and hard stops.
 function semanticReviewReady(mode,stats,taskStats,errors,globalBlocked=false){
  return mode==='daily'&&!globalBlocked&&!errors.includes('time-or-model-budget')
-  &&Object.values(taskStats).every(t=>t.completed===t.planned)
-  &&stats.companies_reviewed>0;
+  &&stats.companies_reviewed>0&&Object.values(taskStats).some(t=>t.completed>0);
 }
 async function reviewSemantics(cases,state,keys,health,day,started,transport=inferActual,clock=Date.now,coreComplete=true,reviewReady=coreComplete){
  const unique=[...new Map(cases.map(c=>[c.publicCase.id,c])).values()],reviews=[],recovered=[],pending=[];
@@ -521,20 +520,19 @@ async function reviewSemantics(cases,state,keys,health,day,started,transport=inf
   pending.push(c);
  }
  const allow=reviewReady&&!isBenchmark(state);
- const chosen=allow?J.selectCases(pending):[],chosenIds=new Set(chosen.map(x=>x.publicCase.id));
+ const endpointsFor=slot=>slot===NEMOTRON?[NEMOTRON]:GOOGLE_MODELS;
+ const eligibleEndpoint=(slot,model)=> (slot===NEMOTRON?firstEndpointHealthy(model,health):endpointHealthy(model,health))&&!(health.cooldowns?.get(model)>Date.now())&&judgeHeadroom(state,model);
+ const slots=allow?MODELS.filter(slot=>endpointsFor(slot).some(model=>eligibleEndpoint(slot,model))):[];
+ const planned=J.planBatches(pending,slots),chosen=planned.flatMap(b=>b.cases),chosenIds=new Set(chosen.map(x=>x.publicCase.id));
  const start=clock();
- for(const slot of MODELS){
-  const batchable=chosen.filter(c=>c.publicCase.origin_slot!==slot);
-  for(let i=0;i<batchable.length;i+=J.BATCH_SIZE){
-   const batch=batchable.slice(i,i+J.BATCH_SIZE);
+ for(const {slot,cases:batch} of planned){
    // No shared endpoints, no emergency, no retries after a charged failure.
-   const endpoints=slot===NEMOTRON?[NEMOTRON]:GOOGLE_MODELS;
+   const endpoints=endpointsFor(slot);
    let finished=false,last='judge-spare-budget-or-time-unavailable';
    for(const model of endpoints){
     if(requests>=J.MAX_CALLS||clock()-start>=3*60*1000||clock()-started>=38*60*1000)break;
     if(batch.some(c=>c.publicCase.origin_model===model))continue;
-    const healthy=slot===NEMOTRON?firstEndpointHealthy(model,health):endpointHealthy(model,health);
-    if(!healthy||!judgeHeadroom(state,model))continue;
+    if(!eligibleEndpoint(slot,model))continue;
     try{
      requests++;
      const result=await transport(model,J.SYSTEM,J.payload(batch),state,keys,{maxTokens:1500,timeout:45000,stage:'semantic-judge',emergency:false});
@@ -548,14 +546,19 @@ async function reviewSemantics(cases,state,keys,health,day,started,transport=inf
     }catch(e){
      last=e?.code==='model-budget'?'judge-budget-unavailable':diagnostic(e);
      health.attempts?.push({slot,model,stage:'semantic-judge',outcome:e?.code==='model-budget'?'skipped':'failed',code:last,tier:'normal'});
-     // Do not cascade into another request just to audit a failed batch.
+     // Quarantine a failed endpoint before any subsequent planned batch.
+     // Budget skips are not provider failures. Never retry this charged batch.
+     if(e?.code!=='model-budget'){
+      if(slot===NEMOTRON)health.failedFirst?.add(model);
+      else if([401,402,403].includes(e?.status))disableGoogle(health);
+      else health.failedGoogle?.add(model);
+     }
      break;
     }
    }
    if(!finished)for(const c of batch)reviews.push(J.unavailable(c,last));
-  }
  }
- for(const c of pending)if(!chosenIds.has(c.publicCase.id))reviews.push(J.unavailable(c,allow?'review-sampling-or-budget-cap':'core-research-priority'));
+ for(const c of pending)if(!chosenIds.has(c.publicCase.id))reviews.push(J.unavailable(c,allow?(slots.some(slot=>slot!==c.publicCase.origin_slot)?'review-sampling-or-budget-cap':'independent-judge-unavailable'):'core-research-priority'));
  return {eligible:unique.length,selected:chosen.length,requests,cached,reviews,recovered,core_complete:coreComplete,review_allowed:allow};
 }
 // Explicit manual test: replay the fixed historical regression excerpts.
