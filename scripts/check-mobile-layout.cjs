@@ -58,7 +58,7 @@ if(hoverFailures.length)failures.push({brand_hover: hoverFailures});
 for(const width of [375,1440]){
  for(const theme of ['light','dark']){
   await page.setViewportSize({width,height:900});
-  for(const path of ['/#hunter','/#saved','/#companies','/#alerts','/#home','/#profile']){
+  for(const path of ['/#hunter','/#home','/#profile']){
    await page.goto('http://127.0.0.1:8765'+path);
    await page.evaluate(t=>localStorage.setItem('jh-theme',t),theme);
    await page.reload();
@@ -171,6 +171,27 @@ for(const width of [320,375,430,600,750]){
   await page.setViewportSize({width:1440,height:900});
   await page.waitForFunction(()=>document.getElementById('sj-workspace-sidebar').parentElement.classList.contains('layout'));
   if(await toggle.isVisible()||!await page.locator('#navigation [data-page="resume"]').isVisible())failures.push({desktop_restoration:width,theme});
+ }
+}
+
+// Unified architectural companion pages, both themes and narrow viewports.
+for(const width of [320,375,768,1440]){
+ for(const theme of ['light','dark']){
+  for(const route of ['saved','companies','alerts']){
+   await page.setViewportSize({width,height:900});
+   await page.goto('http://127.0.0.1:8765/#'+route);
+   await page.evaluate(t=>localStorage.setItem('jh-theme',t),theme);
+   await page.reload();
+   await page.waitForFunction(t=>document.documentElement.dataset.theme===t&&document.body.classList.contains('jh-editorial'),theme);
+   await page.locator('#main-content .feed-metrics').waitFor({state:'visible'});
+   const data=await page.evaluate(()=>{const hero=document.querySelector('#main-content>.section-top'),s=getComputedStyle(hero);return {scroll:document.documentElement.scrollWidth,bg:s.backgroundColor,art:getComputedStyle(hero,'::before').backgroundImage,title:getComputedStyle(hero.querySelector('h1')).textTransform,remove:!!document.querySelector('#main-content [data-remove]')};});
+   if(data.scroll>width+1||data.bg!==(theme==='dark'?'rgb(14, 14, 14)':'rgb(233, 232, 230)')||!data.art.includes('radial-gradient')||data.title!=='uppercase'||data.remove)failures.push({companion:route,width,theme,...data});
+   if(route==='companies'){
+    await page.locator('#sj-company-search').fill('unlikely-company-999999');
+    if(await page.locator('#main-content .company-card:visible').count())failures.push({company_search:width,theme});
+    await page.locator('#sj-company-search').clear();
+   }
+  }
  }
 }
 
