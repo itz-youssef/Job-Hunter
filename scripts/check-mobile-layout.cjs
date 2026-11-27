@@ -91,6 +91,30 @@ for(const width of [375,1440]){
  }
 }
 
+// Career journey artwork remains decorative, neutral and contained on phones,
+ // tablets and desktop; neither grid nor existing job links are replaced.
+for(const width of [320,375,768,1440,1920]){
+ for(const theme of ['light','dark']){
+  await page.setViewportSize({width,height:900});
+  await page.goto('http://127.0.0.1:8765/#hunter');
+  await page.evaluate(t=>localStorage.setItem('jh-theme',t),theme);
+  await page.reload();
+  await page.waitForFunction(t=>document.documentElement.dataset.theme===t&&!!document.querySelector('.jh-intro #features'),theme);
+  for(const [id,name] of [['features','features'],['sample-jobs','jobs']]){
+   const section=page.locator('.jh-intro #'+id);
+   const art=await section.evaluate(el=>{
+    const s=getComputedStyle(el),p=getComputedStyle(el,'::before'),r=el.getBoundingClientRect();
+    const content=el.querySelector('.sj-land-width'),c=content.getBoundingClientRect();
+    return {bg:s.backgroundColor,art:p.backgroundImage,pointer:p.pointerEvents,position:p.position,overflow:s.overflow,contentZ:getComputedStyle(content).zIndex,contained:r.left>=-1&&r.right<=innerWidth+1&&c.left>=r.left-1&&c.right<=r.right+1,scroll:document.documentElement.scrollWidth};
+   });
+   const asset='jobhunter-career-'+name+'-'+theme+'.svg';
+   if(!art.art.includes(asset)||art.bg!==(theme==='dark'?'rgb(11, 11, 11)':'rgb(255, 255, 255)')||art.pointer!=='none'||art.position!=='absolute'||art.contentZ!=='1'||!art.contained||art.scroll>width+1)failures.push({career_art:id,width,theme,...art});
+   if(!(await page.request.get('http://127.0.0.1:8765/assets/'+asset)).ok())failures.push({career_art_missing:asset});
+   if([375,1440].includes(width))await section.screenshot({path:'career-'+name+'-'+theme+'-'+width+'.png',animations:'disabled'});
+  }
+ }
+}
+
 // The Job Feed redesign has its own isolated visual and responsive contract.
 for(const width of [320,375,768,1024,1440,1920,2560]){
  for(const theme of ['light','dark']){
