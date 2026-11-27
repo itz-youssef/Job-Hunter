@@ -53,6 +53,39 @@ for(const width of [375,1024]){
  }
 }
 if(hoverFailures.length)failures.push({brand_hover: hoverFailures});
+// Job Hunter visual-only refinement: compare the same rendered DOM with the
+// stylesheet enabled and disabled. No layout movement, extra controls or routes.
+for(const width of [375,1440]){
+ for(const theme of ['light','dark']){
+  await page.setViewportSize({width,height:900});
+  for(const path of ['/#hunter','/#jobs','/#saved','/#companies','/#alerts','/#home','/#profile']){
+   await page.goto('http://127.0.0.1:8765'+path);
+   await page.evaluate(t=>localStorage.setItem('jh-theme',t),theme);
+   await page.reload();
+   await page.waitForFunction(t=>document.documentElement.dataset.theme===t,theme);
+   const data=await page.evaluate(async()=>{
+    await document.fonts.ready;
+    const sheet=[...document.styleSheets].find(s=>s.href?.includes('/secretj-jobhunter-refinement.css'));
+    if(!sheet)return {missingStylesheet:true};
+    const snapshot=()=>[...document.querySelectorAll('#main-content :is(h1,h2,h3,button,a,input,select,article,.panel,.job-card,.company-card,.section-top,.job-filter-panel,.jh-intro-preview,.jh-intro-steps,.jh-intro-features,.jh-intro-job-grid),.sidebar #navigation button')].map(el=>{
+     const r=el.getBoundingClientRect(),s=getComputedStyle(el);
+     return {x:r.x,y:r.y,w:r.width,h:r.height,color:s.color,background:s.backgroundColor,shadow:s.boxShadow};
+    });
+    const enabled=snapshot();sheet.disabled=true;
+    const disabled=snapshot();sheet.disabled=false;
+    const geometry=enabled.length===disabled.length&&enabled.every((r,i)=>['x','y','w','h'].every(k=>Math.abs(r[k]-disabled[i][k])<.5));
+    const visual=enabled.some((r,i)=>['color','background','shadow'].some(k=>r[k]!==disabled[i]?.[k]));
+    const primary=document.querySelector('.jh-intro .jh-intro-actions .sj-land-btn.dark[data-navigate="jobs"],body.jh-workspace #main-content .btn.primary:not(:disabled)');
+    return {geometry,visual,workspace:document.body.classList.contains('jh-workspace'),intro:!!document.querySelector('.jh-intro'),accent:primary?getComputedStyle(primary).backgroundColor:null};
+   });
+   const scoped=['/#jobs','/#saved','/#companies','/#alerts'].includes(path),intro=path==='/#hunter';
+   if(data.missingStylesheet||!data.geometry||data.workspace!==scoped||data.intro!==intro||data.visual!==(scoped||intro))failures.push({jobhunter_refinement:path,width,theme,...data});
+   if(data.accent&&data.accent!==(theme==='dark'?'rgb(211, 166, 68)':'rgb(89, 64, 71)'))failures.push({jobhunter_refinement_accent:path,width,theme,...data});
+   if(path==='/#hunter'||path==='/#jobs')await page.screenshot({path:'jobhunter-'+path.slice(2)+'-'+theme+'-'+width+'.png',animations:'disabled'});
+  }
+ }
+}
+
 // Botfolio-specific checks: authenticated workspace, all internal views, both themes,
 // small phones through 4K, and a sidebar anchored to the viewport on desktop.
 for(const w of [320,375,390,430,600,768,900,1024,1280,1440,1920,2560,3840]){

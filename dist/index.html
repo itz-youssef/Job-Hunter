@@ -231,6 +231,7 @@ a:hover{color:var(--ink)}
 <link rel="stylesheet" href="/assets/secretj-landing.css?v=oxblood-leather-open-glow-20261124">
 <script src="/assets/secretj-landing.js?v=botfolio-explore-20261125"></script>
 <link rel="stylesheet" href="/assets/secretj-jobhunter-intro.css?v=soft-concrete-curves-20261124">
+  <link rel="stylesheet" href="/assets/secretj-jobhunter-refinement.css?v=20261127">
 <script src="/assets/secretj-jobhunter-intro.js?v=footer-match-home-20261124"></script>
 <script id="sj-startup-script">
 (()=>{
@@ -1581,6 +1582,7 @@ a:hover{color:var(--ink)}
   function render(){
     const root=el('#main-content');if(!root)return;
     document.body?.classList?.toggle('sj-editorial-home',state.page==='home'||state.page==='hunter');
+    document.body?.classList?.toggle('jh-workspace',['jobs','saved','companies','alerts'].includes(state.page));
     const landing=state.page==='home'||state.page==='hunter';
     const html=state.page==='home'?home():state.page==='hunter'?jobHunterIntro():state.page==='radar'?radarHome():state.page==='resume'?resumePage():state.page==='cv'?cvPage():state.page==='profile'?profilePage():state.page==='jobs'?jobsPage():state.page==='saved'?jobsPage(true):state.page==='companies'?companiesPage():alertsPage();
     // Capture detached public nodes before leaving. Identical background
