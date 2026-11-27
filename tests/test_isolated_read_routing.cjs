@@ -70,3 +70,34 @@ test('Vercel production automatically uses only valid configured isolated endpoi
   assert.equal(R.enabled('jobHunter',{...connections,JOB_HUNTER_DATABASE_URL:''}),false);
  }finally{if(previous===undefined)delete process.env.VERCEL_ENV;else process.env.VERCEL_ENV=previous;}
 });
+
+test('write-through scopes Botfolio changes and falls back to the durable queue on failure',async()=>{
+ const core=require('../lib/secretj/core');
+ const owner='11111111-1111-4111-8111-111111111111',key='22222222-2222-4222-8222-222222222222';
+ const row={owner_id:owner,entity_key:key,revision:'19',record_text:null,record_digest:null};
+ const settings={...env,SECRETJ_ISOLATED_WRITE_THROUGH:'true'};
+ let ack=0,remote=0,reads=0;
+ core.setQueryForTests(async(sql,args)=>{
+  if(sql.startsWith('SELECT')){
+   reads++;assert.match(sql,/service='botfolio' AND owner_id=\$1::uuid AND entity_key=\$2 ORDER BY revision LIMIT 2/);assert.deepEqual(args,[owner,key]);return [row];
+  }
+  ack++;assert.match(sql,/q\.revision=k\.revision/);assert.deepEqual(args,['botfolio',JSON.stringify([{owner_id:owner,entity_key:key,revision:'19'}])]);return [];
+ });
+ try{
+  R.setQueryForTests(async(service,sql,args)=>{remote++;assert.equal(service,'botfolio');assert.match(sql,/apply_botfolio_write/);assert.deepEqual(JSON.parse(args[0]),[row]);return [{applied:1}];});
+  assert.deepEqual(await R.syncAfterWrite('botfolio',settings,owner,key),{status:'synced',count:1});
+  assert.equal(ack,1);assert.equal(remote,1);
+  R.setQueryForTests(async()=>{throw Error('remote offline');});
+  assert.deepEqual(await R.syncAfterWrite('botfolio',settings,owner,key),{status:'queued_retry',count:0});assert.equal(ack,1);
+  assert.deepEqual(await R.syncAfterWrite('botfolio',{...settings,SECRETJ_ISOLATED_WRITE_THROUGH:'false'},owner,key),{status:'disabled',count:0});assert.equal(reads,2);
+  let task;R.setQueryForTests(async()=>[{applied:1}]);
+  assert.equal((await R.syncAfterWrite('botfolio',settings,owner,key,p=>{task=p;})).status,'scheduled');
+  assert.equal((await task).status,'synced');assert.equal(ack,2);
+ }finally{core.setQueryForTests(null);R.setQueryForTests(null);}
+});
+test('bounded write drain processes multiple batches but never wakes remote for an empty outbox',async()=>{
+ const core=require('../lib/secretj/core'),settings={...env,SECRETJ_ISOLATED_WRITE_THROUGH:'true'};
+ let batches=0,remote=0,acks=0;
+ core.setQueryForTests(async(sql)=>{if(sql.startsWith('SELECT')){batches++;return batches<=2?Array.from({length:100},(_,i)=>({owner_id:'owner',entity_key:'job'+i,revision:String(batches*100+i),record_text:'{}',record_digest:digest})):[];}acks++;return [];});
+ try{R.setQueryForTests(async()=>{remote++;return [{applied:100}];});assert.deepEqual(await R.drainWrites('jobHunter',settings,4),{status:'synced',count:200});assert.equal(batches,3);assert.equal(remote,2);assert.equal(acks,2);}finally{R.setQueryForTests(null);core.setQueryForTests(null);}
+});
