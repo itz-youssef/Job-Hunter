@@ -92,7 +92,7 @@ for(const width of [375,1440]){
 }
 
 // The Job Feed redesign has its own isolated visual and responsive contract.
-for(const width of [320,375,768,1024,1440,1920]){
+for(const width of [320,375,768,1024,1440,1920,2560]){
  for(const theme of ['light','dark']){
   await page.setViewportSize({width,height:900});
   await page.goto('http://127.0.0.1:8765/#jobs');
@@ -104,10 +104,12 @@ for(const width of [320,375,768,1024,1440,1920]){
    const main=document.querySelector('#main-content'),hero=main.querySelector('.section-top'),title=hero.querySelector('h1'),panel=main.querySelector('[aria-label="Job search filters"]'),row=panel.querySelector('.job-filter-row');
    const bounds=e=>e.getBoundingClientRect();
    const inside=e=>bounds(e).left>=-1&&bounds(e).right<=innerWidth+1;
-   return {scroll:document.documentElement.scrollWidth,heroBg:getComputedStyle(hero).backgroundColor,art:getComputedStyle(hero,'::before').backgroundImage,title:getComputedStyle(title).textTransform,radius:getComputedStyle(panel).borderRadius,active:getComputedStyle(document.querySelector('#navigation button.active')).backgroundColor,metrics:[...hero.querySelectorAll('.feed-metric strong')].map(e=>e.textContent),columns:getComputedStyle(row).gridTemplateColumns.split(' ').length,contained:[hero,panel,...panel.querySelectorAll('input,select,button')].every(inside)};
+   const shell=bounds(document.querySelector('.workspace-shell')),heroRect=bounds(hero),panelRect=bounds(panel),copy=bounds(hero.firstElementChild),list=bounds(document.querySelector('#jobs-list'));
+   const aligned=Math.abs(heroRect.left-shell.left)<2&&Math.abs(heroRect.right-shell.right)<2&&Math.abs(panelRect.left-copy.left)<2&&Math.abs(panelRect.left-list.left)<2&&Math.abs(panelRect.right-list.right)<2&&Math.abs((panelRect.left-shell.left)-(shell.right-panelRect.right))<2;
+   return {aligned,scroll:document.documentElement.scrollWidth,heroBg:getComputedStyle(hero).backgroundColor,art:getComputedStyle(hero,'::before').backgroundImage,title:getComputedStyle(title).textTransform,radius:getComputedStyle(panel).borderRadius,active:getComputedStyle(document.querySelector('#navigation button.active')).backgroundColor,metrics:[...hero.querySelectorAll('.feed-metric strong')].map(e=>e.textContent),columns:getComputedStyle(row).gridTemplateColumns.split(' ').length,contained:[hero,panel,...panel.querySelectorAll('input,select,button')].every(inside)};
   });
   const dark=theme==='dark';
-  if(design.scroll>width+1||!design.contained||design.heroBg!==(dark?'rgb(14, 14, 14)':'rgb(233, 232, 230)')||!design.art.includes('radial-gradient')||design.title!=='uppercase'||design.radius!=='0px'||design.active!==(dark?'rgb(255, 255, 255)':'rgb(17, 17, 17)')||design.metrics.length!==2||design.metrics.some(x=>!/^\d+$/.test(x))||design.columns!==(width<=430?1:width<=750?2:3))failures.push({job_feed_editorial:width,theme,...design});
+  if(design.scroll>width+1||!design.contained||!design.aligned||design.heroBg!==(dark?'rgb(14, 14, 14)':'rgb(233, 232, 230)')||!design.art.includes('radial-gradient')||design.title!=='uppercase'||design.radius!=='0px'||design.active!==(dark?'rgb(255, 255, 255)':'rgb(17, 17, 17)')||design.metrics.length!==2||design.metrics.some(x=>!/^\d+$/.test(x))||design.columns!==(width<=430?1:width<=750?2:3))failures.push({job_feed_editorial:width,theme,...design});
   const search=page.locator('#job-search');
   await search.fill('unlikely-job-feed-test-query-99999');
   await page.waitForFunction(()=>document.getElementById('feed-match-count')?.textContent==='0');
