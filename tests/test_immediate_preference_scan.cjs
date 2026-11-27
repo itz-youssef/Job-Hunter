@@ -92,7 +92,7 @@ test('account save workflow triggers immediate source scan only after a successf
  const monitor=fs.readFileSync('lib/secretj/native-preference-monitor.js','utf8');
  assert.match(monitor,/async function scanOneUser\(/);
  assert.match(monitor,/await qualifyJobs\(selected,latest\[0\],env,fetchImpl\)/);
- assert.match(monitor,/await reserveNew\(latest\[0\],signature\(latest\[0\]\),verified\.accepted\)/);
+ assert.match(monitor,/await reserveNew\(latest\[0\],signature\(latest\[0\]\),verified\.accepted,env\)/);
  assert.doesNotMatch(monitor.slice(monitor.indexOf('async function scanOneUser('),monitor.indexOf('function mailConfiguration(')),/flush\(|deliverQueued\(/);
 });
 
