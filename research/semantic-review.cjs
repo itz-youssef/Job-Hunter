@@ -27,6 +27,38 @@ function selectCases(cases){
  const accepted=unique.filter(c=>c.publicCase.initial_status==='candidate').sort((a,b)=>a.publicCase.id.localeCompare(b.publicCase.id)).slice(0,MAX_SAMPLE);
  return [...rejected.slice(0,MAX_CASES-accepted.length),...accepted];
 }
+// Build at most MAX_CALLS homogeneous independent-judge batches. This prevents
+// mixed origins or an unavailable endpoint consuming slots that could be used
+// for grounded rejected cases with an available independent reviewer.
+function planBatches(cases,slots){
+ const unique=[...new Map(cases.map(c=>[c.publicCase.id,c])).values()];
+ const strength=c=>({ 'missing-job-family-anchor':4,'corroboration-missing-family-anchor':4,'corroboration-missing-duty-signal':3,'missing-duty-signal':3,'missing-career-level-signal':3,'conflicting-career-level-signals':2,'quote-not-supported-by-duties':1,'corroboration-not-supported-by-duties':1 }[c.publicCase.initial_reason]||0);
+ const rejected=unique.filter(c=>c.publicCase.initial_status==='rejected').sort((a,b)=>strength(b)-strength(a)||a.publicCase.id.localeCompare(b.publicCase.id));
+ const audits=unique.filter(c=>c.publicCase.initial_status==='candidate').sort((a,b)=>a.publicCase.id.localeCompare(b.publicCase.id));
+ const groups=slots.map(slot=>({slot,rows:rejected.filter(c=>c.publicCase.origin_slot!==slot)}));
+ const candidates=[];
+ for(const group of groups){
+  for(let i=0;i<group.rows.length;i+=BATCH_SIZE)candidates.push({slot:group.slot,cases:group.rows.slice(i,i+BATCH_SIZE)});
+ }
+ const score=b=>b.cases.length*10+b.cases.reduce((n,c)=>n+strength(c),0);
+ candidates.sort((a,b)=>score(b)-score(a)||a.slot.localeCompare(b.slot));
+ const used=new Set(),result=[];
+ for(const candidate of candidates){
+  if(result.length>=MAX_CALLS)break;
+  const batch=candidate.cases.filter(c=>!used.has(c.publicCase.id)).slice(0,BATCH_SIZE);
+  if(!batch.length)continue;
+  batch.forEach(c=>used.add(c.publicCase.id));result.push({slot:candidate.slot,cases:batch});
+ }
+ // One accepted-case audit at most, preferentially without an extra call.
+ const audit=audits.find(c=>result.some(b=>b.cases.length<BATCH_SIZE&&b.slot!==c.publicCase.origin_slot));
+ if(audit&&used.size<MAX_CASES){
+  result.find(b=>b.cases.length<BATCH_SIZE&&b.slot!==audit.publicCase.origin_slot).cases.push(audit);
+ }else if(result.length<MAX_CALLS){
+  const sample=audits.find(c=>slots.some(slot=>slot!==c.publicCase.origin_slot));
+  if(sample)result.push({slot:slots.find(slot=>slot!==sample.publicCase.origin_slot),cases:[sample]});
+ }
+ return result;
+}
 function payload(cases){
  return {families:[...E.families],levels:[...E.levels],cases:cases.map(({publicCase:c})=>({id:c.id,kind:c.kind,title:c.title,proposed:c.proposed,original_quote:c.original_quote,original_corroboration:c.original_corroboration,source:c.source}))};
 }
@@ -65,4 +97,4 @@ function cachedResponse(c,row,day){
  if(!Number.isFinite(age)||age<0||age>7)return null;
  return {response:{id:row.id,checks:CRITERIA.map(k=>row.checks[k]),explanation:row.explanation,alternative:row.alternative,quote:row.verified_quotes[0],corroboration:row.verified_quotes[1]||''},judge:{model:row.judge_model,slot:row.judge_slot},reviewed_day:row.reviewed_day||row.day};
 }
-module.exports={CRITERIA,cachedResponse,VERSION,MAX_CASES,MAX_SAMPLE,MAX_CALLS,BATCH_SIZE,SOFT,SYSTEM,buildCase,selectCases,payload,unavailable,adjudicate};
+module.exports={CRITERIA,cachedResponse,VERSION,MAX_CASES,MAX_SAMPLE,MAX_CALLS,BATCH_SIZE,SOFT,SYSTEM,buildCase,selectCases,planBatches,payload,unavailable,adjudicate};
