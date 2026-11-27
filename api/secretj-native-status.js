@@ -4,6 +4,7 @@ const core=require('../lib/secretj/core');
 const prefs=require('../dist/assets/secretj-job-preferences');
 const matchCache=require('../lib/secretj/preference-cache');
 const isolated=require('../lib/secretj/isolated-read-routing');
+const catalog=require('../lib/secretj/dictionary-catalog');
 // Read watch readiness and its ordered page in one PostgreSQL snapshot.
 // The left joins keep one sentinel row for an absent state or an empty page.
 const CORE_FEED_SQL=`WITH feed_state AS MATERIALIZED (
@@ -42,6 +43,18 @@ function createHandler(env=process.env){return async function handler(req,res){
   const offset=action==='feed'?Number(req.query?.offset??0):0;
   const validOffset=Number.isSafeInteger(offset)&&offset>=0&&offset<=100000;
   const limit=250;
+  if(action==='feed'&&!validOffset)throw core.fail(400,'Invalid feed offset');
+  if(action==='feed'&&env.SECRETJ_NATIVE_MONITOR_ENABLED==='true'){
+    const ps=await core.query('SELECT egypt_only,internships,role_families,career_levels,max_experience_years FROM public.sj_preferences WHERE user_id=$1',[user.id]);
+    if(ps.length){
+      const shared=await catalog.read(env,ps[0]);
+      if(shared){
+        const matched=shared.jobs.filter(j=>prefs.assessPrepared(j,ps[0],shared.factsByJob.get(j)).match);
+        matched.sort((a,b)=>String(b.published_at||'').localeCompare(String(a.published_at||''))||String(a.url).localeCompare(String(b.url)));
+        return core.reply(res,200,{ok:true,ready:true,jobs:matched.slice(offset,offset+limit).map(j=>({...j,id:j.url,qualification_status:'accepted',qualification_mode:'dictionary-title-v1'})),next_offset:matched.length>offset+limit?offset+limit:null,matching_source:'shared-dictionary'});
+      }
+    }
+  }
   const isolatedReads=action==='feed'&&isolated.enabled('jobHunter',env);
   const primary=isolatedReads&&isolated.primaryPayloadsEnabled('jobHunter',env);
   const combined=action==='feed'&&validOffset;
