@@ -110,7 +110,7 @@ async function saveCompanies(companies, sha) {
 
 module.exports = async function handler(req, res) {
   const method = req.method || 'GET';
-  if (!['GET', 'POST', 'PATCH', 'DELETE'].includes(method))
+  if (!['GET', 'POST', 'PATCH'].includes(method))
     return respond(res, 405, { error: 'Method not allowed' });
   if (method !== 'GET' && !authorized(req))
     return respond(res, 401, { error: 'Invalid admin token' });
@@ -128,13 +128,6 @@ module.exports = async function handler(req, res) {
     const url = validatedUrl(body.url);
     const { companies, sha } = await loadCompanies();
     const index = companies.findIndex(c => validatedUrl(c.url) === url);
-
-    if (method === 'DELETE') {
-      if (index === -1) return respond(res, 404, { error: 'Company not found' });
-      companies.splice(index, 1);
-      await saveCompanies(companies, sha);
-      return respond(res, 200, { ok: true, companies });
-    }
 
     if (method === 'PATCH') {
       if (index === -1) return respond(res, 404, { error: 'Company not found' });
