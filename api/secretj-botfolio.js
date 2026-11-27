@@ -1,10 +1,20 @@
 'use strict';
 const core=require('../lib/secretj/core'), B=require('../lib/secretj/botfolio');
+const isolated=require('../lib/secretj/isolated-read-routing');
 const idOf=v=>{if(typeof v!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v))throw core.fail(404,'Bot not found');return v;};
 const fields='id,name,headline,published,created_at,updated_at';
 const valid=(v,n,label)=>core.validateText(v||'',n,label);
 const publicMeta=row=>({id:row.id,name:row.name,headline:row.headline});
-async function getPublic(id,withChat=false,omitKnowledge=false){
+async function getPublic(id,withChat=false,omitKnowledge=false,env){
+ const useIsolated=withChat&&!omitKnowledge&&isolated.enabled('botfolio',env);
+ if(useIsolated){
+  const rows=await core.query(`SELECT b.id,b.name,b.headline,b.embedding_model,b.updated_at,b.user_id,u.role AS owner_role,
+   encode(sha256(convert_to(to_jsonb(b)::text,'UTF8')),'hex') AS record_digest
+   FROM public.sj_botfolio_bots b JOIN public.sj_users u ON u.id=b.user_id WHERE b.id=$1 AND b.published=true AND u.is_active=true LIMIT 1`,[id]);
+  if(!rows.length)throw core.fail(404,'This portfolio is unavailable.');
+  const knowledge=await isolated.botKnowledge(env,rows[0]);
+  if(knowledge!==null){const {record_digest,...bot}=rows[0];return {...bot,knowledge};}
+ }
  const rows=await core.query('SELECT '+(withChat?'b.id,b.name,b.headline,'+(omitKnowledge?'':'b.knowledge,')+'b.embedding_model,b.updated_at,b.user_id,u.role AS owner_role':'b.id,b.name,b.headline')+' FROM public.sj_botfolio_bots b JOIN public.sj_users u ON u.id=b.user_id WHERE b.id=$1 AND b.published=true AND u.is_active=true LIMIT 1',[id]);
  if(!rows.length)throw core.fail(404,'This portfolio is unavailable.');
  return rows[0];
@@ -21,7 +31,7 @@ module.exports=async function(req,res){
    // published/active lookup, embedding-version checks and quota debits.
    // Invalid questions retain the original lookup-before-validation order.
    const direct=typeof body.message==='string'&&body.message.length<=900?B.localResponse(body.message.trim()):null;
-   const bot=await getPublic(id,true,direct!==null);
+   const bot=await getPublic(id,true,direct!==null,req.env);
    const message=valid(body.message,900,'Question');if(!message)throw core.fail(400,'Enter a question.');
    if(bot.embedding_model!==B.EMBED_MODEL)throw core.fail(503,'This portfolio needs to be re-indexed.');
    const ip=String(req.headers?.['x-forwarded-for']||'unknown').slice(0,100);
