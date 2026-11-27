@@ -22,6 +22,11 @@ LEFT JOIN LATERAL (
  ORDER BY discovered_at DESC,job_key ASC LIMIT $2 OFFSET $3
 ) j ON true
 ORDER BY j.discovered_at DESC,j.job_key ASC`;
+// Use one consistent core snapshot for readiness and authoritative digests.
+const ISOLATED_FEED_SQL=CORE_FEED_SQL
+ .replace('j.job_key,j.job_snapshot,j.status','j.job_key,j.record_digest,j.status')
+ .replace('SELECT job_key,job_snapshot,status,discovered_at,sent_at\n FROM public.sj_native_watch_jobs',
+  "SELECT w.job_key,encode(sha256(convert_to(to_jsonb(w)::text,'UTF8')),'hex') AS record_digest,w.status,w.discovered_at,w.sent_at\n FROM public.sj_native_watch_jobs w");
 function createHandler(env=process.env){return async function handler(req,res){
  try{
   core.allowedMethod(req,['GET']);
@@ -32,9 +37,9 @@ function createHandler(env=process.env){return async function handler(req,res){
   const validOffset=Number.isSafeInteger(offset)&&offset>=0&&offset<=100000;
   const limit=250;
   const isolatedReads=action==='feed'&&isolated.enabled('jobHunter',env);
-  const combined=action==='feed'&&validOffset&&!isolatedReads;
+  const combined=action==='feed'&&validOffset;
   const params=[user.id,limit+1,offset];
-  const state=combined?await core.query(CORE_FEED_SQL,params):await core.query(
+  let state=combined?await core.query(isolatedReads?ISOLATED_FEED_SQL:CORE_FEED_SQL,params):await core.query(
     `SELECT w.initialized_at,w.updated_at,w.preference_signature,
        (w.updated_at>=p.updated_at) AS preferences_current
        FROM public.sj_native_watch_state w
@@ -47,23 +52,19 @@ function createHandler(env=process.env){return async function handler(req,res){
     if(!ready)return core.reply(res,200,{ok:true,ready:false,jobs:[],
       next_offset:null,message:'Waiting for first source monitoring pass with current preferences'});
     if(!validOffset)throw core.fail(400,'Invalid feed offset');
-    let rows=combined?state.filter(row=>row.job_key!==null):null;
+    let rows=state.filter(row=>row.job_key!==null);
     if(isolatedReads){
-      const metadata=await core.query(
-        `SELECT w.job_key,w.status,w.discovered_at,w.sent_at,
-          encode(sha256(convert_to(to_jsonb(w)::text,'UTF8')),'hex') AS record_digest
-          FROM public.sj_native_watch_jobs w WHERE w.user_id=$1
-          ORDER BY w.discovered_at DESC,w.job_key ASC LIMIT $2 OFFSET $3`,params);
-      rows=await isolated.jobSnapshots(env,user.id,metadata);
+      rows=await isolated.jobSnapshots(env,user.id,rows);
+      // Re-read readiness and the entire page atomically on any mismatch,
+      // timeout or partial mirror result. Never mix versions or expose a page
+      // from preferences that changed during the remote request.
+      if(rows===null){
+        state=await core.query(CORE_FEED_SQL,params);
+        if(state[0]?.preferences_current!==true)return core.reply(res,200,{ok:true,ready:false,jobs:[],
+          next_offset:null,message:'Waiting for first source monitoring pass with current preferences'});
+        rows=state.filter(row=>row.job_key!==null);
+      }
     }
-    // Exact-version miss or isolated-store failure: use the original
-    // authorized source query, never an incomplete or stale shadow page.
-    if(rows===null)rows=await core.query(
-      `SELECT job_key,job_snapshot,status,discovered_at,sent_at
-       FROM public.sj_native_watch_jobs
-       WHERE user_id=$1
-       ORDER BY discovered_at DESC,job_key ASC LIMIT $2 OFFSET $3`,
-      params);
     // Fast path: records matched by the current saved preferences and exact
     // dictionary implementation are already validated in Neon. Reusing them
     // avoids an additional preferences query and per-job classification.
@@ -116,3 +117,4 @@ function createHandler(env=process.env){return async function handler(req,res){
 module.exports=createHandler();
 module.exports.createHandler=createHandler;
 module.exports.CORE_FEED_SQL=CORE_FEED_SQL;
+module.exports.ISOLATED_FEED_SQL=ISOLATED_FEED_SQL;
