@@ -76,11 +76,15 @@ for(const width of [375,1440]){
     const geometry=enabled.length===disabled.length&&enabled.every((r,i)=>['x','y','w','h'].every(k=>Math.abs(r[k]-disabled[i][k])<.5));
     const visual=enabled.some((r,i)=>['color','background','shadow'].some(k=>r[k]!==disabled[i]?.[k]));
     const primary=document.querySelector('.jh-intro .jh-intro-actions .sj-land-btn.dark[data-navigate="jobs"],body.jh-workspace #main-content .btn.primary:not(:disabled)');
-    return {geometry,visual,workspace:document.body.classList.contains('jh-workspace'),intro:!!document.querySelector('.jh-intro'),accent:primary?getComputedStyle(primary).backgroundColor:null};
+    const shell=getComputedStyle(document.querySelector('.workspace-shell')),main=getComputedStyle(document.getElementById('main-content'));
+    const active=document.querySelector('.sidebar #navigation button.active');
+    return {geometry,visual,workspace:document.body.classList.contains('jh-workspace'),intro:!!document.querySelector('.jh-intro'),accent:primary?getComputedStyle(primary).backgroundColor:null,active:active?getComputedStyle(active).backgroundColor:null,shellArt:shell.backgroundImage,mainArt:main.backgroundImage,mainBg:main.backgroundColor};
    });
    const scoped=['/#jobs','/#saved','/#companies','/#alerts'].includes(path),intro=path==='/#hunter';
    if(data.missingStylesheet||!data.geometry||data.workspace!==scoped||data.intro!==intro||data.visual!==(scoped||intro))failures.push({jobhunter_refinement:path,width,theme,...data});
-   if(data.accent&&data.accent!==(theme==='dark'?'rgb(211, 166, 68)':'rgb(89, 64, 71)'))failures.push({jobhunter_refinement_accent:path,width,theme,...data});
+   const expectedAccent=scoped?(theme==='dark'?'rgb(237, 237, 237)':'rgb(32, 32, 32)'):(theme==='dark'?'rgb(211, 166, 68)':'rgb(89, 64, 71)');
+   if(scoped&&(data.active!==expectedAccent||data.mainBg!=='rgba(0, 0, 0, 0)'||data.mainArt!=='none'||!data.shellArt.includes('radial-gradient')))failures.push({jobhunter_continuous_workspace:path,width,theme,...data});
+   if(data.accent&&data.accent!==expectedAccent)failures.push({jobhunter_refinement_accent:path,width,theme,...data});
    if(path==='/#hunter'||path==='/#jobs')await page.screenshot({path:'jobhunter-'+path.slice(2)+'-'+theme+'-'+width+'.png',animations:'disabled'});
   }
  }
