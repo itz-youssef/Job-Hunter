@@ -58,3 +58,15 @@ test('durable synchronization acknowledges only exact applied revisions and retr
   assert.deepEqual(await R.syncService('jobHunter',env,async()=>[]),{status:'empty',count:0});assert.equal(remote,1);
  }finally{R.setQueryForTests(null);}
 });
+
+test('Vercel production automatically uses only valid configured isolated endpoints, with explicit rollback',()=>{
+ const previous=process.env.VERCEL_ENV;
+ try{
+  const {SECRETJ_JOB_HUNTER_ISOLATED_READS,SECRETJ_BOTFOLIO_ISOLATED_READS,...connections}=env;
+  process.env.VERCEL_ENV='preview';assert.equal(R.enabled('jobHunter',connections),false);
+  process.env.VERCEL_ENV='production';assert.equal(R.enabled('jobHunter',connections),true);
+  assert.equal(R.enabled('botfolio',connections),true);
+  assert.equal(R.enabled('jobHunter',{...connections,SECRETJ_JOB_HUNTER_ISOLATED_READS:'false'}),false);
+  assert.equal(R.enabled('jobHunter',{...connections,JOB_HUNTER_DATABASE_URL:''}),false);
+ }finally{if(previous===undefined)delete process.env.VERCEL_ENV;else process.env.VERCEL_ENV=previous;}
+});
