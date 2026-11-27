@@ -200,3 +200,29 @@ test('Senior-only preference returns qualifying baseline jobs through feed API',
  assert.equal(result.ready,true);
  assert.deepEqual(result.jobs.map(j=>j.title),['Senior Software Engineer']);
 });
+
+test('isolated feed has identical output and authoritative fallback on a missing version',async()=>{
+ const isolated=require('../lib/secretj/isolated-read-routing');
+ const env={SECRETJ_JOB_HUNTER_ISOLATED_READS:'true',JOB_HUNTER_DATABASE_URL:'postgresql://test:test@ep-soft-cloud-bgoaznc6.c-9.eu-central-1.aws.neon.tech/neondb'};
+ const job={title:'Junior AI Engineer',company:'A',location:'Cairo, Egypt',url:'https://example.com/job'};
+ const row={job_key:job.url,status:'baseline',discovered_at:'2026-11-16',sent_at:null};
+ let fullReads=0,metaReads=0,remoteReads=0;
+ const sql=(q,args)=>{
+  assert.equal(args[0],UID);
+  if(q.includes('sj_native_watch_state'))return [{preferences_current:true}];
+  if(q.includes('record_digest')){metaReads++;return [{...row,record_digest:'a'.repeat(64)}];}
+  if(q.includes('FROM public.sj_native_watch_jobs')){fullReads++;return [{...row,job_snapshot:job}];}
+  if(q.includes('FROM public.sj_preferences'))return [{role_families:[],career_levels:[],egypt_only:false,max_experience_years:null,internships:false}];
+  throw Error('Unexpected query');
+ };
+ try{
+  const baseline=await request({action:'feed'},sql,{...env,SECRETJ_JOB_HUNTER_ISOLATED_READS:'false'});
+  assert.equal(baseline.status,200);assert.equal(baseline.result.jobs.length,1);
+  isolated.setQueryForTests(async(service,q,args)=>{remoteReads++;assert.equal(args[2],UID);return [{record_digest:'a'.repeat(64),job_key:job.url,job_snapshot:job}];});
+  const hit=await request({action:'feed'},sql,env);assert.deepEqual(hit,baseline);
+  assert.equal(fullReads,1);assert.equal(metaReads,1);assert.equal(remoteReads,1);
+  isolated.setQueryForTests(async()=>[]);
+  const miss=await request({action:'feed'},sql,env);assert.deepEqual(miss,baseline);
+  assert.equal(fullReads,2);assert.equal(metaReads,2);
+ }finally{isolated.setQueryForTests(null);}
+});
