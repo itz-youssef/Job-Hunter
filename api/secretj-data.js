@@ -168,7 +168,13 @@ module.exports=async function handler(req,res){
            egypt_only=EXCLUDED.egypt_only,internships=EXCLUDED.internships,
            max_experience_years=EXCLUDED.max_experience_years,
            role_families=EXCLUDED.role_families,email_alerts=EXCLUDED.email_alerts,
-           career_levels=EXCLUDED.career_levels,updated_at=now()`,
+           career_levels=EXCLUDED.career_levels,updated_at=CASE WHEN
+             (sj_preferences.egypt_only,sj_preferences.internships,sj_preferences.max_experience_years,
+              sj_preferences.role_families,sj_preferences.career_levels)
+             IS DISTINCT FROM
+             (EXCLUDED.egypt_only,EXCLUDED.internships,EXCLUDED.max_experience_years,
+              EXCLUDED.role_families,EXCLUDED.career_levels)
+             THEN now() ELSE sj_preferences.updated_at END`,
         [userId,body.egypt_only,body.internships,years,body.role_families,body.email_alerts,body.career_levels||[]]
       );
       return core.reply(res,200,{ok:true});
