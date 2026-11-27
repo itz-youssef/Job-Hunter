@@ -141,6 +141,36 @@ for(const theme of ['light','dark']){
  if(links.length!==3||links.some(x=>x.bg!=='rgba(0, 0, 0, 0)'||x.shadow!=='none'))failures.push({jobhunter_tools:theme,links});
 }
 
+// The avatar wrapper must blend into the header, and all page controls
+// must remain underline-free in their normal and hovered states.
+for(const theme of ['light','dark']){
+ await page.setViewportSize({width:1440,height:900});
+ for(const path of ['/#jobs','/#home','/#hunter','/account.html?view=preferences','/botfolio.html#home','/manage-companies.html','/privacy.html','/terms.html']){
+  await page.goto('http://127.0.0.1:8765'+path);
+  await page.evaluate(t=>localStorage.setItem('jh-theme',t),theme);
+  await page.reload();
+  const state=await page.evaluate(()=>{
+   const nodes=[...document.querySelectorAll('a,button,summary,[role="button"],u')].filter(e=>e.getClientRects().length);
+   return {stylesheet:[...document.styleSheets].some(s=>s.href?.includes('/secretj-interaction-polish.css')),underlined:nodes.filter(e=>getComputedStyle(e).textDecorationLine.includes('underline')).slice(0,5).map(e=>e.textContent.trim().slice(0,80))};
+  });
+  if(!state.stylesheet||state.underlined.length)failures.push({interaction_polish:path,theme,...state});
+  if(path==='/#jobs'){
+   await page.locator('#sj-profile-photo').waitFor({state:'visible'});
+   const avatar=page.locator('#sj-profile-menu summary');
+   for(const hover of [false,true]){
+    if(hover)await avatar.hover();else await page.mouse.move(900,40);
+    const backgrounds=await avatar.evaluate(el=>[el,el.parentElement,el.parentElement.parentElement].map(e=>getComputedStyle(e).backgroundColor));
+    if(backgrounds.some(bg=>bg!=='rgba(0, 0, 0, 0)'))failures.push({avatar_wrapper:theme,hover,backgrounds});
+   }
+  }
+  const target=page.locator(path==='/#jobs'?'#theme-toggle':path==='/#home'||path==='/#hunter'?'[data-home-theme-toggle]':path.startsWith('/botfolio')?'#theme':'a[href]:visible').first();
+  if(await target.isVisible()){
+   await target.hover();
+   if(await target.evaluate(el=>getComputedStyle(el).textDecorationLine.includes('underline')))failures.push({interaction_hover:path,theme});
+  }
+ }
+}
+
 // Botfolio-specific checks: authenticated workspace, all internal views, both themes,
 // small phones through 4K, and a sidebar anchored to the viewport on desktop.
 for(const w of [320,375,390,430,600,768,900,1024,1280,1440,1920,2560,3840]){
