@@ -226,7 +226,7 @@ a:hover{color:var(--ink)}
   <script src="/assets/secretj-job-search.js?v=catalog-search-1" defer></script>
   <script src="/assets/secretj-welcome-tour.js?v=welcome-1" defer></script>
 <link rel="stylesheet" href="/assets/responsive.css?v=mobile-workspace-nav-20261124">
-<link rel="stylesheet" href="/assets/secretj-loading.css?v=operation-progress-20261127">
+<link rel="stylesheet" href="/assets/secretj-loading.css?v=workspace-neutral-20261127">
 <script src="/assets/secretj-progress.js?v=silent-refresh-20261127"></script>
 <link rel="stylesheet" href="/assets/secretj-landing.css?v=oxblood-leather-open-glow-20261124">
 <script src="/assets/secretj-landing.js?v=botfolio-explore-20261125"></script>
@@ -366,7 +366,7 @@ a:hover{color:var(--ink)}
   const TAB_SYNC_MIN_MS=120000;
   let lastMemberSyncAt=0;
   let memberSyncRunning=false;
-  let memberHydrated=false;
+  let memberHydrated=false,feedAccountReady=false;
   // Keep the two public landing views mounted in memory between hash routes.
   // Never persist HTML or personalized data to browser storage.
   const landingViews=new Map();
@@ -463,7 +463,7 @@ a:hover{color:var(--ink)}
       if(changed)profileDirty=false;
       state.member=result.user||null;
       if(changed || !state.member){
-        if(changed){landingViews.clear();state.memberLoading=true;}
+        if(changed){landingViews.clear();state.memberLoading=true;feedAccountReady=false;}
         profile={...blankProfile(),photo:''};cvEntry=null;
         state.memberEmail=null;state.memberPrefs=null;state.memberPrefsConfigured=false;state.watchFeed=[];state.watchFeedLoaded=false;state.watchFeedError='';state.saved=new Set();state.savedRecords=[];
         render();
@@ -475,11 +475,46 @@ a:hover{color:var(--ink)}
       // Start the authoritative feed read as soon as preferences arrive,
       // independently of CV/avatar/profile/email status transfers.
       const previousPrefs=JSON.stringify(state.memberPrefs||null);
-      const earlyFeed=requests[5].then(data=>{
-        if(sequence!==memberSequence||state.member?.id!==userId||data?.configured!==true)return null;
-        if(state.watchFeedLoaded&&!changed&&previousPrefs===JSON.stringify(data.preferences||null))return null;
-        return loadMatchingFeed(userId,sequence,sjSilent);
-      }).then(feed=>({feed}),error=>({error}));
+      const earlyFeed=requests[5].then(async data=>{
+        if(sequence!==memberSequence||state.member?.id!==userId)return;
+        const configured=data?.configured===true;
+        const nextPrefs=configured?data.preferences:null;
+        const preferencesChanged=changed||previousPrefs!==JSON.stringify(nextPrefs||null);
+        state.memberPrefsConfigured=configured;
+        state.memberPrefs=nextPrefs;
+        if(preferencesChanged){
+          state.watchFeed=[];state.watchFeedLoaded=false;
+          state.watchFeedPendingSince=0;state.watchFeedError='';
+        }
+        // The feed can be displayed once its own preferences, verified rows
+        // and saved state are ready. Unrelated profile documents cannot block it.
+        const readFeed=configured&&(!state.watchFeedLoaded||preferencesChanged);
+        const feedRequest=readFeed?loadMatchingFeed(userId,sequence,sjSilent):Promise.resolve(null);
+        const [feedResult,savedResult]=await Promise.allSettled([feedRequest,requests[3]]);
+        if(sequence!==memberSequence||state.member?.id!==userId)return;
+        if(savedResult.status==='fulfilled'){
+          state.savedRecords=savedResult.value?.jobs||[];
+          state.saved=new Set(state.savedRecords.map(x=>String(x.job_key)));
+        }
+        if(readFeed){
+          if(feedResult.status==='fulfilled'&&feedResult.value){
+            const feed=feedResult.value;
+            state.watchFeed=feed.jobs||[];
+            state.watchFeedLoaded=feed.ready===true;
+            state.watchFeedPendingSince=feed.ready===false?(state.watchFeedPendingSince||Date.now()):0;
+            state.watchFeedError=feed.error||'';
+          }else if(feedResult.status==='rejected'){
+            state.watchFeedError=feedResult.reason?.message||'Could not load personalized monitoring feed';
+          }
+        }
+        feedAccountReady=true;
+        if(state.page==='jobs'&&!document.hidden){
+          syncFeedCount();render(sjSilent&&wasReady&&!identityChanged);
+          window.SecretJStartup?.finish();
+        }
+      }).catch(error=>{
+        if(sequence===memberSequence&&state.member?.id===userId)state.watchFeedError=error.message||'Could not load preferences';
+      });
       // Attach handlers immediately to every parallel read.
       const resultsPromise=Promise.allSettled(requests);
       const results=await resultsPromise;
@@ -496,31 +531,11 @@ a:hover{color:var(--ink)}
       if(cv?.found && cv.file){
         cvEntry={name:cv.file.original_name,blob:base64Blob(cv.file.base64,cv.file.mime_type),savedAt:cv.file.updated_at||''};
       }
-      state.savedRecords=saved?.jobs||[];
-      state.saved=new Set(state.savedRecords.map(x=>String(x.job_key)));
+      // Saved state is applied by earlyFeed; do not overwrite an action taken
+      // while the remaining account requests were still completing.
       state.memberEmail=value(4);
-      state.memberPrefsConfigured=value(5)?.configured===true;
-      state.memberPrefs=state.memberPrefsConfigured?value(5)?.preferences:null;
-      const preferencesChanged=changed||previousPrefs!==JSON.stringify(state.memberPrefs||null);
-      // Keep authenticated feed mounted unless the account or filters changed.
-      if(preferencesChanged){
-        state.watchFeed=[];state.watchFeedLoaded=false;
-        state.watchFeedPendingSince=0;state.watchFeedError='';
-      }
-      if(state.memberPrefsConfigured&&(!state.watchFeedLoaded||preferencesChanged)){
-        try{
-          const outcome=await earlyFeed;
-          if(outcome.error)throw outcome.error;
-          const feed=outcome.feed;
-          if(sequence!==memberSequence||state.member?.id!==userId)return;
-          state.watchFeed=feed?.jobs||[];
-          state.watchFeedLoaded=feed?.ready===true;
-          state.watchFeedPendingSince=feed?.ready===false?Date.now():0;
-          state.watchFeedError=feed?.error||'';
-        }catch(error){
-          state.watchFeedError=error.message||'Could not load personalized monitoring feed';
-        }
-      }
+      await earlyFeed;
+      if(sequence!==memberSequence||state.member?.id!==userId)return;
       state.memberErrors=Object.fromEntries(resources.map((key,i)=>[key,results[i].status==='rejected'?results[i].reason.message:'']));
       state.memberError='';
     }catch(e){
@@ -528,6 +543,7 @@ a:hover{color:var(--ink)}
       landingViews.clear();
       identityChanged=!!state.member;
       profileDirty=false;
+      feedAccountReady=false;
       state.member=null;profile={...blankProfile(),photo:''};cvEntry=null;
       state.memberEmail=null;state.memberPrefs=null;state.memberPrefsConfigured=false;state.watchFeed=[];state.watchFeedLoaded=false;state.watchFeedError='';state.saved=new Set();state.savedRecords=[];
       state.memberError=e.message;
@@ -535,6 +551,7 @@ a:hover{color:var(--ink)}
       if(sequence===memberSequence){
         memberSyncRunning=false;
         memberHydrated=true;
+        feedAccountReady=true;
         state.memberLoading=false;
         if(!document.hidden){syncFeedCount();render(sjSilent&&wasReady&&!identityChanged);}
       }
@@ -694,7 +711,7 @@ a:hover{color:var(--ink)}
     const node=el('#nav-job-count');
     // A changed account or preference set must not preserve an invalid role filter.
     if(state.role!=='all'&&!availableRoleOptions().some(c=>c.key===state.role))state.role='all';
-    if(node)node.textContent=state.memberLoading?'…':state.watchFeedLoading&&!state.watchFeedLoaded?'…':String(filterJobs(validJobs()).length);
+    if(node)node.textContent=state.memberLoading&&!feedAccountReady?'…':state.watchFeedLoading&&!state.watchFeedLoaded?'…':String(filterJobs(validJobs()).length);
   }
   async function json(path,sjSilent=false){const r=await fetch(path,{cache:'no-store',sjSilent});if(!r.ok)throw Error('HTTP '+r.status);return r.json();}
   async function companyApi(method='GET',payload,admin,sjSilent=false){
@@ -1285,7 +1302,7 @@ a:hover{color:var(--ink)}
   // The navbar's count is the same filtered list used to render job cards.
   // Recompute on auth completion, periodic snapshot refresh, and each filter.
   function jobsPage(saved=false){
-    if(!saved&&state.memberLoading&&state.companyFilter==='all')return top('YOUR JOB FEED','Loading your opportunities','We are securely loading your preferences.')+
+    if(!saved&&state.memberLoading&&!feedAccountReady&&state.companyFilter==='all')return top('YOUR JOB FEED','Loading your opportunities','We are securely loading your preferences.')+
       loadingSkeleton('Preparing your personalized feed','Checking your account and saved filters…',6);
     if(!saved&&state.member&&state.memberPrefsConfigured&&!state.watchFeedLoaded&&state.companyFilter==='all'&&
        (state.watchFeedLoading&&!state.watchFeedPendingSince&&!state.reviewExcluded&&!state.query.trim()))
