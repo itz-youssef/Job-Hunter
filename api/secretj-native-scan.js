@@ -8,6 +8,7 @@
  */
 const core=require('../lib/secretj/core');
 const monitor=require('../lib/secretj/native-preference-monitor');
+const isolated=require('../lib/secretj/isolated-read-routing');
 function createImmediateHandler(env,ctx){
  return async function immediateHandler(req,res){
   try{
@@ -44,6 +45,7 @@ function createImmediateHandler(env,ctx){
         [user.id,complete?'complete':'failed',
          complete?null:String(result.status||'source data unavailable').slice(0,180),
          claimed[0].started_at]);
+       if(complete)await isolated.syncAfterWrite('jobHunter',env,user.id);
      }catch(error){
        // Log no identity, preferences, URL, API keys or private job records.
        await core.query(
