@@ -15,7 +15,7 @@ test('both pages load a single shared loading stylesheet',()=>{
 });
 test('skeleton is only active during a real feed fetch or account hydration',()=>{
   assert.match(home,/function loadingSkeleton\(/);
-  assert.match(home,/if\(!saved&&state\.memberLoading&&state\.companyFilter==='all'\)/);
+  assert.match(home,/if\(!saved&&state\.memberLoading&&!feedAccountReady&&state\.companyFilter==='all'\)/);
   assert.match(home,/state\.watchFeedLoading&&!state\.watchFeedLoaded/);
   assert.match(home,/state\.watchFeedLoading=false;/);
   assert.match(home,/watchFeedPendingSince/);
@@ -80,7 +80,7 @@ test('global loader starts before first paint and fails open without a minimum d
     assert.ok(script);
     assert.ok(html.indexOf(script[0])<html.indexOf('<body>'));
     assert.match(html,/<body>\s*<div id="sj-startup-loader"[^>]*role="status"/);
-    assert.match(html,/secretj-loading\.css\?v=operation-progress-20261127/);
+    assert.match(html,/secretj-loading\.css\?v=(?:operation-progress|workspace-neutral)-20261127/);
     for(const theme of ['light','dark']){
       const attrs=new Set();let timer;let delay;let restored;let cleared=false;
       const root={dataset:{},setAttribute:name=>attrs.add(name),removeAttribute:name=>attrs.delete(name)};
@@ -136,7 +136,7 @@ test('all interactive Secret J workspaces share nonblocking operation feedback',
  for(const path of ['dist/index.html','dist/account.html','dist/manage-companies.html','dist/botfolio.html','dist/botfolio-chat.html']){
   const html=fs.readFileSync(path,'utf8');
   assert.match(html,/secretj-progress\.js\?v=(?:silent-refresh-)?20261127/);
-  assert.match(html,/secretj-loading\.css\?v=operation-progress-20261127/);
+  assert.match(html,/secretj-loading\.css\?v=(?:operation-progress|workspace-neutral)-20261127/);
  }
  const bf=fs.readFileSync('dist/assets/botfolio.js','utf8');
  const chat=fs.readFileSync('dist/assets/botfolio-chat.js','utf8');
@@ -160,4 +160,15 @@ test('automatic workspace refresh is silent while manual refresh still shows fee
  assert.match(home,/!state\.watchFeedSilent\?/);
  const header=fs.readFileSync('dist/assets/secretj-home.js','utf8');
  assert.equal((header.match(/sjSilent: true/g)||[]).length,2);
+});
+
+test('feed is published before unrelated account resources finish and skeleton uses parent canvas',()=>{
+ const start=home.indexOf('const earlyFeed=requests[5].then(async data=>');
+ const end=home.indexOf('const results=await resultsPromise;',start);
+ assert.ok(start>=0&&end>start);
+ const early=home.slice(start,end);
+ assert.match(early,/feedAccountReady=true/);
+ assert.match(early,/syncFeedCount\(\);render\(/);
+ assert.match(early,/state\.watchFeedLoaded=feed\.ready===true/);
+ assert.match(css,/\.sj-skeleton-card[\s\S]*?background-color:transparent!important/);
 });
