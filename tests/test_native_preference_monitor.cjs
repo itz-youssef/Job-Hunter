@@ -234,3 +234,33 @@ test('batch SQL failure leaves failed users for the next scheduled scan and cont
   assert.deepEqual(await monitor.reservePeriodic(users,[]),{processed:1,failed:40});
  }finally{core.setQueryForTests(null);}
 });
+
+test('exact preference reuse preserves per-user payload and avoids redundant assessment at scale',async()=>{
+ const prefs=require('../dist/assets/secretj-job-preferences');
+ const original=prefs.assess;let evaluations=0,calls=0,rowsSeen=0;
+ const jobs=[other('ai','Junior AI Engineer'),other('hr','HR Manager')];
+ const users=Array.from({length:1000},(_,i)=>({id:'11111111-1111-4111-8111-'+String(i).padStart(12,'0'),egypt_only:false,internships:false,career_levels:i%2?['senior','manager']:['junior'],role_families:i%2?['hr']:['ai_ml'],max_experience_years:null,preferences_updated_at:'2026-11-26T00:00:00Z'}));
+ const expected=await Promise.all(users.slice(0,2).map(async u=>(await monitor.qualifyJobs(monitor.matching(jobs,u),u)).accepted));
+ prefs.assess=(...args)=>{evaluations++;return original(...args);};
+ core.setQueryForTests(async(sql,args)=>{
+  calls++;
+  const rows=JSON.parse(args[0]);rowsSeen+=rows.length;
+  for(const row of rows){
+   const i=Number(row.user_id.slice(-12)),u=users[i];
+   assert.equal(row.signature,monitor.signature(u));
+   assert.equal(row.preference_time,u.preferences_updated_at);
+   assert.deepEqual(row.jobs.map(x=>[x.key,x.job.qualification_reason]),expected[i%2].map(j=>[j.url,j.qualification_reason]));
+   assert.ok(row.jobs.every(x=>x.job.qualification_preference_signature===row.signature));
+  }
+  return rows.map(r=>({user_id:r.user_id}));
+ });
+ try{
+  assert.deepEqual(await monitor.reservePeriodic(users,jobs),{processed:1000,failed:0});
+  assert.equal(rowsSeen,1000);assert.equal(calls,25);assert.equal(evaluations,4);
+  // New invocation must re-evaluate a changed catalog, never stale-cache results.
+  jobs[0]={...jobs[0],title:'Senior AI Engineer'};
+  core.setQueryForTests(async(sql,args)=>JSON.parse(args[0]).map(r=>({user_id:r.user_id})));
+  assert.deepEqual(await monitor.reservePeriodic(users.slice(0,2),jobs),{processed:2,failed:0});
+  assert.equal(evaluations,8);
+ }finally{prefs.assess=original;core.setQueryForTests(null);}
+});
