@@ -129,6 +129,18 @@ for(const width of [375,1440]){
  }
 }
 
+// Tools links should be transparent on the approved workspace in both themes.
+for(const theme of ['light','dark']){
+ await page.setViewportSize({width:1440,height:900});
+ await page.goto('http://127.0.0.1:8765/#jobs');
+ await page.evaluate(t=>localStorage.setItem('jh-theme',t),theme);
+ await page.reload();
+ await page.waitForFunction(t=>document.documentElement.dataset.theme===t&&document.body.classList.contains('jh-workspace'),theme);
+ await page.mouse.move(900,40);
+ const links=await page.locator('.sidebar .secondary-links a[href]').evaluateAll(els=>els.map(el=>({label:el.textContent.trim(),bg:getComputedStyle(el).backgroundColor,shadow:getComputedStyle(el).boxShadow})));
+ if(links.length!==3||links.some(x=>x.bg!=='rgba(0, 0, 0, 0)'||x.shadow!=='none'))failures.push({jobhunter_tools:theme,links});
+}
+
 // Botfolio-specific checks: authenticated workspace, all internal views, both themes,
 // small phones through 4K, and a sidebar anchored to the viewport on desktop.
 for(const w of [320,375,390,430,600,768,900,1024,1280,1440,1920,2560,3840]){
