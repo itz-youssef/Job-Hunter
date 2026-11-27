@@ -218,7 +218,7 @@ test('isolated feed has identical output and authoritative fallback on a missing
  try{
   const baseline=await request({action:'feed'},sql,{...env,SECRETJ_JOB_HUNTER_ISOLATED_READS:'false'});
   assert.equal(baseline.status,200);assert.equal(baseline.result.jobs.length,1);
-  isolated.setQueryForTests(async(service,q,args)=>{remoteReads++;assert.equal(args[2],UID);return [{record_digest:'a'.repeat(64),job_key:job.url,job_snapshot:job}];});
+  isolated.setQueryForTests(async(service,q,args)=>{remoteReads++;assert.equal(args[1],UID);return [{record_digest:'a'.repeat(64),job_key:job.url,job_snapshot:job}];});
   const hit=await request({action:'feed'},sql,env);assert.deepEqual(hit,baseline);
   assert.equal(fullReads,1);assert.equal(metaReads,1);assert.equal(remoteReads,1);
   isolated.setQueryForTests(async()=>[]);
