@@ -133,7 +133,7 @@ test('account tabs cache only successful current-user views and invalidate after
 test('all interactive Secret J workspaces share nonblocking operation feedback',()=>{
  for(const path of ['dist/index.html','dist/account.html','dist/manage-companies.html','dist/botfolio.html','dist/botfolio-chat.html']){
   const html=fs.readFileSync(path,'utf8');
-  assert.match(html,/secretj-progress\.js\?v=20261127/);
+  assert.match(html,/secretj-progress\.js\?v=(?:silent-refresh-)?20261127/);
   assert.match(html,/secretj-loading\.css\?v=operation-progress-20261127/);
  }
  const bf=fs.readFileSync('dist/assets/botfolio.js','utf8');
@@ -144,4 +144,18 @@ test('all interactive Secret J workspaces share nonblocking operation feedback',
  assert.match(chat,/clearTimeout\(slow\);finish\(\);setBusy\(false\)/);
  assert.match(css,/\.sj-progress-compact \.sj-progress-rail\{display:none\}/);
  assert.match(css,/pointer-events:none/);
+});
+
+test('automatic workspace refresh is silent while manual refresh still shows feedback',()=>{
+ assert.match(home,/const initialMember=hydrateMember\(true\)/);
+ assert.match(home,/const initialCatalog=refresh\(true,true\)/);
+ assert.match(home,/refresh\(true,true\);\s*refreshMatchingFeed\(\);/);
+ assert.match(home,/async function refreshMatchingFeed\(sjSilent=true\)/);
+ assert.match(home,/hydrateMember\(true\);\},180\)/);
+ assert.match(home,/await Promise\.allSettled\(\[refresh\(\),hydrateMember\(\)\]\)/);
+ assert.match(home,/lastRenderedHtml===html\)return/);
+ assert.match(home,/state\.page==='profile'&&profileDirty/);
+ assert.match(home,/!state\.watchFeedSilent\?/);
+ const header=fs.readFileSync('dist/assets/secretj-home.js','utf8');
+ assert.equal((header.match(/sjSilent: true/g)||[]).length,2);
 });
