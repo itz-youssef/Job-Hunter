@@ -25,6 +25,7 @@
       const response = await fetch('/api/secretj-data?scope=avatar', {
         credentials: 'same-origin',
         cache: 'no-store',
+        sjSilent: true,
         headers: { Accept: 'application/json' }
       });
       if (!response.ok) throw Error('Avatar not available');
@@ -68,6 +69,7 @@
       const response = await fetch('/api/secretj-auth?action=session', {
         credentials: 'same-origin',
         cache: 'no-store',
+        sjSilent: true,
         headers: { Accept: 'application/json' }
       });
       if (!response.ok) throw Error('Session unavailable');
