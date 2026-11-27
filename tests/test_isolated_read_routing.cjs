@@ -101,3 +101,29 @@ test('bounded write drain processes multiple batches but never wakes remote for 
  core.setQueryForTests(async(sql)=>{if(sql.startsWith('SELECT')){batches++;return batches<=2?Array.from({length:100},(_,i)=>({owner_id:'owner',entity_key:'job'+i,revision:String(batches*100+i),record_text:'{}',record_digest:digest})):[];}acks++;return [];});
  try{R.setQueryForTests(async()=>{remote++;return [{applied:100}];});assert.deepEqual(await R.drainWrites('jobHunter',settings,4),{status:'synced',count:200});assert.equal(batches,3);assert.equal(remote,2);assert.equal(acks,2);}finally{R.setQueryForTests(null);core.setQueryForTests(null);}
 });
+
+test('product primary catalog deduplicates public content and keeps qualification private',async()=>{
+ const settings={...env,SECRETJ_PRODUCT_PRIMARY_PAYLOADS:'true'};
+ let writes=0;const job={title:'Engineer',url:'https://example.invalid/job',qualification_status:'accepted',qualification_reason:'private qualification'};
+ try{
+  R.setQueryForTests(async(service,sql,args)=>{writes++;assert.equal(service,'jobHunter');assert.match(sql,/put_job_payloads/);assert.deepEqual(JSON.parse(args[0]),[{title:job.title,url:job.url}]);return [{applied:1}];});
+  assert.equal(await R.prepareJobPayloads(settings,[{job},{job:{...job,qualification_reason:'different'}}]),true);assert.equal(writes,1);
+  R.setQueryForTests(async()=>{throw Error('offline');});assert.equal(await R.prepareJobPayloads(settings,[{job}]),false);
+  R.setQueryForTests(async(service,sql,args)=>{assert.equal(service,'jobHunter');assert.match(sql,/sha256/);assert.deepEqual(args,[[digest]]);return [{digest,content:{title:job.title,url:job.url}}];});
+  const input=[{job_key:job.url,payload_digest:digest,qualifiers:{qualification_status:'accepted',qualification_reason:job.qualification_reason},status:'sent'}];
+  assert.deepEqual(await R.primaryJobSnapshots(settings,input),[{job_key:job.url,status:'sent',job_snapshot:job}]);
+  R.setQueryForTests(async()=>[]);assert.equal(await R.primaryJobSnapshots(settings,input),null);
+ }finally{R.setQueryForTests(null);}
+});
+test('product primary knowledge requires exact owner, bot and digest; remote outage retains fallback',async()=>{
+ const settings={...env,SECRETJ_PRODUCT_PRIMARY_PAYLOADS:'true'},knowledge=[{text:'Reviewed synthetic knowledge',vector:[0.1]}];
+ try{
+  R.setQueryForTests(async(service,sql,args)=>{assert.equal(service,'botfolio');assert.match(sql,/put_bot_knowledge/);assert.deepEqual(args,['owner','bot',JSON.stringify(knowledge)]);return [{digest}];});
+  assert.equal(await R.prepareBotKnowledge(settings,'owner','bot',knowledge),true);
+  R.setQueryForTests(async(service,sql,args)=>{assert.match(sql,/owner_id=\$1::uuid AND bot_id=\$2::uuid AND digest=\$3/);assert.deepEqual(args,['owner','bot',digest]);return [{knowledge}];});
+  assert.deepEqual(await R.primaryBotKnowledge(settings,{id:'bot',user_id:'owner',knowledge_digest:digest}),knowledge);
+  R.setQueryForTests(async()=>{throw Error('offline');});
+  assert.equal(await R.prepareBotKnowledge(settings,'owner','bot',knowledge),false);
+  assert.equal(await R.primaryBotKnowledge(settings,{id:'bot',user_id:'owner',knowledge_digest:digest}),null);
+ }finally{R.setQueryForTests(null);}
+});
