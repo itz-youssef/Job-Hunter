@@ -62,6 +62,12 @@
   if(!win||installed||typeof win.fetch!=='function')return;installed=true;
   const original=win.fetch;
   win.fetch=function(input,init){
+   // Per-request opt-out; never suppress concurrent foreground operations.
+   // Strip the internal flag before forwarding to the browser.
+   if(init?.sjSilent===true){
+    const {sjSilent,...nativeInit}=init;
+    return original.call(this,input,nativeInit);
+   }
    let url,method;try{url=new URL(typeof input==='string'||input instanceof URL?input:input.url,win.location.href);method=String(init?.method||input?.method||'GET').toUpperCase();}catch{return original.apply(this,arguments);}
    // Do not track third-party requests, imagery, silent status polls or telemetry.
    const background=method==='GET'&&(/\/api\/secretj-(health|native-status)$/.test(url.pathname)&&url.searchParams.get('action')!=='feed');
