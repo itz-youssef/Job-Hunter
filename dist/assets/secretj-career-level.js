@@ -110,13 +110,13 @@
       conflict:contradiction,requiredYears:years,evidence,
       advancedRequirement:years!==null&&years>2};
   }
-  function match(job,selected,experienceCore){
+  function match(job,selected,experienceCore,prepared){
     // Keep legacy director/executive saved values readable until the account
     // owner saves the merged dictionary option. These keys are not rendered.
     const aliases={director:'director_head_executive',executive:'director_head_executive'};
     const chosen=(Array.isArray(selected)?selected:[])
       .map(x=>aliases[x]||x).filter(x=>keys.has(x));
-    const result=evaluate(job,experienceCore);
+    const result=prepared||evaluate(job,experienceCore);
     if(!chosen.length)return {match:true,review:false,...result};
     // Multiple checkbox selections are OR across category levels.
     const yes=Boolean(result.level&&chosen.includes(result.level));
