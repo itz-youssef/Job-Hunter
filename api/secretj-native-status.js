@@ -4,13 +4,37 @@ const core=require('../lib/secretj/core');
 const prefs=require('../dist/assets/secretj-job-preferences');
 const matchCache=require('../lib/secretj/preference-cache');
 const isolated=require('../lib/secretj/isolated-read-routing');
+// Read watch readiness and its ordered page in one PostgreSQL snapshot.
+// The left joins keep one sentinel row for an absent state or an empty page.
+const CORE_FEED_SQL=`WITH feed_state AS MATERIALIZED (
+ SELECT w.initialized_at,w.updated_at,w.preference_signature,
+   (w.updated_at>=p.updated_at) AS preferences_current
+ FROM public.sj_native_watch_state w JOIN public.sj_preferences p ON p.user_id=w.user_id
+ WHERE w.user_id=$1
+)
+SELECT s.initialized_at,s.updated_at,s.preference_signature,s.preferences_current,
+ j.job_key,j.job_snapshot,j.status,j.discovered_at,j.sent_at
+FROM (SELECT 1) marker LEFT JOIN feed_state s ON true
+LEFT JOIN LATERAL (
+ SELECT job_key,job_snapshot,status,discovered_at,sent_at
+ FROM public.sj_native_watch_jobs
+ WHERE user_id=$1 AND s.preferences_current IS TRUE
+ ORDER BY discovered_at DESC,job_key ASC LIMIT $2 OFFSET $3
+) j ON true
+ORDER BY j.discovered_at DESC,j.job_key ASC`;
 function createHandler(env=process.env){return async function handler(req,res){
  try{
   core.allowedMethod(req,['GET']);
   const user=await core.requireUser(req);
   const action=String(req.query?.action||'status');
   if(!['status','feed'].includes(action))throw core.fail(404,'Unknown monitoring action');
-  const state=await core.query(
+  const offset=action==='feed'?Number(req.query?.offset??0):0;
+  const validOffset=Number.isSafeInteger(offset)&&offset>=0&&offset<=100000;
+  const limit=250;
+  const isolatedReads=action==='feed'&&isolated.enabled('jobHunter',env);
+  const combined=action==='feed'&&validOffset&&!isolatedReads;
+  const params=[user.id,limit+1,offset];
+  const state=combined?await core.query(CORE_FEED_SQL,params):await core.query(
     `SELECT w.initialized_at,w.updated_at,w.preference_signature,
        (w.updated_at>=p.updated_at) AS preferences_current
        FROM public.sj_native_watch_state w
@@ -22,13 +46,9 @@ function createHandler(env=process.env){return async function handler(req,res){
     const ready=state.length>0&&state[0].preferences_current===true;
     if(!ready)return core.reply(res,200,{ok:true,ready:false,jobs:[],
       next_offset:null,message:'Waiting for first source monitoring pass with current preferences'});
-    const offset=Number(req.query?.offset??0);
-    if(!Number.isSafeInteger(offset)||offset<0||offset>100000)
-      throw core.fail(400,'Invalid feed offset');
-    const limit=250;
-    const params=[user.id,limit+1,offset];
-    let rows=null;
-    if(isolated.enabled('jobHunter',env)){
+    if(!validOffset)throw core.fail(400,'Invalid feed offset');
+    let rows=combined?state.filter(row=>row.job_key!==null):null;
+    if(isolatedReads){
       const metadata=await core.query(
         `SELECT w.job_key,w.status,w.discovered_at,w.sent_at,
           encode(sha256(convert_to(to_jsonb(w)::text,'UTF8')),'hex') AS record_digest
@@ -95,3 +115,4 @@ function createHandler(env=process.env){return async function handler(req,res){
 };}
 module.exports=createHandler();
 module.exports.createHandler=createHandler;
+module.exports.CORE_FEED_SQL=CORE_FEED_SQL;
