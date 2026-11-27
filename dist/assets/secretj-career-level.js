@@ -122,5 +122,16 @@
     const yes=Boolean(result.level&&chosen.includes(result.level));
     return {match:yes,review:false,...result};
   }
-  return {levels,normalize,phrase,triggers,evaluate,match};
+  function matchPrepared(result,selected){
+    // Keep legacy director/executive saved values readable until the account
+    // owner saves the merged dictionary option. These keys are not rendered.
+    const aliases={director:'director_head_executive',executive:'director_head_executive'};
+    const chosen=(Array.isArray(selected)?selected:[])
+      .map(x=>aliases[x]||x).filter(x=>keys.has(x));
+    if(!chosen.length)return {match:true,review:false,...result};
+    // Multiple checkbox selections are OR across category levels.
+    const yes=Boolean(result.level&&chosen.includes(result.level));
+    return {match:yes,review:false,...result};
+  }
+  return {levels,normalize,phrase,triggers,evaluate,match,matchPrepared};
 });

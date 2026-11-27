@@ -190,6 +190,59 @@
      reasons:unique,requiredYears:required,categories:fields,evidence
    };
  }
+ // Immutable job facts may be reused by trusted server callers. The browser
+ // and legacy callers keep the same authoritative decision function.
+ function prepare(job){
+   const fields=classify(job);
+   const level=careerLevel?.evaluate(job,eligibilityCore);
+   const early=eligibilityCore?[0,1,2].map(n=>eligibilityCore.evaluate(job,n)):null;
+   return {fields,level,early,years:yearsRequired(job),inEgypt:egypt.test(String(job.location||job.job_location||''))};
+ }
+ function assessPrepared(job,p,facts){
+   if(!facts)return assess(job,p);
+   if(!hasFilters(p))return {match:true,status:'unrestricted',reasons:[],requiredYears:null,categories:facts?facts.fields:classify(job),evidence:[]};
+   const title=String(job.title||job.position||job.job_title||'');
+   const location=String(job.location||job.job_location||'');
+   const selected=Array.isArray(p.role_families)?p.role_families:[];
+   const fields=facts?facts.fields:classify(job);
+   const reasons=[],evidence=[];
+   let review=false,required=null;
+   if(p.egypt_only===true&&!(facts?facts.inEgypt:egypt.test(location)))reasons.push('Outside selected location');
+   // New multi-level selections supersede legacy internship-only switch.
+   const chosenLevels=Array.isArray(p.career_levels)?p.career_levels:[];
+   if(!chosenLevels.length&&p.internships===true&&careerLevel&&!careerLevel.matchPrepared(facts.level,['internship']).match)reasons.push('Not an internship');
+   if(selected.length&&!fields.some(key=>selected.includes(key)))
+     reasons.push('Outside selected career fields');
+   const limit=p.max_experience_years===null||p.max_experience_years===undefined||p.max_experience_years===''?null:Number(p.max_experience_years);
+   if(chosenLevels.length&&careerLevel){
+     const levelResult=careerLevel.matchPrepared(facts.level,chosenLevels);
+     required=levelResult.requiredYears;
+     evidence.push(...levelResult.evidence);
+     if(!levelResult.match)reasons.push('Outside selected career levels');
+   }
+   if(!chosenLevels.length&&limit!==null&&Number.isFinite(limit)){
+     if(limit<=2&&eligibilityCore){
+       // Selected on a frozen, independently labeled comparison of six models.
+       // REVIEW stays visible; it is never called a confirmed match.
+       const result=facts?.early?.[limit]||eligibilityCore.evaluate(job,limit);
+       required=result.requiredYears;
+       evidence.push(...result.evidence,...result.sourceSpans.slice(0,2));
+       if(result.decision==='exclude')reasons.push(...result.reasons);
+       if(result.decision==='review')review=true;
+     }else{
+       required=facts?facts.years:yearsRequired(job);
+       if(required!==null&&required>limit)reasons.push('Requires '+required+' years; maximum '+limit);
+       if(required===null)review=true;
+     }
+   }
+   if(chosenLevels.length)review=false;
+   const unique=[...new Set(reasons)];
+   return {
+     match:unique.length===0,
+     status:unique.length?'excluded':review?'experience-unverified':'matched',
+     reasons:unique,requiredYears:required,categories:fields,evidence
+   };
+ }
  function isMatch(job,p){return assess(job,p).match;}
  function explain(job,p){return assess(job,p);}
 
@@ -197,5 +250,5 @@
   const pattern=re=>re?{pattern:re.source,flags:re.flags}:null;
   return {categories:categories.map(([key,label,re])=>({key,label,title_pattern:pattern(re)})),title_aliases:titleAliases.map(([family,re])=>({family,...pattern(re)})),software_parent_families:['backend','frontend','fullstack','mobile','web'],software_title_pattern:pattern(/\bsoftware\s+(?:engineering|development|intern|internship|trainee|graduate|associate)\b/i),fallback:'other',matching_basis:'title only'};
  }
- return {exportDictionary,categories:categories.map(([key,label])=>({key,label})),careerLevels:careerLevel?.levels||[],classify,hasFilters,isMatch,yearsRequired,explain,assess};
+ return {exportDictionary,categories:categories.map(([key,label])=>({key,label})),careerLevels:careerLevel?.levels||[],classify,hasFilters,isMatch,yearsRequired,explain,assess,prepare,assessPrepared};
 });
