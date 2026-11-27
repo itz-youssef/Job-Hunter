@@ -145,6 +145,35 @@ for(const width of [320,375,768,1024,1440,1920,2560]){
  }
 }
 
+// Mobile header precedes all navigation, and every job tab is immediately available.
+for(const width of [320,375,430,600,750]){
+ for(const theme of ['light','dark']){
+  await page.setViewportSize({width,height:812});
+  await page.goto('http://127.0.0.1:8765/#jobs');
+  await page.evaluate(t=>localStorage.setItem('jh-theme',t),theme);
+  await page.reload();
+  const toggle=page.locator('#sj-mobile-nav-toggle');
+  await toggle.waitFor({state:'visible'});
+  await page.locator('#sj-profile-menu summary').waitFor({state:'visible'});
+  const layout=await page.evaluate(()=>{
+   const header=document.querySelector('.topbar'),side=document.querySelector('#sj-workspace-sidebar'),main=document.querySelector('#main-content');
+   const r=e=>e.getBoundingClientRect(),visible=e=>!!e.getClientRects().length;
+   const tabs=[...side.querySelectorAll('.sj-mobile-job-tools button')];
+   return {headerTop:r(header).top,headerBottom:r(header).bottom,sideTop:r(side).top,sideBottom:r(side).bottom,mainTop:r(main).top,scroll:document.documentElement.scrollWidth,tabs:tabs.length,contained:tabs.every(e=>visible(e)&&r(e).left>=0&&r(e).right<=innerWidth+1),shortcutsHidden:!visible(side.querySelector('.sj-mobile-workspace-shortcuts')),profileVisible:visible(header.querySelector('#sj-profile-menu summary'))};
+  });
+  if(layout.headerTop>2||layout.headerBottom>layout.sideTop+1||layout.sideBottom>layout.mainTop+1||layout.mainTop>300||layout.scroll>width+1||layout.tabs!==4||!layout.contained||!layout.shortcutsHidden||!layout.profileVisible)failures.push({compact_mobile_header:width,theme,...layout});
+  await toggle.click();
+  if(await toggle.getAttribute('aria-expanded')!=='true'||!await page.locator('#navigation [data-page="resume"]').isVisible()||!await page.locator('#account-link').isVisible())failures.push({mobile_menu_open:width,theme});
+  await page.keyboard.press('Escape');
+  if(await toggle.getAttribute('aria-expanded')!=='false'||await page.locator('#navigation [data-page="resume"]').isVisible())failures.push({mobile_menu_close:width,theme});
+  await page.locator('#navigation [data-page="saved"]').click();
+  await page.waitForFunction(()=>document.getElementById('page-label').textContent==='Saved Jobs');
+  await page.setViewportSize({width:1440,height:900});
+  await page.waitForFunction(()=>document.getElementById('sj-workspace-sidebar').parentElement.classList.contains('layout'));
+  if(await toggle.isVisible()||!await page.locator('#navigation [data-page="resume"]').isVisible())failures.push({desktop_restoration:width,theme});
+ }
+}
+
 // The Job Hunter account dropdown must retain Botfolio's neutral styling
 // while the approved Champagne workspace remains unchanged.
 for(const width of [375,1440]){
