@@ -36,6 +36,10 @@ function fixture(){
    for(const item of row.jobs)if(!queue.has(item.key))queue.set(item.key,{job_key:item.key,job_snapshot:item.job,status:initial?'baseline':'pending'});
    state=row.signature;return [{user_id:ID}];
   }
+  if(sql.startsWith('WITH eligible AS MATERIALIZED')){
+   const pending=[...queue.values()].some(x=>['pending','failed'].includes(x.status));
+   return pending?[{id:ID,email:'member@example.com',email_eligible:true,has_eligible:true,...settings}]:[{id:null,has_eligible:true}];
+  }
   if(sql.includes('FROM public.sj_users u'))return [{id:ID,email:'member@example.com',email_eligible:true,...settings}];
   if(sql.startsWith('SELECT preference_signature'))return state?[{preference_signature:state}]:[];
   if(sql.startsWith('INSERT INTO public.sj_native_watch_state')){state=args[1];return [];}
@@ -277,4 +281,26 @@ test('exact preference reuse preserves per-user payload and avoids redundant ass
   assert.deepEqual(await monitor.reservePeriodic(users.slice(0,2),jobs),{processed:2,failed:0});
   assert.equal(evaluations,8);
  }finally{prefs.assess=original;core.setQueryForTests(null);}
+});
+
+test('standalone empty outbox uses one bounded SQL query, no subscriber enumeration or delivery',async()=>{
+ const env={SECRETJ_ALERTS_ENABLED:'true',RESEND_API_KEY:'test',SECRETJ_EMAIL_FROM:'alerts@example.org'};
+ for(const has_eligible of [false,true]){
+  let calls=0;
+  core.setQueryForTests(async(sql,args)=>{
+   calls++;
+   assert.match(sql,/^WITH eligible AS MATERIALIZED/);
+   assert.match(sql,/GROUP BY j\.user_id ORDER BY MIN\(j\.discovered_at\) ASC LIMIT 15/);
+   assert.match(sql,/cardinality\(p\.role_families\)>0/);
+   assert.match(sql,/p\.max_experience_years IS NOT NULL/);
+   assert.match(sql,/v\.verified_at IS NOT NULL/);
+   assert.equal(args.length,0);
+   return [{id:null,has_eligible}];
+  });
+  try{
+   const result=await monitor.deliverQueued(env,async()=>{throw Error('Unexpected delivery');});
+   assert.equal(result.status,has_eligible?'processed':'no_eligible_subscribers');
+   assert.equal(result.sent,0);assert.equal(calls,1);
+  }finally{core.setQueryForTests(null);}
+ }
 });
