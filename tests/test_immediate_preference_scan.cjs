@@ -91,15 +91,16 @@ test('account save workflow triggers immediate source scan only after a successf
  assert.match(worker,/runNodeHandler\(nativeScan\.createImmediateHandler/);
  const monitor=fs.readFileSync('lib/secretj/native-preference-monitor.js','utf8');
  assert.match(monitor,/async function scanOneUser\(/);
- assert.match(monitor,/await qualifyJobs\(selected,latest\[0\],env,fetchImpl\)/);
+ assert.match(monitor,/await qualifyJobs\(selected,latest\[0\],env,fetchImpl,current\.factsByJob\)/);
  assert.match(monitor,/await reserveNew\(latest\[0\],signature\(latest\[0\]\),verified\.accepted,env\)/);
  assert.doesNotMatch(monitor.slice(monitor.indexOf('async function scanOneUser('),monitor.indexOf('function mailConfiguration(')),/flush\(|deliverQueued\(/);
 });
 
-test('immediate source scan uses concurrent employer queries to minimize Worker waitUntil time',()=>{
+test('immediate matching prefers shared dictionary and retains concurrent source fallback',()=>{
  const code=fs.readFileSync('lib/secretj/native-preference-monitor.js','utf8');
  assert.match(code,/const batchSize=options\.immediate===true\?12:4/);
- assert.match(code,/gather\(env,fetchImpl,\{immediate:true\}\)/);
+ assert.match(code,/dictionaryCatalog\.read\(env,rows\[0\]\)/);
+ assert.match(code,/shared\|\|await gather\(env,fetchImpl,\{immediate:true\}\)/);
 });
 test('immediate scan lifecycle is visible only through an authenticated private status endpoint',()=>{
  const status=fs.readFileSync('api/secretj-native-status.js','utf8');
