@@ -69,21 +69,22 @@ for(const width of [375,1440]){
     if(!sheet)return {missingStylesheet:true};
     const snapshot=()=>[...document.querySelectorAll('#main-content :is(h1,h2,h3,button,a,input,select,article,.panel,.job-card,.company-card,.section-top,.job-filter-panel,.jh-intro-preview,.jh-intro-steps,.jh-intro-features,.jh-intro-job-grid),.sidebar #navigation button')].map(el=>{
      const r=el.getBoundingClientRect(),s=getComputedStyle(el);
-     return {x:r.x,y:r.y,w:r.width,h:r.height,color:s.color,background:s.backgroundColor,shadow:s.boxShadow};
+     return {x:r.x,y:r.y,w:r.width,h:r.height,typographic:el.matches('h1,.section-top'),color:s.color,background:s.backgroundColor,shadow:s.boxShadow};
     });
     const enabled=snapshot();sheet.disabled=true;
     const disabled=snapshot();sheet.disabled=false;
-    const geometry=enabled.length===disabled.length&&enabled.every((r,i)=>['x','y','w','h'].every(k=>Math.abs(r[k]-disabled[i][k])<.5));
+    const geometry=enabled.length===disabled.length&&enabled.every((r,i)=>(r.typographic?['x','y','h']:['x','y','w','h']).every(k=>Math.abs(r[k]-disabled[i][k])<.5));
     const visual=enabled.some((r,i)=>['color','background','shadow'].some(k=>r[k]!==disabled[i]?.[k]));
     const primary=document.querySelector('.jh-intro .jh-intro-actions .sj-land-btn.dark[data-navigate="jobs"],body.jh-workspace #main-content .btn.primary:not(:disabled)');
     const shell=getComputedStyle(document.querySelector('.workspace-shell')),main=getComputedStyle(document.getElementById('main-content'));
     const active=document.querySelector('.sidebar #navigation button.active');
-    return {geometry,visual,workspace:document.body.classList.contains('jh-workspace'),intro:!!document.querySelector('.jh-intro'),accent:primary?getComputedStyle(primary).backgroundColor:null,active:active?getComputedStyle(active).backgroundColor:null,shellArt:shell.backgroundImage,mainArt:main.backgroundImage,mainBg:main.backgroundColor};
+    return {geometry,visual,workspace:document.body.classList.contains('jh-workspace'),intro:!!document.querySelector('.jh-intro'),accent:primary?getComputedStyle(primary).backgroundColor:null,active:active?getComputedStyle(active).backgroundColor:null,shellArt:shell.backgroundImage,mainArt:main.backgroundImage,mainBg:main.backgroundColor,artAttachment:shell.backgroundAttachment,artSize:shell.backgroundSize};
    });
    const scoped=['/#jobs','/#saved','/#companies','/#alerts'].includes(path),intro=path==='/#hunter';
    if(data.missingStylesheet||!data.geometry||data.workspace!==scoped||data.intro!==intro||data.visual!==(scoped||intro))failures.push({jobhunter_refinement:path,width,theme,...data});
-   const expectedAccent=scoped?(theme==='dark'?'rgb(237, 237, 237)':'rgb(32, 32, 32)'):(theme==='dark'?'rgb(211, 166, 68)':'rgb(89, 64, 71)');
-   if(scoped&&(data.active!==expectedAccent||data.mainBg!=='rgba(0, 0, 0, 0)'||data.mainArt!=='none'||!data.shellArt.includes('radial-gradient')))failures.push({jobhunter_continuous_workspace:path,width,theme,...data});
+   const expectedAccent=scoped?'rgb(237, 201, 166)':(theme==='dark'?'rgb(211, 166, 68)':'rgb(89, 64, 71)');
+   if(scoped&&(data.active!==expectedAccent||data.mainBg!=='rgba(0, 0, 0, 0)'||data.mainArt!=='none'||!data.shellArt.includes('jobhunter-champagne-'+theme+'.svg')||(width>750&&(data.artAttachment!=='fixed'||data.artSize!=='cover'))))failures.push({jobhunter_continuous_workspace:path,width,theme,...data});
+   if(scoped&&!(await page.request.get('http://127.0.0.1:8765/assets/jobhunter-champagne-'+theme+'.svg')).ok())failures.push({jobhunter_art_missing:theme});
    if(data.accent&&data.accent!==expectedAccent)failures.push({jobhunter_refinement_accent:path,width,theme,...data});
    if(path==='/#hunter'||path==='/#jobs')await page.screenshot({path:'jobhunter-'+path.slice(2)+'-'+theme+'-'+width+'.png',animations:'disabled'});
   }
