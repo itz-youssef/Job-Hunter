@@ -26,6 +26,10 @@ async function call(rows,option={}){
   calls.push({sql,args});
   if(sql.includes('FROM public.sj_sessions s JOIN public.sj_users u'))
     return [{id:UID,email:'member@example.com',is_active:true}];
+  if(sql===handler.CORE_FEED_SQL){
+    const state={initialized_at:'2026-11-22',preferences_current:true,preference_signature:sig};
+    return rows.length?rows.map(row=>({...state,...row})):[{...state,job_key:null}];
+  }
   if(sql.includes('sj_native_watch_state'))
     return [{initialized_at:'2026-11-22',preferences_current:true,
       preference_signature:sig}];
@@ -53,6 +57,7 @@ test('exact preference and matching version let feed reuse persisted results',as
  assert.equal(result.body.jobs[0].watch_status,'baseline');
  assert.equal(result.body.next_offset,null);
  assert.equal(result.calls.filter(x=>x.sql.includes('sj_native_watch_jobs')).length,1);
+ assert.equal(result.calls.length,2,'Authentication plus one atomic feed query');
 });
 
 test('old rows and old dictionary versions retain original strict matcher',async()=>{
