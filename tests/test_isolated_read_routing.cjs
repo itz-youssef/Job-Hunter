@@ -14,8 +14,8 @@ test('explicit opt-in and strict allowlisted service endpoints',()=>{
 test('job read reconstruction preserves authoritative metadata and exact order',async()=>{
  const source=[{job_key:'a',record_digest:digest,status:'sent',discovered_at:'a',sent_at:'b'},{job_key:'b',record_digest:d2,status:'baseline',discovered_at:'b',sent_at:null}];
  R.setQueryForTests(async(service,sql,params)=>{
-  assert.equal(service,'jobHunter');assert.match(sql,/record->>'user_id'=\$3/);assert.match(sql,/sha256/);
-  assert.deepEqual(params,['20261127-jobhunter-shadow-v1',[digest,d2],'owner']);
+  assert.equal(service,'jobHunter');assert.match(sql,/owner_id=\$2::uuid/);assert.match(sql,/sha256/);
+  assert.deepEqual(params,[[digest,d2],'owner']);
   return [{record_digest:d2,job_key:'b',job_snapshot:{title:'B'}},{record_digest:digest,job_key:'a',job_snapshot:{title:'A'}}];
  });
  try{
@@ -32,13 +32,29 @@ test('job read reconstruction preserves authoritative metadata and exact order',
 test('Botfolio remote reads require matching owner and complete record version',async()=>{
  const bot={id:'bot',user_id:'owner',record_digest:digest};const knowledge=[{text:'original',vector:[1,2]}];
  R.setQueryForTests(async(service,sql,params)=>{
-  assert.equal(service,'botfolio');assert.match(sql,/record->>'user_id'=\$3/);assert.match(sql,/sha256/);
-  assert.deepEqual(params,['20261127-botfolio-shadow-v1','bot','owner',digest]);return [{knowledge}];
+  assert.equal(service,'botfolio');assert.match(sql,/owner_id=\$2::uuid/);assert.match(sql,/sha256/);
+  assert.deepEqual(params,['bot','owner',digest]);return [{knowledge}];
  });
  try{
   assert.deepEqual(await R.botKnowledge(env,bot),knowledge);
   R.setQueryForTests(async()=>[]);assert.equal(await R.botKnowledge(env,bot),null);
   R.setQueryForTests(async()=>{throw Error('unavailable')});assert.equal(await R.botKnowledge(env,bot),null);
   assert.equal(await R.botKnowledge(env,{...bot,record_digest:'bad'}),null);
+ }finally{R.setQueryForTests(null);}
+});
+
+test('durable synchronization acknowledges only exact applied revisions and retries remote failures',async()=>{
+ const row={owner_id:'owner',entity_key:'job',revision:'9007199254740993',record_text:'{"value":0.1234567890123456789}',record_digest:digest};
+ let ack=0,remote=0;
+ const source=async(sql,args)=>{
+  if(sql.startsWith('SELECT')){assert.match(sql,/LIMIT 100/);return [row];}
+  ack++;assert.match(sql,/q\.revision=k\.revision/);assert.deepEqual(JSON.parse(args[1]),[{owner_id:row.owner_id,entity_key:row.entity_key,revision:row.revision}]);return [];
+ };
+ try{
+  R.setQueryForTests(async(service,sql,args)=>{remote++;assert.equal(service,'jobHunter');assert.match(sql,/apply_batch/);assert.deepEqual(JSON.parse(args[1]),[row]);return [{applied:1}];});
+  assert.deepEqual(await R.syncService('jobHunter',env,source),{status:'synced',count:1});assert.equal(ack,1);
+  R.setQueryForTests(async()=>{throw Error('offline');});await assert.rejects(R.syncService('jobHunter',env,source));assert.equal(ack,1);
+  R.setQueryForTests(async()=>[{applied:0}]);await assert.rejects(R.syncService('jobHunter',env,source));assert.equal(ack,1);
+  assert.deepEqual(await R.syncService('jobHunter',env,async()=>[]),{status:'empty',count:0});assert.equal(remote,1);
  }finally{R.setQueryForTests(null);}
 });

@@ -295,7 +295,7 @@ test('isolated Botfolio knowledge preserves authorization and existing answer in
  const send=async(flag)=>{const r=req('POST','chat',{id:ID,message:'Experience?'},ID,false);Object.assign(r.env,{SECRETJ_BOTFOLIO_ISOLATED_READS:flag,BOTFOLIO_DATABASE_URL:'postgresql://test:test@ep-super-haze-bgxz5xuw.c-9.eu-central-1.aws.neon.tech/neondb'});return call(r);};
  try{
   const base=await send('false');assert.equal(base.status,200);
-  isolated.setQueryForTests(async(service,sql,args)=>{remoteReads++;assert.equal(args[2],UID);return [{knowledge}];});
+  isolated.setQueryForTests(async(service,sql,args)=>{remoteReads++;assert.equal(args[1],UID);return [{knowledge}];});
   assert.deepEqual(await send('true'),base);assert.equal(metaReads,1);assert.equal(fullReads,1);assert.equal(remoteReads,1);
   isolated.setQueryForTests(async()=>[]);
   assert.deepEqual(await send('true'),base);assert.equal(fullReads,2);

@@ -14,6 +14,7 @@ import emailHandler from '../../api/secretj-email.js';
 import nativeStatusHandler from '../../api/secretj-native-status.js';
 import memberAlerts from '../../lib/secretj/member-alerts.js';
 import nativeMonitor from '../../lib/secretj/native-preference-monitor.js';
+import isolatedRouting from '../../lib/secretj/isolated-read-routing.js';
 import nativeScan from '../../api/secretj-native-scan.js';
 
 const handlers = new Map([
@@ -102,11 +103,11 @@ export async function handleRequest(request,env,ctx){
   }
   return response;
 }
-export async function scheduled(controller,env){
+export async function scheduled(controller,env,ctx){
+  const when=new Date(controller?.scheduledTime||Date.now());
   try{
     if(env.SECRETJ_NATIVE_MONITOR_ENABLED==='true'){
       // Independent five-minute subscriber checks; public discovery stays intact.
-      const when=new Date(controller?.scheduledTime||Date.now());
       if(when.getUTCMinutes()%5!==0){
         const queue=await nativeMonitor.deliverQueued(env);
         console.log('secretj-alert-outbox',{status:queue.status,sent:queue.sent||0,failed:queue.failed||0});
@@ -128,6 +129,11 @@ export async function scheduled(controller,env){
     // Never log recipients, profile fields, secrets, or CV contents.
     console.warn('secretj-personalized-alerts',{status:'failed',code:String(error?.code||'runtime_error').slice(0,30)});
     throw error;
+  }finally{
+    // Maintenance is separate from notification delivery. No additional source
+    // polling on five-minute discovery runs, no unhandled rejection.
+    if(when.getUTCMinutes()%15===1&&ctx?.waitUntil&&env.SECRETJ_ISOLATED_SYNC_ENABLED==='true')
+      ctx.waitUntil(isolatedRouting.syncIsolated(env).catch(()=>console.warn('secretj-isolated-sync',{status:'retry'})));
   }
 }
 export default {fetch:handleRequest,scheduled};
