@@ -78,7 +78,7 @@ test('global loader starts before first paint and fails open without a minimum d
     assert.ok(script);
     assert.ok(html.indexOf(script[0])<html.indexOf('<body>'));
     assert.match(html,/<body>\s*<div id="sj-startup-loader"[^>]*role="status"/);
-    assert.match(html,/secretj-loading\.css\?v=global-startup-20261125/);
+    assert.match(html,/secretj-loading\.css\?v=operation-progress-20261127/);
     for(const theme of ['light','dark']){
       const attrs=new Set();let timer;let delay;let restored;let cleared=false;
       const root={dataset:{},setAttribute:name=>attrs.add(name),removeAttribute:name=>attrs.delete(name)};
@@ -89,7 +89,7 @@ test('global loader starts before first paint and fails open without a minimum d
         clearTimeout:()=>{cleared=true;}});
       assert.equal(root.dataset.theme,theme);
       assert.ok(attrs.has('data-sj-startup'));
-      assert.equal(delay,4000);
+      assert.equal(delay,2000);
       window.SecretJStartup.finish();
       assert.equal(attrs.has('data-sj-startup'),false);
       assert.ok(cleared);
@@ -103,7 +103,7 @@ test('global loader starts before first paint and fails open without a minimum d
   assert.match(css,/html\[data-theme="dark"\]\[data-sj-startup\]/);
   assert.match(css,/prefers-reduced-motion:reduce\)\{\.sj-startup-ring\{animation:none\}/);
 });
-test('global loader releases after initial UI hydration and does not intercept later requests',()=>{
+test('global startup overlay releases after initial UI hydration',()=>{
   assert.match(home,/Promise\.allSettled\(\[initialMember,initialCatalog\]\)\.then\(\(\)=>window\.SecretJStartup\?\.finish\(\)\)/);
   assert.match(accountJS,/showAuth\(\);\s*window\.SecretJStartup\?\.finish\(\)/);
   assert.match(accountJS,/finally\{window\.SecretJStartup\?\.finish\(\);\}/);
@@ -128,4 +128,20 @@ test('account tabs cache only successful current-user views and invalidate after
   assert.match(accountJS,/function showAuth\(\) \{\s*invalidateAccountViews\(\)/);
   assert.match(accountJS,/generation===accountViewGeneration/);
   assert.match(accountJS,/if\(!current\(\)\)\{[\s\S]*?return showView\(view\);[\s\S]*?root\.innerHTML=target\.innerHTML/);
+});
+
+test('all interactive Secret J workspaces share nonblocking operation feedback',()=>{
+ for(const path of ['dist/index.html','dist/account.html','dist/manage-companies.html','dist/botfolio.html','dist/botfolio-chat.html']){
+  const html=fs.readFileSync(path,'utf8');
+  assert.match(html,/secretj-progress\.js\?v=20261127/);
+  assert.match(html,/secretj-loading\.css\?v=operation-progress-20261127/);
+ }
+ const bf=fs.readFileSync('dist/assets/botfolio.js','utf8');
+ const chat=fs.readFileSync('dist/assets/botfolio-chat.js','utf8');
+ assert.match(bf,/Creating your private draft/);
+ assert.match(bf,/Reading your CV/);
+ assert.match(bf,/finally\{finish\(\);actionBusy\(b,false\)/);
+ assert.match(chat,/clearTimeout\(slow\);finish\(\);setBusy\(false\)/);
+ assert.match(css,/\.sj-progress-compact \.sj-progress-rail\{display:none\}/);
+ assert.match(css,/pointer-events:none/);
 });
