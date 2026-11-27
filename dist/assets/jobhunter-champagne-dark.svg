@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
 <defs>
- <linearGradient id="base" x2=".85" y2="1"><stop stop-color="#111218"/><stop offset=".52" stop-color="#15161c"/><stop offset="1" stop-color="#101116"/></linearGradient>
- <radialGradient id="right" cx=".9" cy="0" r=".72"><stop stop-color="#a57757" stop-opacity=".28"/><stop offset="1" stop-color="#17161a" stop-opacity="0"/></radialGradient>
- <radialGradient id="left" cx="0" cy=".24" r=".67"><stop stop-color="#8d674a" stop-opacity=".16"/><stop offset="1" stop-color="#15161b" stop-opacity="0"/></radialGradient>
+ <linearGradient id="base" x2=".85" y2="1"><stop stop-color="#050506"/><stop offset=".52" stop-color="#08080a"/><stop offset="1" stop-color="#040405"/></linearGradient>
+ <radialGradient id="right" cx=".9" cy="0" r=".72"><stop stop-color="#a57757" stop-opacity=".28"/><stop offset="1" stop-color="#09080a" stop-opacity="0"/></radialGradient>
+ <radialGradient id="left" cx="0" cy=".24" r=".67"><stop stop-color="#8d674a" stop-opacity=".16"/><stop offset="1" stop-color="#08080a" stop-opacity="0"/></radialGradient>
  <linearGradient id="fold" x1=".15" y1="0" x2=".8" y2="1"><stop stop-color="#4e3c33" stop-opacity=".05"/><stop offset=".67" stop-color="#9c7458" stop-opacity=".3"/><stop offset="1" stop-color="#e6b889" stop-opacity=".17"/></linearGradient>
  <linearGradient id="edge"><stop stop-color="#f2cda5" stop-opacity="0"/><stop offset=".58" stop-color="#f2cda5" stop-opacity=".15"/><stop offset=".87" stop-color="#f2cda5" stop-opacity=".8"/><stop offset="1" stop-color="#f2cda5" stop-opacity=".2"/></linearGradient>
  <linearGradient id="leftedge"><stop stop-color="#dba87a" stop-opacity=".08"/><stop offset=".28" stop-color="#dba87a" stop-opacity=".65"/><stop offset="1" stop-color="#dba87a" stop-opacity="0"/></linearGradient>

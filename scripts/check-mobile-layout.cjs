@@ -112,7 +112,19 @@ for(const width of [375,1440]){
   if(props.left<0||props.right>width+1||Math.abs(props.width-225)>1||props.radius!=='13px'||props.bg!==(theme==='dark'?'rgb(13, 13, 13)':'rgb(255, 255, 255)')||props.font!=='13px'||props.weight!=='700'||props.linkHeight<43||props.email!=='none'||props.signout!==(theme==='dark'?'rgb(255, 156, 156)':'rgb(180, 65, 65)'))failures.push({jobhunter_menu_style:theme,width,...props});
   const links=await dropdown.locator('a').evaluateAll(els=>els.map(e=>e.getAttribute('href')));
   if(JSON.stringify(links)!==JSON.stringify(['overview','profile','documents','saved','applications','preferences','admin'].map(v=>'/account.html?view='+v)))failures.push({jobhunter_menu_links:links});
-  await page.locator('#main-content h1').click();
+  // The mobile dropdown intentionally overlays the heading's center.
+  // Click a genuinely uncovered, non-interactive page point instead.
+  const outside=await page.evaluate(()=>{
+   const menu=document.getElementById('sj-profile-menu');
+   for(const y of [innerHeight*.75,innerHeight*.9,innerHeight*.5])
+    for(const x of [6,16,32,innerWidth*.25]){
+     const el=document.elementFromPoint(x,y);
+     if(el&&!menu.contains(el)&&!el.closest('a,button,input,select,textarea,summary,[role="button"]'))return {x,y};
+    }
+   return null;
+  });
+  if(!outside)failures.push({jobhunter_menu:'no outside click target',width,theme});
+  else await page.mouse.click(outside.x,outside.y);
   if(await dropdown.isVisible())failures.push({jobhunter_menu:'outside click failed',width,theme});
  }
 }
