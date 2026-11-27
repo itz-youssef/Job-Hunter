@@ -91,6 +91,32 @@ for(const width of [375,1440]){
  }
 }
 
+// The Job Hunter account dropdown must retain Botfolio's neutral styling
+// while the approved Champagne workspace remains unchanged.
+for(const width of [375,1440]){
+ for(const theme of ['light','dark']){
+  await page.setViewportSize({width,height:900});
+  await page.goto('http://127.0.0.1:8765/#jobs');
+  await page.evaluate(t=>localStorage.setItem('jh-theme',t),theme);
+  await page.reload();
+  await page.waitForFunction(t=>document.documentElement.dataset.theme===t,theme);
+  const menu=page.locator('#sj-profile-menu'),dropdown=menu.locator('.sj-account-menu');
+  await menu.locator('summary').waitFor({state:'visible'});
+  if(await dropdown.isVisible())failures.push({jobhunter_menu:'visible while closed',width,theme});
+  await menu.locator('summary').click();
+  await dropdown.waitFor({state:'visible'});
+  const props=await dropdown.evaluate(el=>{
+   const s=getComputedStyle(el),r=el.getBoundingClientRect(),link=el.querySelector('a'),a=getComputedStyle(link);
+   return {width:r.width,left:r.left,right:r.right,bg:s.backgroundColor,radius:s.borderRadius,linkHeight:link.getBoundingClientRect().height,font:a.fontSize,weight:a.fontWeight,signout:getComputedStyle(el.querySelector('#sj-header-logout')).color,email:getComputedStyle(el.querySelector('#sj-member-email')).display};
+  });
+  if(props.left<0||props.right>width+1||Math.abs(props.width-225)>1||props.radius!=='13px'||props.bg!==(theme==='dark'?'rgb(13, 13, 13)':'rgb(255, 255, 255)')||props.font!=='13px'||props.weight!=='700'||props.linkHeight<43||props.email!=='none'||props.signout!==(theme==='dark'?'rgb(255, 156, 156)':'rgb(180, 65, 65)'))failures.push({jobhunter_menu_style:theme,width,...props});
+  const links=await dropdown.locator('a').evaluateAll(els=>els.map(e=>e.getAttribute('href')));
+  if(JSON.stringify(links)!==JSON.stringify(['overview','profile','documents','saved','applications','preferences','admin'].map(v=>'/account.html?view='+v)))failures.push({jobhunter_menu_links:links});
+  await page.locator('#main-content h1').click();
+  if(await dropdown.isVisible())failures.push({jobhunter_menu:'outside click failed',width,theme});
+ }
+}
+
 // Botfolio-specific checks: authenticated workspace, all internal views, both themes,
 // small phones through 4K, and a sidebar anchored to the viewport on desktop.
 for(const w of [320,375,390,430,600,768,900,1024,1280,1440,1920,2560,3840]){
