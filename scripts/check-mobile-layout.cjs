@@ -186,7 +186,11 @@ for(const width of [320,375,768,1440]){
    await page.locator('#main-content .feed-metrics').waitFor({state:'visible'});
    const data=await page.evaluate(()=>{const hero=document.querySelector('#main-content>.section-top'),s=getComputedStyle(hero);return {scroll:document.documentElement.scrollWidth,bg:s.backgroundColor,art:getComputedStyle(hero,'::before').backgroundImage,title:getComputedStyle(hero.querySelector('h1')).textTransform,remove:!!document.querySelector('#main-content [data-remove]')};});
    if(data.scroll>width+1||data.bg!==(theme==='dark'?'rgb(14, 14, 14)':'rgb(233, 232, 230)')||!data.art.includes('radial-gradient')||data.title!=='uppercase'||data.remove)failures.push({companion:route,width,theme,...data});
+   const surfaces=await page.evaluate(()=>[...document.querySelectorAll('#main-content .sj-editorial-summary :is(div,p,strong),#main-content p.tiny')].map(e=>getComputedStyle(e).backgroundColor));
+   if(surfaces.some(bg=>bg!=='rgba(0, 0, 0, 0)'))failures.push({editorial_text_background:route,width,theme,surfaces});
    if(route==='companies'){
+    const buttons=await page.locator('.company-card .company-actions a.btn').evaluateAll(els=>els.map(e=>{const s=getComputedStyle(e);return {bg:s.backgroundColor,fg:s.color,radius:s.borderRadius};}));
+    if(buttons.some(b=>b.bg!==(theme==='dark'?'rgb(255, 255, 255)':'rgb(17, 17, 17)')||b.fg!==(theme==='dark'?'rgb(17, 17, 17)':'rgb(255, 255, 255)')||b.radius!=='8px'))failures.push({company_button_contrast:width,theme,buttons:buttons.slice(0,3)});
     await page.locator('#sj-company-search').fill('unlikely-company-999999');
     if(await page.locator('#main-content .company-card:visible').count())failures.push({company_search:width,theme});
     await page.locator('#sj-company-search').clear();
