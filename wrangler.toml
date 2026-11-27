@@ -37,6 +37,9 @@ SECRETJ_NATIVE_MONITOR_ENABLED = "true"
 SECRETJ_LIVE_CATALOG = "true"
 # Only asynchronous mirrors; authoritative application reads/writes unchanged.
 SECRETJ_ISOLATED_SYNC_ENABLED = "true"
+# Prefer verified isolated mirrors; retain authoritative source fallback.
+SECRETJ_JOB_HUNTER_ISOLATED_READS = "true"
+SECRETJ_BOTFOLIO_ISOLATED_READS = "true"
 # Saved preference matching uses the deterministic title dictionary (no AI binding).
 
 # Separate from the existing scanner scheduler. The site worker only handles
