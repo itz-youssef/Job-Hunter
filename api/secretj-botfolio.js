@@ -69,17 +69,20 @@ module.exports=async function(req,res){
    phase='save-draft';
    const rows=await core.query(`INSERT INTO public.sj_botfolio_bots(id,user_id,slot,name,headline,knowledge,embedding_model,published) SELECT $1::uuid,$2::uuid,CASE WHEN u.role='admin' THEN COALESCE((SELECT max(slot) FROM public.sj_botfolio_bots WHERE user_id=u.id),0)+1 ELSE 1 END,$3::text,$4::text,$5::jsonb,$6::text,false FROM public.sj_users u WHERE u.id=$2::uuid AND u.is_active=true AND (u.role='admin' OR NOT EXISTS (SELECT 1 FROM public.sj_botfolio_bots WHERE user_id=u.id)) ON CONFLICT(user_id,slot) DO NOTHING RETURNING `+fields,[core.randomUUID(),uid,name,headline,JSON.stringify(knowledge),B.EMBED_MODEL]);
    if(!rows.length)throw core.fail(409,isAdmin?'Another portfolio was created at the same time. Please retry.':'Your account already has a portfolio.');
+   await isolated.syncAfterWrite('botfolio',req.env,uid,rows[0].id,req.waitUntil);
    return core.reply(res,201,{ok:true,bot:rows[0]});
   }
   if(action==='publish'&&method==='PATCH'){
    const body=core.parseBody(req);if(typeof body.published!=='boolean'||(body.published&&body.consent!==true))throw core.fail(400,'Confirm public sharing before publishing.');
    const rows=await core.query('UPDATE public.sj_botfolio_bots SET published=$3,updated_at=now() WHERE id=$1 AND user_id=$2 RETURNING '+fields,[idOf(body.id),uid,body.published]);
    if(!rows.length)throw core.fail(404,'Bot not found.');
+   await isolated.syncAfterWrite('botfolio',req.env,uid,rows[0].id,req.waitUntil);
    return core.reply(res,200,{ok:true,bot:rows[0]});
   }
   if(action==='delete'&&method==='DELETE'){
    const rows=await core.query('DELETE FROM public.sj_botfolio_bots WHERE id=$1 AND user_id=$2 RETURNING id',[idOf(req.query?.id),uid]);
    if(!rows.length)throw core.fail(404,'Bot not found.');
+   await isolated.syncAfterWrite('botfolio',req.env,uid,rows[0].id,req.waitUntil);
    return core.reply(res,200,{ok:true});
   }
   throw core.fail(405,'Unknown Botfolio action.');
