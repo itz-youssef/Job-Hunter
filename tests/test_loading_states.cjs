@@ -55,7 +55,9 @@ test('loading UI never changes dictionary or preference matching modules',()=>{
 });
 
 test('preference scan has bounded skeleton display and short readiness polling',()=>{
-  assert.match(home,/Date\.now\(\)-state\.watchFeedPendingSince<45000/);
+  assert.match(home,/state\.watchFeedLoading&&!state\.watchFeedPendingSince/);
+  assert.match(home,/sj-feed-pending/);
+  assert.match(home,/pending\?'…':list\.length/);
   assert.match(home,/Date\.now\(\)-state\.watchFeedPendingSince<90000/);
   assert.match(home,/refreshMatchingFeed\(\);\s*},5000\)/);
   assert.match(home,/state\.watchFeedPendingSince=feed\.ready===false/);

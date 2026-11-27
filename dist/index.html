@@ -248,7 +248,7 @@ a:hover{color:var(--ink)}
 })();
 </script>
 <link rel="stylesheet" href="/assets/secretj-interaction-polish.css?v=20261127">
-<link rel="stylesheet" href="/assets/secretj-job-feed-editorial.css?v=contrast-feed-first-20261127">
+<link rel="stylesheet" href="/assets/secretj-job-feed-editorial.css?v=nonblocking-feed-20261127">
 <link rel="stylesheet" href="/assets/secretj-mobile-workspace.css?v=compact-header-1">
 </head>
 <body>
@@ -1288,7 +1288,7 @@ a:hover{color:var(--ink)}
     if(!saved&&state.memberLoading&&state.companyFilter==='all')return top('YOUR JOB FEED','Loading your opportunities','We are securely loading your preferences.')+
       loadingSkeleton('Preparing your personalized feed','Checking your account and saved filters…',6);
     if(!saved&&state.member&&state.memberPrefsConfigured&&!state.watchFeedLoaded&&state.companyFilter==='all'&&
-       (state.watchFeedLoading||state.watchFeedPendingSince>0&&Date.now()-state.watchFeedPendingSince<45000))
+       (state.watchFeedLoading&&!state.watchFeedPendingSince&&!state.reviewExcluded&&!state.query.trim()))
       return top('YOUR JOB FEED','Matching opportunities','Your filters are being applied.')+
         loadingSkeleton(state.watchFeedPendingSince?'Applying updated preferences…':'Loading matching opportunities',
           state.watchFeedPendingSince?'The scanner is updating your personalized jobs. This page checks again automatically.':
@@ -1322,7 +1322,8 @@ a:hover{color:var(--ink)}
     const companyBrowsing=!saved&&state.companyFilter!=='all';
     const personalizedView=personalized&&!state.reviewExcluded&&!globalSearch&&!companyBrowsing&&state.jobType!=='internship';
     const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Your saved jobs.':companyBrowsing?'All jobs at '+state.companyFilter:globalSearch?'Search all detected opportunities':personalized?'Your personalized job feed':'All detected opportunities',saved?(state.member?'Jobs saved to your account.':'Jobs you’ve bookmarked on this device.'):companyBrowsing?'Showing every published job we currently have for this company, across all career levels and fields. Your personal email alerts are unchanged.':globalSearch?'Searching all published listings, including those outside your saved preferences. Email alerts remain personalized.':personalized?'Opportunities detected by your personalized monitoring system, the same source used for email alerts.':'Explore every discovered opening with a valid application link. Sign in and save preferences to personalize your feed and alerts.');
-    const feedMetrics=saved?editorialMetrics([['Saved roles',whole.length],['Companies',new Set(whole.map(companyOf)).size]]):`<div class="feed-metrics" aria-label="Job feed counts"><div class="feed-metric"><strong id="feed-match-count">${list.length}</strong><small>In your feed</small></div><div class="feed-metric"><strong id="feed-catalog-count">${catalog.length}</strong><small>Detected jobs</small></div></div>`;
+    const pending=personalizedView&&!saved&&!state.watchFeedLoaded;
+    const feedMetrics=saved?editorialMetrics([['Saved roles',whole.length],['Companies',new Set(whole.map(companyOf)).size]]):`<div class="feed-metrics" aria-label="Job feed counts"><div class="feed-metric"><strong id="feed-match-count">${pending?'…':list.length}</strong><small>In your feed</small></div><div class="feed-metric"><strong id="feed-catalog-count">${catalog.length}</strong><small>Detected jobs</small></div></div>`;
     const heading=h.replace('</p></div>','</p>'+feedMetrics+'</div>');
     return heading+(saved?'<section class="sj-editorial-summary"><div><strong>Your saved jobs</strong><p>Review and revisit the roles you have bookmarked.</p></div><a class="btn primary" href="/account.html?view=saved">Manage saved jobs</a></section>':'')+
       `${personalizedView&&state.watchFeedLoading&&!state.watchFeedSilent?
@@ -1340,7 +1341,7 @@ a:hover{color:var(--ink)}
         <button class="btn secondary clear-job-filters" data-reset-filters type="button">Reset filters</button></div>
         <p class="tiny">Choose a company to browse all its published jobs from the full company catalog — regardless of your saved career preferences. Choosing a company clears the other search filters. Companies with no currently published jobs show 0. Employer posted dates come from source metadata; unknown dates are excluded from posted-date ranges and never replaced with detection timestamps.</p>
       </section>
-      <div class="cards" id="jobs-list">${visible.length?visible.map(jobCard).join(''):empty('No jobs match these filters','Change the date range or reset filters to see available opportunities.')}</div>
+      <div class="cards" id="jobs-list">${pending?'<section class="sj-feed-pending" role="status"><strong>Updating your personalized opportunities</strong><p>We’re checking your current preferences. You can browse all detected jobs while this finishes.</p></section>':visible.length?visible.map(jobCard).join(''):empty('No jobs match these filters','Change the date range or reset filters to see available opportunities.')}</div>
       <div id="jobs-load-more-wrap" style="text-align:center;margin:18px 0">${list.length>visible.length?
         `<button type="button" class="btn secondary" data-load-more-jobs>Load more jobs (${visible.length} of ${list.length})</button>`:''}</div>
       <p class="tiny" id="jobs-count-summary">${visible.length} of ${list.length} matching results · ${whole.length} ${companyBrowsing?'published':personalized&&!state.reviewExcluded&&!globalSearch?'preference-matched':'detected'} jobs shown. A matching score is not a hiring probability; other roles may have no score.</p>`;
@@ -1373,7 +1374,7 @@ a:hover{color:var(--ink)}
     if(title&&state.page==='jobs')title.textContent=state.query.trim()?
       'Search all detected opportunities':personalizedDisplay?'Your personalized job feed':'All detected opportunities';
     const feedCount=el('#feed-match-count');
-    if(feedCount)feedCount.textContent=String(filtered.length);
+    if(feedCount)feedCount.textContent=state.page==='jobs'&&personalizedDisplay&&!state.watchFeedLoaded&&state.companyFilter==='all'?'…':String(filtered.length);
     const catalogCount=el('#feed-catalog-count');
     if(catalogCount)catalogCount.textContent=String(allPublicJobs().length);
     const nav=el('#nav-job-count');
