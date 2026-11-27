@@ -100,3 +100,9 @@ test('new HTML inline scripts parse as JavaScript', () => {
   assert.match(html, /data-edit-name/);
   assert.match(html, /data-pin/);
 });
+
+test('company removal is rejected even with administrator token',async()=>{
+ const r=await call(companies,req('DELETE',{url:'https://example.com/careers'}));
+ assert.equal(r.status,405);
+ for(const p of ['dist/index.html','dist/manage-companies.html'])assert.doesNotMatch(fs.readFileSync(p,'utf8'),/data-remove=|api\('DELETE', company\.url/);
+});

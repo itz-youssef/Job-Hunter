@@ -192,30 +192,7 @@ async function load() {
       link.rel = 'noopener noreferrer';
       link.textContent = company.name + ' — ' + company.url;
 
-      const remove = document.createElement('button');
-      remove.textContent = 'Remove';
-      remove.className = 'remove';
-
-      remove.onclick = async () => {
-        const token = document.getElementById('token').value;
-
-        if (!token) {
-          message('Enter admin token first', true);
-          return;
-        }
-
-        if (!confirm('Remove this company?')) return;
-
-        try {
-          await api('DELETE', company.url, token);
-          message('Company removed');
-          await load();
-        } catch (error) {
-          message(error.message, true);
-        }
-      };
-
-      line.append(link, remove);
+      line.append(link);
       li.append(line);
 
       const status = statuses.find(s => s.url === company.url);
