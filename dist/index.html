@@ -248,7 +248,7 @@ a:hover{color:var(--ink)}
 })();
 </script>
 <link rel="stylesheet" href="/assets/secretj-interaction-polish.css?v=20261127">
-<link rel="stylesheet" href="/assets/secretj-job-feed-editorial.css?v=unified-tools-20261127">
+<link rel="stylesheet" href="/assets/secretj-job-feed-editorial.css?v=contrast-feed-first-20261127">
 <link rel="stylesheet" href="/assets/secretj-mobile-workspace.css?v=compact-header-1">
 </head>
 <body>
@@ -471,7 +471,18 @@ a:hover{color:var(--ink)}
       if(!state.member){readSaved();state.memberError='';return;}
       const userId=state.member.id;
       const resources=['profile','avatar','cv','saved','/api/secretj-email?action=status','preferences'];
-      const results=await Promise.allSettled(resources.map(scope=>memberRequest(scope,'GET',undefined,sjSilent)));
+      const requests=resources.map(scope=>memberRequest(scope,'GET',undefined,sjSilent));
+      // Start the authoritative feed read as soon as preferences arrive,
+      // independently of CV/avatar/profile/email status transfers.
+      const previousPrefs=JSON.stringify(state.memberPrefs||null);
+      const earlyFeed=requests[5].then(data=>{
+        if(sequence!==memberSequence||state.member?.id!==userId||data?.configured!==true)return null;
+        if(state.watchFeedLoaded&&!changed&&previousPrefs===JSON.stringify(data.preferences||null))return null;
+        return loadMatchingFeed(userId,sequence,sjSilent);
+      }).then(feed=>({feed}),error=>({error}));
+      // Attach handlers immediately to every parallel read.
+      const resultsPromise=Promise.allSettled(requests);
+      const results=await resultsPromise;
       if(sequence!==memberSequence || state.member?.id!==userId)return;
       const value=i=>results[i].status==='fulfilled'?results[i].value:null;
       const data=value(0),avatar=value(1),cv=value(2),saved=value(3);
@@ -488,7 +499,6 @@ a:hover{color:var(--ink)}
       state.savedRecords=saved?.jobs||[];
       state.saved=new Set(state.savedRecords.map(x=>String(x.job_key)));
       state.memberEmail=value(4);
-      const previousPrefs=JSON.stringify(state.memberPrefs||null);
       state.memberPrefsConfigured=value(5)?.configured===true;
       state.memberPrefs=state.memberPrefsConfigured?value(5)?.preferences:null;
       const preferencesChanged=changed||previousPrefs!==JSON.stringify(state.memberPrefs||null);
@@ -499,7 +509,9 @@ a:hover{color:var(--ink)}
       }
       if(state.memberPrefsConfigured&&(!state.watchFeedLoaded||preferencesChanged)){
         try{
-          const feed=await loadMatchingFeed(userId,sequence,sjSilent);
+          const outcome=await earlyFeed;
+          if(outcome.error)throw outcome.error;
+          const feed=outcome.feed;
           if(sequence!==memberSequence||state.member?.id!==userId)return;
           state.watchFeed=feed?.jobs||[];
           state.watchFeedLoaded=feed?.ready===true;
@@ -726,7 +738,7 @@ a:hover{color:var(--ink)}
     const catalogRequest=requests[0].then(snapshot=>{
       state.snapshot=snapshot;
       state.publicCatalogLoading=false;
-      if(state.page==='home'||state.page==='hunter')render(sjSilent);
+      if(['home','hunter','jobs'].includes(state.page))render(sjSilent);
       return snapshot;
     },error=>{
       state.publicCatalogLoading=false;
