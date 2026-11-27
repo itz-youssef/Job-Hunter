@@ -617,3 +617,24 @@ test('a failed judge endpoint cannot consume a second request on the same failed
  const out=await A.reviewSemantics(cases,s,{},h,day,Date.now(),async(model,system,payload,state)=>{A.recordCall(state,model,new Date());throw Object.assign(Error('provider-http-503'),{status:503,code:'provider-http-503'});});
  assert.equal(out.requests,1);assert.ok(h.failedFirst.has(A.NEMOTRON));assert.equal(out.recovered.length,0);assert.equal(out.reviews.length,6);
 });
+
+test('Nov 27 saved research regression: all five eligible rejected proposals can be reviewed despite 9/10 evidence coverage',async()=>{
+ const J=require('../research/semantic-review.cjs'),rows=require('./fixtures/shadow-cases-20261127.json'),day=A.localDate(new Date());
+ const {cases,results}=A.validationReplayCases(rows,day);
+ assert.equal(results.length,13);
+ const hard=results.find(r=>r.number===13);assert.equal(hard.deterministic,'rejected');assert.equal(hard.reason,'quote-not-in-source');assert.equal(hard.review_id,null);
+ const s=A.newState();A.ledger(s,day);
+ const h={nemotronEnabled:true,googleDisabled:false,failedGoogle:new Set([A.HYDROGEN,'gemini-3.8-flash']),failedFirst:new Set(),disabledModels:new Set(),cooldowns:new Map(),attempts:[]};
+ const stats={companies_reviewed:10,companies_with_evidence:9,failed_batches:0},tasks={career:{planned:7,completed:7},family:{planned:9,completed:9}};
+ let visited=[];
+ const out=await A.reviewSemantics(cases,s,{},h,day,Date.now(),async(model,system,payload,state,keys,opts)=>{
+  assert.equal(model,'gemini-3.6-flash');assert.equal(opts.emergency,false);
+  A.recordCall(state,model,new Date());visited.push(...payload.cases.map(c=>c.title));
+  // Deliberately return uncertainty: mock transport proves routing only,
+  // not a real model's correctness or permission to publish.
+  return {reviews:payload.cases.map(c=>({id:c.id,checks:['unknown','unknown','unknown','unknown'],explanation:'Offline routing regression; not a semantic verdict.',alternative:'',quote:'',corroboration:''}))};
+ },Date.now,false,A.semanticReviewReady('daily',stats,tasks,[]));
+ assert.equal(out.review_allowed,true);assert.equal(out.core_complete,false);assert.equal(out.requests,2);
+ assert.ok(visited.some(t=>/Staff Engineer/.test(t)));assert.ok(visited.some(t=>/Product GTM Activation Manager/.test(t)));
+ assert.equal(visited.length,6);assert.equal(out.recovered.length,0);assert.equal(out.reviews.length,cases.length);
+});
