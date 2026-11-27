@@ -248,6 +248,7 @@ a:hover{color:var(--ink)}
 })();
 </script>
 <link rel="stylesheet" href="/assets/secretj-interaction-polish.css?v=20261127">
+<link rel="stylesheet" href="/assets/secretj-job-feed-editorial.css?v=20261127">
 </head>
 <body>
 <div id="sj-startup-loader" class="sj-startup-loader" role="status" aria-live="polite">
@@ -1298,7 +1299,9 @@ a:hover{color:var(--ink)}
     const companyBrowsing=!saved&&state.companyFilter!=='all';
     const personalizedView=personalized&&!state.reviewExcluded&&!globalSearch&&!companyBrowsing&&state.jobType!=='internship';
     const h=top(saved?'YOUR SHORTLIST':'DISCOVER OPPORTUNITIES',saved?'Saved jobs':companyBrowsing?'All jobs at '+state.companyFilter:globalSearch?'Search all detected opportunities':personalized?'Your personalized job feed':'All detected opportunities',saved?(state.member?'Jobs saved to your account.':'Jobs you’ve bookmarked on this device.'):companyBrowsing?'Showing every published job we currently have for this company, across all career levels and fields. Your personal email alerts are unchanged.':globalSearch?'Searching all published listings, including those outside your saved preferences. Email alerts remain personalized.':personalized?'Opportunities detected by your personalized monitoring system, the same source used for email alerts.':'Explore every discovered opening with a valid application link. Sign in and save preferences to personalize your feed and alerts.');
-    return h+
+    const feedMetrics=saved?'':`<div class="feed-metrics" aria-label="Job feed counts"><div class="feed-metric"><strong id="feed-match-count">${list.length}</strong><small>In your feed</small></div><div class="feed-metric"><strong id="feed-catalog-count">${catalog.length}</strong><small>Detected jobs</small></div></div>`;
+    const heading=saved?h:h.replace('</p></div>','</p>'+feedMetrics+'</div>');
+    return heading+
       `${personalizedView&&state.watchFeedLoading?
         '<div class="sj-loading-inline" role="status" aria-live="polite"><span class="sj-loading-ring" aria-hidden="true"></span>Refreshing your matching jobs…</div>':''}`+
       `${personalized&&!saved?`<section class="job-filter-panel" aria-label="Matching transparency"><p class="tiny"><strong>Personalized preference monitoring</strong> runs independently from <strong>All Detected Jobs</strong>. Company-native filters are used where verified, with other sources clearly handled through catalog fallback. The general discovery catalog is never reduced by your preferences.</p><p class="tiny">The general catalog currently contains ${hiddenCount} detected jobs, available separately under Review All Jobs and global Search. Your personalized feed reads the same private monitoring records as your email alerts, including the initial baseline of existing opportunities.</p>${personalizedView&&!state.watchFeedLoaded?`<p class="tiny"><strong>Monitoring status:</strong> ${esc(state.watchFeedError||'Waiting for the source monitor to finish its initial scan.')} Your personalized feed only shows jobs accepted by the configured verification pipeline. While the scan is pending, Review All Jobs remains available without falsely marking unverified postings as matches.</p>`:''}<button class="btn secondary" type="button" data-review-excluded aria-pressed="${state.reviewExcluded}">${state.reviewExcluded?'Return to personalized feed':'Review all detected jobs ('+allPublicJobs().length+')'}</button></section>`:''}
@@ -1346,6 +1349,10 @@ a:hover{color:var(--ink)}
     const title=el('#main-content .section-top h1');
     if(title&&state.page==='jobs')title.textContent=state.query.trim()?
       'Search all detected opportunities':personalizedDisplay?'Your personalized job feed':'All detected opportunities';
+    const feedCount=el('#feed-match-count');
+    if(feedCount)feedCount.textContent=String(filtered.length);
+    const catalogCount=el('#feed-catalog-count');
+    if(catalogCount)catalogCount.textContent=String(allPublicJobs().length);
     const nav=el('#nav-job-count');
     if(nav)nav.textContent=String(filtered.length);
   }
@@ -1584,6 +1591,7 @@ a:hover{color:var(--ink)}
     const root=el('#main-content');if(!root)return;
     document.body?.classList?.toggle('sj-editorial-home',state.page==='home'||state.page==='hunter');
     document.body?.classList?.toggle('jh-workspace',['jobs','saved','companies','alerts'].includes(state.page));
+    document.body?.classList?.toggle('jh-feed',state.page==='jobs');
     const landing=state.page==='home'||state.page==='hunter';
     const html=state.page==='home'?home():state.page==='hunter'?jobHunterIntro():state.page==='radar'?radarHome():state.page==='resume'?resumePage():state.page==='cv'?cvPage():state.page==='profile'?profilePage():state.page==='jobs'?jobsPage():state.page==='saved'?jobsPage(true):state.page==='companies'?companiesPage():alertsPage();
     // Capture detached public nodes before leaving. Identical background
