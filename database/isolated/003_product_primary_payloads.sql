@@ -36,6 +36,7 @@ BEGIN
  IF p_owner IS NULL OR p_bot IS NULL OR jsonb_typeof(p_knowledge) IS DISTINCT FROM 'array'
  OR jsonb_array_length(p_knowledge) NOT BETWEEN 1 AND 40 OR octet_length(p_knowledge::text)>1500000
  THEN RAISE EXCEPTION 'Invalid knowledge payload'; END IF;
+ PERFORM pg_advisory_xact_lock(hashtextextended(p_owner::text||':'||p_bot::text,0));
  -- A prior deletion is a durable fence against a delayed preparation.
  IF EXISTS(SELECT 1 FROM secretj_migration_sync.records WHERE service='botfolio'
  AND owner_id=p_owner AND entity_key=p_bot::text AND record IS NULL) THEN
@@ -58,6 +59,7 @@ RETURNS trigger LANGUAGE plpgsql SET search_path=pg_catalog AS $$
 DECLARE h text; k jsonb;
 BEGIN
  IF NEW.service<>'botfolio' THEN RETURN NEW; END IF;
+ PERFORM pg_advisory_xact_lock(hashtextextended(NEW.owner_id::text||':'||NEW.entity_key,0));
  IF NEW.record IS NULL THEN
   DELETE FROM secretj_migration_sync.bot_knowledge WHERE owner_id=NEW.owner_id AND bot_id=NEW.entity_key::uuid;
  ELSE
