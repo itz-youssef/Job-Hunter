@@ -5,12 +5,13 @@
  */
 const {randomBytes,randomInt,timingSafeEqual}=require('node:crypto');
 const core=require('../lib/secretj/core');
+const templates=require('../lib/secretj/email-templates');
 
 function configured(config=process.env){
   return Boolean(config.RESEND_API_KEY&&
     /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(config.SECRETJ_EMAIL_FROM||''));
 }
-async function send(to,subject,text,config=process.env){
+async function send(to,subject,text,config=process.env,template=null){
   if(!configured(config))throw core.fail(503,'Email delivery is not configured yet');
   const response=await fetch('https://api.resend.com/emails',{
     method:'POST',headers:{
@@ -20,7 +21,8 @@ async function send(to,subject,text,config=process.env){
     },
     body:JSON.stringify({
       from:config.SECRETJ_EMAIL_FROM,
-      to:[to],subject,text
+      ...(template?.sender?{from:template.sender+' <'+config.SECRETJ_EMAIL_FROM+'>'}:{}),
+      to:[to],subject,text,...(template?.html?{html:template.html}:{})
     }),
     signal:AbortSignal.timeout(15000)
   });
@@ -83,13 +85,8 @@ module.exports=async function handler(req,res){
       );
       if(!record[0])throw core.fail(429,'Please wait 15 minutes before another test email');
       const needsVerification=!record[0].verified_at;
-      const subject=needsVerification?'Secret J: Confirm alert destination':'Secret J: Test alert delivered';
-      const text=needsVerification?
-        'Your Secret J email test is successful.\n\nYour confirmation code: '+code+
-        '\n\nEnter this code in your account within 10 minutes to enable alerts at this address. Ignore this email if you did not request it.':
-        'Your Secret J test email was accepted by the mail provider.\n\n'+
-        'You will only receive job alerts when you opt in.';
-      try{await send(recipient,subject,text);}
+      const message=needsVerification?templates.codeEmail('alert',code):templates.testEmail();
+      try{await send(recipient,message.subject,message.text,process.env,message);}
       catch(error){
         // Failed provider calls must not lock an account into cooldown.
         await core.query(
