@@ -109,7 +109,7 @@ test('product primary catalog deduplicates public content and keeps qualificatio
   R.setQueryForTests(async(service,sql,args)=>{writes++;assert.equal(service,'jobHunter');assert.match(sql,/put_job_payloads/);assert.deepEqual(JSON.parse(args[0]),[{title:job.title,url:job.url}]);return [{applied:1}];});
   assert.equal(await R.prepareJobPayloads(settings,[{job},{job:{...job,qualification_reason:'different'}}]),true);assert.equal(writes,1);
   R.setQueryForTests(async()=>{throw Error('offline');});assert.equal(await R.prepareJobPayloads(settings,[{job}]),false);
-  R.setQueryForTests(async(service,sql,args)=>{assert.equal(service,'jobHunter');assert.match(sql,/sha256/);assert.deepEqual(args,[[digest]]);return [{digest,content:{title:job.title,url:job.url}}];});
+  R.setQueryForTests(async(service,sql,args)=>{assert.equal(service,'jobHunter');assert.match(sql,/get_job_payloads/);assert.deepEqual(args,[[digest]]);return [{digest,content:{title:job.title,url:job.url}}];});
   const input=[{job_key:job.url,payload_digest:digest,qualifiers:{qualification_status:'accepted',qualification_reason:job.qualification_reason},status:'sent'}];
   assert.deepEqual(await R.primaryJobSnapshots(settings,input),[{job_key:job.url,status:'sent',job_snapshot:job}]);
   R.setQueryForTests(async()=>[]);assert.equal(await R.primaryJobSnapshots(settings,input),null);
@@ -120,7 +120,7 @@ test('product primary knowledge requires exact owner, bot and digest; remote out
  try{
   R.setQueryForTests(async(service,sql,args)=>{assert.equal(service,'botfolio');assert.match(sql,/put_bot_knowledge/);assert.deepEqual(args,['owner','bot',JSON.stringify(knowledge)]);return [{digest}];});
   assert.equal(await R.prepareBotKnowledge(settings,'owner','bot',knowledge),true);
-  R.setQueryForTests(async(service,sql,args)=>{assert.match(sql,/owner_id=\$1::uuid AND bot_id=\$2::uuid AND digest=\$3/);assert.deepEqual(args,['owner','bot',digest]);return [{knowledge}];});
+  R.setQueryForTests(async(service,sql,args)=>{assert.match(sql,/get_bot_knowledge/);assert.deepEqual(args,['owner','bot',digest]);return [{knowledge}];});
   assert.deepEqual(await R.primaryBotKnowledge(settings,{id:'bot',user_id:'owner',knowledge_digest:digest}),knowledge);
   R.setQueryForTests(async()=>{throw Error('offline');});
   assert.equal(await R.prepareBotKnowledge(settings,'owner','bot',knowledge),false);
