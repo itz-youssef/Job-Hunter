@@ -274,12 +274,8 @@ module.exports=async function handler(req,res){
     const user=users[0];
     const valid=await core.checkPassword(password,user?.password_hash||'');
     if(!user||!valid||!user.is_active)throw core.fail(401,'Incorrect email or password');
-    // Rollout switch deliberately guards against locking existing users out
-    // until the Neon migration and verified sender are both ready.
-    if(process.env.SECRETJ_LOGIN_OTP_ENABLED!=='true'){
-      await core.issueSession(res,user.id);
-      return core.reply(res,200,{ok:true,user:core.publicUser(user)});
-    }
+    // Email verification is mandatory for every fresh password sign-in.
+    // Missing mail configuration must fail closed, never issue a session.
     requireEmailDelivery();
     const challenge=randomBytes(32).toString('base64url');
     const code=String(randomInt(100000,1000000));
