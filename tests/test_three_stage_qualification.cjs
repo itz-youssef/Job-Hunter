@@ -23,7 +23,7 @@ test('both monitoring paths qualify without AI before storing or sending',()=>{
  const code=fs.readFileSync('lib/secretj/native-preference-monitor.js','utf8');
  assert.match(code,/await qualifyJobs\(selected,latest\[0\],env,fetchImpl\)/);
  assert.match(code,/await qualifyJobs\(selected,user\)/);
- assert.match(code,/await reservePeriodic\(users,result\.jobs\)/);
+ assert.match(code,/await reservePeriodic\(users,result\.jobs,env\)/);
  assert.match(code,/payload=watchPayload\(sig,verified\.accepted\)/);
  assert.match(code,/const row=\{user_id:user\.id,signature:sig,preference_time:user\.preferences_updated_at\|\|null,jobs:payload\}/);
  assert.match(code,/if\(payload===undefined\)\{[\s\S]*?verified=await qualifyJobs\(selected,user\);[\s\S]*?payload=watchPayload\(sig,verified\.accepted\)/);

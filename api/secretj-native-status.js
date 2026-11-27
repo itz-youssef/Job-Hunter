@@ -27,6 +27,12 @@ const ISOLATED_FEED_SQL=CORE_FEED_SQL
  .replace('j.job_key,j.job_snapshot,j.status','j.job_key,j.record_digest,j.status')
  .replace('SELECT job_key,job_snapshot,status,discovered_at,sent_at\n FROM public.sj_native_watch_jobs',
   "SELECT w.job_key,encode(sha256(convert_to(to_jsonb(w)::text,'UTF8')),'hex') AS record_digest,w.status,w.discovered_at,w.sent_at\n FROM public.sj_native_watch_jobs w");
+const SHARED_KEYS="ARRAY['qualification_status','qualification_mode','qualification_model','qualification_reason','qualification_preference_signature','qualification_matcher_fingerprint']";
+const PRIMARY_FEED_SQL=CORE_FEED_SQL
+ .replace('j.job_key,j.job_snapshot,j.status','j.job_key,j.payload_digest,j.qualifiers,j.status')
+ .replace('SELECT job_key,job_snapshot,status,discovered_at,sent_at\n FROM public.sj_native_watch_jobs',
+  "SELECT w.job_key,encode(sha256(convert_to((w.job_snapshot-"+SHARED_KEYS+")::text,'UTF8')),'hex') AS payload_digest, "+
+  "(SELECT COALESCE(jsonb_object_agg(key,value),'{}'::jsonb) FROM jsonb_each(w.job_snapshot) WHERE key=ANY("+SHARED_KEYS+")) AS qualifiers,w.status,w.discovered_at,w.sent_at\n FROM public.sj_native_watch_jobs w");
 function createHandler(env=process.env){return async function handler(req,res){
  try{
   core.allowedMethod(req,['GET']);
@@ -37,9 +43,10 @@ function createHandler(env=process.env){return async function handler(req,res){
   const validOffset=Number.isSafeInteger(offset)&&offset>=0&&offset<=100000;
   const limit=250;
   const isolatedReads=action==='feed'&&isolated.enabled('jobHunter',env);
+  const primary=isolatedReads&&isolated.primaryPayloadsEnabled('jobHunter',env);
   const combined=action==='feed'&&validOffset;
   const params=[user.id,limit+1,offset];
-  let state=combined?await core.query(isolatedReads?ISOLATED_FEED_SQL:CORE_FEED_SQL,params):await core.query(
+  let state=combined?await core.query(primary?PRIMARY_FEED_SQL:isolatedReads?ISOLATED_FEED_SQL:CORE_FEED_SQL,params):await core.query(
     `SELECT w.initialized_at,w.updated_at,w.preference_signature,
        (w.updated_at>=p.updated_at) AS preferences_current
        FROM public.sj_native_watch_state w
@@ -54,7 +61,7 @@ function createHandler(env=process.env){return async function handler(req,res){
     if(!validOffset)throw core.fail(400,'Invalid feed offset');
     let rows=state.filter(row=>row.job_key!==null);
     if(isolatedReads){
-      rows=await isolated.jobSnapshots(env,user.id,rows);
+      rows=primary?await isolated.primaryJobSnapshots(env,rows):await isolated.jobSnapshots(env,user.id,rows);
       // Re-read readiness and the entire page atomically on any mismatch,
       // timeout or partial mirror result. Never mix versions or expose a page
       // from preferences that changed during the remote request.
@@ -118,3 +125,4 @@ module.exports=createHandler();
 module.exports.createHandler=createHandler;
 module.exports.CORE_FEED_SQL=CORE_FEED_SQL;
 module.exports.ISOLATED_FEED_SQL=ISOLATED_FEED_SQL;
+module.exports.PRIMARY_FEED_SQL=PRIMARY_FEED_SQL;
