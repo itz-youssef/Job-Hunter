@@ -38,3 +38,22 @@ test('fetch preserves response identity, ignores third-party and status polling,
  const bad=b.window.fetch('/api/secretj-data');b.tick(160);const err=Error('network error');reject(err);await assert.rejects(bad,e=>e===err);assert.equal(b.node().hidden,true);
  await assert.rejects(b.p.track(()=>{throw err;},'Reading CV…'),e=>e===err);b.tick(2000);assert.equal(b.node().hidden,true);
 });
+
+test('silent refresh never flashes or extends concurrent foreground progress',async()=>{
+ const waiting=new Map(),seen=new Map();
+ const b=browser((url,opts)=>{seen.set(url,opts);return new Promise((resolve,reject)=>waiting.set(url,{resolve,reject}));});
+ const background=b.window.fetch('/api/secretj-data?scope=avatar',{sjSilent:true,credentials:'same-origin'});
+ b.tick(3000);assert.equal(b.node(),undefined);
+ assert.equal(seen.get('/api/secretj-data?scope=avatar').sjSilent,undefined);
+ assert.equal(seen.get('/api/secretj-data?scope=avatar').credentials,'same-origin');
+ const foreground=b.window.fetch('/api/secretj-data?scope=saved',{method:'POST'});
+ b.tick(160);assert.equal(b.node().hidden,false);
+ assert.equal(b.node().querySelector('.sj-progress-label').textContent,'Saving changes…');
+ waiting.get('/api/secretj-data?scope=saved').resolve({ok:true});await foreground;
+ assert.equal(b.node().hidden,true);
+ b.tick(4000);assert.equal(b.node().hidden,true);
+ waiting.get('/api/secretj-data?scope=avatar').resolve({ok:true});await background;
+ const failed=b.window.fetch('/api/secretj-native-status?action=feed',{sjSilent:true});
+ b.tick(3000);waiting.get('/api/secretj-native-status?action=feed').reject(Error('offline'));
+ await assert.rejects(failed,/offline/);assert.equal(b.node().hidden,true);
+});

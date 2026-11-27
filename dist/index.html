@@ -218,7 +218,7 @@ a:hover{color:var(--ink)}
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/secretj-home.css">
   <link rel="stylesheet" href="/assets/secretj-global-theme.css?v=20261113-uniform-2">
-  <script src="/assets/secretj-home.js?v=account-sync-1" defer></script>
+  <script src="/assets/secretj-home.js?v=silent-refresh-20261127" defer></script>
   <script src="/assets/secretj-eligibility-core.js?v=constraint-aware-f-1" defer></script>
   <script src="/assets/secretj-career-dictionary.js?v=dictionary-20261122" defer></script>
   <script src="/assets/secretj-career-level.js?v=level-classifier-1" defer></script>
@@ -227,7 +227,7 @@ a:hover{color:var(--ink)}
   <script src="/assets/secretj-welcome-tour.js?v=welcome-1" defer></script>
 <link rel="stylesheet" href="/assets/responsive.css?v=mobile-workspace-nav-20261124">
 <link rel="stylesheet" href="/assets/secretj-loading.css?v=operation-progress-20261127">
-<script src="/assets/secretj-progress.js?v=20261127"></script>
+<script src="/assets/secretj-progress.js?v=silent-refresh-20261127"></script>
 <link rel="stylesheet" href="/assets/secretj-landing.css?v=oxblood-leather-open-glow-20261124">
 <script src="/assets/secretj-landing.js?v=botfolio-explore-20261125"></script>
 <link rel="stylesheet" href="/assets/secretj-jobhunter-intro.css?v=soft-concrete-curves-20261124">
@@ -346,7 +346,7 @@ a:hover{color:var(--ink)}
   const liveFile = name => RAW + name + '?v=' + Date.now();
   const el = (selector) => document.querySelector(selector);
   const esc = (x) => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const state = { member:null, memberLoading:true, memberPrefs:null, memberPrefsConfigured:false, reviewExcluded:false, watchFeed:[], watchFeedLoaded:false, watchFeedLoading:false, watchFeedPendingSince:0, watchFeedError:'', snapshot:{}, publicCatalogLoading:true, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'recent', jobType:'all', feedLimit:40, companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
+  const state = { member:null, memberLoading:true, memberPrefs:null, memberPrefsConfigured:false, reviewExcluded:false, watchFeed:[], watchFeedLoaded:false, watchFeedLoading:false, watchFeedSilent:false, watchFeedPendingSince:0, watchFeedError:'', snapshot:{}, publicCatalogLoading:true, companies:[], scans:[], alerts:null, page:'home', saved:new Set(), query:'', role:'all', companyFilter:'all', dateFilter:'all', dateBasis:'posted', sortBy:'recent', jobType:'all', feedLimit:40, companyApiError:'', statusError:'', refreshedAt:null, fullEmail:'', scanReport:null, runs:{}, runsCheckedAt:0, runsError:'' };
   // Skeletons make authenticated feed/profile hydration obvious, not a fake zero.
   function loadingSkeleton(message='Loading matching opportunities…',detail='Retrieving your saved preferences and job feed.',count=4){
     return '<section class="sj-loading-shell" role="status" aria-live="polite" aria-busy="true">'+
@@ -369,7 +369,7 @@ a:hover{color:var(--ink)}
   // Keep the two public landing views mounted in memory between hash routes.
   // Never persist HTML or personalized data to browser storage.
   const landingViews=new Map();
-  let renderedPage=null;
+  let renderedPage=null,lastRenderedHtml=null,backgroundRenderPending=false,profileDirty=false;
   const lastResults={list:null,key:'',value:null};
   let dedupSnapshot=null,dedupPublic=null;
   const names = {home:'Home',hunter:'Job Hunter',radar:'Job Hunter Dashboard',resume:'Resume Updater',cv:'CV Holder',profile:'My Profile', jobs:'Job Feed', saved:'Saved Jobs', companies:'My Companies', alerts:'Email Alerts'};
@@ -392,9 +392,9 @@ a:hover{color:var(--ink)}
   // On Vercel, authenticated members use Neon; guests retain legacy local
   // bookmarks. Never merge a shared browser's guest data into another account.
   let memberSequence=0;
-  async function memberRequest(scope,method='GET',body){
+  async function memberRequest(scope,method='GET',body,sjSilent=false){
     const url=scope.startsWith('/api/')?scope:'/api/secretj-data?scope='+scope;
-    const response=await fetch(url,{method,credentials:'same-origin',cache:'no-store',
+    const response=await fetch(url,{method,credentials:'same-origin',cache:'no-store',sjSilent,
       headers:{'Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})});
     const data=await response.json().catch(()=>({}));
     if(!response.ok)throw Error(data.error||'Account request failed. Please try again.');
@@ -407,11 +407,11 @@ a:hover{color:var(--ink)}
   // Full account-scoped native monitoring output, including baseline jobs.
   // Pagination completes before replacing the visible list; failures never
   // silently switch the personalized feed to an unrelated catalog shortlist.
-  async function loadMatchingFeed(userId,sequence){
+  async function loadMatchingFeed(userId,sequence,sjSilent=false){
     const combined=[];
     let offset=0;
     for(let page=0;page<400;page++){
-      const result=await memberRequest('/api/secretj-native-status?action=feed&offset='+offset);
+      const result=await memberRequest('/api/secretj-native-status?action=feed&offset='+offset,'GET',undefined,sjSilent);
       if(sequence!==memberSequence||state.member?.id!==userId)return;
       if(!result.ready)return {jobs:[],ready:false,error:result.message||'Monitoring is initializing'};
       if(!Array.isArray(result.jobs))throw Error('Invalid personalized monitoring response');
@@ -423,13 +423,14 @@ a:hover{color:var(--ink)}
     }
     throw Error('Personalized feed exceeded safe pagination limit');
   }
-  async function refreshMatchingFeed(){
+  async function refreshMatchingFeed(sjSilent=true){
     if(!state.member||!state.memberPrefsConfigured||state.memberLoading||state.watchFeedLoading)return;
     const userId=state.member.id,sequence=memberSequence;
     state.watchFeedLoading=true;
-    if(!state.watchFeedLoaded&&state.page==='jobs')render();
+    state.watchFeedSilent=sjSilent;
+    if(!state.watchFeedLoaded&&state.page==='jobs')render(sjSilent);
     try{
-      const feed=await loadMatchingFeed(userId,sequence);
+      const feed=await loadMatchingFeed(userId,sequence,sjSilent);
       if(!feed||sequence!==memberSequence||state.member?.id!==userId)return;
       state.watchFeed=feed.jobs||[];
       state.watchFeedLoaded=feed.ready===true;
@@ -441,20 +442,24 @@ a:hover{color:var(--ink)}
       state.watchFeedPendingSince=0;
     }finally{
       state.watchFeedLoading=false;
+      state.watchFeedSilent=false;
     }
-    syncFeedCount();render();
+    syncFeedCount();render(sjSilent);
   }
-  async function hydrateMember(){
+  async function hydrateMember(sjSilent=false){
     const sequence=++memberSequence;
     lastMemberSyncAt=Date.now();
     memberSyncRunning=true;
     const wasReady=memberHydrated;
+    let identityChanged=false;
     state.memberLoading=!wasReady;
     if(!wasReady&&['jobs','profile','cv','saved'].includes(state.page))render();
     try{
-      const result=await memberRequest('/api/secretj-auth?action=session');
+      const result=await memberRequest('/api/secretj-auth?action=session','GET',undefined,sjSilent);
       if(sequence!==memberSequence)return;
       const changed=state.member?.id!==result.user?.id;
+      identityChanged=changed;
+      if(changed)profileDirty=false;
       state.member=result.user||null;
       if(changed || !state.member){
         if(changed){landingViews.clear();state.memberLoading=true;}
@@ -465,7 +470,7 @@ a:hover{color:var(--ink)}
       if(!state.member){readSaved();state.memberError='';return;}
       const userId=state.member.id;
       const resources=['profile','avatar','cv','saved','/api/secretj-email?action=status','preferences'];
-      const results=await Promise.allSettled(resources.map(scope=>memberRequest(scope)));
+      const results=await Promise.allSettled(resources.map(scope=>memberRequest(scope,'GET',undefined,sjSilent)));
       if(sequence!==memberSequence || state.member?.id!==userId)return;
       const value=i=>results[i].status==='fulfilled'?results[i].value:null;
       const data=value(0),avatar=value(1),cv=value(2),saved=value(3);
@@ -493,7 +498,7 @@ a:hover{color:var(--ink)}
       }
       if(state.memberPrefsConfigured&&(!state.watchFeedLoaded||preferencesChanged)){
         try{
-          const feed=await loadMatchingFeed(userId,sequence);
+          const feed=await loadMatchingFeed(userId,sequence,sjSilent);
           if(sequence!==memberSequence||state.member?.id!==userId)return;
           state.watchFeed=feed?.jobs||[];
           state.watchFeedLoaded=feed?.ready===true;
@@ -508,6 +513,8 @@ a:hover{color:var(--ink)}
     }catch(e){
       if(sequence!==memberSequence)return;
       landingViews.clear();
+      identityChanged=!!state.member;
+      profileDirty=false;
       state.member=null;profile={...blankProfile(),photo:''};cvEntry=null;
       state.memberEmail=null;state.memberPrefs=null;state.memberPrefsConfigured=false;state.watchFeed=[];state.watchFeedLoaded=false;state.watchFeedError='';state.saved=new Set();state.savedRecords=[];
       state.memberError=e.message;
@@ -516,7 +523,7 @@ a:hover{color:var(--ink)}
         memberSyncRunning=false;
         memberHydrated=true;
         state.memberLoading=false;
-        if(!document.hidden){syncFeedCount();render();}
+        if(!document.hidden){syncFeedCount();render(sjSilent&&wasReady&&!identityChanged);}
       }
     }
   }
@@ -676,10 +683,10 @@ a:hover{color:var(--ink)}
     if(state.role!=='all'&&!availableRoleOptions().some(c=>c.key===state.role))state.role='all';
     if(node)node.textContent=state.memberLoading?'…':state.watchFeedLoading&&!state.watchFeedLoaded?'…':String(filterJobs(validJobs()).length);
   }
-  async function json(path){const r=await fetch(path,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);return r.json();}
-  async function companyApi(method='GET',payload,admin){
+  async function json(path,sjSilent=false){const r=await fetch(path,{cache:'no-store',sjSilent});if(!r.ok)throw Error('HTTP '+r.status);return r.json();}
+  async function companyApi(method='GET',payload,admin,sjSilent=false){
     if(IS_CLOUDFLARE)throw Error('Company management is unavailable in this version of the dashboard.');
-    const r=await fetch('/api/companies',{method,cache:'no-store',headers:{'Content-Type':'application/json','x-admin-token':admin||''},body:method==='GET'?undefined:JSON.stringify(payload)});
+    const r=await fetch('/api/companies',{method,cache:'no-store',sjSilent,headers:{'Content-Type':'application/json','x-admin-token':admin||''},body:method==='GET'?undefined:JSON.stringify(payload)});
     const data=await r.json().catch(()=>({}));if(!r.ok)throw Error(data.error||`API error (${r.status})`);return data;
   }
   function toast(message, bad=false){const t=el('#toast');t.textContent=message;t.classList.toggle('error',bad);t.hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.hidden=true,5000);}
@@ -701,27 +708,28 @@ a:hover{color:var(--ink)}
       run.conclusion!=='skipped'
     )||null;
   }
-  async function refresh(silent=false){
+  async function refresh(silent=false,sjSilent=false){
+    const read=path=>json(path,sjSilent);
     const runsDue=Date.now()-state.runsCheckedAt>=RUNS_REFRESH_MS;
     if(runsDue)state.runsCheckedAt=Date.now();
     // Show the public catalog as soon as its snapshot arrives; never hold the
     // homepage behind slower API, GitHub Actions, or status requests.
     const requests=IS_CLOUDFLARE
-      ? [json(liveFile('dist/data.json')),
-         json(liveFile('companies.json')).then(companies=>({companies})),
-         json(liveFile('dist/custom-status.json')),
-         json(liveFile('dist/notification-status.json')),
-         runsDue?Promise.allSettled(SCANNER_CHANNELS.map(c=>json(RUNS_API_ROOT+c.workflow+'/runs?branch=main&per_page=5'))):Promise.resolve(null)]
-      : [json('/data.json'),companyApi(),json('/custom-status.json'),json('/notification-status.json'),
-         runsDue?Promise.allSettled(SCANNER_CHANNELS.map(c=>json(RUNS_API_ROOT+c.workflow+'/runs?branch=main&per_page=5'))):Promise.resolve(null)];
+      ? [read(liveFile('dist/data.json')),
+         read(liveFile('companies.json')).then(companies=>({companies})),
+         read(liveFile('dist/custom-status.json')),
+         read(liveFile('dist/notification-status.json')),
+         runsDue?Promise.allSettled(SCANNER_CHANNELS.map(c=>read(RUNS_API_ROOT+c.workflow+'/runs?branch=main&per_page=5'))):Promise.resolve(null)]
+      : [read('/data.json'),companyApi('GET',undefined,undefined,sjSilent),read('/custom-status.json'),read('/notification-status.json'),
+         runsDue?Promise.allSettled(SCANNER_CHANNELS.map(c=>read(RUNS_API_ROOT+c.workflow+'/runs?branch=main&per_page=5'))):Promise.resolve(null)];
     const catalogRequest=requests[0].then(snapshot=>{
       state.snapshot=snapshot;
       state.publicCatalogLoading=false;
-      if(state.page==='home'||state.page==='hunter')render();
+      if(state.page==='home'||state.page==='hunter')render(sjSilent);
       return snapshot;
     },error=>{
       state.publicCatalogLoading=false;
-      if(state.page==='home'||state.page==='hunter')render();
+      if(state.page==='home'||state.page==='hunter')render(sjSilent);
       throw error;
     });
     const res=await Promise.allSettled([catalogRequest,...requests.slice(1)]);
@@ -749,7 +757,7 @@ a:hover{color:var(--ink)}
     }
     state.refreshedAt=new Date();
     syncFeedCount();
-    render();
+    render(sjSilent);
     if(!silent)toast(res[0].status==='fulfilled'?'Workspace updated':'Could not load job snapshot',res[0].status!=='fulfilled');
   }
   function go(page){state.page=names[page]?page:'home';location.hash=state.page;el('#page-label').textContent=names[state.page];document.querySelectorAll('nav button[data-page]').forEach(b=>{b.classList.toggle('active',b.dataset.page===state.page);b.setAttribute('aria-current',b.dataset.page===state.page?'page':'false');});render();}
@@ -1302,7 +1310,7 @@ a:hover{color:var(--ink)}
     const feedMetrics=saved?'':`<div class="feed-metrics" aria-label="Job feed counts"><div class="feed-metric"><strong id="feed-match-count">${list.length}</strong><small>In your feed</small></div><div class="feed-metric"><strong id="feed-catalog-count">${catalog.length}</strong><small>Detected jobs</small></div></div>`;
     const heading=saved?h:h.replace('</p></div>','</p>'+feedMetrics+'</div>');
     return heading+
-      `${personalizedView&&state.watchFeedLoading?
+      `${personalizedView&&state.watchFeedLoading&&!state.watchFeedSilent?
         '<div class="sj-loading-inline" role="status" aria-live="polite"><span class="sj-loading-ring" aria-hidden="true"></span>Refreshing your matching jobs…</div>':''}`+
       `${personalized&&!saved?`<section class="job-filter-panel" aria-label="Matching transparency"><p class="tiny"><strong>Personalized preference monitoring</strong> runs independently from <strong>All Detected Jobs</strong>. Company-native filters are used where verified, with other sources clearly handled through catalog fallback. The general discovery catalog is never reduced by your preferences.</p><p class="tiny">The general catalog currently contains ${hiddenCount} detected jobs, available separately under Review All Jobs and global Search. Your personalized feed reads the same private monitoring records as your email alerts, including the initial baseline of existing opportunities.</p>${personalizedView&&!state.watchFeedLoaded?`<p class="tiny"><strong>Monitoring status:</strong> ${esc(state.watchFeedError||'Waiting for the source monitor to finish its initial scan.')} Your personalized feed only shows jobs accepted by the configured verification pipeline. While the scan is pending, Review All Jobs remains available without falsely marking unverified postings as matches.</p>`:''}<button class="btn secondary" type="button" data-review-excluded aria-pressed="${state.reviewExcluded}">${state.reviewExcluded?'Return to personalized feed':'Review all detected jobs ('+allPublicJobs().length+')'}</button></section>`:''}
       <section class="job-filter-panel" aria-label="Job search filters">
@@ -1587,13 +1595,19 @@ a:hover{color:var(--ink)}
       if(icon)icon.textContent=dark?'☼':'◐';
   }
 
-  function render(){
+  function render(background=false){
     const root=el('#main-content');if(!root)return;
+    // Do not replace controls while the user is typing, selecting, or editing a profile.
+    if(background&&renderedPage===state.page&&(document.hidden||root.contains(document.activeElement)&&document.activeElement.matches('input,select,textarea,button,a,summary,[contenteditable]')||document.querySelector('dialog[open]')||root.querySelector('details[open]')||state.page==='profile'&&profileDirty)){backgroundRenderPending=true;return;}
+    backgroundRenderPending=false;
+    if(renderedPage!==state.page)profileDirty=false;
     document.body?.classList?.toggle('sj-editorial-home',state.page==='home'||state.page==='hunter');
     document.body?.classList?.toggle('jh-workspace',['jobs','saved','companies','alerts'].includes(state.page));
     document.body?.classList?.toggle('jh-feed',state.page==='jobs');
     const landing=state.page==='home'||state.page==='hunter';
     const html=state.page==='home'?home():state.page==='hunter'?jobHunterIntro():state.page==='radar'?radarHome():state.page==='resume'?resumePage():state.page==='cv'?cvPage():state.page==='profile'?profilePage():state.page==='jobs'?jobsPage():state.page==='saved'?jobsPage(true):state.page==='companies'?companiesPage():alertsPage();
+    // Repeated background reads must not recreate unchanged DOM.
+    if(background&&renderedPage===state.page&&lastRenderedHtml===html)return;
     // Capture detached public nodes before leaving. Identical background
     // snapshots must not restart images, animations or reset open FAQ items.
     if(renderedPage!==state.page&&landingViews.has(renderedPage)&&root.childNodes)
@@ -1608,7 +1622,7 @@ a:hover{color:var(--ink)}
       root.innerHTML=html;
       if(landing)landingViews.set(state.page,{html,nodes:null});
     }
-    renderedPage=state.page;
+    renderedPage=state.page;lastRenderedHtml=html;
     if(state.page==='home'||state.page==='hunter')window.SecretJLanding?.syncAvatar?.();
     if(state.page==='home'||state.page==='hunter')syncLandingTheme();
   }
@@ -1710,12 +1724,14 @@ a:hover{color:var(--ink)}
       if(cvPreviewBlobUrl){URL.revokeObjectURL(cvPreviewBlobUrl);cvPreviewBlobUrl=null;}
     });
     readSaved();
+    document.addEventListener('input', event=>{if(event.target.closest('#profile-form'))profileDirty=true;});
+    document.addEventListener('focusout',()=>{if(backgroundRenderPending)setTimeout(()=>{if(backgroundRenderPending)render(true);},0);});
     let syncTimer;
     const scheduleMemberSync=(force=false)=>{
       if(memberSyncRunning||document.hidden)return;
       if(!force&&lastMemberSyncAt&&Date.now()-lastMemberSyncAt<TAB_SYNC_MIN_MS)return;
       clearTimeout(syncTimer);
-      syncTimer=setTimeout(()=>{if(!memberSyncRunning&&!document.hidden)hydrateMember();},180);
+      syncTimer=setTimeout(()=>{if(!memberSyncRunning&&!document.hidden)hydrateMember(true);},180);
     };
     // Explicit account changes always revalidate; short tab switches do not.
     window.addEventListener('secretj-account-changed',()=>scheduleMemberSync(true));
@@ -1923,6 +1939,7 @@ a:hover{color:var(--ink)}
       profile.updatedAt=new Date().toISOString();
       try{
         await profileStore('save',profile);
+        profileDirty=false;
         profileMessage='Your profile is saved locally. Private cloud sync is optional.';
         render();
         toast('Profile saved on this device');
@@ -1985,8 +2002,8 @@ a:hover{color:var(--ink)}
     el('#account-link').href='/account.html';
     go(location.hash.replace('#','')||'home');
     syncFeedCount();
-    const initialMember=hydrateMember();
-    const initialCatalog=refresh(true);
+    const initialMember=hydrateMember(true);
+    const initialCatalog=refresh(true,true);
     Promise.allSettled([initialMember,initialCatalog]).then(()=>window.SecretJStartup?.finish()).then(()=>{
       // Cross-product footer links may target a public editorial section.
       // Only these fixed IDs are accepted; normal routes behave as before.
@@ -2003,7 +2020,7 @@ a:hover{color:var(--ink)}
       // Never refresh, rerender or download data for a hidden tab.
       if(document.hidden)return;
       if(document.activeElement?.id==='job-search')return;
-      refresh(true);
+      refresh(true,true);
       refreshMatchingFeed();
     },60000);
     // Quick follow-up only while the user's saved preferences are still
