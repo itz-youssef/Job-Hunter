@@ -152,7 +152,7 @@
    const fields=classify(job);
    const level=careerLevel?.evaluate(job,eligibilityCore);
    const early=eligibilityCore?[0,1,2].map(n=>eligibilityCore.evaluate(job,n)):null;
-   return {fields,level,early,years:yearsRequired(job)};
+   return {fields,level,early,years:yearsRequired(job),inEgypt:egypt.test(String(job.location||job.job_location||''))};
  }
  function assess(job,p,facts){
    if(!hasFilters(p))return {match:true,status:'unrestricted',reasons:[],requiredYears:null,categories:facts?facts.fields:classify(job),evidence:[]};
@@ -162,7 +162,7 @@
    const fields=facts?facts.fields:classify(job);
    const reasons=[],evidence=[];
    let review=false,required=null;
-   if(p.egypt_only===true&&!egypt.test(location))reasons.push('Outside selected location');
+   if(p.egypt_only===true&&!(facts?facts.inEgypt:egypt.test(location)))reasons.push('Outside selected location');
    // New multi-level selections supersede legacy internship-only switch.
    const chosenLevels=Array.isArray(p.career_levels)?p.career_levels:[];
    if(!chosenLevels.length&&p.internships===true&&careerLevel&&!careerLevel.match(job,['internship'],eligibilityCore,facts?.level).match)reasons.push('Not an internship');
