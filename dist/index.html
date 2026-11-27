@@ -475,6 +475,11 @@ a:hover{color:var(--ink)}
       // Start the authoritative feed read as soon as preferences arrive,
       // independently of CV/avatar/profile/email status transfers.
       const previousPrefs=JSON.stringify(state.memberPrefs||null);
+      const savedReady=requests[3].then(data=>{
+        if(sequence!==memberSequence||state.member?.id!==userId)return;
+        state.savedRecords=data?.jobs||[];
+        state.saved=new Set(state.savedRecords.map(x=>String(x.job_key)));
+      },()=>{});
       const earlyFeed=requests[5].then(async data=>{
         if(sequence!==memberSequence||state.member?.id!==userId)return;
         const configured=data?.configured===true;
@@ -490,12 +495,8 @@ a:hover{color:var(--ink)}
         // and saved state are ready. Unrelated profile documents cannot block it.
         const readFeed=configured&&(!state.watchFeedLoaded||preferencesChanged);
         const feedRequest=readFeed?loadMatchingFeed(userId,sequence,sjSilent):Promise.resolve(null);
-        const [feedResult,savedResult]=await Promise.allSettled([feedRequest,requests[3]]);
+        const [feedResult]=await Promise.allSettled([feedRequest,savedReady]);
         if(sequence!==memberSequence||state.member?.id!==userId)return;
-        if(savedResult.status==='fulfilled'){
-          state.savedRecords=savedResult.value?.jobs||[];
-          state.saved=new Set(state.savedRecords.map(x=>String(x.job_key)));
-        }
         if(readFeed){
           if(feedResult.status==='fulfilled'&&feedResult.value){
             const feed=feedResult.value;
@@ -534,7 +535,7 @@ a:hover{color:var(--ink)}
       // Saved state is applied by earlyFeed; do not overwrite an action taken
       // while the remaining account requests were still completing.
       state.memberEmail=value(4);
-      await earlyFeed;
+      await Promise.all([earlyFeed,savedReady]);
       if(sequence!==memberSequence||state.member?.id!==userId)return;
       state.memberErrors=Object.fromEntries(resources.map((key,i)=>[key,results[i].status==='rejected'?results[i].reason.message:'']));
       state.memberError='';
