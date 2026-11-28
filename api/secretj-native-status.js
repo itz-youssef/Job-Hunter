@@ -44,14 +44,16 @@ function createHandler(env=process.env){return async function handler(req,res){
   const validOffset=Number.isSafeInteger(offset)&&offset>=0&&offset<=100000;
   const limit=250;
   if(action==='feed'&&!validOffset)throw core.fail(400,'Invalid feed offset');
-  if(action==='feed'&&env.SECRETJ_NATIVE_MONITOR_ENABLED==='true'){
+  if(action==='feed'&&(env.SECRETJ_NATIVE_MONITOR_ENABLED==='true'||(env.SECRETJ_NATIVE_MONITOR_ENABLED!=='false'&&env.VERCEL_ENV==='production'))){
     const ps=await core.query('SELECT egypt_only,internships,role_families,career_levels,max_experience_years FROM public.sj_preferences WHERE user_id=$1',[user.id]);
     if(ps.length){
-      const shared=await catalog.read(env,ps[0]);
+      // A delayed publisher must not gate display on a per-user monitoring pass.
+      // Only this display path permits the last complete same-version catalog.
+      const shared=await catalog.read(env,ps[0],{allowStale:true});
       if(shared){
         const matched=shared.jobs.filter(j=>prefs.assessPrepared(j,ps[0],shared.factsByJob.get(j)).match);
         matched.sort((a,b)=>String(b.published_at||'').localeCompare(String(a.published_at||''))||String(a.url).localeCompare(String(b.url)));
-        return core.reply(res,200,{ok:true,ready:true,jobs:matched.slice(offset,offset+limit).map(j=>({...j,id:j.url,qualification_status:'accepted',qualification_mode:'dictionary-title-v1'})),next_offset:matched.length>offset+limit?offset+limit:null,matching_source:'shared-dictionary'});
+        return core.reply(res,200,{ok:true,ready:true,jobs:matched.slice(offset,offset+limit).map(j=>({...j,id:j.url,source_catalog_stale:j.source_catalog_stale===true||!shared.snapshotFresh,qualification_status:'accepted',qualification_mode:'dictionary-title-v1'})),next_offset:matched.length>offset+limit?offset+limit:null,matching_source:'shared-dictionary',catalog_stale:!shared.snapshotFresh,catalog_published_at:shared.publishedAt});
       }
     }
   }
