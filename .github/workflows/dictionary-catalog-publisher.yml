@@ -1,0 +1,41 @@
+name: Shared Dictionary Catalog Publisher
+
+on:
+  workflow_run:
+    workflows: ["Job Hunter Custom Careers", "Job Hunter Monitor"]
+    types: [completed]
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - "scripts/publish-dictionary-catalog.cjs"
+      - ".github/workflows/dictionary-catalog-publisher.yml"
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: secretj-dictionary-catalog-publisher
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Publish public classified catalog independently of member scans
+        env:
+          JOB_HUNTER_DATABASE_URL: ${{ secrets.JOB_HUNTER_DATABASE_URL }}
+        run: node scripts/publish-dictionary-catalog.cjs

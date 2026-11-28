@@ -26,3 +26,21 @@ test('unchanged evidence reuses classification; changed evidence or rule version
  assert.equal(catalog.prepareRows([{...job,title:'Senior Software Engineer'}],prior).classified,1);
  assert.equal(catalog.prepareRows([job],prior.map(x=>({...x,matcher_fingerprint:'old'}))).classified,1);
 });
+
+ test('display can read the last complete catalog without treating it as fresh monitoring evidence',async()=>{
+ const isolated=require('../lib/secretj/isolated-read-routing');
+ const original=isolated.dictionaryCatalogQuery;
+ const j={title:'Junior AI Engineer',url:'https://example.com/job',location:'Cairo, Egypt'};
+ const p={role_families:['ai_ml'],career_levels:['junior'],egypt_only:true};
+ try{
+  isolated.dictionaryCatalogQuery=async(env,sql,args)=>{
+   assert.equal(sql,catalog.READ_SQL);assert.equal(args[0],catalog.version);
+   if(!args[4])return [];
+   return [{job_count:1,job_key:j.url,job:j,facts:prefs.prepare(j),catalog_current:false,snapshot_fresh:true,published_at:'2026-11-27T21:40:10Z'}];
+  };
+  assert.equal(await catalog.read({},p),null);
+  const display=await catalog.read({},p,{allowStale:true});
+  assert.equal(display.jobs.length,1);assert.equal(display.snapshotFresh,false);
+  assert.equal(prefs.assessPrepared(j,p,display.factsByJob.get(j)).match,true);
+ }finally{isolated.dictionaryCatalogQuery=original;}
+});

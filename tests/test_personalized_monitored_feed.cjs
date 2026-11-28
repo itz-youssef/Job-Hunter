@@ -267,3 +267,25 @@ test('isolated fallback rechecks changed preferences in the same core snapshot',
   assert.equal(status,200);assert.equal(result.ready,false);assert.deepEqual(result.jobs,[]);assert.equal(stateReads,2);
  }finally{isolated.setQueryForTests(null);}
 });
+
+ test('stale shared catalog immediately serves current preferences without waiting for user scans',async()=>{
+ const catalog=require('../lib/secretj/dictionary-catalog');
+ const isolated=require('../lib/secretj/isolated-read-routing');
+ const prefs=require('../dist/assets/secretj-job-preferences');
+ const orig=isolated.dictionaryCatalogQuery;
+ const jobs=[{title:'Junior AI Engineer',url:'https://example.com/junior',location:'Cairo, Egypt'},{title:'Senior AI Engineer',url:'https://example.com/senior',location:'Cairo, Egypt'}];
+ const preference={role_families:['ai_ml'],career_levels:['junior'],egypt_only:true,internships:false,max_experience_years:null};
+ try{
+  isolated.dictionaryCatalogQuery=async(env,sql,args)=>{
+   assert.equal(args[4],true);
+   return jobs.map(j=>({job_count:2,job_key:j.url,job:j,facts:prefs.prepare(j),catalog_current:false,snapshot_fresh:true,published_at:'2026-11-27T21:40:10Z'}));
+  };
+  const {status,result}=await request({action:'feed'},(sql,args)=>{
+   assert.equal(args[0],UID);
+   if(sql.includes('FROM public.sj_preferences'))return [preference];
+   throw Error('Feed must not wait on watch state or scanner');
+  },{SECRETJ_NATIVE_MONITOR_ENABLED:'true'});
+  assert.equal(status,200);assert.equal(result.ready,true);assert.equal(result.catalog_stale,true);
+  assert.deepEqual(result.jobs.map(j=>j.url),[jobs[0].url]);assert.equal(result.jobs[0].source_catalog_stale,true);
+ }finally{isolated.dictionaryCatalogQuery=orig;}
+});
